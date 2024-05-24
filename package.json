@@ -1,0 +1,13 @@
+{
+  "name": "@autonomys/auto-sdk",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": ["packages/*"],
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  },
+  "scripts": {
+    "build": "yarn workspaces run build",
+    "test": "yarn workspaces run test"
+  }
+}

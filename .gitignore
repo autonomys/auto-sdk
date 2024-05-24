@@ -1,0 +1,36 @@
+# Node modules
+node_modules/
+packages/*/node_modules/
+
+# TypeScript build outputs
+dist/
+packages/*/dist/
+
+# Yarn lock file (if not desired to be versioned)
+.yarn-integrity
+
+# Log files
+logs/
+*.log
+yarn-error.log
+npm-debug.log*
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+
+# IDE/editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# TypeScript configuration files
+tsconfig.tsbuildinfo
+
+# Environment variables
+.env
