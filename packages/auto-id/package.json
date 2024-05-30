@@ -3,9 +3,11 @@
   "version": "0.1.0",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "eg-1": "node dist/examples/eg_1.js"
   },
   "devDependencies": {
+    "@types/node": "^20.12.12",
     "typescript": "^5.4.5"
   }
 }

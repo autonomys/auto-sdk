@@ -24,6 +24,7 @@ Thumbs.db
 *.temp
 
 # IDE/editor files
+.vscode/
 .idea/
 *.swp
 *.swo
@@ -33,3 +34,9 @@ tsconfig.tsbuildinfo
 
 # Environment variables
 .env
+
+# ignore private key certs
+*.pem
+
+# ignore .yarn
+.yarn/
