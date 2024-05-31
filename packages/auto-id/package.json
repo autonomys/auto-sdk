@@ -4,10 +4,19 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
-    "eg-1": "node dist/examples/eg_1.js"
+    "clean": "rm -rf dist",
+    "eg-1": "tsc && node dist/examples/eg1.js",
+    "eg-2": "tsc && node dist/examples/eg2.js",
+    "eg-3": "tsc && node dist/examples/eg3.js",
+    "eg-4": "tsc && node dist/examples/eg4.js",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "test": "jest"
   },
   "devDependencies": {
     "@types/node": "^20.12.12",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.4",
+    "ts-node": "^10.9.2",
     "typescript": "^5.4.5"
   }
 }
