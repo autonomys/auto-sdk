@@ -1,4 +1,4 @@
-import { activate, disconnect } from '../src/api'
+import { activate, disconnect } from '@autonomys/auto-utils'
 import { currentTimestamp } from '../src/info'
 
 describe('Verify info functions', () => {
