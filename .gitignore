@@ -2,6 +2,9 @@
 node_modules/
 packages/*/node_modules/
 
+# Yarn cache
+.yarn/*
+
 # TypeScript build outputs
 dist/
 packages/*/dist/
