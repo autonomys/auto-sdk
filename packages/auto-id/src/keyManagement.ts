@@ -1,11 +1,5 @@
-import {
-  KeyObject,
-  createDecipheriv,
-  createPrivateKey,
-  generateKeyPairSync,
-  randomBytes,
-} from 'crypto'
-import { readFileSync, writeFileSync } from 'fs'
+import { KeyObject, createPrivateKey, createPublicKey, generateKeyPairSync } from 'crypto'
+import { promises as fs } from 'fs'
 import { writeFile } from 'fs/promises'
 
 /**
@@ -152,39 +146,145 @@ export function pemToPrivateKey(pemData: string, password?: string): KeyObject {
 }
 
 /**
- * Loads a private key from a file.
- * @param filePath The path of the file to load the private key from.
- * @param password Optional password to decrypt the key. If provided, the key will be decrypted using AES-256-CBC.
- * @returns The loaded private key as a buffer.
+ * Loads a private key from a file. If the file is encrypted, a password must be provided.
+ *
+ * @param filePath Path to the private key file.
+ * @param password Optional password used to decrypt the encrypted key file.
+ * @returns The private key object.
+ *
+ * @example
+ * async function main() {
+ *   try {
+ *     const privateKey = await loadPrivateKey('./path/to/private/key.pem', 'optional-password');
+ *     console.log('Private Key:', privateKey);
+ *   } catch (error) {
+ *     console.error('Error loading private key:', error);
+ *   }
+ * }
+ *
+ * main();
  */
-export function loadPrivateKey(filePath: string, password?: string): Buffer {
-  const key = readFileSync(filePath)
-  if (password) {
-    const decipher = createDecipheriv(
-      'aes-256-cbc',
-      Buffer.from(password.padEnd(32)),
-      randomBytes(16),
-    )
-    return Buffer.concat([decipher.update(key), decipher.final()])
+async function loadPrivateKey(filePath: string, password?: string): Promise<KeyObject> {
+  try {
+    const keyData = await fs.readFile(filePath)
+    const privateKey = pemToPrivateKey(keyData.toString(), password)
+    return privateKey
+  } catch (error: any) {
+    throw new Error(`Failed to load private key: ${error.message}`)
   }
-  return key
+}
+
+/**
+ * Converts a PEM-encoded string to a public key object.
+ *
+ * @param pemData The PEM string to convert to a public key.
+ * @returns The public key object.
+ *
+ * @example
+ * const pemString = '-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA...';
+ * const publicKey = pemToPublicKey(pemString);
+ * console.log('Public Key:', publicKey);
+ */
+function pemToPublicKey(pemData: string): KeyObject {
+  return createPublicKey({
+    key: pemData,
+    format: 'pem' as 'pem',
+  })
 }
 
 /**
  * Loads a public key from a file.
- * @param filePath The path of the file to load the public key from.
- * @returns The loaded public key as a buffer.
+ *
+ * @param filePath Path to the public key file.
+ * @returns The public key object.
+ *
+ * @example
+ * async function main() {
+ *   try {
+ *     const publicKey = await loadPublicKey('./path/to/public/key.pem');
+ *     console.log('Public Key:', publicKey);
+ *   } catch (error) {
+ *     console.error('Error loading public key:', error);
+ *   }
+ * }
+ *
+ * main();
  */
-export function loadPublicKey(filePath: string): Buffer {
-  return readFileSync(filePath)
+async function loadPublicKey(filePath: string): Promise<KeyObject> {
+  try {
+    const keyData = await fs.readFile(filePath)
+    const publicKey = pemToPublicKey(keyData.toString())
+    return publicKey
+  } catch (error: any) {
+    throw new Error(`Failed to load public key: ${error.message}`)
+  }
+}
+
+/**
+ * Converts a private or public key to a hex string representation.
+ *
+ * @param key The key to convert (either a private or public key).
+ * @returns The hex string representation of the key.
+ *
+ * @example
+ * const keyHex = keyToHex(privateKeyObject); // privateKeyObject should be a valid KeyObject
+ * console.log('Key Hex:', keyHex);
+ */
+function keyToHex(key: KeyObject): string {
+  let keyData: Buffer
+
+  // Check the type of the key to determine how to handle it
+  if (key.type === 'private') {
+    // Convert private key to DER format
+    keyData = key.export({
+      type: 'pkcs8',
+      format: 'der',
+    })
+  } else if (key.type === 'public') {
+    // Convert public key to DER format
+    keyData = key.export({
+      type: 'spki',
+      format: 'der',
+    })
+  } else {
+    throw new Error('Unsupported key type')
+  }
+
+  // Convert the binary data to a hexadecimal string
+  return keyData.toString('hex')
 }
 
 /**
  * Checks if two public keys match.
- * @param publicKey1 The first public key as a buffer.
- * @param publicKey2 The second public key as a buffer.
- * @returns True if the public keys match, false otherwise.
+ *
+ * @param publicKey1 The first public key as a KeyObject.
+ * @param publicKey2 The second public key as a KeyObject.
+ * @returns True if the keys match, False otherwise.
+ *
+ * @example
+ * const key1 = createPublicKey({
+ *   key: publicKeyPem1,
+ *   format: 'pem'
+ * });
+ * const key2 = createPublicKey({
+ *   key: publicKeyPem2,
+ *   format: 'pem'
+ * });
+ * const match = doPublicKeysMatch(key1, key2);
+ * console.log('Keys match:', match);
  */
-export function doPublicKeysMatch(publicKey1: Buffer, publicKey2: Buffer): boolean {
-  return publicKey1.toString() === publicKey2.toString()
+function doPublicKeysMatch(publicKey1: KeyObject, publicKey2: KeyObject): boolean {
+  // Serialize both public keys to DER format for comparison
+  const publicKey1Der = publicKey1.export({
+    type: 'spki',
+    format: 'der',
+  })
+
+  const publicKey2Der = publicKey2.export({
+    type: 'spki',
+    format: 'der',
+  })
+
+  // Compare the serialized public key data
+  return publicKey1Der.equals(publicKey2Der)
 }
