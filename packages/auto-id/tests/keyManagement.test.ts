@@ -1,10 +1,13 @@
 import { expect, test } from '@jest/globals'
 import { KeyObject, createPrivateKey, createPublicKey } from 'crypto'
 import {
+  doPublicKeysMatch,
   generateEd25519KeyPair,
   generateRsaKeyPair,
+  keyToHex,
   keyToPem,
   pemToPrivateKey,
+  pemToPublicKey,
 } from '../src/keyManagement'
 
 describe('Generate keypair for', () => {
@@ -37,15 +40,14 @@ describe('Private/Public key to PEM with/without password for', () => {
       key: privateKey,
       format: 'pem', // Input can still be PEM
     })
-    const publicKeyKeyObject = createPublicKey(privateKeyObject)
+    const publicKeyObject = createPublicKey(privateKeyObject)
 
     expect(keyToPem(privateKeyObject)).toStrictEqual(privateKey)
     expect(keyToPem(privateKeyObject, 'subspace')).not.toEqual(privateKey) // unequal because of password encryption
-    expect(keyToPem(publicKeyKeyObject)).toStrictEqual(publicKey)
+    expect(keyToPem(publicKeyObject)).toStrictEqual(publicKey)
   })
 })
 
-// TODO: Add code snippet for public key as well intermittently
 describe('PEM to Private/Public key for', () => {
   const keyGenerators = [
     { name: 'RSA', generator: generateRsaKeyPair },
@@ -54,8 +56,8 @@ describe('PEM to Private/Public key for', () => {
 
   for (const { name, generator } of keyGenerators) {
     describe(`${name}`, () => {
-      let privateKeyObject: KeyObject
-      let originalPem: string
+      let privateKeyObject: KeyObject, publicKeyObject: KeyObject
+      let originalPemPrivKey: string, originalPemPubKey: string
 
       beforeEach(() => {
         const [privateKey, publicKey] = generator()
@@ -65,10 +67,11 @@ describe('PEM to Private/Public key for', () => {
           format: 'pem', // Input format is PEM
         })
 
-        const publicKeyObject = createPublicKey(privateKeyObject)
+        publicKeyObject = createPublicKey(privateKeyObject)
 
-        // Export original key back to PEM for comparison
-        originalPem = privateKeyObject.export({ type: 'pkcs8', format: 'pem' }) as string
+        // Export original private/public keys back to PEM for comparison
+        originalPemPrivKey = privateKeyObject.export({ type: 'pkcs8', format: 'pem' }) as string
+        originalPemPubKey = publicKeyObject.export({ type: 'spki', format: 'pem' }) as string
       })
 
       test('without any password', () => {
@@ -77,9 +80,24 @@ describe('PEM to Private/Public key for', () => {
         const privateKeyFromPem = pemToPrivateKey(keyToPem(privateKeyObject))
 
         // Export derived key back to PEM for comparison
-        const derivedPem = privateKeyFromPem.export({ type: 'pkcs8', format: 'pem' }) as string
+        const derivedPemPrivKey = privateKeyFromPem.export({
+          type: 'pkcs8',
+          format: 'pem',
+        }) as string
 
-        expect(derivedPem).toStrictEqual(originalPem)
+        expect(derivedPemPrivKey).toStrictEqual(originalPemPrivKey)
+
+        // Convert the publicKeyObject back to PEM ensure consistent serialization
+        // And then convert it back to a public key object
+        const publicKeyFromPem = pemToPublicKey(keyToPem(publicKeyObject))
+
+        // Export derived key back to PEM for comparison
+        const derivedPemPubKey = publicKeyFromPem.export({
+          type: 'spki',
+          format: 'pem',
+        }) as string
+
+        expect(derivedPemPubKey).toStrictEqual(originalPemPubKey)
       })
 
       test('with password in 1/2 function', () => {
@@ -88,12 +106,12 @@ describe('PEM to Private/Public key for', () => {
         const privateKeyFromPemPassword = pemToPrivateKey(keyToPem(privateKeyObject), 'subspace')
 
         // Export both original and derived keys back to PEM and compare those
-        const derivedPemPassword = privateKeyFromPemPassword.export({
+        const derivedPemPasswordPrivKey = privateKeyFromPemPassword.export({
           type: 'pkcs8',
           format: 'pem',
         }) as string
 
-        expect(derivedPemPassword).toStrictEqual(originalPem)
+        expect(derivedPemPasswordPrivKey).toStrictEqual(originalPemPrivKey)
       })
 
       test('with password in 2/2 functions', () => {
@@ -110,8 +128,74 @@ describe('PEM to Private/Public key for', () => {
           format: 'pem',
         }) as string
 
-        expect(derivedPemPassword).toStrictEqual(originalPem)
+        expect(derivedPemPassword).toStrictEqual(originalPemPrivKey)
       })
     })
   }
+})
+
+describe('Private/Public key to hex for', () => {
+  let privateKey: string, publicKey: string
+
+  test('RSA', () => {
+    ;[privateKey, publicKey] = generateRsaKeyPair()
+  })
+
+  test('Ed25519', () => {
+    ;[privateKey, publicKey] = generateEd25519KeyPair()
+  })
+
+  afterEach(() => {
+    const privateKeyObject = createPrivateKey({
+      key: privateKey,
+      format: 'pem', // Input can still be PEM
+    })
+    const publicKeyObject = createPublicKey(privateKeyObject)
+
+    expect(keyToHex(privateKeyObject)).toStrictEqual(expect.any(String))
+    expect(keyToHex(publicKeyObject)).toStrictEqual(expect.any(String))
+  })
+})
+
+describe('Do public keys match for', () => {
+  const keyTypes = [
+    { label: 'RSA', keyGenerator: generateRsaKeyPair },
+    { label: 'Ed25519', keyGenerator: generateEd25519KeyPair },
+  ]
+
+  keyTypes.forEach(({ label, keyGenerator }) => {
+    describe(`${label}`, () => {
+      let privateKeyPem1: string,
+        publicKeyPem1: string,
+        publicKeyPem2: string,
+        privateKeyPem3: string,
+        publicKeyPem3: string
+      let publicKey1: KeyObject, publicKey2: KeyObject, publicKey3: KeyObject
+
+      beforeEach(() => {
+        ;[privateKeyPem1, publicKeyPem1] = keyGenerator()
+        publicKeyPem2 = publicKeyPem1 // The same key to ensure a match
+        ;[privateKeyPem3, publicKeyPem3] = keyGenerator()
+
+        publicKey1 = createPublicKey({ key: publicKeyPem1, format: 'pem' })
+        publicKey2 = createPublicKey({ key: publicKeyPem2, format: 'pem' })
+        publicKey3 = createPublicKey({ key: publicKeyPem3, format: 'pem' })
+      })
+
+      test('should return true if two public keys match', () => {
+        const match = doPublicKeysMatch(publicKey1, publicKey2)
+        expect(match).toBe(true)
+      })
+
+      test('should return false if two public keys do not match', () => {
+        const noMatch = doPublicKeysMatch(publicKey1, publicKey3)
+        expect(noMatch).toBe(false)
+      })
+
+      test('should handle comparison of the same key object', () => {
+        const selfMatch = doPublicKeysMatch(publicKey1, publicKey1)
+        expect(selfMatch).toBe(true)
+      })
+    })
+  })
 })

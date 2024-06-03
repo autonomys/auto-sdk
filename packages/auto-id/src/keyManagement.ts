@@ -164,7 +164,7 @@ export function pemToPrivateKey(pemData: string, password?: string): KeyObject {
  *
  * main();
  */
-async function loadPrivateKey(filePath: string, password?: string): Promise<KeyObject> {
+export async function loadPrivateKey(filePath: string, password?: string): Promise<KeyObject> {
   try {
     const keyData = await fs.readFile(filePath)
     const privateKey = pemToPrivateKey(keyData.toString(), password)
@@ -185,7 +185,7 @@ async function loadPrivateKey(filePath: string, password?: string): Promise<KeyO
  * const publicKey = pemToPublicKey(pemString);
  * console.log('Public Key:', publicKey);
  */
-function pemToPublicKey(pemData: string): KeyObject {
+export function pemToPublicKey(pemData: string): KeyObject {
   return createPublicKey({
     key: pemData,
     format: 'pem' as 'pem',
@@ -210,7 +210,7 @@ function pemToPublicKey(pemData: string): KeyObject {
  *
  * main();
  */
-async function loadPublicKey(filePath: string): Promise<KeyObject> {
+export async function loadPublicKey(filePath: string): Promise<KeyObject> {
   try {
     const keyData = await fs.readFile(filePath)
     const publicKey = pemToPublicKey(keyData.toString())
@@ -230,7 +230,7 @@ async function loadPublicKey(filePath: string): Promise<KeyObject> {
  * const keyHex = keyToHex(privateKeyObject); // privateKeyObject should be a valid KeyObject
  * console.log('Key Hex:', keyHex);
  */
-function keyToHex(key: KeyObject): string {
+export function keyToHex(key: KeyObject): string {
   let keyData: Buffer
 
   // Check the type of the key to determine how to handle it
@@ -273,7 +273,7 @@ function keyToHex(key: KeyObject): string {
  * const match = doPublicKeysMatch(key1, key2);
  * console.log('Keys match:', match);
  */
-function doPublicKeysMatch(publicKey1: KeyObject, publicKey2: KeyObject): boolean {
+export function doPublicKeysMatch(publicKey1: KeyObject, publicKey2: KeyObject): boolean {
   // Serialize both public keys to DER format for comparison
   const publicKey1Der = publicKey1.export({
     type: 'spki',
