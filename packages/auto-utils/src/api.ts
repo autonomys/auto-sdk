@@ -8,7 +8,7 @@ let apiInstance: ApiPromise | null = null
 let domainProvider: WsProvider | null = null
 let apiDomainInstance: ApiPromise | null = null
 
-export const activate = async (input: NetworkInput) => {
+export const activate = async (input?: NetworkInput) => {
   // Get the first rpc urls for the network
   const rpcUrl = getNetworkRpcUrls(input)
   // Create the provider
