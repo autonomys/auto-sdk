@@ -4,6 +4,7 @@ packages/*/node_modules/
 
 # Yarn cache
 .yarn/*
+.yarnrc.yml
 
 # TypeScript build outputs
 dist/
