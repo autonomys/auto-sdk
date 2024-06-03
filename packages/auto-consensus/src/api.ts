@@ -8,7 +8,7 @@ export const activate = async (networkId?: string) => {
   // Get the first rpc urls for the network
   const rpcUrl = getNetworkRpcUrls(networkId)
   // Create the provider
-  provider = new WsProvider(rpcUrl)
+  provider = new WsProvider(rpcUrl[0])
   // Create the API instance
   apiInstance = await ApiPromise.create({ provider })
 
