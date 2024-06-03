@@ -1,6 +1,9 @@
 import { ApiPromise, WsProvider } from '@polkadot/api'
 import { defaultNetwork, networks } from './constants/network'
 
+let provider: WsProvider | null = null
+let apiInstance: ApiPromise | null = null
+
 export const getNetworkDetails = (id?: string) => {
   // If no id is provided, return the default network
   if (!id) return defaultNetwork
@@ -23,13 +26,22 @@ export const getNetworkRpcUrls = (id?: string) => {
   return network.rpcUrls
 }
 
-export const api = async (networkId?: string) => {
+export const activate = async (networkId?: string) => {
   // Get the first rpc urls for the network
   const rpcUrl = getNetworkRpcUrls(networkId)
-
+  // Create the provider
+  provider = new WsProvider(rpcUrl)
   // Create the API instance
-  const provider = new WsProvider(rpcUrl)
-  const api = await ApiPromise.create({ provider })
+  apiInstance = await ApiPromise.create({ provider })
 
-  return api
+  return apiInstance
+}
+
+export const disconnect = async () => {
+  // Disconnect the API instance and the provider if they exist
+  if (apiInstance) {
+    await apiInstance.disconnect()
+    apiInstance = null
+    provider = null
+  }
 }
