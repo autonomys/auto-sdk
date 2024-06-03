@@ -9,10 +9,23 @@ jobs:
     steps:
       - name: Checkout 🛎️
         uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18'
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Set Yarn version to Berry
+        run: corepack prepare yarn@4.2.2 --activate
+
+      - name: Install dependencies
+        run: yarn install
+
       - name: Build all packages 🔧
-        run: |
-          yarn set version berry
-          yarn install
-          yarn build
+        run: yarn build
+
       - name: Run tests 🧪
         run: yarn test
