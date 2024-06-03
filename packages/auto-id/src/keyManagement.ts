@@ -1,11 +1,12 @@
 import {
   KeyObject,
-  createCipheriv,
   createDecipheriv,
+  createPrivateKey,
   generateKeyPairSync,
   randomBytes,
 } from 'crypto'
 import { readFileSync, writeFileSync } from 'fs'
+import { writeFile } from 'fs/promises'
 
 /**
  * Generates an RSA key pair.
@@ -54,6 +55,7 @@ export function generateEd25519KeyPair(): [string, string] {
  * @throws Will throw an error if the provided `key` is neither a private nor a public key object.
  *
  * @example
+ * Follow "../examples/eg3.ts" & "../examples/eg4.ts" for a complete example.
  * // Create a private key object (assuming you have the appropriate private key data)
  * const privateKey = createPrivateKey({
  *     key: '-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANB ...',
@@ -100,19 +102,53 @@ export function keyToPem(key: KeyObject, password?: string): string {
 }
 
 /**
- * Saves a key to a file.
- * @param key The key to save as a buffer.
- * @param filePath The path of the file to save the key to.
- * @param password Optional password to encrypt the key. If provided, the key will be encrypted using AES-256-CBC.
+ * Saves a cryptographic key object to a file in PEM format. If it's a private key and a password is provided,
+ * the key will be encrypted before being written to the file.
+ *
+ * @param key The cryptographic key object to be saved. It must be either a private or public key object.
+ * @param filePath The file system path where the key should be saved.
+ * @param password Optional password for encrypting the private key.
+ *
+ * @example
+ * // Assuming privateKey is a valid KeyObject
+ * saveKey(privateKey, './myPrivateKey.pem', 'strongpassword')
+ *   .then(() => console.log('Key saved successfully'))
+ *   .catch(err => console.error('Error saving key:', err));
  */
-export function saveKey(key: Buffer, filePath: string, password?: string): void {
-  if (password) {
-    const cipher = createCipheriv('aes-256-cbc', Buffer.from(password.padEnd(32)), randomBytes(16))
-    const encrypted = Buffer.concat([cipher.update(key), cipher.final()])
-    writeFileSync(filePath, encrypted)
-  } else {
-    writeFileSync(filePath, key)
+export async function saveKey(key: KeyObject, filePath: string, password?: string): Promise<void> {
+  try {
+    const pem = keyToPem(key, password)
+    await writeFile(filePath, pem, 'utf8') // Ensure the encoding is correct for PEM format
+  } catch (e: any) {
+    throw new Error(`Failed to save key: ${e.message}`)
   }
+}
+
+/**
+ * Converts a PEM-encoded string to a private key object. If the PEM string is encrypted,
+ * a password must be provided to decrypt it.
+ *
+ * @param pemData The PEM string to convert to a private key.
+ * @param password Optional password used to decrypt the encrypted PEM string.
+ * @returns The private key object.
+ *
+ * @example
+ * const pemString = '-----BEGIN ENCRYPTED PRIVATE KEY-----\nMIIFDjBABgkqhk ...';
+ * const privateKey = pemToPrivateKey(pemString, 'mypassword');
+ * console.log(privateKey);
+ */
+export function pemToPrivateKey(pemData: string, password?: string): KeyObject {
+  const options: any = {
+    key: pemData,
+    format: 'pem' as 'pem',
+  }
+
+  // Add password to options if it is provided
+  if (password) {
+    options.passphrase = password
+  }
+
+  return createPrivateKey(options)
 }
 
 /**

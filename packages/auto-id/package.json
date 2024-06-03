@@ -9,10 +9,13 @@
     "eg-2": "tsc && node dist/examples/eg2.js",
     "eg-3": "tsc && node dist/examples/eg3.js",
     "eg-4": "tsc && node dist/examples/eg4.js",
+    "eg-5": "tsc && node dist/examples/eg5.js",
+    "eg-6": "tsc && node dist/examples/eg6.js",
     "format": "prettier --write \"src/**/*.ts\"",
     "test": "jest"
   },
   "devDependencies": {
+    "@types/jest": "^29.5.12",
     "@types/node": "^20.12.12",
     "jest": "^29.7.0",
     "ts-jest": "^29.1.4",
