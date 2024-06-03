@@ -2,26 +2,26 @@
   "folders": [
     {
       "name": "root",
-      "path": ".."
+      "path": "..",
     },
     {
       "name": "auto-utils",
-      "path": "../packages/auto-utils"
+      "path": "../packages/auto-utils",
     },
     {
       "name": "auto-consensus",
-      "path": "../packages/auto-consensus"
+      "path": "../packages/auto-consensus",
     },
     {
       "name": "auto-id",
-      "path": "../packages/auto-id"
-    }
+      "path": "../packages/auto-id",
+    },
   ],
   "settings": {
     "editor.codeActionsOnSave": {
       "source.sortImports": "explicit",
       "source.fixAll.eslint": "explicit",
-      "source.fixAll.tslint": "explicit"
+      "source.fixAll.tslint": "explicit",
     },
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "javascript.updateImportsOnFileMove.enabled": "always",
@@ -31,6 +31,7 @@
     "typescript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyParenthesis": true,
     "editor.formatOnSave": true,
     "cSpell.words": [
+      "autonomys",
       "extrinsics",
       "gemini",
       "graphiql",
@@ -39,7 +40,7 @@
       "subscan",
       "subspace",
       "subsquid",
-      "typegen"
-    ]
-  }
+      "typegen",
+    ],
+  },
 }

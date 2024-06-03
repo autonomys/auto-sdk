@@ -3,7 +3,7 @@ import type { Network } from '../types/types'
 export const networks: Network[] = [
   {
     id: 'autonomys-gemini-3h',
-    name: 'Autonomys Tesnet - Gemini 3H',
+    name: 'Autonomys Testnet - Gemini 3H',
     rpcUrls: [
       'wss://rpc-0.gemini-3h.subspace.network/ws',
       'wss://rpc-1.gemini-3h.subspace.network/ws',
