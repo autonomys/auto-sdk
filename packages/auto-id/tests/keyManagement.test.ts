@@ -1,5 +1,7 @@
 import { expect, test } from '@jest/globals'
 import { KeyObject, createPrivateKey, createPublicKey } from 'crypto'
+import { promises as fs } from 'fs'
+import * as path from 'path'
 import {
   doPublicKeysMatch,
   generateEd25519KeyPair,
@@ -8,6 +10,7 @@ import {
   keyToPem,
   pemToPrivateKey,
   pemToPublicKey,
+  saveKey,
 } from '../src/keyManagement'
 
 describe('Generate keypair for', () => {
@@ -129,6 +132,63 @@ describe('PEM to Private/Public key for', () => {
         }) as string
 
         expect(derivedPemPassword).toStrictEqual(originalPemPrivKey)
+      })
+    })
+  }
+})
+
+describe('saveKey function', () => {
+  const keyGenerators = [
+    { name: 'RSA', generator: generateRsaKeyPair },
+    { name: 'Ed25519', generator: generateEd25519KeyPair },
+  ]
+
+  for (const { name, generator } of keyGenerators) {
+    describe(`${name}`, () => {
+      // Directory for test output
+      const testDir = path.join(__dirname, 'test_keys')
+      let privateKey: string
+
+      // Create a directory for test outputs before any tests run
+      beforeAll(async () => {
+        await fs.mkdir(testDir, { recursive: true })
+      })
+
+      beforeEach(() => {
+        ;[privateKey] = generator()
+      })
+
+      // Cleanup: remove test directory after all tests
+      afterAll(async () => {
+        await fs.rm(testDir, { recursive: true, force: true })
+      })
+
+      test('should save a private key to a file', async () => {
+        const filePath = path.join(testDir, 'testPrivateKey.pem')
+
+        const privateKeyObject = pemToPrivateKey(privateKey)
+
+        await saveKey(privateKeyObject, filePath)
+        const fileContents = await fs.readFile(filePath, { encoding: 'utf8' })
+
+        expect(fileContents).toBe(keyToPem(privateKeyObject))
+      })
+
+      test('should save an encrypted private key to a file', async () => {
+        const filePath = path.join(testDir, 'testEncryptedPrivateKey.pem')
+        const password = 'testpassword'
+
+        await saveKey(pemToPrivateKey(privateKey), filePath, password)
+        const fileContents = await fs.readFile(filePath, { encoding: 'utf8' })
+
+        // Check if the file content starts and ends with the expected encrypted private key headers
+        expect(fileContents.startsWith('-----BEGIN ENCRYPTED PRIVATE KEY-----')).toBe(true)
+        expect(fileContents.endsWith('-----END ENCRYPTED PRIVATE KEY-----\n')).toBe(true)
+      })
+      test('should throw an error when trying to save to an invalid path', async () => {
+        const filePath = path.join(testDir, 'non_existent_directory', 'testPrivateKey.pem')
+
+        await expect(saveKey(pemToPrivateKey(privateKey), filePath)).rejects.toThrow()
       })
     })
   }
