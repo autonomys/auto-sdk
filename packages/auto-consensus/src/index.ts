@@ -1,3 +1,2 @@
-export const helloWorld = () => {
-    console.log('Hello World');
-};
+export * from './balances'
+export * from './info'
