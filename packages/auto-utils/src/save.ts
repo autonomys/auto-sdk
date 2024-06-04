@@ -1,10 +1,7 @@
 export const save = async (key: string, value: any) => {
   // detect if we are in the browser or in node
-  if (typeof window !== 'undefined') {
-    await saveOnLocalStorage(key, value)
-  } else {
-    await saveOnFileSystem(key, value)
-  }
+  if (typeof window !== 'undefined') await saveOnLocalStorage(key, value)
+  else await saveOnFileSystem(key, value)
 }
 
 export const saveOnLocalStorage = async (key: string, value: any) => {
