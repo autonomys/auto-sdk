@@ -37,3 +37,7 @@ tsconfig.tsbuildinfo
 
 # Environment variables
 .env
+
+# Directory use by scripts
+executables/
+downloads/
