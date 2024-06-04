@@ -11,13 +11,13 @@ console.log(`Private key: ${privateKeyRsa}`)
 console.log(`Public key: ${publicKeyRsa}`)
 console.log(`========================`)
 
-const privateKey2 = createPrivateKey({
+const privateKeyObjectRsa = createPrivateKey({
   key: privateKeyRsa,
   format: 'pem', // Input can still be PEM
 })
 
-const publicKey2 = createPublicKey(privateKeyRsa)
+const publicKey2 = createPublicKey(privateKeyObjectRsa)
 
-console.log(keyToPem(privateKey2)) // Export without password
-console.log(keyToPem(privateKey2, 'subspace')) // Export with password
+console.log(keyToPem(privateKeyObjectRsa)) // Export without password
+console.log(keyToPem(privateKeyObjectRsa, 'subspace')) // Export with password
 console.log(keyToPem(publicKey2)) // Export public key

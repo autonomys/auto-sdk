@@ -1,5 +1,5 @@
 /* 
-  Ed25519 key pair generation and saving/loading example
+  Simple Ed25519 key pair generation
 */
 
 import { generateEd25519KeyPair, loadPrivateKey, saveKey } from '../src/keyManagement'
@@ -8,7 +8,3 @@ import { generateEd25519KeyPair, loadPrivateKey, saveKey } from '../src/keyManag
 const [privateKey, publicKey] = generateEd25519KeyPair()
 console.log(`Private key: ${privateKey}`)
 console.log(`Public key: ${publicKey}`)
-
-saveKey(Buffer.from(privateKey), './privateKey.pem')
-const loadedPrivateKey = loadPrivateKey('./privateKey.pem')
-console.log(`Private keys match: ${loadedPrivateKey.toString() === privateKey.toString()}`)
