@@ -8,6 +8,8 @@ import {
   generateRsaKeyPair,
   keyToHex,
   keyToPem,
+  loadPrivateKey,
+  loadPublicKey,
   pemToPrivateKey,
   pemToPublicKey,
   saveKey,
@@ -189,6 +191,77 @@ describe('saveKey function', () => {
         const filePath = path.join(testDir, 'non_existent_directory', 'testPrivateKey.pem')
 
         await expect(saveKey(pemToPrivateKey(privateKey), filePath)).rejects.toThrow()
+      })
+    })
+  }
+})
+
+describe('Key loading functions', () => {
+  const keyGenerators = [
+    { name: 'RSA', generator: generateRsaKeyPair },
+    { name: 'Ed25519', generator: generateEd25519KeyPair },
+  ]
+
+  for (const { name, generator } of keyGenerators) {
+    describe(`${name}`, () => {
+      const testDir = path.join(__dirname, 'test_keys')
+
+      // Directory setup for test keys
+      beforeAll(async () => {
+        await fs.mkdir(testDir, { recursive: true })
+      })
+
+      afterAll(async () => {
+        await fs.rm(testDir, { recursive: true, force: true })
+      })
+
+      // Load Private Key Tests
+      describe('loadPrivateKey', () => {
+        const [privateKey] = generator()
+        const filePath = path.join(testDir, 'testPrivateKey.pem')
+        const password = 'testpassword'
+
+        beforeAll(async () => {
+          // Saving a regular and an encrypted private key for tests
+          await saveKey(pemToPrivateKey(privateKey), filePath)
+          await saveKey(pemToPrivateKey(privateKey), `${filePath}.enc`, password)
+        })
+
+        test('should load a private key from a file', async () => {
+          const loadedPrivateKey = await loadPrivateKey(filePath)
+          expect(loadedPrivateKey.export({ type: 'pkcs8', format: 'pem' })).toBe(privateKey)
+        })
+
+        test('should load an encrypted private key from a file using a password', async () => {
+          const loadedPrivateKey = await loadPrivateKey(`${filePath}.enc`, password)
+          expect(loadedPrivateKey.export({ type: 'pkcs8', format: 'pem' })).toBe(privateKey)
+        })
+
+        test('should throw an error when the password for encrypted key is wrong', async () => {
+          await expect(loadPrivateKey(`${filePath}.enc`, 'wrongpassword')).rejects.toThrow()
+        })
+      })
+
+      // Load Public Key Tests
+      describe('loadPublicKey', () => {
+        const [_, publicKey] = generator()
+        const filePath = path.join(testDir, 'testPublicKey.pem')
+
+        beforeAll(async () => {
+          // Saving a public key for test
+          await saveKey(pemToPublicKey(publicKey), filePath)
+        })
+
+        test('should load a public key from a file', async () => {
+          const loadedPublicKey = await loadPublicKey(filePath)
+          expect(loadedPublicKey.export({ type: 'spki', format: 'pem' })).toBe(publicKey)
+        })
+
+        test('should throw an error when file does not exist', async () => {
+          await expect(
+            loadPublicKey(path.join(testDir, 'nonexistentPublicKey.pem')),
+          ).rejects.toThrow()
+        })
       })
     })
   }
