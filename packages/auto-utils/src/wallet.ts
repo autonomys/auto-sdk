@@ -2,36 +2,31 @@ import { Keyring } from '@polkadot/api'
 import type { KeyringPair } from '@polkadot/keyring/types'
 import { ed25519PairFromSeed, mnemonicToMiniSecret } from '@polkadot/util-crypto'
 import { activate, activateDomain } from './api'
-import type { DomainInput, NetworkInput } from './types/types'
+import type { AppName, DomainInput, Mnemonic, MnemonicOrURI, NetworkInput, URI } from './types'
 
-export const setupWallet = (mnemonicOrPk: string) => {
+export const setupWallet = (input: MnemonicOrURI) => {
   const keyring = new Keyring({ type: 'sr25519' })
 
   let pair: KeyringPair
-  if (mnemonicOrPk.startsWith('0x') || mnemonicOrPk.length === 64) {
-    // Treat as private key
-    const seed = Buffer.from(mnemonicOrPk.replace(/^0x/, ''), 'hex')
-    pair = keyring.addFromSeed(seed)
-  } else {
+  if ((input as URI).uri) {
+    // Treat as as uri
+    pair = keyring.addFromUri((input as URI).uri)
+  } else if ((input as Mnemonic).mnemonic) {
     // Treat as mnemonic
-    const seed = mnemonicToMiniSecret(mnemonicOrPk)
+    const seed = mnemonicToMiniSecret((input as Mnemonic).mnemonic)
 
-    const { publicKey, secretKey } = ed25519PairFromSeed(seed)
-    pair = keyring.addFromSeed(secretKey)
-  }
+    pair = keyring.addFromPair(ed25519PairFromSeed(seed))
+  } else throw new Error('Invalid mnemonic or private key')
 
   return pair
 }
 
-export type ActivateWalletInput = (NetworkInput | DomainInput) & {
-  mnemonicOrPk?: string
-  appName?: string
-}
+export type ActivateWalletInput = (NetworkInput | DomainInput) & MnemonicOrURI & AppName
 
 export const activateWallet = async (input: ActivateWalletInput) => {
   // Create the API instance
   const apiInstance =
-    (input as any).domainId === undefined
+    (input as DomainInput).domainId === undefined
       ? await activate(input)
       : await activateDomain(input as DomainInput)
 
@@ -52,9 +47,9 @@ export const activateWallet = async (input: ActivateWalletInput) => {
     } else {
       console.warn('No accounts found in the Polkadot.js extension')
     }
-  } else if (input.mnemonicOrPk) {
+  } else if ((input as Mnemonic).mnemonic || (input as URI).uri) {
     // Attach the wallet in a node environment
-    const account = await setupWallet(input.mnemonicOrPk)
+    const account = await setupWallet(input)
     if (account) console.log('Wallet attached:', account.address)
   } else throw new Error('No wallet provided')
 

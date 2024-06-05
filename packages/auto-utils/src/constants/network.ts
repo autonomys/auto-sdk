@@ -1,4 +1,4 @@
-import type { Network } from '../types/types'
+import type { Network } from '../types/network'
 
 export const networks: Network[] = [
   {

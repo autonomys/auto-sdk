@@ -1,6 +1,6 @@
 import { ApiPromise, WsProvider } from '@polkadot/api'
 import { getNetworkDomainRpcUrls, getNetworkRpcUrls } from './network'
-import type { DomainInput, NetworkInput } from './types/types'
+import type { DomainInput, NetworkInput } from './types/network'
 
 let provider: WsProvider | null = null
 let apiInstance: ApiPromise | null = null

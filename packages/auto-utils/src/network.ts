@@ -1,5 +1,5 @@
 import { defaultNetwork, networks } from './constants/network'
-import type { DomainInput, NetworkInput } from './types/types'
+import type { DomainInput, NetworkInput } from './types/network'
 
 export const getNetworkDetails = (input?: NetworkInput) => {
   // If no id is provided, return the default network
