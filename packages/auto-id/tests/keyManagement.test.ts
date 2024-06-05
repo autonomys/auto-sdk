@@ -139,7 +139,7 @@ describe('PEM to Private/Public key for', () => {
   }
 })
 
-describe('saveKey function', () => {
+describe('Save Key', () => {
   const keyGenerators = [
     { name: 'RSA', generator: generateRsaKeyPair },
     { name: 'Ed25519', generator: generateEd25519KeyPair },
@@ -174,7 +174,7 @@ describe('saveKey function', () => {
         const fileContents = await fs.readFile(filePath, { encoding: 'utf8' })
 
         // Check if the PEM string matches expected, considering JSON.stringify use
-        expect(fileContents).toBe(JSON.stringify(keyToPem(privateKeyObject)));
+        expect(fileContents).toBe(JSON.stringify(keyToPem(privateKeyObject)))
       })
 
       test('should save an encrypted private key to a file', async () => {
@@ -185,7 +185,7 @@ describe('saveKey function', () => {
         const fileContents = await fs.readFile(filePath, { encoding: 'utf8' })
 
         // Parse it back to normal string
-        const actualPemContent = JSON.parse(fileContents);
+        const actualPemContent = JSON.parse(fileContents)
 
         // Check if the file content starts and ends with the expected encrypted private key headers
         expect(actualPemContent.startsWith('-----BEGIN ENCRYPTED PRIVATE KEY-----')).toBe(true)
@@ -200,7 +200,7 @@ describe('saveKey function', () => {
   }
 })
 
-describe('Key loading functions', () => {
+describe('Load Key', () => {
   const keyGenerators = [
     { name: 'RSA', generator: generateRsaKeyPair },
     { name: 'Ed25519', generator: generateEd25519KeyPair },
