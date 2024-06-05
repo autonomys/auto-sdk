@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "main": "dist/index.js",
   "scripts": {
-    "build": "bun build ./src/index.ts --outdir ./dist",
+    "build": "bun build ./src/index.ts --outdir ./dist --target node",
+    "clean": "rm -rf dist",
+    "format": "prettier --write \"src/**/*.ts\"",
     "test": "bun test"
   },
   "files": [
