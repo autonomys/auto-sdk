@@ -1,10 +1,11 @@
 import { Keyring } from '@polkadot/api'
+import type { InjectedAccountWithMeta } from '@polkadot/extension-inject/types'
 import type { KeyringPair } from '@polkadot/keyring/types'
 import { ed25519PairFromSeed, mnemonicToMiniSecret } from '@polkadot/util-crypto'
 import { activate, activateDomain } from './api'
 import type { AppName, DomainInput, Mnemonic, MnemonicOrURI, NetworkInput, URI } from './types'
 
-export const setupWallet = (input: MnemonicOrURI) => {
+export const setupWallet = (input: MnemonicOrURI): KeyringPair => {
   const keyring = new Keyring({ type: 'sr25519' })
 
   let pair: KeyringPair
@@ -25,10 +26,12 @@ export type ActivateWalletInput = (NetworkInput | DomainInput) & MnemonicOrURI &
 
 export const activateWallet = async (input: ActivateWalletInput) => {
   // Create the API instance
-  const apiInstance =
+  const api =
     (input as DomainInput).domainId === undefined
       ? await activate(input)
       : await activateDomain(input as DomainInput)
+
+  const accounts: InjectedAccountWithMeta[] & KeyringPair[] = []
 
   if (typeof window !== 'undefined') {
     const { web3Enable, web3Accounts } = await import('@polkadot/extension-dapp')
@@ -38,6 +41,7 @@ export const activateWallet = async (input: ActivateWalletInput) => {
 
     // Get the list of accounts from the extension
     const allAccounts = await web3Accounts()
+    accounts.push(...allAccounts)
 
     // Attach the first account (or handle multiple accounts as needed)
     if (allAccounts.length > 0) {
@@ -50,8 +54,9 @@ export const activateWallet = async (input: ActivateWalletInput) => {
   } else if ((input as Mnemonic).mnemonic || (input as URI).uri) {
     // Attach the wallet in a node environment
     const account = await setupWallet(input)
+    accounts.push(account)
     if (account) console.log('Wallet attached:', account.address)
   } else throw new Error('No wallet provided')
 
-  return apiInstance
+  return { api, accounts }
 }
