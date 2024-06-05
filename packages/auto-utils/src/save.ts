@@ -14,9 +14,9 @@ export const saveOnLocalStorage = async (key: string, value: any) => {
 export const saveOnFileSystem = async (key: string, value: any) => {
   if (typeof window === 'undefined') {
     // save on file system
-    const fs = await import('fs/promises')
+    const fs = await import('node:fs/promises')
     // Check if value is already a string to avoid unnecessary JSON string conversion
-    const data = typeof value === 'string' ? value : JSON.stringify(value);
+    const data = typeof value === 'string' ? value : JSON.stringify(value)
     await fs.writeFile(key, JSON.stringify(data))
   } else throw new Error('This function can only be used in node')
 }

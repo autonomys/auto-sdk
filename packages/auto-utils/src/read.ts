@@ -19,10 +19,10 @@ export const readFromLocalStorage = async (key: string) => {
 export const readFromFileSystem = async (key: string) => {
   if (typeof window === 'undefined') {
     // read from file system
-    const fs = await import('fs/promises')
+    const fs = await import('node:fs/promises')
     try {
       const data = await fs.readFile(key, { encoding: 'utf-8' })
-      return JSON.parse(data);
+      return JSON.parse(data)
     } catch (error) {
       throw new Error('Failed to read or parse file: ' + error)
     }

@@ -7,7 +7,7 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "bun run --filter '*' build",
+    "build": "bun run --filter '@autonomys/auto-utils' build && bun run --filter '*' build",
     "clean": "bun run --filter '*' clean",
     "format": "bun run --filter '*' format",
     "test": "bun run --filter '*' test"

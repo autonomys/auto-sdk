@@ -1,7 +1,6 @@
-import { expect, test } from '@jest/globals'
-import { KeyObject, createPrivateKey, createPublicKey } from 'crypto'
-import { promises as fs } from 'fs'
-import * as path from 'path'
+import { KeyObject, createPrivateKey, createPublicKey } from 'node:crypto'
+import { promises as fs } from 'node:fs'
+import * as path from 'node:path'
 import {
   doPublicKeysMatch,
   generateEd25519KeyPair,
