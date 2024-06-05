@@ -14,7 +14,7 @@ describe('Verify wallet functions', () => {
 
   const TEST_INVALID_NETWORK = { networkId: 'invalid-network' }
 
-  const TEST_MNEMONIC = 'test test test test test test test test test test test junk' //Alice
+  const TEST_MNEMONIC = 'test test test test test test test test test test test junk'
   const TEST_ADDRESS = '5Fj5aLd4crCYn7zM5hLZL8m6e9aNzWssiTgA3TrprLjxy6Mc'
   const ALICE_URI = '//BOB'
   const ALICE_ADDRESS = '5DAw2FpYk2y3JHrsia14KEx7tpezNymdFKkunicZ5ygPGXYF'
