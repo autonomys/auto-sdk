@@ -13,7 +13,7 @@ The repository is organized as follows:
 ## Requirements
 
 - Node.js
-- Yarn 2 (Berry) or later
+- [Bun 1.0.0 or higher](https://bun.sh/docs/installation#installing)
 
 ## Setup
 
@@ -25,13 +25,9 @@ The repository is organized as follows:
 
    `cd auto-sdk`
 
-3. **Set Yarn to use the Berry version:**
+3. **Install dependencies:**
 
-   `yarn set version berry`
-
-4. **Install dependencies:**
-
-   `yarn install`
+   `bun install`
 
 ## Scripts
 
@@ -39,13 +35,13 @@ The repository is organized as follows:
 
 To build all packages:
 
-`yarn build`
+`bun build`
 
 ### Test
 
 To run tests for all packages:
 
-`yarn test`
+`bun test`
 
 ### Localhost testing
 
@@ -79,7 +75,7 @@ To test the packages against a local node, you can use the script at `scripts/lo
 
 ## Workspaces
 
-This project uses Yarn workspaces. Packages are located in the `packages` directory. Each package can have its own dependencies and build scripts.
+This project uses workspaces. Packages are located in the `packages` directory. Each package can have its own dependencies and build scripts.
 
 ## License
 
