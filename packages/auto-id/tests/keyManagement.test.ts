@@ -173,7 +173,8 @@ describe('saveKey function', () => {
         await saveKey(privateKeyObject, filePath)
         const fileContents = await fs.readFile(filePath, { encoding: 'utf8' })
 
-        expect(fileContents).toBe(keyToPem(privateKeyObject))
+        // Check if the PEM string matches expected, considering JSON.stringify use
+        expect(fileContents).toBe(JSON.stringify(keyToPem(privateKeyObject)));
       })
 
       test('should save an encrypted private key to a file', async () => {
@@ -183,9 +184,12 @@ describe('saveKey function', () => {
         await saveKey(pemToPrivateKey(privateKey), filePath, password)
         const fileContents = await fs.readFile(filePath, { encoding: 'utf8' })
 
+        // Parse it back to normal string
+        const actualPemContent = JSON.parse(fileContents);
+
         // Check if the file content starts and ends with the expected encrypted private key headers
-        expect(fileContents.startsWith('-----BEGIN ENCRYPTED PRIVATE KEY-----')).toBe(true)
-        expect(fileContents.endsWith('-----END ENCRYPTED PRIVATE KEY-----\n')).toBe(true)
+        expect(actualPemContent.startsWith('-----BEGIN ENCRYPTED PRIVATE KEY-----')).toBe(true)
+        expect(actualPemContent.endsWith('-----END ENCRYPTED PRIVATE KEY-----\n')).toBe(true)
       })
       test('should throw an error when trying to save to an invalid path', async () => {
         const filePath = path.join(testDir, 'non_existent_directory', 'testPrivateKey.pem')

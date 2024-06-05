@@ -1,3 +1,4 @@
+import { save } from '@autonomys/auto-utils'
 import { KeyObject, createPrivateKey, createPublicKey, generateKeyPairSync } from 'crypto'
 import { promises as fs } from 'fs'
 import { writeFile } from 'fs/promises'
@@ -112,7 +113,7 @@ export function keyToPem(key: KeyObject, password?: string): string {
 export async function saveKey(key: KeyObject, filePath: string, password?: string): Promise<void> {
   try {
     const pem = keyToPem(key, password)
-    await writeFile(filePath, pem, 'utf8') // Ensure the encoding is correct for PEM format
+    await save(filePath, pem);
   } catch (e: any) {
     throw new Error(`Failed to save key: ${e.message}`)
   }
