@@ -9,8 +9,8 @@
     "test": "jest"
   },
   "dependencies": {
-    "@types/node": "^20.12.12",
-    "@autonomys/auto-utils": "workspace:*"
+    "@autonomys/auto-utils": "workspace:*",
+    "@types/node": "^20.12.12"
   },
   "files": [
     "dist",

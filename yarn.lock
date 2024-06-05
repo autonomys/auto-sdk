@@ -31,6 +31,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-id@workspace:packages/auto-id"
   dependencies:
+    "@autonomys/auto-utils": "workspace:*"
     "@types/jest": "npm:^29.5.12"
     "@types/node": "npm:^20.12.12"
     jest: "npm:^29.7.0"
