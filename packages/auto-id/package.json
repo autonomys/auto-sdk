@@ -8,14 +8,22 @@
     "format": "prettier --write \"src/**/*.ts\"",
     "test": "jest"
   },
-  "dependencies": {
-    "@autonomys/auto-utils": "workspace:*",
-    "@types/node": "^20.12.12"
-  },
   "files": [
     "dist",
     "README.md"
   ],
+  "dependencies": {
+    "@autonomys/auto-utils": "workspace:*",
+    "@types/node": "^20.12.12"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/subspace/auto-sdk"
+  },
+  "author": {
+    "name": "Autonomys",
+    "url": "https://www.autonomys.net"
+  },
   "devDependencies": {
     "@types/jest": "^29.5.12",
     "jest": "^29.7.0",
