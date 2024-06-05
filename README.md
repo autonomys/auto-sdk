@@ -47,6 +47,36 @@ To run tests for all packages:
 
 `yarn test`
 
+### Localhost testing
+
+To test the packages against a local node, you can use the script at `scripts/localhost.sh`.
+
+1. Verify that the line 3-7 of the script matches your current OS and architecture.
+
+   ```bash
+   # Change the following variables as needed
+   # OS to download
+   OS="macos" # macos | ubuntu | windows
+   # Architecture to download
+   ARCHITECTURE="aarch64" # aarch64 | x86_64-skylake | x86_64-v2
+   ```
+
+2. Run the script:
+
+   ```bash
+   ./scripts/localhost.sh
+   ```
+
+   This script will download the latest version of the node and farmer for your OS and architecture, start the node, and farmer
+
+3. Run the tests:
+
+   ```bash
+   bash scripts/localhost-run-test.sh
+   ```
+
+   The tests will detect the local node and farmer and run the tests against them instead of the public testnet.
+
 ## Workspaces
 
 This project uses Yarn workspaces. Packages are located in the `packages` directory. Each package can have its own dependencies and build scripts.

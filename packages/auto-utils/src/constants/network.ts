@@ -55,6 +55,7 @@ export const networks: Network[] = [
       },
     ],
     isTestnet: true,
+    isLocalhost: true,
   },
 ]
 

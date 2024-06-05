@@ -6,6 +6,10 @@
     "build": "tsc",
     "test": "jest"
   },
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "dependencies": {
     "@autonomys/auto-utils": "workspace:*"
   },

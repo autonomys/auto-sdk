@@ -2,7 +2,13 @@ import { defaultNetwork, networks } from '../src/constants/network'
 import { getNetworkDetails, getNetworkRpcUrls } from '../src/network'
 
 describe('Verify network functions', () => {
-  const TEST_NETWORK = { networkId: networks[0].id }
+  const isLocalhost = process.env.LOCALHOST === 'true'
+
+  // Define the test network and its details
+  const TEST_NETWORK = !isLocalhost ? { networkId: networks[0].id } : { networkId: 'autonomys-localhost' }
+  const TEST_NETWORK_DETAIL = networks.find((network) => network.id === TEST_NETWORK.networkId)
+  if (!TEST_NETWORK_DETAIL) throw new Error(`Network with id ${TEST_NETWORK.networkId} not found`)
+  
   const TEST_INVALID_NETWORK = { networkId: 'invalid-network' }
 
   test('Check getNetworkDetails return all network detail', async () => {
@@ -17,12 +23,12 @@ describe('Verify network functions', () => {
 
   test('Check getNetworkDetails return the network detail for a specific network', async () => {
     const rpcUrls = getNetworkDetails(TEST_NETWORK)
-    expect(rpcUrls).toEqual(networks[0])
+    expect(rpcUrls).toEqual(TEST_NETWORK_DETAIL)
   })
 
   test('Check getNetworkRpcUrls return the network urls for a specific network', async () => {
     const rpcUrls = getNetworkRpcUrls(TEST_NETWORK)
-    expect(rpcUrls).toEqual(networks[0].rpcUrls)
+    expect(rpcUrls).toEqual(TEST_NETWORK_DETAIL.rpcUrls)
   })
 
   test('Check getNetworkDetails return the network urls for an invalid network', async () => {

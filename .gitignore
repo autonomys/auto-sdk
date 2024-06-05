@@ -38,8 +38,6 @@ tsconfig.tsbuildinfo
 # Environment variables
 .env
 
-# ignore private key certs
-*.pem
-
-# ignore .yarn
-.yarn/
+# Directory use by scripts
+executables/
+downloads/
