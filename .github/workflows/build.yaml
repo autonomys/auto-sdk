@@ -25,7 +25,7 @@ jobs:
         run: bun run --filter '@autonomys/auto-utils' build
 
       - name: Build all packages 🔧
-        run: bun build
+        run: bun run build
 
       - name: Run tests 🧪
         run: bun test
