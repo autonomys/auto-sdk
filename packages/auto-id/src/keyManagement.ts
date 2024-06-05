@@ -1,7 +1,5 @@
-import { save } from '@autonomys/auto-utils'
+import { read, save } from '@autonomys/auto-utils'
 import { KeyObject, createPrivateKey, createPublicKey, generateKeyPairSync } from 'crypto'
-import { promises as fs } from 'fs'
-import { tryParseJson } from './helper'
 
 /**
  * Generates an RSA key pair.
@@ -167,9 +165,7 @@ export function pemToPrivateKey(pemData: string, password?: string): KeyObject {
  */
 export async function loadPrivateKey(filePath: string, password?: string): Promise<KeyObject> {
   try {
-    let keyData = await fs.readFile(filePath, {encoding: 'utf-8'})
-    // Check if keyData is JSON-encoded and parse it
-    keyData = tryParseJson(keyData, keyData) // Fallback to original data if not JSON
+    const keyData = await read(filePath)
     const privateKey = pemToPrivateKey(keyData, password)
     return privateKey;
   } catch (error: any) {
@@ -215,10 +211,8 @@ export function pemToPublicKey(pemData: string): KeyObject {
  */
 export async function loadPublicKey(filePath: string): Promise<KeyObject> {
   try {
-    let keyData = await fs.readFile(filePath, { encoding: 'utf8' })
-    // Check if keyData is JSON-encoded and parse it
-    keyData = tryParseJson(keyData, keyData); // Fallback to original data if not JSON
-    const publicKey = pemToPublicKey(keyData);
+    const keyData = await read(filePath)
+    const publicKey = pemToPublicKey(keyData)
     return publicKey
   } catch (error: any) {
     throw new Error(`Failed to load public key: ${error.message}`)
