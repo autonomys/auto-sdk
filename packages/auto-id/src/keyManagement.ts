@@ -1,5 +1,5 @@
 import { read, save } from '@autonomys/auto-utils'
-import { KeyObject, createPrivateKey, createPublicKey, generateKeyPairSync } from 'crypto'
+import { KeyObject, createPrivateKey, createPublicKey, generateKeyPairSync } from 'node:crypto'
 
 /**
  * Generates an RSA key pair.
@@ -167,7 +167,7 @@ export async function loadPrivateKey(filePath: string, password?: string): Promi
   try {
     const keyData = await read(filePath)
     const privateKey = pemToPrivateKey(keyData, password)
-    return privateKey;
+    return privateKey
   } catch (error: any) {
     throw new Error(`Failed to load private key: ${error.message}`)
   }
