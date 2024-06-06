@@ -1,5 +1,3 @@
 import { encodeAddress } from '@polkadot/keyring'
 
-export const address = (address: string | Uint8Array): string => {
-  return encodeAddress(address, 2254)
-}
+export const address = (address: string | Uint8Array): string => encodeAddress(address, 2254)
