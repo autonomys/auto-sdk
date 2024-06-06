@@ -16,10 +16,10 @@ describe('Verify wallet functions', () => {
 
   const TEST_MNEMONIC = 'test test test test test test test test test test test junk'
   const TEST_ADDRESS = '5Fj5aLd4crCYn7zM5hLZL8m6e9aNzWssiTgA3TrprLjxy6Mc'
-  const ALICE_URI = '//BOB'
-  const ALICE_ADDRESS = '5DAw2FpYk2y3JHrsia14KEx7tpezNymdFKkunicZ5ygPGXYF'
-  const BOB_URI = '//BOB'
-  const BOB_ADDRESS = '5DAw2FpYk2y3JHrsia14KEx7tpezNymdFKkunicZ5ygPGXYF'
+  const ALICE_URI = '//Alice'
+  const ALICE_ADDRESS = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY'
+  const BOB_URI = '//Bob'
+  const BOB_ADDRESS = '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty'
 
   describe('Test setupWallet()', () => {
     test('Check setupWallet return a pair with matching address and public key when provided with a mnemonic', async () => {
@@ -52,7 +52,7 @@ describe('Verify wallet functions', () => {
     test('Check activateWallet return an api instance and an account when provided with Alice uri', async () => {
       const { api, accounts } = await activateWallet({
         ...TEST_NETWORK,
-        uri: BOB_URI,
+        uri: ALICE_URI,
       })
       expect(api).toBeDefined()
       expect(accounts.length).toBeGreaterThan(0)
@@ -62,7 +62,7 @@ describe('Verify wallet functions', () => {
     test('Check activateWallet return an api instance and an account when provided with Alice uri', async () => {
       const { api, accounts } = await activateWallet({
         ...TEST_NETWORK,
-        uri: ALICE_URI,
+        uri: BOB_URI,
       })
       expect(api).toBeDefined()
       expect(accounts.length).toBeGreaterThan(0)
