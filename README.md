@@ -13,7 +13,7 @@ The repository is organized as follows:
 ## Requirements
 
 - Node.js
-- [Bun 1.0.0 or higher](https://bun.sh/docs/installation#installing)
+- Yarn 4
 
 ## Setup
 
@@ -25,9 +25,13 @@ The repository is organized as follows:
 
    `cd auto-sdk`
 
-3. **Install dependencies:**
+3. **Set Yarn to use the Berry version:**
 
-   `bun install`
+   `yarn set version berry`
+
+4. **Install dependencies:**
+
+   `yarn install`
 
 ## Scripts
 
@@ -35,13 +39,13 @@ The repository is organized as follows:
 
 To build all packages:
 
-`bun build`
+`yarn run build`
 
 ### Test
 
 To run tests for all packages:
 
-`bun test`
+`yarn run test`
 
 ### Localhost testing
 

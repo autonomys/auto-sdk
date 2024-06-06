@@ -10,22 +10,25 @@ jobs:
       - name: Checkout 🛎️
         uses: actions/checkout@v3
 
-      - name: Set up Node.js 🍞
+      - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
           node-version: '18'
 
-      - name: Install Bun (via Bun action) 🍞
-        uses: oven-sh/setup-bun@v1
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Set Yarn version to Berry
+        run: corepack prepare yarn@4.2.2 --activate
 
       - name: Install dependencies
-        run: bun install
+        run: yarn install
 
       - name: Build auto-utils package 🔧
-        run: bun run --filter '@autonomys/auto-utils' build
+        run: yarn workspace @autonomys/auto-utils build
 
       - name: Build all packages 🔧
-        run: bun run build
+        run: yarn build
 
       - name: Run tests 🧪
-        run: bun test
+        run: yarn test
