@@ -1,4 +1,4 @@
 LOCALHOST="true"
 export LOCALHOST
 
-bun test
+yarn run test

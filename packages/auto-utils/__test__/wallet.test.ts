@@ -1,6 +1,6 @@
 import { defaultNetwork, networks } from '../src/constants/network'
 import type { NetworkInput } from '../src/types/network'
-import { activateWallet, setupWallet } from '../src/wallet'
+import { ActivateWalletInput, activateWallet, setupWallet } from '../src/wallet'
 
 describe('Verify wallet functions', () => {
   const isLocalhost = process.env.LOCALHOST === 'true'
@@ -23,17 +23,17 @@ describe('Verify wallet functions', () => {
 
   describe('Test setupWallet()', () => {
     test('Check setupWallet return a pair with matching address and public key when provided with a mnemonic', async () => {
-      const pair = setupWallet({ mnemonic: TEST_MNEMONIC })
+      const pair = await setupWallet({ mnemonic: TEST_MNEMONIC })
       expect(pair.address).toEqual(TEST_ADDRESS)
     })
 
-    test('Check setupWallet return a pair with matching private key when provided with Alice pk', async () => {
-      const pair = setupWallet({ uri: ALICE_URI })
+    test('Check setupWallet return a pair with matching private key when provided with Alice seed', async () => {
+      const pair = await setupWallet({ uri: ALICE_URI })
       expect(pair.address).toEqual(ALICE_ADDRESS)
     })
 
-    test('Check setupWallet return a pair with matching private key when provided with Bob pk', async () => {
-      const pair = setupWallet({ uri: BOB_URI })
+    test('Check setupWallet return a pair with matching private key when provided with Bob seed', async () => {
+      const pair = await setupWallet({ uri: BOB_URI })
       expect(pair.address).toEqual(BOB_ADDRESS)
     })
   })
@@ -43,7 +43,7 @@ describe('Verify wallet functions', () => {
       const { api, accounts } = await activateWallet({
         ...TEST_NETWORK,
         mnemonic: TEST_MNEMONIC,
-      })
+      } as ActivateWalletInput)
       expect(api).toBeDefined()
       expect(accounts.length).toBeGreaterThan(0)
       expect(accounts[0].address).toEqual(TEST_ADDRESS)
@@ -53,7 +53,7 @@ describe('Verify wallet functions', () => {
       const { api, accounts } = await activateWallet({
         ...TEST_NETWORK,
         uri: ALICE_URI,
-      })
+      } as ActivateWalletInput)
       expect(api).toBeDefined()
       expect(accounts.length).toBeGreaterThan(0)
       expect(accounts[0].address).toEqual(ALICE_ADDRESS)
@@ -63,7 +63,7 @@ describe('Verify wallet functions', () => {
       const { api, accounts } = await activateWallet({
         ...TEST_NETWORK,
         uri: BOB_URI,
-      })
+      } as ActivateWalletInput)
       expect(api).toBeDefined()
       expect(accounts.length).toBeGreaterThan(0)
       expect(accounts[0].address).toEqual(BOB_ADDRESS)

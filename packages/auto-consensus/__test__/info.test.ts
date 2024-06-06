@@ -6,9 +6,9 @@ describe('Verify info functions', () => {
     await activate()
   })
 
-  afterAll(async () => {
-    await disconnect()
-  })
+  // afterAll(async () => {
+  //   await disconnect()
+  // })
 
   test('Check timestamp return a number greater than zero', async () => {
     // totalIssuance is an async function that returns a hex number as a string

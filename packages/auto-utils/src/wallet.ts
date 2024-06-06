@@ -1,11 +1,12 @@
 import { Keyring } from '@polkadot/api'
 import type { InjectedAccountWithMeta } from '@polkadot/extension-inject/types'
 import type { KeyringPair } from '@polkadot/keyring/types'
-import { ed25519PairFromSeed, mnemonicToMiniSecret } from '@polkadot/util-crypto'
+import { cryptoWaitReady, ed25519PairFromSeed, mnemonicToMiniSecret } from '@polkadot/util-crypto'
 import { activate, activateDomain } from './api'
 import type { AppName, DomainInput, Mnemonic, MnemonicOrURI, NetworkInput, URI } from './types'
 
-export const setupWallet = (input: MnemonicOrURI): KeyringPair => {
+export const setupWallet = async (input: MnemonicOrURI): Promise<KeyringPair> => {
+  await cryptoWaitReady()
   const keyring = new Keyring({ type: 'sr25519' })
 
   let pair: KeyringPair
