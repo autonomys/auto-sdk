@@ -59,7 +59,7 @@ describe('Verify wallet functions', () => {
       expect(accounts[0].address).toEqual(ALICE_ADDRESS)
     })
 
-    test('Check activateWallet return an api instance and an account when provided with Alice uri', async () => {
+    test('Check activateWallet return an api instance and an account when provided with Bob uri', async () => {
       const { api, accounts } = await activateWallet({
         ...TEST_NETWORK,
         uri: BOB_URI,

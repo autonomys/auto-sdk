@@ -11,7 +11,7 @@ export const setupWallet = async (input: MnemonicOrURI): Promise<KeyringPair> =>
 
   let pair: KeyringPair
   if ((input as URI).uri) {
-    // Treat as as uri
+    // Treat as uri
     pair = keyring.addFromUri((input as URI).uri)
   } else if ((input as Mnemonic).mnemonic) {
     // Treat as mnemonic
