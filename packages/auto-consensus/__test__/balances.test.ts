@@ -7,7 +7,7 @@ import {
   networks,
 } from '@autonomys/auto-utils'
 import { address } from '../src/address'
-import { balance, totalIssuance, transfer } from '../src/balances'
+import { balance, totalIssuance } from '../src/balances'
 
 describe('Verify balances functions', () => {
   const isLocalhost = process.env.LOCALHOST === 'true'
@@ -29,9 +29,9 @@ describe('Verify balances functions', () => {
     await activate(TEST_NETWORK)
   })
 
-  // afterAll(async () => {
-  //   await disconnect()
-  // })
+  afterAll(async () => {
+    await disconnect()
+  })
 
   describe('Test totalIssuance()', () => {
     test('Check totalIssuance return a number greater than zero', async () => {
@@ -70,71 +70,5 @@ describe('Verify balances functions', () => {
         expect(_balance.free).toBeGreaterThan(BigInt(0))
       })
     }
-  })
-
-  describe('Test transfer()', () => {
-    if (isLocalhost) {
-      test('Check transfer 1 ATC between Alice and Bob and check the balance before and after', async () => {
-        const { api, accounts } = await activateWallet({
-          ...TEST_NETWORK,
-          uri: ALICE_URI,
-        } as ActivateWalletInput)
-        expect(accounts.length).toBeGreaterThan(0)
-        expect(accounts[0].address).toEqual(ALICE_ADDRESS)
-
-        const sender = accounts[0]
-        let txHash: string | undefined
-
-        const _balanceSenderStart = await balance(api, address(sender.address))
-        const _balanceReceiverStart = await balance(api, address(BOB_ADDRESS))
-        expect(_balanceSenderStart.free).toBeGreaterThan(BigInt(0))
-
-        const tx = await transfer(api, BOB_ADDRESS, 1)
-
-        await new Promise<void>((resolve, reject) => {
-          tx.signAndSend(sender, ({ status }) => {
-            if (status.isInBlock) {
-              txHash = status.asInBlock.toHex()
-              console.log('Successful transfer of 1 with hash ' + txHash)
-              resolve()
-            } else if (
-              status.isRetracted ||
-              status.isFinalityTimeout ||
-              status.isDropped ||
-              status.isInvalid
-            ) {
-              reject(new Error('Transaction failed'))
-            } else {
-              console.log('Status of transfer: ' + status.type)
-            }
-          })
-        })
-
-        expect(txHash).toBeDefined()
-
-        const _balanceSenderEnd = await balance(api, address(sender.address))
-        const _balanceReceiverEnd = await balance(api, address(BOB_ADDRESS))
-        expect(_balanceSenderEnd.free).toBeLessThan(_balanceSenderStart.free)
-        expect(_balanceReceiverEnd.free).toBeGreaterThan(_balanceReceiverStart.free)
-      })
-    }
-
-    // To-Do: Fix this test
-    // test('Check transfer 1 ATC between Test wallet and Alice should fail (no balance)', async () => {
-    //   const { api, accounts } = await activateWallet({
-    //     ...TEST_NETWORK,
-    //     mnemonic: TEST_MNEMONIC,
-    //   } as ActivateWalletInput)
-    //   expect(accounts.length).toBeGreaterThan(0)
-    //   expect(accounts[0].address).toEqual(TEST_ADDRESS)
-
-    //   const sender = accounts[0]
-    //   const tx = await transfer(api, ALICE_ADDRESS, 1)
-
-    //   expect(() => tx.signAndSend(sender)).toThrow(
-    //     'Unreachable code should not be executed (evaluating',
-    //     // To-Do: Confirm this is the expected error message
-    //   )
-    // })
   })
 })

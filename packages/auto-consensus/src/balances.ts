@@ -41,14 +41,3 @@ export const balance = async (api: ApiPromise, address: string): Promise<Balance
     throw new Error('Error getting balance' + error)
   }
 }
-
-export const transfer = async (
-  api: ApiPromise,
-  receiver: string,
-  amount: BigInt | number | string,
-) => {
-  // Transfer the tokens
-  const transfer = await api.tx.balances.transferKeepAlive(receiver, amount)
-
-  return transfer
-}
