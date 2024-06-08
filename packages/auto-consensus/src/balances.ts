@@ -1,12 +1,12 @@
 import { activate } from '@autonomys/auto-utils'
 import { ApiPromise } from '@polkadot/api'
-import type { KeyringPair } from '@polkadot/keyring/types'
+import type { BN } from '@polkadot/util'
 
 type RawBalanceData = {
-  free: any
-  reserved: any
-  frozen: any
-  flags: any
+  free: BN
+  reserved: BN
+  frozen: BN
+  flags: BN
 }
 type BalanceData = {
   free: any
