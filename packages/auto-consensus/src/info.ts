@@ -1,6 +1,6 @@
 import { activate } from '@autonomys/auto-utils'
 
-export const currentTimestamp = async (networkId?: string) => {
+export const networkTimestamp = async (networkId?: string) => {
   // Get the api instance for the network
   const api = await activate({ networkId })
 
