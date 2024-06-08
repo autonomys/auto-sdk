@@ -1,7 +1,7 @@
 import { Keyring } from '@polkadot/api'
 import type { InjectedAccountWithMeta } from '@polkadot/extension-inject/types'
 import type { KeyringPair } from '@polkadot/keyring/types'
-import { cryptoWaitReady, ed25519PairFromSeed, mnemonicToMiniSecret } from '@polkadot/util-crypto'
+import { cryptoWaitReady } from '@polkadot/util-crypto'
 import { activate, activateDomain } from './api'
 import type { AppName, DomainInput, Mnemonic, MnemonicOrURI, NetworkInput, URI } from './types'
 
@@ -15,9 +15,7 @@ export const setupWallet = async (input: MnemonicOrURI): Promise<KeyringPair> =>
     pair = keyring.addFromUri((input as URI).uri)
   } else if ((input as Mnemonic).mnemonic) {
     // Treat as mnemonic
-    const seed = mnemonicToMiniSecret((input as Mnemonic).mnemonic)
-
-    pair = keyring.addFromPair(ed25519PairFromSeed(seed))
+    pair = keyring.addFromUri((input as Mnemonic).mnemonic)
   } else throw new Error('Invalid mnemonic or private key')
 
   return pair
