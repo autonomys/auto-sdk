@@ -10,7 +10,10 @@
   },
   "dependencies": {
     "@autonomys/auto-utils": "workspace:*",
-    "@types/node": "^20.12.12"
+    "@peculiar/asn1-schema": "^2.3.8",
+    "@peculiar/asn1-x509": "^2.3.8",
+    "@types/node": "^20.12.12",
+    "asn1-ts": "^8.0.2"
   },
   "files": [
     "dist",
