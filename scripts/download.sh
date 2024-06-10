@@ -8,6 +8,7 @@ ARCHITECTURE="aarch64" # aarch64 | x86_64-skylake | x86_64-v2
 
 # GitHub repository
 REPO="subspace/subspace"
+TAG="latest" # "tags/gemini-3h-2024-may-06" # Tag of the release to download or "latest" for the latest release
 
 # Directories
 DOWNLOAD_DIR="downloads"
@@ -18,7 +19,7 @@ mkdir -p "$DOWNLOAD_DIR"
 mkdir -p "$EXECUTABLE_DIR"
 
 # Get the latest release data
-RELEASE_DATA=$(curl -s "https://api.github.com/repos/$REPO/releases/latest")
+RELEASE_DATA=$(curl -s "https://api.github.com/repos/$REPO/releases/$TAG")
 
 # Extract the download URLs for the selected os and architecture node and farmer assets
 NODE_URL=$(echo $RELEASE_DATA | jq -r '.assets[] | select(.name | contains("subspace-node-'$OS'-'$ARCHITECTURE'")) | .browser_download_url')
@@ -52,16 +53,16 @@ rmdir "$DOWNLOAD_DIR"
 
 echo "Downloaded and unzipped the latest node and farmer assets."
 
-# Run node in the background
-echo "Running node in the background..."
-./executables/node run --dev --tmp --base-path executables/node-temp --farmer --name "localhost-node" --rpc-rate-limit 1000 --rpc-max-connections 10000 &
+# # Run node in the background
+# echo "Running node in the background..."
+# ./executables/node run --dev --farmer --timekeeper --base-path executables/node-temp --name "localhost-node" --rpc-rate-limit 1000 --rpc-max-connections 10000 --state-pruning archive-canonical --blocks-pruning 512 --rpc-cors all --force-synced --force-authoring -- --domain-id 1 --operator-id 1 --state-pruning archive-canonical --blocks-pruning 512 --rpc-cors all &
 
-# Wait for 10 seconds before starting farmer
-echo "Waiting for 10 seconds before starting farmer..."
-sleep 10
+# # Wait for 10 seconds before starting farmer
+# echo "Waiting for 10 seconds before starting farmer..."
+# sleep 10
 
-# Run farmer
-echo "Running farmer in the background..."
-./executables/farmer farm --reward-address 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY path=executables/farmer-temp,size=1GiB &
+# # Run farmer
+# echo "Running farmer in the background..."
+# ./executables/farmer farm path=executables/farmer-temp,size=1GiB --reward-address 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY --node-rpc-url ws://127.0.0.1:9944 &
 
-echo "Both node and farmer are running in parallel."
+# echo "Both node and farmer are running in parallel."
