@@ -10,8 +10,6 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-echo -e "${YELLOW}Create keystore...${NC}\n"
-
 # Instructions for setting variables
 echo -e "Using base-path: ${GREEN}$BASE_PATH${NC}"
 echo -e "Using domain-id: ${GREEN}$DOMAIN_ID${NC}\n"

@@ -14,6 +14,9 @@ TAG="latest" # "tags/gemini-3h-2024-may-06" # Tag of the release to download or 
 DOWNLOAD_DIR="downloads"
 EXECUTABLE_DIR="executables"
 
+# Delete the executable directory
+rm -r "$EXECUTABLE_DIR"
+
 # Create directories if they do not exist
 mkdir -p "$DOWNLOAD_DIR"
 mkdir -p "$EXECUTABLE_DIR"
@@ -52,17 +55,3 @@ chmod +x "$EXECUTABLE_DIR/farmer"
 rmdir "$DOWNLOAD_DIR"
 
 echo "Downloaded and unzipped the latest node and farmer assets."
-
-# # Run node in the background
-# echo "Running node in the background..."
-# ./executables/node run --dev --farmer --timekeeper --base-path executables/node-temp --name "localhost-node" --rpc-rate-limit 1000 --rpc-max-connections 10000 --state-pruning archive-canonical --blocks-pruning 512 --rpc-cors all --force-synced --force-authoring -- --domain-id 1 --operator-id 1 --state-pruning archive-canonical --blocks-pruning 512 --rpc-cors all &
-
-# # Wait for 10 seconds before starting farmer
-# echo "Waiting for 10 seconds before starting farmer..."
-# sleep 10
-
-# # Run farmer
-# echo "Running farmer in the background..."
-# ./executables/farmer farm path=executables/farmer-temp,size=1GiB --reward-address 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY --node-rpc-url ws://127.0.0.1:9944 &
-
-# echo "Both node and farmer are running in parallel."
