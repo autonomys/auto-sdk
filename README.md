@@ -49,9 +49,9 @@ To run tests for all packages:
 
 ### Localhost testing
 
-To test the packages against a local node, you can use the script at `scripts/localhost.sh`.
+To test the packages against a local node, you can use the script at `scripts/run-dev.js`.
 
-1. Verify that the line 3-7 of the script matches your current OS and architecture.
+1. Verify that the line 3-7 of the bash script in `scripts/download.sh` matches your current OS and architecture.
 
    ```bash
    # Change the following variables as needed
@@ -64,10 +64,17 @@ To test the packages against a local node, you can use the script at `scripts/lo
 2. Run the script:
 
    ```bash
-   ./scripts/localhost.sh
+   node scripts/run-dev.js
    ```
 
-   This script will download the latest version of the node and farmer for your OS and architecture, start the node, and farmer
+   This script will:
+
+   - Download the latest version of the node and farmer for your OS and architecture (`scripts/download.sh`);
+   - Start the node, create and insert the keystore in the node (`scripts/run-node.sh`);
+   - Start the farmer (`scripts/run-farmer.sh`);
+   - Register the node as operator, wait and kill the node and farmer (inside `scripts/run-dev.js`);
+   - Start the node as an operator (`scripts/run-operator.sh`);
+   - Restart the farmer (`scripts/run-farmer.sh`).
 
 3. Run the tests:
 
