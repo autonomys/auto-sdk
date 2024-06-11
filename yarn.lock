@@ -36,7 +36,7 @@ __metadata:
     "@peculiar/asn1-x509": "npm:^2.3.8"
     "@types/jest": "npm:^29.5.12"
     "@types/node": "npm:^20.12.12"
-    asn1-ts: "npm:^8.0.2"
+    asn1js: "npm:^3.0.5"
     jest: "npm:^29.7.0"
     ts-jest: "npm:^29.1.4"
     ts-node: "npm:^10.9.2"
@@ -1822,15 +1822,6 @@ __metadata:
   version: 2.0.1
   resolution: "argparse@npm:2.0.1"
   checksum: 10c0/c5640c2d89045371c7cedd6a70212a04e360fd34d6edeae32f6952c63949e3525ea77dbec0289d8213a99bbaeab5abfa860b5c12cf88a2e6cf8106e90dd27a7e
-  languageName: node
-  linkType: hard
-
-"asn1-ts@npm:^8.0.2":
-  version: 8.0.2
-  resolution: "asn1-ts@npm:8.0.2"
-  dependencies:
-    tslib: "npm:^2.4.1"
-  checksum: 10c0/37ca66c319730ae7a2762642a3bb867b298a1ad721a11f859f900332b39117497fd337ba16e7d4c4f7dc9bd6f5e577d8d49c07edcc7fdebeff1d42d7a66a3112
   languageName: node
   linkType: hard
 
@@ -4866,7 +4857,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tslib@npm:^2.4.0, tslib@npm:^2.4.1, tslib@npm:^2.6.1":
+"tslib@npm:^2.4.0, tslib@npm:^2.6.1":
   version: 2.6.3
   resolution: "tslib@npm:2.6.3"
   checksum: 10c0/2598aef53d9dbe711af75522464b2104724d6467b26a60f2bdac8297d2b5f1f6b86a71f61717384aa8fd897240467aaa7bcc36a0700a0faf751293d1331db39a
