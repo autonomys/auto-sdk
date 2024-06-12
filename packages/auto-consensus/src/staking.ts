@@ -191,13 +191,13 @@ export const unlockFunds = async (input: StakingInput) => {
   }
 }
 
-export const unlockOperator = async (input: StakingInput) => {
+export const unlockNominator = async (input: StakingInput) => {
   try {
     const { api, operatorId } = input
 
-    return await api.tx.domains.unlockOperator(parseString(operatorId))
+    return await api.tx.domains.unlockNominator(parseString(operatorId))
   } catch (error) {
     console.error('error', error)
-    throw new Error('Error creating unlock operator tx.' + error)
+    throw new Error('Error creating unlock nominator tx.' + error)
   }
 }
