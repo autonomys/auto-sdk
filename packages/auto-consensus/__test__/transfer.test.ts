@@ -45,7 +45,7 @@ describe('Verify transfer functions', () => {
         expect(accounts[0].address).toEqual(ALICE_ADDRESS)
 
         const sender = accounts[0]
-        let txHash: string | undefined
+        let blockHash: string | undefined
 
         const _balanceSenderStart = await balance(api, address(sender.address))
         const _balanceReceiverStart = await balance(api, address(BOB_ADDRESS))
@@ -56,8 +56,8 @@ describe('Verify transfer functions', () => {
         await new Promise<void>((resolve, reject) => {
           tx.signAndSend(sender, ({ status }) => {
             if (status.isInBlock) {
-              txHash = status.asInBlock.toHex()
-              console.log('Successful transfer of 1 with hash ' + txHash)
+              blockHash = status.asInBlock.toHex()
+              console.log('Successful transfer of 1 with block hash ' + blockHash)
               resolve()
             } else if (
               status.isRetracted ||
@@ -72,7 +72,7 @@ describe('Verify transfer functions', () => {
           })
         })
 
-        expect(txHash).toBeDefined()
+        expect(blockHash).toBeDefined()
 
         const _balanceSenderEnd = await balance(api, address(sender.address))
         const _balanceReceiverEnd = await balance(api, address(BOB_ADDRESS))
