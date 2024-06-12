@@ -7,5 +7,6 @@ export const sudo = async (
   api: ApiPromise,
   sender: AddressOrPair,
   tx: SubmittableExtrinsic<'promise', ISubmittableResult>,
+  eventsExpected: string[] = [],
   log: boolean = true,
-) => await signAndSendTx(sender, api.tx.sudo.sudo(tx), log)
+) => await signAndSendTx(sender, api.tx.sudo.sudo(tx), eventsExpected, log)
