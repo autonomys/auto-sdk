@@ -1,17 +1,16 @@
 import { ActivateWalletInput, activateWallet } from '@autonomys/auto-utils'
-import { u8aToHex } from '@polkadot/util'
 import { mnemonicGenerate } from '@polkadot/util-crypto'
 import { address } from '../src/address'
 import { balance } from '../src/balances'
-import {
-  deregisterOperator,
-  nominateOperator,
-  operator,
-  operators,
-  registerOperator,
-} from '../src/staking'
+import { deregisterOperator, nominateOperator, registerOperator } from '../src/staking'
 import { transfer } from '../src/transfer'
-import { setup, signAndSendTx, verifyOperatorRegistration } from './helpers'
+import {
+  setup,
+  signAndSendTx,
+  sudo,
+  verifyOperatorRegistration,
+  verifyOperatorRegistrationFinal,
+} from './helpers'
 
 describe('Verify staking functions', () => {
   const { isLocalhost, TEST_NETWORK, ALICE_URI, ALICE_ADDRESS } = setup()
@@ -49,65 +48,15 @@ describe('Verify staking functions', () => {
           nominationTax,
         }
         await signAndSendTx(sender, await registerOperator(txInput))
-        await verifyOperatorRegistration(txInput)
+        const findOperator = await verifyOperatorRegistration(txInput)
 
         const _balanceSenderEnd = await balance(api, address(sender.address))
         expect(_balanceSenderEnd.free).toBeLessThan(
           _balanceSenderStart.free - BigInt(amountToStake),
         )
-
-        const operatorsList = await operators(api)
-        const findOperator = operatorsList.find(
-          (o) => o.operatorDetails.signingKey === u8aToHex(operatorAccounts[0].publicKey),
-        )
-        expect(findOperator).toBeDefined()
         if (findOperator) {
-          expect(findOperator.operatorDetails.currentDomainId).toEqual(BigInt(domainId))
-          expect(findOperator.operatorDetails.currentTotalStake).toEqual(BigInt(0))
-          expect(findOperator.operatorDetails.minimumNominatorStake).toEqual(
-            BigInt(minimumNominatorStake),
-          )
-          expect(findOperator.operatorDetails.nominationTax).toEqual(Number(nominationTax))
-          expect(findOperator.operatorDetails.status).toEqual({ registered: null })
-          const thisOperator = await operator(api, findOperator.operatorId)
-          expect(thisOperator.currentDomainId).toEqual(BigInt(domainId))
-          expect(thisOperator.currentTotalStake).toEqual(BigInt(0))
-          expect(thisOperator.minimumNominatorStake).toEqual(BigInt(minimumNominatorStake))
-          expect(thisOperator.nominationTax).toEqual(Number(nominationTax))
-          expect(thisOperator.status).toEqual({ registered: null })
-
-          const forceStakingEpochTransition =
-            await api.tx.domains.forceStakingEpochTransition(domainId)
-          await signAndSendTx(sender, await api.tx.sudo.sudo(forceStakingEpochTransition))
-
-          const operatorsListFinal = await operators(api)
-          const findOperatorFinal = operatorsListFinal.find(
-            (o) => o.operatorDetails.signingKey === u8aToHex(operatorAccounts[0].publicKey),
-          )
-          expect(findOperatorFinal).toBeDefined()
-          if (findOperatorFinal) {
-            expect(findOperatorFinal.operatorDetails.currentDomainId).toEqual(BigInt(domainId))
-            expect(findOperatorFinal.operatorDetails.currentTotalStake).toEqual(
-              (BigInt(amountToStake) / BigInt(100)) * BigInt(80),
-            )
-            expect(findOperatorFinal.operatorDetails.minimumNominatorStake).toEqual(
-              BigInt(minimumNominatorStake),
-            )
-            expect(findOperatorFinal.operatorDetails.nominationTax).toEqual(Number(nominationTax))
-            expect(findOperatorFinal.operatorDetails.totalStorageFeeDeposit).toEqual(
-              (BigInt(amountToStake) / BigInt(100)) * BigInt(20),
-            )
-            const thisOperatorFinal = await operator(api, findOperator.operatorId)
-            expect(thisOperatorFinal.currentDomainId).toEqual(BigInt(domainId))
-            expect(thisOperatorFinal.currentTotalStake).toEqual(
-              (BigInt(amountToStake) / BigInt(100)) * BigInt(80),
-            )
-            expect(thisOperatorFinal.minimumNominatorStake).toEqual(BigInt(minimumNominatorStake))
-            expect(thisOperatorFinal.nominationTax).toEqual(Number(nominationTax))
-            expect(thisOperatorFinal.totalStorageFeeDeposit).toEqual(
-              (BigInt(amountToStake) / BigInt(100)) * BigInt(20),
-            )
-          }
+          await sudo(api, sender, await api.tx.domains.forceStakingEpochTransition(domainId))
+          await verifyOperatorRegistrationFinal(txInput)
         }
       }, 30000)
     })
@@ -182,36 +131,8 @@ describe('Verify staking functions', () => {
           _balanceSenderStart.free - BigInt(amountToStake),
         )
 
-        const operatorsList = await operators(api)
-        const findOperator = operatorsList.find(
-          (o) => o.operatorDetails.signingKey === u8aToHex(operatorAccounts[0].publicKey),
-        )
-        expect(findOperator).toBeDefined()
-        if (findOperator) {
-          expect(findOperator.operatorDetails.currentDomainId).toEqual(BigInt(domainId))
-          // To-Do: Either remove this check or figure why it's not working (guessing there is a delay for the stake to be active)
-          // expect(operator.operatorDetails.currentTotalStake).toEqual(BigInt(amountToStake))
-          expect(findOperator.operatorDetails.minimumNominatorStake).toEqual(
-            BigInt(minimumNominatorStake),
-          )
-          expect(findOperator.operatorDetails.nominationTax).toEqual(Number(nominationTax))
-          const thisOperator = await operator(api, findOperator.operatorId)
-          expect(thisOperator.currentDomainId).toEqual(BigInt(domainId))
-          // To-Do: Either remove this check or figure why it's not working (guessing there is a delay for the stake to be active)
-          // expect(thisOperator.currentTotalStake).toEqual(BigInt(amountToStake))
-          expect(thisOperator.minimumNominatorStake).toEqual(BigInt(minimumNominatorStake))
-          expect(thisOperator.nominationTax).toEqual(Number(nominationTax))
-
-          const amountToStake2 = BigInt(amountToTransfer) / BigInt(2)
-          await signAndSendTx(
-            operatorAccounts[0],
-            await nominateOperator({
-              api,
-              operatorId: findOperator.operatorId,
-              amountToStake: amountToStake2.toString(),
-            }),
-          )
-        }
+        await sudo(api, sender, await api.tx.domains.forceStakingEpochTransition(domainId))
+        await verifyOperatorRegistrationFinal(txInput)
       }, 30000)
     })
 
@@ -262,26 +183,10 @@ describe('Verify staking functions', () => {
           _balanceSenderStart.free - BigInt(amountToStake),
         )
 
-        const operatorsList = await operators(api)
-        const findOperator = operatorsList.find(
-          (o) => o.operatorDetails.signingKey === u8aToHex(operatorAccounts[0].publicKey),
-        )
-        expect(findOperator).toBeDefined()
-        if (findOperator) {
-          expect(findOperator.operatorDetails.currentDomainId).toEqual(BigInt(domainId))
-          // To-Do: Either remove this check or figure why it's not working (guessing there is a delay for the stake to be active)
-          // expect(operator.operatorDetails.currentTotalStake).toEqual(BigInt(amountToStake))
-          expect(findOperator.operatorDetails.minimumNominatorStake).toEqual(
-            BigInt(minimumNominatorStake),
-          )
-          expect(findOperator.operatorDetails.nominationTax).toEqual(Number(nominationTax))
-          const thisOperator = await operator(api, findOperator.operatorId)
-          expect(thisOperator.currentDomainId).toEqual(BigInt(domainId))
-          // To-Do: Either remove this check or figure why it's not working (guessing there is a delay for the stake to be active)
-          // expect(thisOperator.currentTotalStake).toEqual(BigInt(amountToStake))
-          expect(thisOperator.minimumNominatorStake).toEqual(BigInt(minimumNominatorStake))
-          expect(thisOperator.nominationTax).toEqual(Number(nominationTax))
+        await sudo(api, sender, await api.tx.domains.forceStakingEpochTransition(domainId))
+        const findOperator = await verifyOperatorRegistrationFinal(txInput)
 
+        if (findOperator) {
           await signAndSendTx(
             operatorAccounts[0],
             await deregisterOperator({
