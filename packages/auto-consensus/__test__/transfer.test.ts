@@ -9,6 +9,7 @@ import {
 import { address } from '../src/address'
 import { balance } from '../src/balances'
 import { transfer } from '../src/transfer'
+import { signAndSendTx } from './helpers'
 
 describe('Verify transfer functions', () => {
   const isLocalhost = process.env.LOCALHOST === 'true'
@@ -51,28 +52,7 @@ describe('Verify transfer functions', () => {
         const _balanceReceiverStart = await balance(api, address(BOB_ADDRESS))
         expect(_balanceSenderStart.free).toBeGreaterThan(BigInt(0))
 
-        const tx = await transfer(api, BOB_ADDRESS, 1)
-
-        await new Promise<void>((resolve, reject) => {
-          tx.signAndSend(sender, ({ status }) => {
-            if (status.isInBlock) {
-              blockHash = status.asInBlock.toHex()
-              console.log('Successful transfer of 1 with block hash ' + blockHash)
-              resolve()
-            } else if (
-              status.isRetracted ||
-              status.isFinalityTimeout ||
-              status.isDropped ||
-              status.isInvalid
-            ) {
-              reject(new Error('Transaction failed'))
-            } else {
-              console.log('Status of transfer: ' + status.type)
-            }
-          })
-        })
-
-        expect(blockHash).toBeDefined()
+        await signAndSendTx(sender, await transfer(api, BOB_ADDRESS, 1))
 
         const _balanceSenderEnd = await balance(api, address(sender.address))
         const _balanceReceiverEnd = await balance(api, address(BOB_ADDRESS))

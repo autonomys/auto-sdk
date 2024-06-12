@@ -18,6 +18,7 @@ import {
   registerOperator,
 } from '../src/staking'
 import { transfer } from '../src/transfer'
+import { signAndSendTx, verifyOperatorRegistration } from './helpers'
 
 describe('Verify staking functions', () => {
   const isLocalhost = process.env.LOCALHOST === 'true'
@@ -59,8 +60,6 @@ describe('Verify staking functions', () => {
         expect(accounts[0].address).toEqual(ALICE_ADDRESS)
 
         const sender = accounts[0]
-        let blockHash: string | undefined
-
         const _balanceSenderStart = await balance(api, address(sender.address))
         expect(_balanceSenderStart.free).toBeGreaterThan(BigInt(0))
 
@@ -68,7 +67,7 @@ describe('Verify staking functions', () => {
         const amountToStake = '100000000000000000000'
         const minimumNominatorStake = '1000000000000000000'
         const nominationTax = '5'
-        const tx = await registerOperator({
+        const txInput = {
           api,
           senderAddress: ALICE_ADDRESS,
           Operator: operatorAccounts[0],
@@ -76,28 +75,9 @@ describe('Verify staking functions', () => {
           amountToStake,
           minimumNominatorStake,
           nominationTax,
-        })
-
-        await new Promise<void>((resolve, reject) => {
-          tx.signAndSend(sender, ({ status }) => {
-            if (status.isInBlock) {
-              blockHash = status.asInBlock.toHex()
-              console.log('Successful of Bob as operator with block hash ' + blockHash)
-              resolve()
-            } else if (
-              status.isRetracted ||
-              status.isFinalityTimeout ||
-              status.isDropped ||
-              status.isInvalid
-            ) {
-              reject(new Error('Transaction failed'))
-            } else {
-              console.log('Status of registration: ' + status.type)
-            }
-          })
-        })
-
-        expect(blockHash).toBeDefined()
+        }
+        await signAndSendTx(sender, await registerOperator(txInput))
+        await verifyOperatorRegistration(txInput)
 
         const _balanceSenderEnd = await balance(api, address(sender.address))
         expect(_balanceSenderEnd.free).toBeLessThan(
@@ -126,26 +106,7 @@ describe('Verify staking functions', () => {
 
           const forceStakingEpochTransition =
             await api.tx.domains.forceStakingEpochTransition(domainId)
-          const sudoTx = await api.tx.sudo.sudo(forceStakingEpochTransition)
-
-          await new Promise<void>((resolve, reject) => {
-            sudoTx.signAndSend(sender, ({ status }) => {
-              if (status.isInBlock) {
-                blockHash = status.asInBlock.toHex()
-                console.log('Successful forceStakingEpochTransition with block hash ' + blockHash)
-                resolve()
-              } else if (
-                status.isRetracted ||
-                status.isFinalityTimeout ||
-                status.isDropped ||
-                status.isInvalid
-              ) {
-                reject(new Error('Transaction failed'))
-              } else {
-                console.log('Status of forceStakingEpochTransition: ' + status.type)
-              }
-            })
-          })
+          await signAndSendTx(sender, await api.tx.sudo.sudo(forceStakingEpochTransition))
 
           const operatorsListFinal = await operators(api)
           const findOperatorFinal = operatorsListFinal.find(
@@ -189,37 +150,18 @@ describe('Verify staking functions', () => {
         expect(accounts[0].address).toEqual(ALICE_ADDRESS)
 
         const sender = accounts[0]
-        let blockHash: string | undefined
-
         const _balanceSenderStart = await balance(api, address(sender.address))
-        const _balanceReceiverStart = await balance(api, address(TEST_ADDRESS))
         expect(_balanceSenderStart.free).toBeGreaterThan(BigInt(0))
 
         const amountToStake = '50000000000000000000'
-        const tx = await nominateOperator({
-          api,
-          operatorId: '1',
-          amountToStake,
-        })
-
-        await new Promise<void>((resolve, reject) => {
-          tx.signAndSend(sender, ({ status }) => {
-            if (status.isInBlock) {
-              blockHash = status.asInBlock.toHex()
-              console.log('Successful of Alice nomination with block hash ' + blockHash)
-              resolve()
-            } else if (
-              status.isRetracted ||
-              status.isFinalityTimeout ||
-              status.isDropped ||
-              status.isInvalid
-            ) {
-              reject(new Error('Transaction failed'))
-            } else {
-              console.log('Status of nomination: ' + status.type)
-            }
-          })
-        })
+        await signAndSendTx(
+          sender,
+          await nominateOperator({
+            api,
+            operatorId: '1',
+            amountToStake,
+          }),
+        )
       }, 10000)
 
       test('Check Operator can addFunds after registration', async () => {
@@ -236,41 +178,22 @@ describe('Verify staking functions', () => {
         expect(accounts[0].address).toEqual(ALICE_ADDRESS)
 
         const sender = accounts[0]
-        let blockHash: string | undefined
 
         const _balanceSenderStart = await balance(api, address(sender.address))
         expect(_balanceSenderStart.free).toBeGreaterThan(BigInt(0))
 
         // Transfer some funds to the operator
         const amountToTransfer = '10000000000000000000'
-        const transferTx = await transfer(api, operatorAccounts[0].address, amountToTransfer)
-
-        await new Promise<void>((resolve, reject) => {
-          transferTx.signAndSend(sender, ({ status }) => {
-            if (status.isInBlock) {
-              blockHash = status.asInBlock.toHex()
-              console.log('Successful transfer with block hash ' + blockHash)
-              resolve()
-            } else if (
-              status.isRetracted ||
-              status.isFinalityTimeout ||
-              status.isDropped ||
-              status.isInvalid
-            ) {
-              reject(new Error('Transaction failed'))
-            } else {
-              console.log('Status of transfer: ' + status.type)
-            }
-          })
-        })
-
-        expect(blockHash).toBeDefined()
+        await signAndSendTx(
+          sender,
+          await transfer(api, operatorAccounts[0].address, amountToTransfer),
+        )
 
         const domainId = '0'
         const amountToStake = '100000000000000000000'
         const minimumNominatorStake = '1000000000000000000'
         const nominationTax = '5'
-        const tx = await registerOperator({
+        const txInput = {
           api,
           senderAddress: ALICE_ADDRESS,
           Operator: operatorAccounts[0],
@@ -278,28 +201,9 @@ describe('Verify staking functions', () => {
           amountToStake,
           minimumNominatorStake,
           nominationTax,
-        })
-
-        await new Promise<void>((resolve, reject) => {
-          tx.signAndSend(sender, ({ status }) => {
-            if (status.isInBlock) {
-              blockHash = status.asInBlock.toHex()
-              console.log('Successful of Bob as operator with block hash ' + blockHash)
-              resolve()
-            } else if (
-              status.isRetracted ||
-              status.isFinalityTimeout ||
-              status.isDropped ||
-              status.isInvalid
-            ) {
-              reject(new Error('Transaction failed'))
-            } else {
-              console.log('Status of registration: ' + status.type)
-            }
-          })
-        })
-
-        expect(blockHash).toBeDefined()
+        }
+        await signAndSendTx(sender, await registerOperator(txInput))
+        await verifyOperatorRegistration(txInput)
 
         const _balanceSenderEnd = await balance(api, address(sender.address))
         expect(_balanceSenderEnd.free).toBeLessThan(
@@ -327,30 +231,14 @@ describe('Verify staking functions', () => {
           expect(thisOperator.nominationTax).toEqual(Number(nominationTax))
 
           const amountToStake2 = BigInt(amountToTransfer) / BigInt(2)
-          const tx3 = await nominateOperator({
-            api,
-            operatorId: findOperator.operatorId,
-            amountToStake: amountToStake2.toString(),
-          })
-
-          await new Promise<void>((resolve, reject) => {
-            tx3.signAndSend(operatorAccounts[0], ({ status }) => {
-              if (status.isInBlock) {
-                blockHash = status.asInBlock.toHex()
-                console.log('Successful of Operator nomination with block hash ' + blockHash)
-                resolve()
-              } else if (
-                status.isRetracted ||
-                status.isFinalityTimeout ||
-                status.isDropped ||
-                status.isInvalid
-              ) {
-                reject(new Error('Transaction failed'))
-              } else {
-                console.log('Status of nomination: ' + status.type)
-              }
-            })
-          })
+          await signAndSendTx(
+            operatorAccounts[0],
+            await nominateOperator({
+              api,
+              operatorId: findOperator.operatorId,
+              amountToStake: amountToStake2.toString(),
+            }),
+          )
         }
       }, 30000)
     })
@@ -370,41 +258,22 @@ describe('Verify staking functions', () => {
         expect(accounts[0].address).toEqual(ALICE_ADDRESS)
 
         const sender = accounts[0]
-        let blockHash: string | undefined
 
         const _balanceSenderStart = await balance(api, address(sender.address))
         expect(_balanceSenderStart.free).toBeGreaterThan(BigInt(0))
 
         // Transfer some funds to the operator
         const amountToTransfer = '10000000000000000000'
-        const transferTx = await transfer(api, operatorAccounts[0].address, amountToTransfer)
-
-        await new Promise<void>((resolve, reject) => {
-          transferTx.signAndSend(sender, ({ status }) => {
-            if (status.isInBlock) {
-              blockHash = status.asInBlock.toHex()
-              console.log('Successful transfer with block hash ' + blockHash)
-              resolve()
-            } else if (
-              status.isRetracted ||
-              status.isFinalityTimeout ||
-              status.isDropped ||
-              status.isInvalid
-            ) {
-              reject(new Error('Transaction failed'))
-            } else {
-              console.log('Status of transfer: ' + status.type)
-            }
-          })
-        })
-
-        expect(blockHash).toBeDefined()
+        await signAndSendTx(
+          sender,
+          await transfer(api, operatorAccounts[0].address, amountToTransfer),
+        )
 
         const domainId = '0'
         const amountToStake = '100000000000000000000'
         const minimumNominatorStake = '1000000000000000000'
         const nominationTax = '5'
-        const tx = await registerOperator({
+        const txInput = {
           api,
           senderAddress: ALICE_ADDRESS,
           Operator: operatorAccounts[0],
@@ -412,28 +281,9 @@ describe('Verify staking functions', () => {
           amountToStake,
           minimumNominatorStake,
           nominationTax,
-        })
-
-        await new Promise<void>((resolve, reject) => {
-          tx.signAndSend(sender, ({ status }) => {
-            if (status.isInBlock) {
-              blockHash = status.asInBlock.toHex()
-              console.log('Successful of Bob as operator with block hash ' + blockHash)
-              resolve()
-            } else if (
-              status.isRetracted ||
-              status.isFinalityTimeout ||
-              status.isDropped ||
-              status.isInvalid
-            ) {
-              reject(new Error('Transaction failed'))
-            } else {
-              console.log('Status of registration: ' + status.type)
-            }
-          })
-        })
-
-        expect(blockHash).toBeDefined()
+        }
+        await signAndSendTx(sender, await registerOperator(txInput))
+        await verifyOperatorRegistration(txInput)
 
         const _balanceSenderEnd = await balance(api, address(sender.address))
         expect(_balanceSenderEnd.free).toBeLessThan(
@@ -460,29 +310,13 @@ describe('Verify staking functions', () => {
           expect(thisOperator.minimumNominatorStake).toEqual(BigInt(minimumNominatorStake))
           expect(thisOperator.nominationTax).toEqual(Number(nominationTax))
 
-          const tx3 = await deregisterOperator({
-            api,
-            operatorId: findOperator.operatorId,
-          })
-
-          await new Promise<void>((resolve, reject) => {
-            tx3.signAndSend(operatorAccounts[0], ({ status }) => {
-              if (status.isInBlock) {
-                blockHash = status.asInBlock.toHex()
-                console.log('Successful of Operator de-registering with block hash ' + blockHash)
-                resolve()
-              } else if (
-                status.isRetracted ||
-                status.isFinalityTimeout ||
-                status.isDropped ||
-                status.isInvalid
-              ) {
-                reject(new Error('Transaction failed'))
-              } else {
-                console.log('Status of de-registering: ' + status.type)
-              }
-            })
-          })
+          await signAndSendTx(
+            operatorAccounts[0],
+            await deregisterOperator({
+              api,
+              operatorId: findOperator.operatorId,
+            }),
+          )
         }
       }, 30000)
     })
