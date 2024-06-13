@@ -1,11 +1,12 @@
 //! For key generation, management, `keyManagement.ts` file is used i.e. "crypto" library.
 //! And for certificate related, used "node-forge" library.
 
-import { blake2b_256, stringToUint8Array } from '@autonomys/auto-utils'
+import { blake2b_256, concatenateUint8Arrays, stringToUint8Array } from '@autonomys/auto-utils'
 import { KeyObject, createPublicKey, createSign } from 'crypto'
 import fs from 'fs'
 import forge from 'node-forge'
-import { keyToPem } from './keyManagement'
+import { doPublicKeysMatch, keyToPem, pemToPublicKey } from './keyManagement'
+import { addDaysToCurrentDate, randomSerialNumber } from './utils'
 
 interface CustomCertificateExtension {
   altNames: {
@@ -165,7 +166,7 @@ class CertificateManager {
     return csr
   }
 
-  create_and_sign_csr(subject_name: string): forge.pki.CertificateSigningRequest {
+  createAndSignCSR(subject_name: string): forge.pki.CertificateSigningRequest {
     const csr = this.createCSR(subject_name)
     return this.signCSR(csr)
   }
@@ -173,59 +174,120 @@ class CertificateManager {
   issueCertificate(
     csr: forge.pki.CertificateSigningRequest,
     validityPeriodDays: number = 365,
-  ): string {
-    if (!this.privateKey) {
+  ): forge.pki.Certificate {
+    const privateKey = this.privateKey
+    const certificate = this.certificate
+    if (!privateKey) {
       throw new Error('Private key is not set.')
     }
-    let issuerName
+
+    let issuerName: any
     let autoId: string
-    if (!this.certificate) {
+    if (!certificate) {
       issuerName = csr.subject.attributes
       autoId = blake2b_256(
         stringToUint8Array(CertificateManager.getSubjectCommonName(csr.subject.attributes) || ''),
       )
     } else {
-      issuerName = this.certificate.subject.attributes
-      const autoIdPrefix = CertificateManager.getCertificateAutoId(this.certificate) || ''
+      if (
+        !doPublicKeysMatch(
+          createPublicKey(forge.pki.publicKeyToPem(certificate.publicKey)),
+          pemToPublicKey(CertificateManager.pemPublicFromPrivateKey(privateKey)),
+        )
+      ) {
+        throw new Error(
+          'Issuer certificate public key does not match the private key used for signing.',
+        )
+      }
+
+      issuerName = certificate.subject.attributes
+      const certificateAutoId = CertificateManager.getCertificateAutoId(certificate) || ''
+      const certificateSubjectCommonName =
+        CertificateManager.getSubjectCommonName(certificate.subject.attributes) || ''
+      if (certificateAutoId === '' || certificateSubjectCommonName === '') {
+        throw new Error(
+          'Issuer certificate does not have either an auto ID or a subject common name or both.',
+        )
+      }
       autoId = blake2b_256(
-        stringToUint8Array(
-          autoIdPrefix +
-            (CertificateManager.getSubjectCommonName(this.certificate.subject.attributes) || ''),
+        concatenateUint8Arrays(
+          stringToUint8Array(certificateAutoId),
+          stringToUint8Array(certificateSubjectCommonName),
         ),
       )
     }
+
+    // Prepare the certificate builder with information from the CSR
     const cert = forge.pki.createCertificate()
     if (!csr.publicKey)
       throw new Error('CSR does not have a public key. Please provide a CSR with a public key.')
-    cert.publicKey = csr.publicKey
-    cert.publicKey = csr.publicKey
-    cert.serialNumber = new Date().getTime().toString(16)
-    cert.validity.notBefore = new Date()
-    cert.validity.notAfter = new Date()
-    cert.validity.notAfter.setDate(cert.validity.notBefore.getDate() + validityPeriodDays)
     cert.setSubject(csr.subject.attributes)
     cert.setIssuer(issuerName)
-    const attribute = csr.getAttribute({ name: 'extensionRequest' })
-    if (!attribute || !attribute.extensions) {
-      throw new Error('CSR does not have extensions.')
-    }
-    const extensions = attribute.extensions
-    if (!extensions) {
-      throw new Error('CSR does not have extensions. Please provide a CSR with extensions.')
-    }
-    extensions.push({
-      name: 'subjectAltName',
-      altNames: [
-        {
-          type: 6, // URI
-          value: `autoid:auto:${autoId}`,
-        },
-      ],
-    })
-    cert.setExtensions(extensions)
+    cert.publicKey = csr.publicKey
+    cert.serialNumber = randomSerialNumber().toString()
+    cert.validity.notBefore = new Date()
+    cert.validity.notAfter = addDaysToCurrentDate(validityPeriodDays)
 
-    cert.sign(forge.pki.privateKeyFromPem(keyToPem(this.privateKey)), forge.md.sha256.create())
-    return forge.pki.certificateToPem(cert)
+    const autoIdSan = `autoid:auto:${Buffer.from(autoId).toString('hex')}`
+    let sanExtensionFound = false
+
+    // Check for existing SAN extension
+    const extensions = csr.getAttribute({ name: 'extensionRequest' })?.extensions
+    if (extensions) {
+      for (const ext of extensions) {
+        if (ext.name === 'subjectAltName') {
+          sanExtensionFound = true
+          ext.altNames = ext.altNames || [] // Ensure altNames is initialized
+          ext.altNames.push({
+            type: 6, // URI
+            value: autoIdSan,
+          })
+          break
+        }
+      }
+    }
+
+    // If no existing SAN extension, create one
+    if (!sanExtensionFound) {
+      cert.setExtensions([
+        ...cert.extensions,
+        {
+          name: 'subjectAltName',
+          altNames: [{ type: 6, value: autoIdSan }],
+        },
+      ])
+    }
+
+    // Copy all extensions from the CSR to the certificate
+    if (extensions) {
+      cert.setExtensions([...cert.extensions, ...extensions])
+    }
+
+    // Sign the certificate with private key
+    cert.sign(forge.pki.privateKeyFromPem(keyToPem(privateKey)), forge.md.sha256.create())
+
+    return cert
+  }
+
+  /**
+   * Issues a self-signed certificate for the identity.
+   *
+   * @param subjectName Subject name for the certificate(common name).
+   * @param validityPeriodDays Number of days the certificate is valid. Defaults to 365.
+   * @returns Created X.509 certificate.
+   */
+  selfIssueCertificate(
+    subjectName: string,
+    validityPeriodDays: number = 365,
+  ): forge.pki.Certificate {
+    if (!this.privateKey) {
+      throw new Error('Private key is not set.')
+    }
+    const csr = this.signCSR(this.createCSR(subjectName))
+    const certificate = this.issueCertificate(csr, validityPeriodDays)
+
+    this.certificate = certificate
+    return this.certificate
   }
 
   saveCertificate(filePath: string): void {

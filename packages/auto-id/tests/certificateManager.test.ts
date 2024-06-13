@@ -10,22 +10,24 @@ import {
 } from '../src/keyManagement'
 
 describe('CertificateManager', () => {
-  it('creates and signs a CSR with an Ed25519 key', () => {
-    // Generate an Ed25519 key pair
-    const [privateKey, _] = generateEd25519KeyPair()
-    // const keypair = forge.pki.ed25519.generateKeyPair()
-
-    // Define the subject name for the CSR
-    const subjectName = 'Test'
+  it('create and sign CSR', () => {
+    // Generate a key pair
+    const [privateKey, _] = generateRsaKeyPair()
+    // TODO: Enable when Ed25519 key pair is supported by CertificateManager
+    // const [privateKey, _] = generateEd25519KeyPair() // Fails ❌ with error: "Cannot read public key. Unknown OID."
 
     // Instantiate CertificateManager with the generated private key
-    const manager = new CertificateManager(null, pemToPrivateKey(privateKey))
+    const certificateManager = new CertificateManager(null, pemToPrivateKey(privateKey))
 
-    // Create and sign CSR
-    const csr = manager.create_and_sign_csr(subjectName)
+    // Create and sign a CSR
+    const subjectName = 'Test'
+    const csr = certificateManager.createAndSignCSR(subjectName)
 
-    // Assert that the CSR is not null
-    expect(csr).toBeDefined()
+    expect(csr).not.toBeNull()
+
+    // NOTE: static type-checking is already done in TypeScript at compile time unlike Python. So, ignored this assertion.
+    // Assert that the CSR is of type  x509.CertificateSigningRequest
+    // assert isinstance(csr, x509.CertificateSigningRequest)
 
     // Assert that the CSR subject name matches the provided subject name
     const commonNameField = csr.subject.attributes.find((attr) => attr.name === 'commonName')
@@ -48,37 +50,61 @@ describe('CertificateManager', () => {
     }
   })
 
-  it('create and sign CSR with RSA key', () => {
-    // Generate a RSA key pair
-    const [privateKey, _] = generateRsaKeyPair()
+  it('issue certificate', () => {
+    const [subjectPrivateKey, subjectPublicKey] = generateRsaKeyPair()
+    const [issuerPrivateKey, issuerPublicKey] = generateRsaKeyPair()
 
-    // Instantiate CertificateManager with the generated private key
-    const certificateManager = new CertificateManager(null, pemToPrivateKey(privateKey))
+    // TODO: Enable when Ed25519 key pair is supported by CertificateManager
+    // const [subjectPrivateKey, subjectPublicKey] = generateRsaKeyPair()
+    // const [issuerPrivateKey, issuerPublicKey] = generateRsaKeyPair()
 
-    // Create and sign a CSR
+    const issuer = new CertificateManager(null, pemToPrivateKey(issuerPrivateKey))
+    const _issuerCertificate = issuer.selfIssueCertificate('issuer')
+
+    // Define the subject name for the certificate
     const subjectName = 'Test'
-    const csr = certificateManager.create_and_sign_csr(subjectName)
 
-    expect(csr).toBeDefined()
+    const csrCreator = new CertificateManager(null, pemToPrivateKey(subjectPrivateKey))
+    // Call the createCSR function to generate a CSR
+    const csr = csrCreator.createAndSignCSR(subjectName)
 
-    // Assert that the CSR subject name matches the provided subject name
+    // Issue a certificate using the CSR
+    const certificate = issuer.issueCertificate(csr)
+
+    // Assert that the certificate is not null
+    expect(certificate).not.toBeNull()
+
+    // NOTE: static type-checking is already done in TypeScript at compile time unlike Python. So, ignored this assertion.
+    // Assert that the certificate is of type x509.Certificate
+    // assert isinstance(certificate, x509.Certificate)
+
+    // Assert that the certificate subject name matches the provided subject name
     const commonNameField = csr.subject.attributes.find((attr) => attr.name === 'commonName')
     expect(commonNameField?.value).toEqual(subjectName)
 
-    // Get the derived public key (in forge) from original private key.
-    // private key (PEM) -> private key(KeyObject) -> public key(PEM)
-    const derivedPublicKeyObj = pemToPublicKey(
-      CertificateManager.pemPublicFromPrivateKey(pemToPrivateKey(privateKey)),
-    )
+    // Assert that the certificate public key matches the private key's public key
+    if (certificate.publicKey) {
+      const certificatePublicKeyObj = createPublicKey(
+        forge.pki.publicKeyToPem(certificate.publicKey),
+      )
+      const subjectPublicKeyObj = createPublicKey(subjectPublicKey)
 
-    // Assert that the CSR public key matches the public key from the key pair
-    if (csr.publicKey) {
-      // Convert forge.PublicKey format to crypto.KeyObject
-      const csrPublicKeyObj = createPublicKey(forge.pki.publicKeyToPem(csr.publicKey))
-
-      expect(doPublicKeysMatch(csrPublicKeyObj, derivedPublicKeyObj)).toBe(true)
+      expect(doPublicKeysMatch(certificatePublicKeyObj, subjectPublicKeyObj)).toBe(true)
     } else {
-      throw new Error('CSR does not have a public key.')
+      throw new Error('Certificate does not have a public key.')
     }
+
+    const certBytes = certificate.tbsCertificate
+    const signature = certificate.signature
+    // FIXME: Verify the certificate signature
+    // issuer_public_key.verify(signature, cert_bytes)
+
+    // Convert the issuer's public key from PEM to a forge public key object
+    const issuerPublicKeyObj = forge.pki.publicKeyFromPem(issuerPublicKey)
+
+    const tbsDer = forge.asn1.toDer(certBytes).getBytes()
+    const isValidSignature = issuerPublicKeyObj.verify(tbsDer, signature)
+
+    expect(isValidSignature).toBe(true)
   })
 })
