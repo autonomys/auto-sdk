@@ -1,3 +1,4 @@
+import type { ApiPromise } from '@polkadot/api'
 import { u8aToHex } from '@polkadot/util'
 import { operator, operators, RegisterOperatorInput } from '../../src/staking'
 
