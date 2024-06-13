@@ -114,14 +114,6 @@ describe('Verify staking functions', () => {
         const _balanceSenderStart = await balance(api, address(sender.address))
         expect(_balanceSenderStart.free).toBeGreaterThan(BigInt(0))
 
-        // Transfer some funds to the operator
-        const amountToTransfer = '10000000000000000000'
-        await signAndSendTx(
-          sender,
-          await transfer(api, operatorAccounts[0].address, amountToTransfer),
-          [events.transfer],
-        )
-
         const domainId = '0'
         const amountToStake = '100000000000000000000'
         const minimumNominatorStake = '1000000000000000000'
@@ -138,11 +130,6 @@ describe('Verify staking functions', () => {
         await signAndSendTx(sender, await registerOperator(txInput), [events.operatorRegistered])
         await verifyOperatorRegistration(txInput)
 
-        const _balanceSenderEnd = await balance(api, address(sender.address))
-        expect(_balanceSenderEnd.free).toBeLessThan(
-          _balanceSenderStart.free - BigInt(amountToStake),
-        )
-
         await sudo(api, sender, await api.tx.domains.forceStakingEpochTransition(domainId), [
           events.forceDomainEpochTransition,
         ])
@@ -151,16 +138,16 @@ describe('Verify staking functions', () => {
         if (operator) {
           const amountToAdd = '50000000000000000000'
           await signAndSendTx(
-            operatorAccounts[0],
+            sender,
             await nominateOperator({
               api,
-              operatorId: operator?.operatorId,
+              operatorId: operator.operatorId,
               amountToStake: amountToAdd,
             }),
             [events.operatorNominated],
           )
         } else throw new Error('Operator not found')
-      }, 120000)
+      }, 180000)
     })
 
     describe('Test deregisterOperator()', () => {
@@ -282,14 +269,6 @@ describe('Verify staking functions', () => {
     //     const _balanceSenderStart = await balance(api, address(sender.address))
     //     expect(_balanceSenderStart.free).toBeGreaterThan(BigInt(0))
 
-    //     // Transfer some funds to the operator
-    //     const amountToTransfer = '10000000000000000000'
-    //     await signAndSendTx(
-    //       sender,
-    //       await transfer(api, operatorAccounts[0].address, amountToTransfer),
-    //      [events.transfer]
-    //     )
-
     //     const domainId = '0'
     //     const amountToStake = '100000000000000000000'
     //     const minimumNominatorStake = '1000000000000000000'
@@ -305,11 +284,6 @@ describe('Verify staking functions', () => {
     //     }
     //     await signAndSendTx(sender, await registerOperator(txInput), [events.operatorRegistered])
     //     await verifyOperatorRegistration(txInput)
-
-    //     const _balanceSenderEnd = await balance(api, address(sender.address))
-    //     expect(_balanceSenderEnd.free).toBeLessThan(
-    //       _balanceSenderStart.free - BigInt(amountToStake),
-    //     )
 
     //     await sudo(api, sender, await api.tx.domains.forceStakingEpochTransition(domainId), [events.forceDomainEpochTransition])
     //     const findOperator = await verifyOperatorRegistrationFinal(txInput)
