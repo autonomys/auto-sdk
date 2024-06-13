@@ -19,6 +19,12 @@ export function generateRsaKeyPair(keySize: number = 2048): [string, string] {
   return [privateKey, publicKey]
 }
 
+// export function generateRsaKeyPair(keySize: number = 2048): [string, string] {
+//   const { publicKey, privateKey } = forge.pki.rsa.generateKeyPair({ bits: keySize, e: 0x10001 })
+
+//   return [privateKey.toString(), publicKey.toString()]
+// }
+
 /**
  * Generates an Ed25519 key pair.
  * @returns A tuple containing the Ed25519 private key and public key.
@@ -31,6 +37,12 @@ export function generateEd25519KeyPair(): [string, string] {
 
   return [privateKey, publicKey]
 }
+
+// export function generateEd25519KeyPair(): [string, string] {
+//   const { privateKey, publicKey } = forge.pki.ed25519.generateKeyPair()
+
+//   return [privateKey.toString(), publicKey.toString()]
+// }
 
 /**
  * Converts a cryptographic key object into a PEM formatted string.
@@ -167,7 +179,7 @@ export async function loadPrivateKey(filePath: string, password?: string): Promi
   try {
     const keyData = await read(filePath)
     const privateKey = pemToPrivateKey(keyData, password)
-    return privateKey;
+    return privateKey
   } catch (error: any) {
     throw new Error(`Failed to load private key: ${error.message}`)
   }
