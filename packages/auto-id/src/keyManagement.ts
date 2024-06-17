@@ -19,11 +19,26 @@ export function generateRsaKeyPair(keySize: number = 2048): [string, string] {
   return [privateKey, publicKey]
 }
 
-// export function generateRsaKeyPair(keySize: number = 2048): [string, string] {
-//   const { publicKey, privateKey } = forge.pki.rsa.generateKeyPair({ bits: keySize, e: 0x10001 })
+import { Crypto } from '@peculiar/webcrypto'
+const crypto = new Crypto()
 
-//   return [privateKey.toString(), publicKey.toString()]
-// }
+export async function generateEd25519KeyPair2(): Promise<[CryptoKey, CryptoKey]> {
+  const keyPair = await crypto.subtle.generateKey(
+    {
+      name: 'Ed25519',
+      namedCurve: 'Ed25519',
+    },
+    true,
+    ['sign', 'verify'],
+  )
+
+  return [keyPair.privateKey, keyPair.publicKey]
+}
+
+export async function pemToEd25519PrivateKey(pem: string): Promise<CryptoKey> {
+  const binaryDer = Buffer.from(pem, 'base64')
+  return crypto.subtle.importKey('pkcs8', binaryDer, { name: 'Ed25519' }, false, ['sign'])
+}
 
 /**
  * Generates an Ed25519 key pair.
