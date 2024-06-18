@@ -3,7 +3,7 @@
 
 import { blake2b_256, concatenateUint8Arrays, stringToUint8Array } from '@autonomys/auto-utils'
 import { AsnConvert } from '@peculiar/asn1-schema'
-import { AttributeTypeAndValue, GeneralName, GeneralNames } from '@peculiar/asn1-x509'
+import { AttributeTypeAndValue, GeneralNames } from '@peculiar/asn1-x509'
 import { Crypto } from '@peculiar/webcrypto'
 import * as x509 from '@peculiar/x509'
 import { KeyObject, createPublicKey } from 'crypto'
@@ -181,16 +181,6 @@ export class CertificateManager {
     return keyObject
   }
 
-  // TODO: later on move to utils.
-  private static stringToArrayBuffer(str: string): ArrayBuffer {
-    const buffer = new ArrayBuffer(str.length)
-    const view = new Uint8Array(buffer)
-    for (let i = 0; i < str.length; i++) {
-      view[i] = str.charCodeAt(i)
-    }
-    return buffer
-  }
-
   async issueCertificate(
     csr: x509.Pkcs10CertificateRequest,
     validityPeriodDays: number = 365,
@@ -259,12 +249,7 @@ export class CertificateManager {
 
     const autoIdSan = `autoid:auto:${Buffer.from(autoId).toString('hex')}`
 
-    // FIXME: check testing
-    // Check for existing SAN extension
-    // const sanExtensions = csr.extensions // --> []
-
     const sanExtensions = csr.extensions.filter((ext) => ext.type === OID_SUBJECT_ALT_NAME) // OID for subjectAltName
-
     if (sanExtensions.length) {
       // const existingSan = sanExtensions[0].value
       const existingSan = sanExtensions[0] as x509.SubjectAlternativeNameExtension
@@ -341,89 +326,6 @@ export class CertificateManager {
     fs.writeFileSync(filePath, certificatePem, 'utf8')
   }
 }
-
-// export class Ed25519CertificateManager {
-//   private certificate: x509.X509Certificate | null
-//   private privateKey: CryptoKey | null
-
-//   constructor(
-//     certificate: x509.X509Certificate | null = null,
-//     privateKey: CryptoKey | null = null,
-//   ) {
-//     this.certificate = certificate
-//     this.privateKey = privateKey
-//   }
-
-//   async createAndSignCSR(subjectName: string): Promise<x509.Pkcs10CertificateRequest> {
-//     if (!this.privateKey) {
-//       throw new Error('Private key is not set.')
-//     }
-
-//     // Export the public key (ArrayBuffer) from the private key
-//     const publicKeyArrayBuffer = await crypto.subtle.exportKey('spki', this.privateKey)
-//     // Create a public key (CryptoKey) from the exported public key
-//     const publicKey = await crypto.subtle.importKey(
-//       'spki',
-//       publicKeyArrayBuffer,
-//       {
-//         name: 'Ed25519',
-//       },
-//       true,
-//       ['verify'],
-//     )
-
-//     const csr = await x509.Pkcs10CertificateRequestGenerator.create({
-//       name: `CN=${subjectName}`,
-//       keys: { privateKey: this.privateKey, publicKey },
-//       signingAlgorithm: { name: 'Ed25519' },
-//     })
-
-//     return csr
-//   }
-
-//   async issueCertificate(
-//     csr: x509.Pkcs10CertificateRequest,
-//     validityPeriodDays: number = 365,
-//   ): Promise<x509.X509Certificate> {
-//     if (!this.privateKey) {
-//       throw new Error('Private key is not set.')
-//     }
-
-//     const notBefore = new Date()
-//     const notAfter = new Date()
-//     notAfter.setDate(notBefore.getDate() + validityPeriodDays)
-
-//     const certificate = await x509.X509CertificateGenerator.create({
-//       serialNumber: randomSerialNumber().toString(),
-//       issuer: csr.subject,
-//       subject: csr.subject,
-//       notBefore,
-//       notAfter,
-//       signingAlgorithm: { name: 'Ed25519' },
-//       signingKey: this.privateKey,
-//       publicKey: csr.publicKey,
-//     })
-
-//     this.certificate = certificate
-//     return certificate
-//   }
-
-//   async selfIssueCertificate(
-//     subjectName: string,
-//     validityPeriodDays: number = 365,
-//   ): Promise<x509.X509Certificate> {
-//     const csr = await this.createAndSignCSR(subjectName)
-//     return this.issueCertificate(csr, validityPeriodDays)
-//   }
-
-//   saveCertificate(filePath: string): void {
-//     if (!this.certificate) {
-//       throw new Error('No certificate available to save.')
-//     }
-//     const certificatePem = this.certificate.toString('pem')
-//     fs.writeFileSync(filePath, certificatePem, 'utf8')
-//   }
-// }
 
 function arrayBufferToBase64(buffer: ArrayBuffer): string {
   let binary = ''
