@@ -21,7 +21,9 @@ __metadata:
   dependencies:
     "@autonomys/auto-utils": "workspace:*"
     "@types/jest": "npm:^29.5.12"
+    eslint: "npm:^8.57.0"
     jest: "npm:^29.7.0"
+    prettier: "npm:^3.2.5"
     ts-jest: "npm:^29.1.4"
     typescript: "npm:^5.4.5"
   languageName: unknown
@@ -50,8 +52,11 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-sdk@workspace:."
   dependencies:
+    "@types/jest": "npm:^29.5.12"
     eslint: "npm:^8.57.0"
+    jest: "npm:^29.7.0"
     prettier: "npm:^3.2.5"
+    ts-jest: "npm:^29.1.4"
     typescript: "npm:^5.4.5"
   languageName: unknown
   linkType: soft
@@ -61,9 +66,12 @@ __metadata:
   resolution: "@autonomys/auto-utils@workspace:packages/auto-utils"
   dependencies:
     "@polkadot/api": "npm:^11.2.1"
+    "@polkadot/extension-dapp": "npm:^0.47.5"
     "@types/jest": "npm:^29.5.12"
+    eslint: "npm:^8.57.0"
     fs: "npm:^0.0.1-security"
     jest: "npm:^29.7.0"
+    prettier: "npm:^3.2.5"
     ts-jest: "npm:^29.1.4"
     typescript: "npm:^5.4.5"
   languageName: unknown
@@ -1204,7 +1212,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/api@npm:11.2.1, @polkadot/api@npm:^11.2.1":
+"@polkadot/api@npm:11.2.1, @polkadot/api@npm:^11.1.1, @polkadot/api@npm:^11.2.1":
   version: 11.2.1
   resolution: "@polkadot/api@npm:11.2.1"
   dependencies:
@@ -1226,6 +1234,40 @@ __metadata:
     rxjs: "npm:^7.8.1"
     tslib: "npm:^2.6.2"
   checksum: 10c0/be64b38b56626ed59ba7d0171866aecbbf372052d304b417536a62c523ac62e2073a730f97655d2050c0c839bd41b1e73f011551e628a6ea291daa0bf1e52c39
+  languageName: node
+  linkType: hard
+
+"@polkadot/extension-dapp@npm:^0.47.5":
+  version: 0.47.5
+  resolution: "@polkadot/extension-dapp@npm:0.47.5"
+  dependencies:
+    "@polkadot/extension-inject": "npm:0.47.5"
+    "@polkadot/util": "npm:^12.6.2"
+    "@polkadot/util-crypto": "npm:^12.6.2"
+    tslib: "npm:^2.6.2"
+  peerDependencies:
+    "@polkadot/api": "*"
+    "@polkadot/util": "*"
+    "@polkadot/util-crypto": "*"
+  checksum: 10c0/bbf77436028fb4316027b755831b1b7b0db7301afe345b16e60c50a6ade866870beaca400813a089cf3661f14c315ff0b9b10809b6726dd250648e4f9e94d0bf
+  languageName: node
+  linkType: hard
+
+"@polkadot/extension-inject@npm:0.47.5":
+  version: 0.47.5
+  resolution: "@polkadot/extension-inject@npm:0.47.5"
+  dependencies:
+    "@polkadot/api": "npm:^11.1.1"
+    "@polkadot/rpc-provider": "npm:^11.1.1"
+    "@polkadot/types": "npm:^11.1.1"
+    "@polkadot/util": "npm:^12.6.2"
+    "@polkadot/util-crypto": "npm:^12.6.2"
+    "@polkadot/x-global": "npm:^12.6.2"
+    tslib: "npm:^2.6.2"
+  peerDependencies:
+    "@polkadot/api": "*"
+    "@polkadot/util": "*"
+  checksum: 10c0/b525ed50f1b6290b510e0952ac37a62629a7a55e6ef4ede004acc1f44e318ebcd59cd9bf5086cd8de3f603599045bd8bb521e26e12736e51a00712cc67d6b80f
   languageName: node
   linkType: hard
 
@@ -1281,7 +1323,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/rpc-provider@npm:11.2.1":
+"@polkadot/rpc-provider@npm:11.2.1, @polkadot/rpc-provider@npm:^11.1.1":
   version: 11.2.1
   resolution: "@polkadot/rpc-provider@npm:11.2.1"
   dependencies:
@@ -1363,7 +1405,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/types@npm:11.2.1":
+"@polkadot/types@npm:11.2.1, @polkadot/types@npm:^11.1.1":
   version: 11.2.1
   resolution: "@polkadot/types@npm:11.2.1"
   dependencies:

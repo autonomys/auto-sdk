@@ -13,7 +13,7 @@ The repository is organized as follows:
 ## Requirements
 
 - Node.js
-- Yarn 2 (Berry) or later
+- Yarn 4
 
 ## Setup
 
@@ -39,13 +39,13 @@ The repository is organized as follows:
 
 To build all packages:
 
-`yarn build`
+`yarn run build`
 
 ### Test
 
 To run tests for all packages:
 
-`yarn test`
+`yarn run test`
 
 ### Localhost testing
 
@@ -86,7 +86,7 @@ To test the packages against a local node, you can use the script at `scripts/ru
 
 ## Workspaces
 
-This project uses Yarn workspaces. Packages are located in the `packages` directory. Each package can have its own dependencies and build scripts.
+This project uses workspaces. Packages are located in the `packages` directory. Each package can have its own dependencies and build scripts.
 
 ## License
 

@@ -1,6 +1,15 @@
 name: Build
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - "**.md"
+  pull_request:
+    paths-ignore:
+      - "**.md"
+  workflow_dispatch:
 
 jobs:
   build-and-test:
@@ -9,26 +18,26 @@ jobs:
     steps:
       - name: Checkout 🛎️
         uses: actions/checkout@v3
-      
+
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
           node-version: '18'
-      
+
       - name: Enable Corepack
         run: corepack enable
-      
+
       - name: Set Yarn version to Berry
         run: corepack prepare yarn@4.2.2 --activate
 
       - name: Install dependencies
         run: yarn install
-      
+
       - name: Build auto-utils package 🔧
         run: yarn workspace @autonomys/auto-utils build
 
       - name: Build all packages 🔧
         run: yarn build
-      
+
       - name: Run tests 🧪
         run: yarn test
