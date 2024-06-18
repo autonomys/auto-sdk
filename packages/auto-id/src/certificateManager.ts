@@ -3,34 +3,34 @@
 
 import { blake2b_256, concatenateUint8Arrays, stringToUint8Array } from '@autonomys/auto-utils'
 import { AsnConvert } from '@peculiar/asn1-schema'
-import { AttributeTypeAndValue } from '@peculiar/asn1-x509'
+import { AttributeTypeAndValue, GeneralName, GeneralNames } from '@peculiar/asn1-x509'
 import { Crypto } from '@peculiar/webcrypto'
 import * as x509 from '@peculiar/x509'
 import { KeyObject, createPublicKey } from 'crypto'
 import fs from 'fs'
-import { doPublicKeysMatch } from './keyManagement'
+import { doPublicKeysMatch, pemToPublicKey } from './keyManagement'
 import { randomSerialNumber } from './utils'
 
 const crypto = new Crypto()
 x509.cryptoProvider.set(crypto)
 
 interface SigningParams {
-  privateKey: KeyObject
+  privateKey: CryptoKey
   algorithm: 'sha256' | null // Only 'sha256' or null for Ed25519
 }
 
-const OID_COMMON_NAME = '2.5.4.3' // OID for Common Name, not available in the library.
+export const OID_COMMON_NAME = '2.5.4.3' // OID for Common Name, not available in the library.
 const OID_SUBJECT_ALT_NAME = '2.5.29.17' // OID for Subject Alternative Name, not available in the library.
 
 export class CertificateManager {
   private certificate: x509.X509Certificate | null
-  private privateKey: KeyObject | null
-  private publicKey: KeyObject | null
+  private privateKey: CryptoKey | null
+  private publicKey: CryptoKey | null
 
   constructor(
     certificate: x509.X509Certificate | null = null,
-    privateKey: KeyObject | null = null,
-    publicKey: KeyObject | null = null,
+    privateKey: CryptoKey | null = null,
+    publicKey: CryptoKey | null = null,
   ) {
     this.certificate = certificate
     this.privateKey = privateKey
@@ -44,11 +44,11 @@ export class CertificateManager {
       throw new Error('Private key is not set.')
     }
 
-    if (privateKey.asymmetricKeyType === 'ed25519') {
+    if (privateKey.algorithm.name === 'Ed25519') {
       return { privateKey: privateKey, algorithm: null }
     }
 
-    if (privateKey.asymmetricKeyType === 'rsa') {
+    if (privateKey.algorithm.name === 'rsa') {
       return { privateKey: privateKey, algorithm: 'sha256' }
     }
 
@@ -66,48 +66,6 @@ export class CertificateManager {
   // protected static toCommonName(subjectName: string): JsonName {
   //   return [{ '2.5.4.3': [subjectName] }] // OID for commonName
   // }
-
-  private static async keyObjectToCryptoKey(keyObject: KeyObject): Promise<CryptoKey> {
-    const keyType = keyObject.type
-    const keyPem = keyObject
-      .export({ type: keyType === 'private' ? 'pkcs8' : 'spki', format: 'pem' })
-      .toString()
-    const keyData = Buffer.from(keyPem.split('\n').slice(1, -1).join(''), 'base64')
-
-    if (keyObject.asymmetricKeyType === 'ed25519') {
-      if (keyType === 'private') {
-        return crypto.subtle.importKey('pkcs8', keyData, { name: 'Ed25519' }, true, ['sign'])
-      } else {
-        return crypto.subtle.importKey('spki', keyData, { name: 'Ed25519' }, true, ['verify'])
-      }
-    } else if (keyObject.asymmetricKeyType === 'rsa') {
-      if (keyType === 'private') {
-        return crypto.subtle.importKey(
-          'pkcs8',
-          keyData,
-          {
-            name: 'RSASSA-PKCS1-v1_5',
-            hash: { name: 'SHA-256' },
-          },
-          true,
-          ['sign'],
-        )
-      } else {
-        return crypto.subtle.importKey(
-          'spki',
-          keyData,
-          {
-            name: 'RSASSA-PKCS1-v1_5',
-            hash: { name: 'SHA-256' },
-          },
-          true,
-          ['verify'],
-        )
-      }
-    } else {
-      throw new Error('Unsupported key type')
-    }
-  }
 
   static prettyPrintCertificate(cert: x509.X509Certificate): void {
     console.log('Certificate:')
@@ -139,23 +97,19 @@ export class CertificateManager {
     return commonNames.length > 0 ? commonNames[0] : undefined
   }
 
-  // static async pemPublicFromPrivateKey(privateKey: CryptoKey): Promise<string> {
-  //   const publicKey = await crypto.subtle.exportKey('spki', privateKey)
-  //   return x509.PemConverter.encode(publicKey, 'PUBLIC KEY')
-  // }
-
-  // static async derPublicFromPrivateKey(privateKey: CryptoKey): Promise<string> {
-  //   const publicKey = await crypto.subtle.exportKey('spki', privateKey)
-  //   return Buffer.from(publicKey).toString('hex')
-  // }
-
   static getCertificateAutoId(certificate: x509.X509Certificate): string | undefined {
-    const sanExtension = certificate.extensions.find((ext) => ext.type === OID_SUBJECT_ALT_NAME) // OID for subjectAltName
+    const sanExtension = certificate.extensions.find((ext) => ext.type === OID_SUBJECT_ALT_NAME)
+
     if (sanExtension && sanExtension.value) {
-      const san = sanExtension.value as any // Adjust this cast as needed based on actual SAN structure
-      for (const name of san.altNames) {
-        if (name.type === 6 && name.value.startsWith('autoid:auto:')) {
-          return name.value.split(':').pop()
+      // Deserialize the ArrayBuffer to GeneralNames ASN.1 object
+      const san = AsnConvert.parse(sanExtension.value, GeneralNames)
+
+      for (const name of san) {
+        if (
+          name.uniformResourceIdentifier &&
+          name.uniformResourceIdentifier.startsWith('autoid:auto:')
+        ) {
+          return name.uniformResourceIdentifier.split(':').pop()
         }
       }
     }
@@ -172,9 +126,9 @@ export class CertificateManager {
 
     // Set the signing algorithm based on the key type
     let signingAlgorithm: Algorithm | EcdsaParams
-    if (privateKey.asymmetricKeyType === 'ed25519') {
+    if (privateKey.algorithm.name === 'Ed25519') {
       signingAlgorithm = { name: 'Ed25519' }
-    } else if (privateKey.asymmetricKeyType === 'rsa') {
+    } else if (privateKey.algorithm.name === 'rsa') {
       signingAlgorithm = { name: 'RSASSA-PKCS1-v1_5', hash: { name: 'SHA-256' } }
     } else {
       throw new Error('Unsupported key type for signing')
@@ -183,8 +137,8 @@ export class CertificateManager {
     const csr = await x509.Pkcs10CertificateRequestGenerator.create({
       name: `CN=${subjectName}`,
       keys: {
-        privateKey: await CertificateManager.keyObjectToCryptoKey(privateKey),
-        publicKey: await CertificateManager.keyObjectToCryptoKey(publicKey),
+        privateKey: privateKey,
+        publicKey: publicKey,
       },
       signingAlgorithm: signingAlgorithm,
     })
@@ -198,19 +152,10 @@ export class CertificateManager {
       throw new Error('Private key is not set.')
     }
 
-    const privateKeyConverted = await CertificateManager.keyObjectToCryptoKey(privateKey)
-
     const _signingParams = this.prepareSigningParams()
 
-    // FIXME: check during testing
-    // const derBuffer = csr.rawData
-    const asn1 = csr.rawData
-    const derBuffer = AsnConvert.serialize(asn1)
-    const signature = await crypto.subtle.sign(
-      privateKeyConverted.algorithm.name,
-      privateKeyConverted,
-      derBuffer,
-    )
+    const derBuffer = csr.rawData
+    const signature = await crypto.subtle.sign(privateKey.algorithm.name, privateKey, derBuffer)
     csr.signature = new Uint8Array(signature)
 
     return csr
@@ -268,9 +213,10 @@ export class CertificateManager {
       autoId = blake2b_256(stringToUint8Array(subjectCommonName))
     } else {
       if (
+        // FIXME: modify
         !doPublicKeysMatch(
           CertificateManager.publicKeyToKeyObject(certificate.publicKey),
-          publicKey,
+          pemToPublicKey(await cryptoKeyToPem(publicKey)),
         )
       ) {
         throw new Error(
@@ -300,33 +246,34 @@ export class CertificateManager {
     const notAfter = new Date()
     notAfter.setDate(notBefore.getDate() + validityPeriodDays)
 
-    const privateKeyConverted = await CertificateManager.keyObjectToCryptoKey(privateKey)
-
     let certificateBuilder = await x509.X509CertificateGenerator.create({
       serialNumber: randomSerialNumber().toString(),
       issuer: csr.subject,
       subject: csr.subject,
       notBefore,
       notAfter,
-      signingAlgorithm: privateKeyConverted.algorithm,
-      publicKey: await CertificateManager.keyObjectToCryptoKey(publicKey),
-      signingKey: privateKeyConverted,
+      signingAlgorithm: privateKey.algorithm,
+      publicKey: publicKey,
+      signingKey: privateKey,
     })
 
     const autoIdSan = `autoid:auto:${Buffer.from(autoId).toString('hex')}`
 
     // FIXME: check testing
     // Check for existing SAN extension
-    // const sanExtensions = csr.extensions
+    // const sanExtensions = csr.extensions // --> []
+
     const sanExtensions = csr.extensions.filter((ext) => ext.type === OID_SUBJECT_ALT_NAME) // OID for subjectAltName
-    if (sanExtensions) {
+
+    if (sanExtensions.length) {
       // const existingSan = sanExtensions[0].value
       const existingSan = sanExtensions[0] as x509.SubjectAlternativeNameExtension
+
       const generalNames = existingSan.names.toJSON()
 
       // Add autoIdSan to generalNames
       generalNames.push({
-        type: 'uniformResourceIdentifier' as x509.GeneralNameType,
+        type: 'url' as x509.GeneralNameType,
         value: autoIdSan,
       })
 
@@ -344,7 +291,7 @@ export class CertificateManager {
 
       certificateBuilder.extensions.push(
         new x509.SubjectAlternativeNameExtension([
-          { type: 'uniformResourceIdentifier' as x509.GeneralNameType, value: autoIdSan },
+          { type: 'url' /* as x509.GeneralNameType */, value: autoIdSan },
         ]),
       )
     }
@@ -364,7 +311,7 @@ export class CertificateManager {
       extensions: certificateBuilder.extensions,
       publicKey: certificateBuilder.publicKey,
       signingAlgorithm: certificateBuilder.signatureAlgorithm,
-      signingKey: privateKeyConverted,
+      signingKey: privateKey,
     })
 
     return certificateSigned
@@ -395,85 +342,103 @@ export class CertificateManager {
   }
 }
 
-export class Ed25519CertificateManager {
-  private certificate: x509.X509Certificate | null
-  private privateKey: CryptoKey | null
+// export class Ed25519CertificateManager {
+//   private certificate: x509.X509Certificate | null
+//   private privateKey: CryptoKey | null
 
-  constructor(
-    certificate: x509.X509Certificate | null = null,
-    privateKey: CryptoKey | null = null,
-  ) {
-    this.certificate = certificate
-    this.privateKey = privateKey
+//   constructor(
+//     certificate: x509.X509Certificate | null = null,
+//     privateKey: CryptoKey | null = null,
+//   ) {
+//     this.certificate = certificate
+//     this.privateKey = privateKey
+//   }
+
+//   async createAndSignCSR(subjectName: string): Promise<x509.Pkcs10CertificateRequest> {
+//     if (!this.privateKey) {
+//       throw new Error('Private key is not set.')
+//     }
+
+//     // Export the public key (ArrayBuffer) from the private key
+//     const publicKeyArrayBuffer = await crypto.subtle.exportKey('spki', this.privateKey)
+//     // Create a public key (CryptoKey) from the exported public key
+//     const publicKey = await crypto.subtle.importKey(
+//       'spki',
+//       publicKeyArrayBuffer,
+//       {
+//         name: 'Ed25519',
+//       },
+//       true,
+//       ['verify'],
+//     )
+
+//     const csr = await x509.Pkcs10CertificateRequestGenerator.create({
+//       name: `CN=${subjectName}`,
+//       keys: { privateKey: this.privateKey, publicKey },
+//       signingAlgorithm: { name: 'Ed25519' },
+//     })
+
+//     return csr
+//   }
+
+//   async issueCertificate(
+//     csr: x509.Pkcs10CertificateRequest,
+//     validityPeriodDays: number = 365,
+//   ): Promise<x509.X509Certificate> {
+//     if (!this.privateKey) {
+//       throw new Error('Private key is not set.')
+//     }
+
+//     const notBefore = new Date()
+//     const notAfter = new Date()
+//     notAfter.setDate(notBefore.getDate() + validityPeriodDays)
+
+//     const certificate = await x509.X509CertificateGenerator.create({
+//       serialNumber: randomSerialNumber().toString(),
+//       issuer: csr.subject,
+//       subject: csr.subject,
+//       notBefore,
+//       notAfter,
+//       signingAlgorithm: { name: 'Ed25519' },
+//       signingKey: this.privateKey,
+//       publicKey: csr.publicKey,
+//     })
+
+//     this.certificate = certificate
+//     return certificate
+//   }
+
+//   async selfIssueCertificate(
+//     subjectName: string,
+//     validityPeriodDays: number = 365,
+//   ): Promise<x509.X509Certificate> {
+//     const csr = await this.createAndSignCSR(subjectName)
+//     return this.issueCertificate(csr, validityPeriodDays)
+//   }
+
+//   saveCertificate(filePath: string): void {
+//     if (!this.certificate) {
+//       throw new Error('No certificate available to save.')
+//     }
+//     const certificatePem = this.certificate.toString('pem')
+//     fs.writeFileSync(filePath, certificatePem, 'utf8')
+//   }
+// }
+
+function arrayBufferToBase64(buffer: ArrayBuffer): string {
+  let binary = ''
+  const bytes = new Uint8Array(buffer)
+  const len = bytes.byteLength
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i])
   }
+  return btoa(binary)
+}
 
-  async createAndSignCSR(subjectName: string): Promise<x509.Pkcs10CertificateRequest> {
-    if (!this.privateKey) {
-      throw new Error('Private key is not set.')
-    }
-
-    // Export the public key (ArrayBuffer) from the private key
-    const publicKeyArrayBuffer = await crypto.subtle.exportKey('spki', this.privateKey)
-    // Create a public key (CryptoKey) from the exported public key
-    const publicKey = await crypto.subtle.importKey(
-      'spki',
-      publicKeyArrayBuffer,
-      {
-        name: 'Ed25519',
-      },
-      true,
-      ['verify'],
-    )
-
-    const csr = await x509.Pkcs10CertificateRequestGenerator.create({
-      name: `CN=${subjectName}`,
-      keys: { privateKey: this.privateKey, publicKey },
-      signingAlgorithm: { name: 'Ed25519' },
-    })
-
-    return csr
-  }
-
-  async issueCertificate(
-    csr: x509.Pkcs10CertificateRequest,
-    validityPeriodDays: number = 365,
-  ): Promise<x509.X509Certificate> {
-    if (!this.privateKey) {
-      throw new Error('Private key is not set.')
-    }
-
-    const notBefore = new Date()
-    const notAfter = new Date()
-    notAfter.setDate(notBefore.getDate() + validityPeriodDays)
-
-    const certificate = await x509.X509CertificateGenerator.create({
-      serialNumber: randomSerialNumber().toString(),
-      issuer: csr.subject,
-      subject: csr.subject,
-      notBefore,
-      notAfter,
-      signingAlgorithm: { name: 'Ed25519' },
-      signingKey: this.privateKey,
-      publicKey: csr.publicKey,
-    })
-
-    this.certificate = certificate
-    return certificate
-  }
-
-  async selfIssueCertificate(
-    subjectName: string,
-    validityPeriodDays: number = 365,
-  ): Promise<x509.X509Certificate> {
-    const csr = await this.createAndSignCSR(subjectName)
-    return this.issueCertificate(csr, validityPeriodDays)
-  }
-
-  saveCertificate(filePath: string): void {
-    if (!this.certificate) {
-      throw new Error('No certificate available to save.')
-    }
-    const certificatePem = this.certificate.toString('pem')
-    fs.writeFileSync(filePath, certificatePem, 'utf8')
-  }
+async function cryptoKeyToPem(key: CryptoKey): Promise<string> {
+  const exported = await crypto.subtle.exportKey(key.type === 'private' ? 'pkcs8' : 'spki', key)
+  const base64 = arrayBufferToBase64(exported)
+  const type = key.type === 'private' ? 'PRIVATE KEY' : 'PUBLIC KEY'
+  const pem = `-----BEGIN ${type}-----\n${base64.match(/.{1,64}/g)?.join('\n')}\n-----END ${type}-----`
+  return pem
 }
