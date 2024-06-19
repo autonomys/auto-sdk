@@ -16,6 +16,10 @@
       "name": "auto-id",
       "path": "../packages/auto-id",
     },
+    {
+      "name": "node-examples",
+      "path": "../examples/node",
+    },
   ],
   "settings": {
     "editor.codeActionsOnSave": {
