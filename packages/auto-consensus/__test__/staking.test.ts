@@ -248,58 +248,6 @@ describe('Verify staking functions', () => {
         )
       }, 30000)
     })
-
-    // Still unsure if this is testable due to the lock period of 2 days
-    // describe('Test unlockFunds()', () => {
-    //   test('Check Operator can unlockFunds after registration', async () => {
-    //     const mnemonicOperator = mnemonicGenerate()
-    //     const { api, accounts } = await activateWallet({
-    //       ...TEST_NETWORK,
-    //       uri: ALICE_URI,
-    //     } as ActivateWalletInput)
-    //     const { accounts: operatorAccounts } = await activateWallet({
-    //       ...TEST_NETWORK,
-    //       uri: mnemonicOperator,
-    //     } as ActivateWalletInput)
-    //     expect(accounts.length).toBeGreaterThan(0)
-    //     expect(accounts[0].address).toEqual(ALICE_ADDRESS)
-
-    //     const sender = accounts[0]
-
-    //     const _balanceSenderStart = await balance(api, address(sender.address))
-    //     expect(_balanceSenderStart.free).toBeGreaterThan(BigInt(0))
-
-    //     const domainId = '0'
-    //     const amountToStake = '100000000000000000000'
-    //     const minimumNominatorStake = '1000000000000000000'
-    //     const nominationTax = '5'
-    //     const txInput = {
-    //       api,
-    //       senderAddress: ALICE_ADDRESS,
-    //       Operator: operatorAccounts[0],
-    //       domainId,
-    //       amountToStake,
-    //       minimumNominatorStake,
-    //       nominationTax,
-    //     }
-    //     await signAndSendTx(sender, await registerOperator(txInput), [events.operatorRegistered])
-    //     await verifyOperatorRegistration(txInput)
-
-    //     await sudo(api, sender, await api.tx.domains.forceStakingEpochTransition(domainId), [events.forceDomainEpochTransition])
-    //     const findOperator = await verifyOperatorRegistrationFinal(txInput)
-
-    //     if (findOperator) {
-    //       await signAndSendTx(
-    //         sender,
-    //         await unlockFunds({
-    //           api,
-    //           operatorId: findOperator.operatorId,
-    //         }),
-    //         [events.operatorDeRegistered],
-    //       )
-    //     }
-    //   }, 30000)
-    // })
   } else {
     test('Staking test only run on localhost', async () => {
       expect(true).toBeTruthy()
