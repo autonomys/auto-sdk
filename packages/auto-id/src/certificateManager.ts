@@ -1,13 +1,17 @@
 //! For key generation, management, `keyManagement.ts` file is used using "crypto" library.
 //! And for certificate related, used "@peculiar/x509" library.
 
-import { blake2b_256, concatenateUint8Arrays, stringToUint8Array } from '@autonomys/auto-utils'
+import {
+  blake2b_256,
+  concatenateUint8Arrays,
+  save,
+  stringToUint8Array,
+} from '@autonomys/auto-utils'
 import { AsnConvert } from '@peculiar/asn1-schema'
 import { AttributeTypeAndValue, GeneralNames } from '@peculiar/asn1-x509'
 import { Crypto } from '@peculiar/webcrypto'
 import * as x509 from '@peculiar/x509'
 import { KeyObject, createPublicKey } from 'crypto'
-import fs from 'fs'
 import { doPublicKeysMatch, pemToPublicKey } from './keyManagement'
 import { randomSerialNumber } from './utils'
 
@@ -317,13 +321,13 @@ export class CertificateManager {
     return certificate
   }
 
-  saveCertificate(filePath: string): void {
+  async saveCertificate(filePath: string): Promise<void> {
     if (!this.certificate) {
       throw new Error('No certificate available to save.')
     }
 
     const certificatePem = CertificateManager.certificateToPem(this.certificate)
-    fs.writeFileSync(filePath, certificatePem, 'utf8')
+    await save(filePath, certificatePem)
   }
 }
 
