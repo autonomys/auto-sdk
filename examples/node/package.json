@@ -13,6 +13,7 @@
     "url": "https://www.autonomys.net"
   },
   "scripts": {
+    "all": "yarn address && yarn balance && yarn transfer",
     "address": "npx ts-node ./src/address.ts",
     "balance": "npx ts-node ./src/balance.ts",
     "transfer": "npx ts-node ./src/transfer.ts"
