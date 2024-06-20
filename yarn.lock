@@ -20,6 +20,7 @@ __metadata:
   resolution: "@autonomys/auto-consensus@workspace:packages/auto-consensus"
   dependencies:
     "@autonomys/auto-utils": "workspace:*"
+    "@polkadot/types-codec": "npm:^11.2.1"
     "@types/jest": "npm:^29.5.12"
     eslint: "npm:^8.57.0"
     jest: "npm:^29.7.0"
@@ -1213,7 +1214,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/types-codec@npm:11.2.1":
+"@polkadot/types-codec@npm:11.2.1, @polkadot/types-codec@npm:^11.2.1":
   version: 11.2.1
   resolution: "@polkadot/types-codec@npm:11.2.1"
   dependencies:
