@@ -16,6 +16,10 @@
       "name": "auto-id",
       "path": "../packages/auto-id",
     },
+    {
+      "name": "Example - NextJS",
+      "path": "../examples/next",
+    },
   ],
   "settings": {
     "editor.codeActionsOnSave": {

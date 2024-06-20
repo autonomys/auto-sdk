@@ -1,9 +1,11 @@
 import { ApiPromise } from '@polkadot/api'
 
+export type Amount = BigInt | number | string
+
 export const transfer = async (
   api: ApiPromise,
   receiver: string,
-  amount: BigInt | number | string,
+  amount: Amount,
   allowDeath?: boolean,
 ) => {
   // Transfer the tokens
