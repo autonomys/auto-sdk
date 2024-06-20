@@ -6,7 +6,7 @@
     "build": "tsc",
     "clean": "rm -rf dist",
     "format": "prettier --write \"src/**/*.ts\"",
-    "test": "jest"
+    "test-local": "jest -i"
   },
   "files": [
     "dist",
@@ -24,6 +24,7 @@
     "@autonomys/auto-utils": "workspace:*"
   },
   "devDependencies": {
+    "@polkadot/types-codec": "^11.2.1",
     "@types/jest": "^29.5.12",
     "eslint": "^8.57.0",
     "jest": "^29.7.0",

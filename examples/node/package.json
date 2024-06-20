@@ -1,0 +1,26 @@
+{
+  "name": "node",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "packageManager": "yarn@4.2.2",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/subspace/auto-sdk"
+  },
+  "author": {
+    "name": "Autonomys",
+    "url": "https://www.autonomys.net"
+  },
+  "scripts": {
+    "all": "yarn address && yarn balance && yarn transfer",
+    "address": "npx ts-node ./src/address.ts",
+    "balance": "npx ts-node ./src/balance.ts",
+    "transfer": "npx ts-node ./src/transfer.ts"
+  },
+  "dependencies": {
+    "@autonomys/auto-consensus": "workspace:*",
+    "@autonomys/auto-utils": "workspace:*",
+    "dotenv": "^16.4.5"
+  }
+}

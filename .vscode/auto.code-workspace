@@ -20,6 +20,10 @@
       "name": "Example - NextJS",
       "path": "../examples/next",
     },
+    {
+      "name": "Example - Node",
+      "path": "../examples/node",
+    },
   ],
   "settings": {
     "editor.codeActionsOnSave": {
