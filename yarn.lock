@@ -15,7 +15,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@autonomys/auto-consensus@workspace:packages/auto-consensus":
+"@autonomys/auto-consensus@workspace:*, @autonomys/auto-consensus@workspace:packages/auto-consensus":
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-consensus@workspace:packages/auto-consensus"
   dependencies:
@@ -2333,6 +2333,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"dotenv@npm:^16.4.5":
+  version: 16.4.5
+  resolution: "dotenv@npm:16.4.5"
+  checksum: 10c0/48d92870076832af0418b13acd6e5a5a3e83bb00df690d9812e94b24aff62b88ade955ac99a05501305b8dc8f1b0ee7638b18493deb6fe93d680e5220936292f
+  languageName: node
+  linkType: hard
+
 "eastasianwidth@npm:^0.2.0":
   version: 0.2.0
   resolution: "eastasianwidth@npm:0.2.0"
@@ -4078,6 +4085,16 @@ __metadata:
   checksum: 10c0/199fc93773ae70ec9969bc6d5ac5b2bbd6eb986ed1907d751f411fef3ede0e4bfdb45ceb43711f8078bea237b6036db8b1bf208f6ff2b70c7d615afd157f3ab9
   languageName: node
   linkType: hard
+
+"node@workspace:examples/node":
+  version: 0.0.0-use.local
+  resolution: "node@workspace:examples/node"
+  dependencies:
+    "@autonomys/auto-consensus": "workspace:*"
+    "@autonomys/auto-utils": "workspace:*"
+    dotenv: "npm:^16.4.5"
+  languageName: unknown
+  linkType: soft
 
 "nopt@npm:^7.0.0":
   version: 7.2.1
