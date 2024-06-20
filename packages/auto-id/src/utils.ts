@@ -23,16 +23,6 @@ export function derEncodeSignatureAlgorithmOID(oid: string): Uint8Array {
   return new Uint8Array([...sequenceHeader, ...new Uint8Array(berArrayBuffer), ...nullParameter])
 }
 
-export function randomSerialNumber(): bigint {
-  // Generate 20 random bytes
-  const bytes = randomBytes(20)
-  // Convert bytes to a BigInt
-  let serial = BigInt('0x' + bytes.toString('hex'))
-  // Shift right by 1 to ensure the number is positive
-  serial = serial >> BigInt(1)
-  return serial
-}
-
 export function addDaysToCurrentDate(days: number): Date {
   const currentDate = new Date() // This gives you the current date and time
   currentDate.setUTCDate(currentDate.getUTCDate() + days) // Adds the specified number of days
