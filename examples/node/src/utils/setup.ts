@@ -1,4 +1,5 @@
 import { ActivateWalletInput, activateWallet, networks } from '@autonomys/auto-utils'
+import { mnemonicGenerate } from '@polkadot/util-crypto'
 import 'dotenv/config'
 
 export const setup = async () => {
@@ -10,6 +11,8 @@ export const setup = async () => {
       ? { networkId: networks[0].id }
       : { networkId: 'autonomys-localhost' }
 
+  console.log('\x1b[32m%s\x1b[0m', 'Network:', config.networkId, '\n')
+
   const { api, accounts: alice } = await activateWallet({
     ...config,
     uri: process.env.ALICE_SEED,
@@ -20,5 +23,11 @@ export const setup = async () => {
     uri: process.env.BOB_SEED,
   } as ActivateWalletInput)
 
-  return { api, alice, bob }
+  const randomMnemonic = mnemonicGenerate()
+  const { accounts: randomUser } = await activateWallet({
+    ...config,
+    uri: randomMnemonic,
+  } as ActivateWalletInput)
+
+  return { api, alice, bob, randomUser }
 }
