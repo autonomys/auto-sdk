@@ -29,3 +29,13 @@ export function stringToUint8Array(text: string): Uint8Array {
   const encoder = new TextEncoder() // Create a new TextEncoder instance
   return encoder.encode(text) // Encode the string to a Uint8Array using UTF-8 encoding
 }
+
+/**
+ * Concatenates two Uint8Array instances into a single Uint8Array.
+ */
+export function concatenateUint8Arrays(array1: Uint8Array, array2: Uint8Array): Uint8Array {
+  const combined = new Uint8Array(array1.length + array2.length)
+  combined.set(array1)
+  combined.set(array2, array1.length)
+  return combined
+}

@@ -19,6 +19,24 @@ export function generateRsaKeyPair(keySize: number = 2048): [string, string] {
   return [privateKey, publicKey]
 }
 
+import { Crypto } from '@peculiar/webcrypto'
+import * as x509 from '@peculiar/x509'
+const crypto = new Crypto()
+
+// FIXME: keep one function. need to modify the tests.
+export async function generateEd25519KeyPair2(): Promise<[CryptoKey, CryptoKey]> {
+  const keyPair = await crypto.subtle.generateKey(
+    {
+      name: 'Ed25519',
+      namedCurve: 'Ed25519',
+    },
+    true,
+    ['sign', 'verify'],
+  )
+
+  return [keyPair.privateKey, keyPair.publicKey]
+}
+
 /**
  * Generates an Ed25519 key pair.
  * @returns A tuple containing the Ed25519 private key and public key.
@@ -167,7 +185,7 @@ export async function loadPrivateKey(filePath: string, password?: string): Promi
   try {
     const keyData = await read(filePath)
     const privateKey = pemToPrivateKey(keyData, password)
-    return privateKey;
+    return privateKey
   } catch (error: any) {
     throw new Error(`Failed to load private key: ${error.message}`)
   }
@@ -286,4 +304,42 @@ export function doPublicKeysMatch(publicKey1: KeyObject, publicKey2: KeyObject):
 
   // Compare the serialized public key data
   return publicKey1Der.equals(publicKey2Der)
+}
+
+// TODO: finalize which function is to keep (from node's crypto or webcrypto)
+//      This can be done only after completing the AutoID package and testing
+//      it to see which one is useful.
+// export async function doPublicKeysMatch(
+//   publicKey1: CryptoKey,
+//   publicKey2: CryptoKey,
+// ): Promise<boolean> {
+//   const publicKey1Raw = new Uint8Array(await crypto.subtle.exportKey('spki', publicKey1))
+//   const publicKey2Raw = new Uint8Array(await crypto.subtle.exportKey('spki', publicKey2))
+
+//   const publicKey1Hex = Array.from(new Uint8Array(publicKey1Raw))
+//     .map((byte) => byte.toString(16).padStart(2, '0'))
+//     .join('')
+//   const publicKey2Hex = Array.from(publicKey2Raw)
+//     .map((byte) => byte.toString(16).padStart(2, '0'))
+//     .join('')
+
+//   return publicKey1Hex === publicKey2Hex
+// }
+
+export async function validateCertificatePublicKey(
+  certPublicKey: x509.PublicKey,
+  derivedPublicKey: CryptoKey,
+): Promise<boolean> {
+  const derivedPublicKeyRaw = new Uint8Array(
+    await crypto.subtle.exportKey('spki', derivedPublicKey),
+  )
+
+  const certPublicKeyHex = Array.from(new Uint8Array(certPublicKey.rawData))
+    .map((byte) => byte.toString(16).padStart(2, '0'))
+    .join('')
+  const derivedPublicKeyHex = Array.from(derivedPublicKeyRaw)
+    .map((byte) => byte.toString(16).padStart(2, '0'))
+    .join('')
+
+  return certPublicKeyHex === derivedPublicKeyHex
 }
