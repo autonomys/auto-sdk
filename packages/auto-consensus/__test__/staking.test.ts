@@ -9,7 +9,7 @@ import {
   sudo,
   withdrawStake,
 } from '@autonomys/auto-consensus'
-import { ActivateWalletInput, activateWallet } from '@autonomys/auto-utils'
+import { ActivateWalletInput, activateWallet, getMockWallet } from '@autonomys/auto-utils'
 import { mnemonicGenerate } from '@polkadot/util-crypto'
 import {
   setup,
@@ -19,25 +19,21 @@ import {
 } from './helpers'
 
 describe('Verify staking functions', () => {
-  const { isLocalhost, TEST_NETWORK, ALICE_URI, ALICE_ADDRESS } = setup()
+  const { isLocalhost, TEST_NETWORK, wallets } = setup()
+
+  const alice = getMockWallet('Alice', wallets)
 
   if (isLocalhost) {
     describe('Test registerOperator()', () => {
       test('Check Alice can register random wallet as an operator', async () => {
         const mnemonicOperator = mnemonicGenerate()
-        const { api, accounts } = await activateWallet({
-          ...TEST_NETWORK,
-          uri: ALICE_URI,
-        } as ActivateWalletInput)
         const { accounts: operatorAccounts } = await activateWallet({
           ...TEST_NETWORK,
           uri: mnemonicOperator,
         } as ActivateWalletInput)
-        expect(accounts.length).toBeGreaterThan(0)
-        expect(accounts[0].address).toEqual(ALICE_ADDRESS)
 
-        const sender = accounts[0]
-        const _balanceSenderStart = await balance(api, address(sender.address))
+        const sender = alice.accounts[0]
+        const _balanceSenderStart = await balance(alice.api, address(sender.address))
         expect(_balanceSenderStart.free).toBeGreaterThan(BigInt(0))
 
         const domainId = '0'
@@ -45,8 +41,8 @@ describe('Verify staking functions', () => {
         const minimumNominatorStake = '1000000000000000000'
         const nominationTax = '5'
         const txInput = {
-          api,
-          senderAddress: ALICE_ADDRESS,
+          api: alice.api,
+          senderAddress: sender.address,
           Operator: operatorAccounts[0],
           domainId,
           amountToStake,
@@ -56,14 +52,17 @@ describe('Verify staking functions', () => {
         await signAndSendTx(sender, await registerOperator(txInput), [events.operatorRegistered])
         const findOperator = await verifyOperatorRegistration(txInput)
 
-        const _balanceSenderEnd = await balance(api, address(sender.address))
+        const _balanceSenderEnd = await balance(alice.api, address(sender.address))
         expect(_balanceSenderEnd.free).toBeLessThan(
           _balanceSenderStart.free - BigInt(amountToStake),
         )
         if (findOperator) {
-          await sudo(api, sender, await api.tx.domains.forceStakingEpochTransition(domainId), [
-            events.forceDomainEpochTransition,
-          ])
+          await sudo(
+            alice.api,
+            sender,
+            await alice.api.tx.domains.forceStakingEpochTransition(domainId),
+            [events.forceDomainEpochTransition],
+          )
           await verifyOperatorRegistrationFinal(txInput)
         }
       }, 30000)
@@ -71,22 +70,15 @@ describe('Verify staking functions', () => {
 
     describe('Test nominateOperator()', () => {
       test('Check Alice can nominate OperatorId 1', async () => {
-        const { api, accounts } = await activateWallet({
-          ...TEST_NETWORK,
-          uri: ALICE_URI,
-        } as ActivateWalletInput)
-        expect(accounts.length).toBeGreaterThan(0)
-        expect(accounts[0].address).toEqual(ALICE_ADDRESS)
-
-        const sender = accounts[0]
-        const _balanceSenderStart = await balance(api, address(sender.address))
+        const sender = alice.accounts[0]
+        const _balanceSenderStart = await balance(alice.api, address(sender.address))
         expect(_balanceSenderStart.free).toBeGreaterThan(BigInt(0))
 
         const amountToStake = '50000000000000000000'
         await signAndSendTx(
           sender,
           await nominateOperator({
-            api,
+            api: alice.api,
             operatorId: '1',
             amountToStake,
           }),
@@ -96,20 +88,14 @@ describe('Verify staking functions', () => {
 
       test('Check Operator can addFunds after registration', async () => {
         const mnemonicOperator = mnemonicGenerate()
-        const { api, accounts } = await activateWallet({
-          ...TEST_NETWORK,
-          uri: ALICE_URI,
-        } as ActivateWalletInput)
         const { accounts: operatorAccounts } = await activateWallet({
           ...TEST_NETWORK,
           uri: mnemonicOperator,
         } as ActivateWalletInput)
-        expect(accounts.length).toBeGreaterThan(0)
-        expect(accounts[0].address).toEqual(ALICE_ADDRESS)
 
-        const sender = accounts[0]
+        const sender = alice.accounts[0]
 
-        const _balanceSenderStart = await balance(api, address(sender.address))
+        const _balanceSenderStart = await balance(alice.api, address(sender.address))
         expect(_balanceSenderStart.free).toBeGreaterThan(BigInt(0))
 
         const domainId = '0'
@@ -117,8 +103,8 @@ describe('Verify staking functions', () => {
         const minimumNominatorStake = '1000000000000000000'
         const nominationTax = '5'
         const txInput = {
-          api,
-          senderAddress: ALICE_ADDRESS,
+          api: alice.api,
+          senderAddress: sender.address,
           Operator: operatorAccounts[0],
           domainId,
           amountToStake,
@@ -128,9 +114,12 @@ describe('Verify staking functions', () => {
         await signAndSendTx(sender, await registerOperator(txInput), [events.operatorRegistered])
         await verifyOperatorRegistration(txInput)
 
-        await sudo(api, sender, await api.tx.domains.forceStakingEpochTransition(domainId), [
-          events.forceDomainEpochTransition,
-        ])
+        await sudo(
+          alice.api,
+          sender,
+          await alice.api.tx.domains.forceStakingEpochTransition(domainId),
+          [events.forceDomainEpochTransition],
+        )
         const operator = await verifyOperatorRegistrationFinal(txInput)
 
         if (operator) {
@@ -138,7 +127,7 @@ describe('Verify staking functions', () => {
           await signAndSendTx(
             sender,
             await nominateOperator({
-              api,
+              api: alice.api,
               operatorId: operator.operatorId,
               amountToStake: amountToAdd,
             }),
@@ -151,20 +140,14 @@ describe('Verify staking functions', () => {
     describe('Test deregisterOperator()', () => {
       test('Check Operator can deregisterOperator after registration', async () => {
         const mnemonicOperator = mnemonicGenerate()
-        const { api, accounts } = await activateWallet({
-          ...TEST_NETWORK,
-          uri: ALICE_URI,
-        } as ActivateWalletInput)
         const { accounts: operatorAccounts } = await activateWallet({
           ...TEST_NETWORK,
           uri: mnemonicOperator,
         } as ActivateWalletInput)
-        expect(accounts.length).toBeGreaterThan(0)
-        expect(accounts[0].address).toEqual(ALICE_ADDRESS)
 
-        const sender = accounts[0]
+        const sender = alice.accounts[0]
 
-        const _balanceSenderStart = await balance(api, address(sender.address))
+        const _balanceSenderStart = await balance(alice.api, address(sender.address))
         expect(_balanceSenderStart.free).toBeGreaterThan(BigInt(0))
 
         const domainId = '0'
@@ -172,8 +155,8 @@ describe('Verify staking functions', () => {
         const minimumNominatorStake = '1000000000000000000'
         const nominationTax = '5'
         const txInput = {
-          api,
-          senderAddress: ALICE_ADDRESS,
+          api: alice.api,
+          senderAddress: sender.address,
           Operator: operatorAccounts[0],
           domainId,
           amountToStake,
@@ -183,16 +166,19 @@ describe('Verify staking functions', () => {
         await signAndSendTx(sender, await registerOperator(txInput), [events.operatorRegistered])
         await verifyOperatorRegistration(txInput)
 
-        await sudo(api, sender, await api.tx.domains.forceStakingEpochTransition(domainId), [
-          events.forceDomainEpochTransition,
-        ])
+        await sudo(
+          alice.api,
+          sender,
+          await alice.api.tx.domains.forceStakingEpochTransition(domainId),
+          [events.forceDomainEpochTransition],
+        )
         const findOperator = await verifyOperatorRegistrationFinal(txInput)
 
         if (findOperator) {
           await signAndSendTx(
             sender,
             await deregisterOperator({
-              api,
+              api: alice.api,
               operatorId: findOperator.operatorId,
             }),
             [events.operatorDeRegistered],
@@ -203,25 +189,18 @@ describe('Verify staking functions', () => {
 
     describe('Test withdrawStake()', () => {
       test('Check Alice can nominate OperatorId 1 and then withdrawStake', async () => {
-        const { api, accounts } = await activateWallet({
-          ...TEST_NETWORK,
-          uri: ALICE_URI,
-        } as ActivateWalletInput)
-        expect(accounts.length).toBeGreaterThan(0)
-        expect(accounts[0].address).toEqual(ALICE_ADDRESS)
-
-        const sender = accounts[0]
-        const _balanceSenderStart = await balance(api, address(sender.address))
+        const sender = alice.accounts[0]
+        const _balanceSenderStart = await balance(alice.api, address(sender.address))
         expect(_balanceSenderStart.free).toBeGreaterThan(BigInt(0))
 
         const operatorId = '1'
-        const operatorDetails = await operator(api, operatorId)
+        const operatorDetails = await operator(alice.api, operatorId)
 
         const amountToStake = '50000000000000000000'
         await signAndSendTx(
           sender,
           await nominateOperator({
-            api,
+            api: alice.api,
             operatorId,
             amountToStake,
           }),
@@ -229,16 +208,16 @@ describe('Verify staking functions', () => {
         )
 
         await sudo(
-          api,
+          alice.api,
           sender,
-          await api.tx.domains.forceStakingEpochTransition(operatorDetails.currentDomainId),
+          await alice.api.tx.domains.forceStakingEpochTransition(operatorDetails.currentDomainId),
           [events.forceDomainEpochTransition],
         )
 
         await signAndSendTx(
           sender,
           await withdrawStake({
-            api,
+            api: alice.api,
             operatorId,
             shares: operatorDetails.currentTotalShares / BigInt(1000),
           }),
