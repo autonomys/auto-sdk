@@ -8,16 +8,11 @@ export const signAndSendTx = async (
   eventsExpected: Events = [],
   log: boolean = true,
 ) => {
-  const { success, txHash, blockHash, eventsExpectedMissing } = await signAndSend(
-    sender,
-    tx,
-    eventsExpected,
-    log,
-  )
+  const result = await signAndSend(sender, tx, eventsExpected, log)
 
-  expect(txHash).toBeDefined()
-  expect(blockHash).toBeDefined()
-  expect(eventsExpectedMissing).toHaveLength(0)
+  expect(result.txHash).toBeDefined()
+  expect(result.blockHash).toBeDefined()
+  expect(result.eventsExpectedMissing).toHaveLength(0)
 
-  return { success, txHash, blockHash, eventsExpectedMissing }
+  return result
 }
