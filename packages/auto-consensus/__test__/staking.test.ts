@@ -1,21 +1,19 @@
-import { ActivateWalletInput, activateWallet } from '@autonomys/auto-utils'
-import { mnemonicGenerate } from '@polkadot/util-crypto'
-import { address } from '../src/address'
-import { balance } from '../src/balances'
 import {
+  address,
+  balance,
   deregisterOperator,
+  events,
   nominateOperator,
   operator,
   registerOperator,
-  unlockFunds,
+  sudo,
   withdrawStake,
-} from '../src/staking'
-import { transfer } from '../src/transfer'
+} from '@autonomys/auto-consensus'
+import { ActivateWalletInput, activateWallet } from '@autonomys/auto-utils'
+import { mnemonicGenerate } from '@polkadot/util-crypto'
 import {
-  events,
   setup,
   signAndSendTx,
-  sudo,
   verifyOperatorRegistration,
   verifyOperatorRegistrationFinal,
 } from './helpers'

@@ -1,8 +1,6 @@
+import { address, balance, events, transfer } from '@autonomys/auto-consensus'
 import { ActivateWalletInput, activateWallet } from '@autonomys/auto-utils'
-import { address } from '../src/address'
-import { balance } from '../src/balances'
-import { transfer } from '../src/transfer'
-import { events, setup, signAndSendTx } from './helpers'
+import { setup, signAndSendTx } from './helpers'
 
 describe('Verify transfer functions', () => {
   const { isLocalhost, TEST_NETWORK, ALICE_URI, ALICE_ADDRESS, BOB_ADDRESS } = setup()

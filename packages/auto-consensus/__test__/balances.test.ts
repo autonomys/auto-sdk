@@ -1,6 +1,5 @@
+import { address, balance, totalIssuance } from '@autonomys/auto-consensus'
 import { ActivateWalletInput, activateWallet } from '@autonomys/auto-utils'
-import { address } from '../src/address'
-import { balance, totalIssuance } from '../src/balances'
 import { setup } from './helpers'
 
 describe('Verify balances functions', () => {
