@@ -6,7 +6,7 @@ export type EventKeys =
   | 'transfer'
   | 'operatorRegistered'
   | 'operatorNominated'
-  | 'operatorDeRegistered'
+  | 'operatorDeregistered'
   | 'withdrawStake'
   | 'unlockFunds'
   | 'forceDomainEpochTransition'
