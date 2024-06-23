@@ -12,12 +12,19 @@ yarn
 
 ```bash
 yarn balance
+yarn operators
 ```
 
 ## Execute extrinsics
 
 ```bash
 yarn transfer
+yarn register-operator
+yarn nominate-operator
+yarn withdraw-stake
+yarn deregister-operator
+yarn unlock-funds
+yarn unlock-nominator
 ```
 
 ## Utility
