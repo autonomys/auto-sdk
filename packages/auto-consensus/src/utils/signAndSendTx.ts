@@ -1,6 +1,7 @@
 import type { AddressOrPair, SubmittableExtrinsic } from '@polkadot/api/types'
 import type { ISubmittableResult } from '@polkadot/types/types'
 import type { Events } from '../types/events'
+import type { EventsValidated, TransactionSignedAndSend } from '../types/transaction'
 import { detectTxSuccess } from './detectTxSuccess'
 import { expectSuccessfulTxEvent } from './events'
 import { validateEvents } from './validateEvents'
@@ -10,10 +11,11 @@ export const signAndSendTx = async (
   tx: SubmittableExtrinsic<'promise', ISubmittableResult>,
   eventsExpected: Events = expectSuccessfulTxEvent,
   log: boolean = false,
-) => {
+): Promise<TransactionSignedAndSend> => {
   let success = false
   let txHashHex: string | undefined = undefined
   let blockHash: string | undefined = undefined
+  let eventsValidated: EventsValidated = { expected: [], found: [] }
   await new Promise<void>((resolve, reject) => {
     tx.signAndSend(sender, ({ events, status, txHash }) => {
       if (status.isInBlock) {
@@ -24,8 +26,8 @@ export const signAndSendTx = async (
         success = detectTxSuccess(events)
 
         if (eventsExpected.length > 0) {
-          validateEvents(events, eventsExpected, txHashHex, blockHash, log)
-          if (eventsExpected.length === 0) resolve()
+          const _events = validateEvents(events, eventsExpected, txHashHex, blockHash, log)
+          if (_events.expected.length === 0) resolve()
           else reject(new Error('Events not found'))
         } else resolve()
       } else if (
@@ -40,5 +42,5 @@ export const signAndSendTx = async (
     })
   })
 
-  return { success, txHash: txHashHex, blockHash, eventsExpectedMissing: eventsExpected }
+  return { success, txHash: txHashHex, blockHash, events: eventsValidated }
 }
