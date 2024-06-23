@@ -89,7 +89,7 @@ export const events: { [key in EventKeys]: ActionEvents } = {
     transactionPayment.feePaid,
     system.success,
   ],
-  operatorDeRegistered: [
+  operatorDeregistered: [
     balances.withdraw,
     domains.operatorDeregistered,
     transactionPayment.feePaid,
