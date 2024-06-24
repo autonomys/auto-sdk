@@ -1,8 +1,11 @@
+import type { ApiPromise } from '@polkadot/api'
 import { Keyring } from '@polkadot/api'
 import type { InjectedAccountWithMeta } from '@polkadot/extension-inject/types'
 import type { KeyringPair } from '@polkadot/keyring/types'
 import { cryptoWaitReady } from '@polkadot/util-crypto'
 import { activate, activateDomain } from './api'
+import { defaultNetwork } from './constants/network'
+import { mockURIs } from './constants/wallet'
 import type { AppName, DomainInput, Mnemonic, MnemonicOrURI, NetworkInput, URI } from './types'
 
 export const setupWallet = async (input: MnemonicOrURI): Promise<KeyringPair> => {
@@ -22,8 +25,12 @@ export const setupWallet = async (input: MnemonicOrURI): Promise<KeyringPair> =>
 }
 
 export type ActivateWalletInput = (NetworkInput | DomainInput) & MnemonicOrURI & AppName
+export type WalletActivated = {
+  api: ApiPromise
+  accounts: InjectedAccountWithMeta[] & KeyringPair[]
+}
 
-export const activateWallet = async (input: ActivateWalletInput) => {
+export const activateWallet = async (input: ActivateWalletInput): Promise<WalletActivated> => {
   // Create the API instance
   const api =
     (input as DomainInput).domainId === undefined
@@ -50,3 +57,18 @@ export const activateWallet = async (input: ActivateWalletInput) => {
 
   return { api, accounts }
 }
+
+export const mockWallets = async (
+  network: NetworkInput | DomainInput = { networkId: defaultNetwork.id },
+): Promise<WalletActivated[]> =>
+  await Promise.all(
+    mockURIs.map((uri) =>
+      activateWallet({
+        ...network,
+        uri,
+      } as ActivateWalletInput),
+    ),
+  )
+
+export const getMockWallet = (name: string, wallets: WalletActivated[]): WalletActivated =>
+  wallets[Object.values(mockURIs).indexOf(`//${name}`)]

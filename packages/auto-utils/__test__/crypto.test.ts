@@ -1,4 +1,4 @@
-import { blake2b_256, concatenateUint8Arrays, stringToUint8Array } from '../src/crypto'
+import { blake2b_256, concatenateUint8Arrays, stringToUint8Array } from '@autonomys/auto-utils'
 
 describe('Verify crypto functions', () => {
   test('Check blake2b_256 return the hash of the data', async () => {

@@ -1,4 +1,4 @@
-import { networkTimestamp } from '../src/info'
+import { networkTimestamp } from '@autonomys/auto-consensus'
 import { setup } from './helpers'
 
 describe('Verify info functions', () => {

@@ -1,11 +1,11 @@
-import { ActivateWalletInput, activateWallet } from '@autonomys/auto-utils'
-import { address } from '../src/address'
-import { balance, totalIssuance } from '../src/balances'
+import { address, balance, totalIssuance } from '@autonomys/auto-consensus'
+import { ActivateWalletInput, activateWallet, getMockWallet } from '@autonomys/auto-utils'
 import { setup } from './helpers'
 
 describe('Verify balances functions', () => {
-  const { isLocalhost, TEST_NETWORK, TEST_MNEMONIC, TEST_ADDRESS, ALICE_URI, ALICE_ADDRESS } =
-    setup()
+  const { isLocalhost, TEST_NETWORK, TEST_MNEMONIC, TEST_ADDRESS, wallets } = setup()
+
+  const alice = getMockWallet('Alice', wallets)
 
   describe('Test totalIssuance()', () => {
     test('Check totalIssuance return a number greater than zero', async () => {
@@ -33,14 +33,7 @@ describe('Verify balances functions', () => {
 
     if (isLocalhost) {
       test('Check balance of Alice wallet is greater than 0', async () => {
-        const { api, accounts } = await activateWallet({
-          ...TEST_NETWORK,
-          uri: ALICE_URI,
-        } as ActivateWalletInput)
-        expect(accounts.length).toBeGreaterThan(0)
-        expect(accounts[0].address).toEqual(ALICE_ADDRESS)
-
-        const _balance = await balance(api, address(accounts[0].address))
+        const _balance = await balance(alice.api, address(alice.accounts[0].address))
         expect(_balance.free).toBeGreaterThan(BigInt(0))
       })
     }
