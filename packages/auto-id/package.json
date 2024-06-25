@@ -9,7 +9,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@autonomys/auto-utils": "workspace:*",
+    "@autonomys/auto-utils": "0.1.1",
     "@peculiar/asn1-schema": "^2.3.8",
     "@peculiar/asn1-x509": "^2.3.8",
     "@peculiar/webcrypto": "^1.5.0",
@@ -27,5 +27,6 @@
     "ts-jest": "^29.1.4",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5"
-  }
+  },
+  "gitHead": "6de838d2d4b144450cc27d5fc05536904735fcc1"
 }
