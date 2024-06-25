@@ -1,3 +1,5 @@
+// file: src/utils/signAndSendTx.ts
+
 import type { AddressOrPair, SubmittableExtrinsic } from '@polkadot/api/types'
 import type { ISubmittableResult } from '@polkadot/types/types'
 import type { Events } from '../types/events'
