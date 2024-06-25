@@ -1,8 +1,7 @@
-export type ActionEvents = string | string[]
-export type Events = ActionEvents | ActionEvents[]
+import type { ActionEvents, EventKeys } from '../types/events'
 
 // Enum for Event Types
-const enum Type {
+export const enum Type {
   system = 'system',
   balances = 'balances',
   transactionPayment = 'transactionPayment',
@@ -11,7 +10,7 @@ const enum Type {
 }
 
 // Utility Function for Event Names
-const eventName = (type: Type, event: string) => `${type}.${event}`
+export const eventName = (type: Type, event: string) => `${type}.${event}`
 
 // System Events
 const system: {
@@ -60,15 +59,17 @@ const sudo: {
   sudid: eventName(Type.sudo, 'Sudid'),
 }
 
-// Define specific extrinsic keys for events
-type EventKeys =
-  | 'transfer'
-  | 'operatorRegistered'
-  | 'operatorNominated'
-  | 'operatorDeRegistered'
-  | 'withdrawStake'
-  | 'unlockFunds'
-  | 'forceDomainEpochTransition'
+// Group of Events
+export const eventsGroup = {
+  system,
+  balances,
+  transactionPayment,
+  domains,
+  sudo,
+}
+
+// Export a default success event
+export const expectSuccessfulTxEvent = [system.success]
 
 // Events Mappings
 export const events: { [key in EventKeys]: ActionEvents } = {
@@ -88,7 +89,7 @@ export const events: { [key in EventKeys]: ActionEvents } = {
     transactionPayment.feePaid,
     system.success,
   ],
-  operatorDeRegistered: [
+  operatorDeregistered: [
     balances.withdraw,
     domains.operatorDeregistered,
     transactionPayment.feePaid,

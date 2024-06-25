@@ -1,14 +1,20 @@
-import { defaultNetwork, networks } from '../src/constants/network'
-import { getNetworkDetails, getNetworkRpcUrls } from '../src/network'
+import {
+  defaultNetwork,
+  getNetworkDetails,
+  getNetworkRpcUrls,
+  networks,
+} from '@autonomys/auto-utils'
 
 describe('Verify network functions', () => {
   const isLocalhost = process.env.LOCALHOST === 'true'
 
   // Define the test network and its details
-  const TEST_NETWORK = !isLocalhost ? { networkId: networks[0].id } : { networkId: 'autonomys-localhost' }
+  const TEST_NETWORK = !isLocalhost
+    ? { networkId: networks[0].id }
+    : { networkId: 'autonomys-localhost' }
   const TEST_NETWORK_DETAIL = networks.find((network) => network.id === TEST_NETWORK.networkId)
   if (!TEST_NETWORK_DETAIL) throw new Error(`Network with id ${TEST_NETWORK.networkId} not found`)
-  
+
   const TEST_INVALID_NETWORK = { networkId: 'invalid-network' }
 
   test('Check getNetworkDetails return all network detail', async () => {

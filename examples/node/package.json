@@ -13,10 +13,17 @@
     "url": "https://www.autonomys.net"
   },
   "scripts": {
-    "all": "yarn address && yarn balance && yarn transfer",
+    "all": "yarn address && yarn balance && yarn transfer && yarn operators && yarn register-operator && yarn nominate-operator && yarn withdraw-stake && yarn deregister-operator",
     "address": "npx ts-node ./src/address.ts",
     "balance": "npx ts-node ./src/balance.ts",
-    "transfer": "npx ts-node ./src/transfer.ts"
+    "transfer": "npx ts-node ./src/transfer.ts",
+    "operators": "npx ts-node ./src/operators.ts",
+    "register-operator": "npx ts-node ./src/register-operator.ts",
+    "nominate-operator": "npx ts-node ./src/nominate-operator.ts",
+    "withdraw-stake": "npx ts-node ./src/withdraw-stake.ts",
+    "deregister-operator": "npx ts-node ./src/deregister-operator.ts",
+    "unlock-funds": "npx ts-node ./src/unlock-funds.ts",
+    "unlock-nominator": "npx ts-node ./src/unlock-nominator.ts"
   },
   "dependencies": {
     "@autonomys/auto-consensus": "workspace:*",

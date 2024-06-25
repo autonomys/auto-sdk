@@ -1,4 +1,5 @@
 import { ObjectIdentifier } from 'asn1js'
+import { randomBytes } from 'crypto'
 
 /**
  * Encodes a given string representation of an OID into its DER format.
@@ -20,4 +21,10 @@ export function derEncodeSignatureAlgorithmOID(oid: string): Uint8Array {
   const sequenceHeader = [0x30, totalLength] // 0x30 is the DER tag for SEQUENCE
 
   return new Uint8Array([...sequenceHeader, ...new Uint8Array(berArrayBuffer), ...nullParameter])
+}
+
+export function addDaysToCurrentDate(days: number): Date {
+  const currentDate = new Date() // This gives you the current date and time
+  currentDate.setUTCDate(currentDate.getUTCDate() + days) // Adds the specified number of days
+  return currentDate
 }

@@ -1,16 +1,11 @@
-import { address, balance, transfer } from '@autonomys/auto-consensus'
+import { address, balance, registerOperator } from '@autonomys/auto-consensus'
 import { setup, signAndSend } from './utils'
 
 const main = async () => {
-  const { api, alice, bob } = await setup()
+  const { api, alice, randomUser } = await setup()
 
   // Alice's Addresses
   const aliceAddress = address(alice[0].address)
-  console.log('\x1b[32m%s\x1b[0m', 'Alice Clean Address:', aliceAddress)
-
-  // Bob's Addresses
-  const bobAddress = address(bob[0].address)
-  console.log('\x1b[32m%s\x1b[0m', 'Bob Clean Address:', bobAddress, '\n')
 
   // Initial Balances
   const initialAliceBalance = await balance(api, aliceAddress)
@@ -22,19 +17,17 @@ const main = async () => {
     'ATC',
     '\x1b[0m',
   )
-  const initialBobBalance = await balance(api, bobAddress)
-  console.log(
-    '\x1b[36m%s\x1b[0m',
-    'Bob Initial Balance:',
-    initialBobBalance.free.toString(),
-    '\x1b[36m',
-    'ATC',
-    '\x1b[0m\n',
-  )
-
   // Transfer 2x10^18 ATC tokens from Alice to Bob
-  const transferAmount = BigInt(2 * 10 ** 18)
-  const tx = await transfer(api, bob[0].address, transferAmount)
+  const amountToStake = BigInt(100 * 10 ** 18)
+  const tx = await registerOperator({
+    api,
+    senderAddress: alice[0].address,
+    Operator: randomUser[0],
+    domainId: '0',
+    amountToStake,
+    minimumNominatorStake: BigInt(10 * 10 ** 18),
+    nominationTax: '5',
+  })
 
   console.log('\x1b[32m%s\x1b[0m', 'Transaction Prepared! (with hash:', tx.hash.toHex(), ')')
   console.log('\x1b[33m%s\x1b[0m', 'Now broadcasting transaction!\n')
@@ -50,15 +43,6 @@ const main = async () => {
     '\x1b[36m',
     'ATC',
     '\x1b[0m',
-  )
-  const finalBobBalance = await balance(api, bobAddress)
-  console.log(
-    '\x1b[36m%s\x1b[0m',
-    'Bob Final Balance:',
-    finalBobBalance.free.toString(),
-    '\x1b[36m',
-    'ATC',
-    '\x1b[0m\n',
   )
 }
 
