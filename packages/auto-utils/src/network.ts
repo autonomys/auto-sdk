@@ -1,3 +1,5 @@
+// file: src/network.ts
+
 import { defaultNetwork, networks } from './constants/network'
 import type { DomainInput, NetworkInput } from './types/network'
 

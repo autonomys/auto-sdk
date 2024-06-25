@@ -1,3 +1,5 @@
+// file: src/api.ts
+
 import { ApiPromise, WsProvider } from '@polkadot/api'
 import { getNetworkDomainRpcUrls, getNetworkRpcUrls } from './network'
 import type { DomainInput, NetworkInput } from './types/network'

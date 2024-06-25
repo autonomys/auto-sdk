@@ -1,3 +1,5 @@
+// file: src/types/network.ts
+
 export type Explorer = {
   name: string
   url: string
