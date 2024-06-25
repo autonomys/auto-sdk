@@ -19,7 +19,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-consensus@workspace:packages/auto-consensus"
   dependencies:
-    "@autonomys/auto-utils": "npm:^0.1.3-alpha.0"
+    "@autonomys/auto-utils": "npm:^0.1.3-alpha.1"
     "@polkadot/types-codec": "npm:^11.2.1"
     "@types/jest": "npm:^29.5.12"
     eslint: "npm:^8.57.0"
@@ -34,7 +34,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-id@workspace:packages/auto-id"
   dependencies:
-    "@autonomys/auto-utils": "npm:^0.1.3-alpha.0"
+    "@autonomys/auto-utils": "npm:^0.1.3-alpha.1"
     "@peculiar/asn1-schema": "npm:^2.3.8"
     "@peculiar/asn1-x509": "npm:^2.3.8"
     "@peculiar/webcrypto": "npm:^1.5.0"
@@ -63,7 +63,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@autonomys/auto-utils@npm:^0.1.3-alpha.0, @autonomys/auto-utils@workspace:*, @autonomys/auto-utils@workspace:packages/auto-utils":
+"@autonomys/auto-utils@npm:^0.1.3-alpha.1, @autonomys/auto-utils@workspace:*, @autonomys/auto-utils@workspace:packages/auto-utils":
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-utils@workspace:packages/auto-utils"
   dependencies:
