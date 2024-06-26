@@ -1,5 +1,4 @@
 import { ObjectIdentifier } from 'asn1js'
-import { randomBytes } from 'crypto'
 
 /**
  * Encodes a given string representation of an OID into its DER format.
@@ -23,15 +22,28 @@ export function derEncodeSignatureAlgorithmOID(oid: string): Uint8Array {
   return new Uint8Array([...sequenceHeader, ...new Uint8Array(berArrayBuffer), ...nullParameter])
 }
 
-export function randomSerialNumber(): bigint {
-  // Generate 20 random bytes
-  const bytes = randomBytes(20)
-  // Convert bytes to a BigInt
-  let serial = BigInt('0x' + bytes.toString('hex'))
-  // Shift right by 1 to ensure the number is positive
-  serial = serial >> BigInt(1)
-  return serial
-}
+// import { Convert } from 'pvtsutils'
+// export function derEncodeSignatureAlgorithmOID2(oid: string): Uint8Array {
+//   // Convert the OID string to a byte array
+//   const oidBytes = new Uint8Array(Convert.FromHex(oid))
+
+//   // DER encoding for NULL
+//   const nullParameter = new Uint8Array([0x05, 0x00])
+
+//   // Calculate the total length including OID and NULL parameter
+//   const totalLength = oidBytes.byteLength + nullParameter.length + 2 // +2 for the type and length bytes of the OID
+
+//   // 0x30 is the DER tag for SEQUENCE
+//   const sequenceHeader = new Uint8Array([0x30, totalLength])
+
+//   return new Uint8Array([
+//     ...sequenceHeader,
+//     0x06,
+//     oidBytes.byteLength,
+//     ...oidBytes,
+//     ...nullParameter,
+//   ])
+// }
 
 export function addDaysToCurrentDate(days: number): Date {
   const currentDate = new Date() // This gives you the current date and time

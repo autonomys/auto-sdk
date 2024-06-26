@@ -13,7 +13,6 @@ import { Crypto } from '@peculiar/webcrypto'
 import * as x509 from '@peculiar/x509'
 import { KeyObject, createPublicKey } from 'crypto'
 import { doPublicKeysMatch, pemToPublicKey } from './keyManagement'
-import { randomSerialNumber } from './utils'
 
 const crypto = new Crypto()
 x509.cryptoProvider.set(crypto)
@@ -66,10 +65,6 @@ export class CertificateManager {
     })
     return new x509.Name([[commonNameAttr]])
   }
-
-  // protected static toCommonName(subjectName: string): JsonName {
-  //   return [{ '2.5.4.3': [subjectName] }] // OID for commonName
-  // }
 
   static prettyPrintCertificate(cert: x509.X509Certificate): void {
     console.log('Certificate:')
@@ -241,7 +236,6 @@ export class CertificateManager {
     notAfter.setDate(notBefore.getDate() + validityPeriodDays)
 
     let certificateBuilder = await x509.X509CertificateGenerator.create({
-      serialNumber: randomSerialNumber().toString(),
       issuer: csr.subject,
       subject: csr.subject,
       notBefore,
