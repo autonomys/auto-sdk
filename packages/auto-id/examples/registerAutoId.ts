@@ -4,6 +4,7 @@
 
 import * as x509 from '@peculiar/x509'
 import { Keyring } from '@polkadot/api'
+import { cryptoWaitReady } from '@polkadot/util-crypto'
 import { config } from 'dotenv'
 import { CertificateManager, Registry, generateEd25519KeyPair2 } from '../src/index'
 
@@ -38,11 +39,13 @@ async function register(certificate: x509.X509Certificate, registry: Registry, i
 }
 
 async function main() {
+  await cryptoWaitReady()
+
   const { RPC_URL, KEYPAIR_URI } = loadEnv()
 
   // Initialize the signer keypair
-  const keyring = new Keyring({ type: 'ed25519' })
-  const substrateKeypair = keyring.addFromUri(KEYPAIR_URI, { name: 'sr25519' }, 'ed25519')
+  const keyring = new Keyring({ type: 'sr25519' })
+  const substrateKeypair = keyring.addFromUri(KEYPAIR_URI)
 
   // Initialize the Registry instance
   const registry = new Registry(RPC_URL!, substrateKeypair)

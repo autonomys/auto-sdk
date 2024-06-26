@@ -1,7 +1,8 @@
+import { AsnParser } from '@peculiar/asn1-schema'
+import { Certificate } from '@peculiar/asn1-x509'
 import { X509Certificate } from '@peculiar/x509'
 import { ApiPromise, SubmittableResult, WsProvider } from '@polkadot/api'
 import { KeyringPair } from '@polkadot/keyring/types'
-import { hexToU8a, u8aToHex } from '@polkadot/util'
 import { derEncodeSignatureAlgorithmOID } from './utils'
 
 interface RegistrationResult {
@@ -28,9 +29,19 @@ export class Registry {
       throw new Error('No signer provided')
     }
 
+    const certificateBuffer = Buffer.from(certificate.rawData)
+    // Load and parse the certificate
+    const cert = AsnParser.parse(certificateBuffer, Certificate)
+    const signatureAlgorithmOID = cert.signatureAlgorithm.algorithm
+
+    const derEncodedOID = derEncodeSignatureAlgorithmOID(signatureAlgorithmOID)
+    console.log(Buffer.from(derEncodedOID))
+    console.log(`DER encoded OID: ${derEncodedOID}`)
+    console.log(`Bytes length: ${derEncodedOID.length}`)
+
     const baseCertificate = {
       certificate: certificate.rawData,
-      signature_algorithm: derEncodeSignatureAlgorithmOID(certificate.signatureAlgorithm.name),
+      signature_algorithm: derEncodedOID,
       signature: certificate.signature,
     }
 
@@ -38,7 +49,7 @@ export class Registry {
       ? { Leaf: { issuer_id: issuerId, ...baseCertificate } }
       : { Root: baseCertificate }
 
-    const req = { req: { X509: certificateParam } }
+    const req = { X509: certificateParam }
 
     let identifier: number | null = null
 

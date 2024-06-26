@@ -6,7 +6,8 @@
     "build": "tsc",
     "clean": "rm -rf dist",
     "format": "prettier --write \"src/**/*.ts\"",
-    "test": "jest"
+    "test": "jest",
+    "register": "tsc && ts-node examples/registerAutoId.ts"
   },
   "dependencies": {
     "@autonomys/auto-utils": "workspace:*",
