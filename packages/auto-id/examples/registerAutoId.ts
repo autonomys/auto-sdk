@@ -27,11 +27,17 @@ function loadEnv(): { RPC_URL: string; KEYPAIR_URI: string } {
   return { RPC_URL, KEYPAIR_URI }
 }
 
-async function register(certificate: x509.X509Certificate, registry: Registry, issuerId?: number) {
+async function register(
+  certificate: x509.X509Certificate,
+  registry: Registry,
+  issuerId?: string | null | undefined,
+) {
   // Attempt to register the certificate
   const { receipt, identifier } = await registry.registerAutoId(certificate, issuerId)
   if (receipt && receipt.isInBlock) {
-    console.log(`Registration successful. ${identifier}`)
+    console.log(
+      `Registration successful with Auto ID identifier: ${identifier} in block #${receipt.blockNumber?.toString()}`,
+    )
     return identifier
   } else {
     console.log('Registration failed.')
@@ -45,26 +51,25 @@ async function main() {
 
   // Initialize the signer keypair
   const keyring = new Keyring({ type: 'sr25519' })
-  const substrateKeypair = keyring.addFromUri(KEYPAIR_URI)
+  const issuer = keyring.addFromUri(KEYPAIR_URI)
 
   // Initialize the Registry instance
-  const registry = new Registry(RPC_URL!, substrateKeypair)
+  const registry = new Registry(RPC_URL!, issuer)
 
   const keys = await generateEd25519KeyPair2()
   const selfIssuedCm = new CertificateManager(null, keys[0], keys[1])
-  const selfIssuedCert = await selfIssuedCm.selfIssueCertificate('test')
+  const selfIssuedCert = await selfIssuedCm.selfIssueCertificate('test6')
   const issuerId = await register(selfIssuedCert, registry)
 
   const userKeys = await generateEd25519KeyPair2()
   const userCm = new CertificateManager(null, userKeys[0], userKeys[1])
-  const userCsr = await userCm.createAndSignCSR('user')
+  const userCsr = await userCm.createAndSignCSR('user6')
   const userCert = await selfIssuedCm.issueCertificate(userCsr)
   CertificateManager.prettyPrintCertificate(userCert)
   const registerUser = await register(userCert, registry, issuerId!)
 
   console.log(`auto id from cert: ${CertificateManager.getCertificateAutoId(userCert)}`)
 }
-
 main()
   .then(() => process.exit(0))
   .catch((error) => {
