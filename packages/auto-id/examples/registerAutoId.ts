@@ -58,12 +58,12 @@ async function main() {
 
   const keys = await generateEd25519KeyPair2()
   const selfIssuedCm = new CertificateManager(null, keys[0], keys[1])
-  const selfIssuedCert = await selfIssuedCm.selfIssueCertificate('test6')
+  const selfIssuedCert = await selfIssuedCm.selfIssueCertificate('test')
   const issuerId = await register(selfIssuedCert, registry)
 
   const userKeys = await generateEd25519KeyPair2()
   const userCm = new CertificateManager(null, userKeys[0], userKeys[1])
-  const userCsr = await userCm.createAndSignCSR('user6')
+  const userCsr = await userCm.createAndSignCSR('user')
   const userCert = await selfIssuedCm.issueCertificate(userCsr)
   CertificateManager.prettyPrintCertificate(userCert)
   const registerUser = await register(userCert, registry, issuerId!)

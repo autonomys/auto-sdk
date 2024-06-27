@@ -123,8 +123,7 @@ export class Registry {
         if (status.isInBlock || status.isFinalized) {
           events.forEach(({ event: { section, method, data } }) => {
             if (section === 'system' && method === 'ExtrinsicFailed') {
-              // dispatchInfo contains the weight related data, txfee paid.
-              const [dispatchError, dispatchInfo] = data
+              const [dispatchError] = data
               const dispatchErrorJson = JSON.parse(dispatchError.toString())
 
               reject(
