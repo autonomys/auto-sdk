@@ -15,11 +15,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@autonomys/auto-consensus@workspace:packages/auto-consensus":
+"@autonomys/auto-consensus@workspace:*, @autonomys/auto-consensus@workspace:packages/auto-consensus":
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-consensus@workspace:packages/auto-consensus"
   dependencies:
     "@autonomys/auto-utils": "workspace:*"
+    "@polkadot/types-codec": "npm:^11.2.1"
     "@types/jest": "npm:^29.5.12"
     eslint: "npm:^8.57.0"
     jest: "npm:^29.7.0"
@@ -1360,7 +1361,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/types-codec@npm:11.2.1":
+"@polkadot/types-codec@npm:11.2.1, @polkadot/types-codec@npm:^11.2.1":
   version: 11.2.1
   resolution: "@polkadot/types-codec@npm:11.2.1"
   dependencies:
@@ -4232,6 +4233,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"node@workspace:examples/node":
+  version: 0.0.0-use.local
+  resolution: "node@workspace:examples/node"
+  dependencies:
+    "@autonomys/auto-consensus": "workspace:*"
+    "@autonomys/auto-utils": "workspace:*"
+    dotenv: "npm:^16.4.5"
+  languageName: unknown
+  linkType: soft
+
 "nopt@npm:^7.0.0":
   version: 7.2.1
   resolution: "nopt@npm:7.2.1"
@@ -5297,8 +5308,8 @@ __metadata:
   linkType: hard
 
 "ws@npm:^8.15.1, ws@npm:^8.8.1":
-  version: 8.17.0
-  resolution: "ws@npm:8.17.0"
+  version: 8.17.1
+  resolution: "ws@npm:8.17.1"
   peerDependencies:
     bufferutil: ^4.0.1
     utf-8-validate: ">=5.0.2"
@@ -5307,7 +5318,7 @@ __metadata:
       optional: true
     utf-8-validate:
       optional: true
-  checksum: 10c0/55241ec93a66fdfc4bf4f8bc66c8eb038fda2c7a4ee8f6f157f2ca7dc7aa76aea0c0da0bf3adb2af390074a70a0e45456a2eaf80e581e630b75df10a64b0a990
+  checksum: 10c0/f4a49064afae4500be772abdc2211c8518f39e1c959640457dcee15d4488628620625c783902a52af2dd02f68558da2868fd06e6fd0e67ebcd09e6881b1b5bfe
   languageName: node
   linkType: hard
 

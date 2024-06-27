@@ -1,8 +1,11 @@
+import type { ApiPromise } from '@polkadot/api'
 import { Keyring } from '@polkadot/api'
 import type { InjectedAccountWithMeta } from '@polkadot/extension-inject/types'
 import type { KeyringPair } from '@polkadot/keyring/types'
 import { cryptoWaitReady } from '@polkadot/util-crypto'
 import { activate, activateDomain } from './api'
+import { defaultNetwork } from './constants/network'
+import { mockURIs } from './constants/wallet'
 import type { AppName, DomainInput, Mnemonic, MnemonicOrURI, NetworkInput, URI } from './types'
 
 export const setupWallet = async (input: MnemonicOrURI): Promise<KeyringPair> => {
@@ -22,8 +25,12 @@ export const setupWallet = async (input: MnemonicOrURI): Promise<KeyringPair> =>
 }
 
 export type ActivateWalletInput = (NetworkInput | DomainInput) & MnemonicOrURI & AppName
+export type WalletActivated = {
+  api: ApiPromise
+  accounts: InjectedAccountWithMeta[] & KeyringPair[]
+}
 
-export const activateWallet = async (input: ActivateWalletInput) => {
+export const activateWallet = async (input: ActivateWalletInput): Promise<WalletActivated> => {
   // Create the API instance
   const api =
     (input as DomainInput).domainId === undefined
@@ -41,21 +48,27 @@ export const activateWallet = async (input: ActivateWalletInput) => {
     // Get the list of accounts from the extension
     const allAccounts = await web3Accounts()
     accounts.push(...allAccounts)
-
-    // Attach the first account (or handle multiple accounts as needed)
-    if (allAccounts.length > 0) {
-      const selectedAccount = allAccounts[0]
-      console.log('Connected to account:', selectedAccount.address)
-      // You can now use selectedAccount for transactions
-    } else {
-      console.warn('No accounts found in the Polkadot.js extension')
-    }
+    if (allAccounts.length === 0) console.warn('No accounts found in the Polkadot.js extension')
   } else if ((input as Mnemonic).mnemonic || (input as URI).uri) {
     // Attach the wallet in a node environment
     const account = await setupWallet(input)
     accounts.push(account)
-    if (account) console.log('Wallet attached:', account.address)
   } else throw new Error('No wallet provided')
 
   return { api, accounts }
 }
+
+export const mockWallets = async (
+  network: NetworkInput | DomainInput = { networkId: defaultNetwork.id },
+): Promise<WalletActivated[]> =>
+  await Promise.all(
+    mockURIs.map((uri) =>
+      activateWallet({
+        ...network,
+        uri,
+      } as ActivateWalletInput),
+    ),
+  )
+
+export const getMockWallet = (name: string, wallets: WalletActivated[]): WalletActivated =>
+  wallets[Object.values(mockURIs).indexOf(`//${name}`)]

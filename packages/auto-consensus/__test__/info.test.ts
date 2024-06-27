@@ -1,14 +1,8 @@
-import { activate, disconnect } from '@autonomys/auto-utils'
-import { networkTimestamp } from '../src/info'
+import { networkTimestamp } from '@autonomys/auto-consensus'
+import { setup } from './helpers'
 
 describe('Verify info functions', () => {
-  beforeAll(async () => {
-    await activate()
-  })
-
-  afterAll(async () => {
-    await disconnect()
-  })
+  setup()
 
   test('Check network timestamp return a number greater than zero', async () => {
     // totalIssuance is an async function that returns a hex number as a string

@@ -1,5 +1,5 @@
 import { activate } from '@autonomys/auto-utils'
-import { ApiPromise } from '@polkadot/api'
+import type { ApiPromise } from '@polkadot/api'
 import type { BN } from '@polkadot/util'
 
 type RawBalanceData = {
@@ -9,9 +9,9 @@ type RawBalanceData = {
   flags: BN
 }
 type BalanceData = {
-  free: any
-  reserved: any
-  frozen: any
+  free: bigint
+  reserved: bigint
+  frozen: bigint
 }
 
 export const totalIssuance = async (networkId?: string) => {
