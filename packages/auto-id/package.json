@@ -7,6 +7,7 @@
     "clean": "rm -rf dist",
     "format": "prettier --write \"src/**/*.ts\"",
     "test": "jest",
+    "hello": "tsc && ts-node examples/hello.ts",
     "register": "tsc && ts-node examples/registerAutoId.ts"
   },
   "dependencies": {

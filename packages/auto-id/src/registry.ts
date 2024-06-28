@@ -6,6 +6,7 @@ import { KeyringPair } from '@polkadot/keyring/types'
 import { compactAddLength } from '@polkadot/util'
 import { derEncodeSignatureAlgorithmOID } from './utils'
 
+// Errors copied from the auto-id pallet.
 export enum AutoIdError {
   UnknownIssuer = 'UnknownIssuer',
   UnknownAutoId = 'UnknownAutoId',
@@ -20,6 +21,7 @@ export enum AutoIdError {
   AutoIdIdentifierMismatch = 'AutoIdIdentifierMismatch',
   PublicKeyMismatch = 'PublicKeyMismatch',
 }
+
 /**
  * Maps an error code to the corresponding enum variant.
  * @param errorCode The error code as a hexadecimal string (e.g., "0x09000000").
@@ -64,6 +66,31 @@ interface RegistrationResult {
   identifier: string | null
 }
 
+// x509 Certificate to DER format & tbsCertificate.
+// Returns a tuple of two Uint8Array.
+function x509CertificateToCertDerVec(certificate: X509Certificate): [Uint8Array, Uint8Array] {
+  const certificateBuffer = Buffer.from(certificate.rawData)
+
+  // Load and parse the certificate
+  const cert = AsnParser.parse(certificateBuffer, Certificate)
+  // Extract the OID of the signature algorithm
+  const signatureAlgorithmOID = cert.signatureAlgorithm.algorithm
+
+  const derEncodedOID = derEncodeSignatureAlgorithmOID(signatureAlgorithmOID)
+  // CLEANUP: Remove later. Kept for debugging for other modules.
+  // console.debug(Buffer.from(derEncodedOID))
+  // console.debug(`DER encoded OID: ${derEncodedOID}`)
+  // console.debug(`Bytes length: ${derEncodedOID.length}`)
+
+  // The TBS Certificate is accessible directly via the `tbsCertificate` property
+  const tbsCertificate = cert.tbsCertificate
+
+  // Serialize the TBS Certificate back to DER format
+  const tbsCertificateDerVec = AsnSerializer.serialize(tbsCertificate)
+
+  return [derEncodedOID, new Uint8Array(tbsCertificateDerVec)]
+}
+
 export class Registry {
   private api: ApiPromise
   private signer: KeyringPair | null
@@ -73,7 +100,8 @@ export class Registry {
     this.signer = signer
   }
 
-  public async registerAutoId(
+  // register auto id
+  async registerAutoId(
     certificate: X509Certificate,
     issuerId?: string | null | undefined,
   ): Promise<RegistrationResult> {
@@ -83,27 +111,10 @@ export class Registry {
       throw new Error('No signer provided')
     }
 
-    const certificateBuffer = Buffer.from(certificate.rawData)
-
-    // Load and parse the certificate
-    const cert = AsnParser.parse(certificateBuffer, Certificate)
-    // Extract the OID of the signature algorithm
-    const signatureAlgorithmOID = cert.signatureAlgorithm.algorithm
-
-    const derEncodedOID = derEncodeSignatureAlgorithmOID(signatureAlgorithmOID)
-    // CLEANUP: Remove later. Kept for debugging for other modules.
-    // console.debug(Buffer.from(derEncodedOID))
-    // console.debug(`DER encoded OID: ${derEncodedOID}`)
-    // console.debug(`Bytes length: ${derEncodedOID.length}`)
-
-    // The TBS Certificate is accessible directly via the `tbsCertificate` property
-    const tbsCertificate = cert.tbsCertificate
-
-    // Serialize the TBS Certificate back to DER format
-    const tbsCertificateDerVec = AsnSerializer.serialize(tbsCertificate)
+    const [derEncodedOID, tbsCertificateDerVec] = x509CertificateToCertDerVec(certificate)
 
     const baseCertificate = {
-      certificate: compactAddLength(new Uint8Array(tbsCertificateDerVec)),
+      certificate: compactAddLength(tbsCertificateDerVec),
       signature_algorithm: derEncodedOID,
       signature: compactAddLength(new Uint8Array(certificate.signature)),
     }
@@ -117,29 +128,35 @@ export class Registry {
     let identifier: string | null = null
 
     const receipt: SubmittableResult = await new Promise((resolve, reject) => {
-      this.api.tx.autoId.registerAutoId(req).signAndSend(this.signer!, (result) => {
-        const { events = [], status } = result
+      this.api.tx.autoId.registerAutoId(req).signAndSend(this.signer!, async (result) => {
+        const { events = [], status, dispatchError } = result
 
         if (status.isInBlock || status.isFinalized) {
-          events.forEach(({ event: { section, method, data } }) => {
-            if (section === 'system' && method === 'ExtrinsicFailed') {
-              const [dispatchError] = data
-              const dispatchErrorJson = JSON.parse(dispatchError.toString())
+          const blockHash = status.isInBlock
+            ? status.asInBlock.toString()
+            : status.asFinalized.toString()
 
-              reject(
-                new Error(
-                  `Extrinsic failed: ${mapErrorCodeToEnum(dispatchErrorJson.module.error)}`,
-                ),
-              )
-            }
-            if (section === 'system' && method === 'ExtrinsicSuccess') {
-              console.debug('Extrinsic succeeded')
-            }
-            if (section === 'autoId' && method === 'NewAutoIdRegistered') {
-              identifier = data[0].toString()
-            }
-          })
-          resolve(result)
+          try {
+            // Retrieve the block using the hash to get the block number
+            const signedBlock = await this.api.rpc.chain.getBlock(blockHash)
+            events.forEach(({ event: { section, method, data } }) => {
+              if (section === 'system' && method === 'ExtrinsicFailed') {
+                const dispatchErrorJson = JSON.parse(dispatchError!.toString())
+
+                reject(
+                  new Error(
+                    `Register Auto ID | Extrinsic failed: ${mapErrorCodeToEnum(dispatchErrorJson.module.error)} in block #${signedBlock.block.header.number.toString()}`,
+                  ),
+                )
+              }
+              if (section === 'autoId' && method === 'NewAutoIdRegistered') {
+                identifier = data[0].toString()
+              }
+            })
+            resolve(result)
+          } catch (err: any) {
+            reject(new Error(`Failed to retrieve block information: ${err.message}`))
+          }
         } else if (status.isDropped || status.isInvalid) {
           reject(new Error('Transaction dropped or invalid'))
         }
@@ -147,5 +164,118 @@ export class Registry {
     })
 
     return { receipt, identifier }
+  }
+
+  // revoke certificate
+  async revokeCertificate(
+    autoIdIdentifier: string,
+    certificate: X509Certificate,
+  ): Promise<SubmittableResult> {
+    await this.api.isReady
+
+    if (!this.signer) {
+      throw new Error('No signer provided')
+    }
+
+    /* May need to replace this with top */
+    const [derEncodedOID, tbsCertificateDerVec] = x509CertificateToCertDerVec(certificate)
+    const signature = {
+      signature_algorithm: derEncodedOID,
+      value: compactAddLength(new Uint8Array(certificate.signature)),
+    }
+
+    const receipt: SubmittableResult = await new Promise((resolve, reject) => {
+      this.api.tx.autoId
+        .revokeCertificate(autoIdIdentifier, signature)
+        .signAndSend(this.signer!, async (result) => {
+          const { events = [], status, dispatchError } = result
+
+          if (status.isInBlock || status.isFinalized) {
+            const blockHash = status.isInBlock
+              ? status.asInBlock.toString()
+              : status.asFinalized.toString()
+
+            try {
+              // Retrieve the block using the hash to get the block number
+              const signedBlock = await this.api.rpc.chain.getBlock(blockHash)
+              events.forEach(({ event: { section, method } }) => {
+                if (section === 'system' && method === 'ExtrinsicFailed') {
+                  const dispatchErrorJson = JSON.parse(dispatchError!.toString())
+
+                  reject(
+                    new Error(
+                      `Revoke Certificate | Extrinsic failed: ${mapErrorCodeToEnum(dispatchErrorJson.module.error)} in block #${signedBlock.block.header.number.toString()}`,
+                    ),
+                  )
+                }
+              })
+              resolve(result)
+            } catch (err: any) {
+              reject(new Error(`Failed to retrieve block information: ${err.message}`))
+            }
+          } else if (status.isDropped || status.isInvalid) {
+            reject(new Error('Transaction dropped or invalid'))
+          }
+        })
+    })
+
+    return receipt
+  }
+
+  // deactivate auto id
+  async deactivateAutoId(
+    autoIdIdentifier: string,
+    certificate: X509Certificate,
+  ): Promise<SubmittableResult> {
+    await this.api.isReady
+
+    if (!this.signer) {
+      throw new Error('No signer provided')
+    }
+
+    const [derEncodedOID] = x509CertificateToCertDerVec(certificate)
+    const signature = {
+      signature_algorithm: derEncodedOID,
+      value: compactAddLength(new Uint8Array(certificate.signature)),
+    }
+
+    // TODO: verify signature before sending the transaction
+
+    const receipt: SubmittableResult = await new Promise((resolve, reject) => {
+      this.api.tx.autoId
+        .deactivateAutoId(autoIdIdentifier, signature)
+        .signAndSend(this.signer!, async (result) => {
+          const { events = [], status, dispatchError } = result
+
+          if (status.isInBlock || status.isFinalized) {
+            const blockHash = status.isInBlock
+              ? status.asInBlock.toString()
+              : status.asFinalized.toString()
+
+            try {
+              // Retrieve the block using the hash to get the block number
+              const signedBlock = await this.api.rpc.chain.getBlock(blockHash)
+              events.forEach(({ event: { section, method } }) => {
+                if (section === 'system' && method === 'ExtrinsicFailed') {
+                  const dispatchErrorJson = JSON.parse(dispatchError!.toString())
+
+                  reject(
+                    new Error(
+                      `Deactivate Auto ID | Extrinsic failed: ${mapErrorCodeToEnum(dispatchErrorJson.module.error)} in block #${signedBlock.block.header.number.toString()}`,
+                    ),
+                  )
+                }
+              })
+              resolve(result)
+            } catch (err: any) {
+              reject(new Error(`Failed to retrieve block information: ${err.message}`))
+            }
+          } else if (status.isDropped || status.isInvalid) {
+            reject(new Error('Transaction dropped or invalid'))
+          }
+        })
+    })
+
+    return receipt
   }
 }
