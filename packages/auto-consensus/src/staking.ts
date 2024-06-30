@@ -1,3 +1,5 @@
+// file: src/staking.ts
+
 import type { ApiPromise } from '@polkadot/api'
 import type { KeyringPair } from '@polkadot/keyring/types'
 import type { StorageKey } from '@polkadot/types'

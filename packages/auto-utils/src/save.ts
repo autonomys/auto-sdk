@@ -1,3 +1,5 @@
+// file: src/save.ts
+
 export const save = async (key: string, value: any) => {
   // detect if we are in the browser or in node
   if (typeof window !== 'undefined') await saveOnLocalStorage(key, value)

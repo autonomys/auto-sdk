@@ -1,3 +1,5 @@
+// file: src/utils/detectTxSuccess.ts
+
 import type { EventRecord } from '@polkadot/types/interfaces'
 import { expectSuccessfulTxEvent } from './events'
 

@@ -1,3 +1,5 @@
+// file: src/constants/network.ts
+
 import type { Network } from '../types/network'
 
 export const networks: Network[] = [

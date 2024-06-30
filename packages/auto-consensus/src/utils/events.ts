@@ -1,3 +1,5 @@
+// file: src/utils/events.ts
+
 import type { ActionEvents, EventKeys } from '../types/events'
 
 // Enum for Event Types
