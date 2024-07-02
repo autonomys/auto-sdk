@@ -18,7 +18,7 @@ import { Withdraw } from '../actions/withdraw'
 
 export const Body: FC = () => {
   const params = useParams()
-  const { api } = useApi()
+  const { api, handleQuery } = useApi()
   const { selectedWallet } = useWallets()
   const [currentWalletBalance, setCurrentWalletBalance] = useState('0')
   const walletName = params.walletName
@@ -26,11 +26,11 @@ export const Body: FC = () => {
   const action = params.action
 
   const handleCurrentWalletBalance = useCallback(async () => {
-    if (api && selectedWallet && walletName) {
-      const _balance = await balance(api, selectedWallet.accounts[0].address)
-      setCurrentWalletBalance(_balance.free.toString())
-    }
-  }, [walletName, api, selectedWallet])
+    if (api && selectedWallet)
+      handleQuery(await balance(api, selectedWallet.accounts[0].address), (v) =>
+        setCurrentWalletBalance(v.free.toString()),
+      )
+  }, [handleQuery, api, selectedWallet])
 
   const body = useMemo(() => {
     switch (packageName) {
@@ -81,10 +81,7 @@ export const Body: FC = () => {
       )}
       {action ? (
         <>
-          <button
-            className='w-full bg-transparent border border-white text-white font-mono font-bold p-4 rounded-lg shadow-md'
-            // onClick={() => setIsOpen(!isOpen)}
-          >
+          <button className='w-full bg-transparent border border-white text-white font-mono font-bold p-4 rounded-lg shadow-md'>
             Action: <b>{action}</b>
           </button>
           <div className='absolute mt-2 w-full bg-[rgba(0,0,0,0.4)] border border-white rounded-lg shadow-lg'>

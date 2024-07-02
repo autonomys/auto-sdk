@@ -7,24 +7,16 @@ export const Operator = () => {
   const [operatorId, setOperatorId] = useState('')
   const [errorForm, setErrorForm] = useState('')
   const [operatorDetails, setOperatorDetails] = useState<OperatorDetails | null>(null)
-  const { api } = useApi()
+  const { api, handleQuery } = useApi()
   const { selectedWallet } = useWallets()
 
   const handleOperator = useCallback(async () => {
-    setErrorForm('')
-    try {
-      if (!api || !selectedWallet) {
-        setErrorForm('API not loaded')
-        return
-      }
-
-      const details = await operator(api, operatorId)
-      console.log('details', details)
-      setOperatorDetails(details)
-    } catch (error) {
-      setErrorForm((error as any).message)
+    if (!api) {
+      setErrorForm('API not loaded')
+      return
     }
-  }, [api, selectedWallet])
+    handleQuery(await operator(api, operatorId), setOperatorDetails, setErrorForm)
+  }, [api, operatorId, selectedWallet])
 
   return (
     <div className='flex flex-col items-center p-4 rounded shadow-md'>

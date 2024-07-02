@@ -8,9 +8,31 @@ export const useApi = () => {
 
   const handleLoadApi = useCallback(async () => setApi(await activate(config)), [])
 
+  const handleQuery = useCallback(
+    async (query: any, setValue: (value: any) => void, setErrorForm?: (error: any) => void) => {
+      setErrorForm && setErrorForm('')
+      try {
+        if (!api) {
+          setErrorForm && setErrorForm('API not loaded')
+          return
+        }
+
+        if (!query) {
+          setErrorForm && setErrorForm('Error no query')
+          return
+        }
+
+        setValue(query())
+      } catch (error) {
+        setErrorForm && setErrorForm((error as any).message)
+      }
+    },
+    [api],
+  )
+
   useEffect(() => {
     if (api === null) handleLoadApi()
   }, [handleLoadApi, api])
 
-  return { handleLoadApi, api }
+  return { handleLoadApi, handleQuery, api }
 }

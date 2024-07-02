@@ -7,26 +7,14 @@ export const Balance = () => {
   const [address, setAddress] = useState('')
   const [balanceFree, setBalanceFree] = useState('')
   const [errorForm, setErrorForm] = useState('')
-  const { api } = useApi()
+  const { api, handleQuery } = useApi()
 
   const handleBalance = useCallback(async () => {
-    setErrorForm('')
-    try {
-      if (!api) {
-        setErrorForm('API not loaded')
-        return
-      }
-
-      const addressBalance = await balance(api, address)
-      if (!addressBalance) {
-        setErrorForm('Balance not found')
-        return
-      }
-
-      setBalanceFree(addressBalance.free.toString())
-    } catch (error) {
-      setErrorForm((error as any).message)
+    if (!api) {
+      setErrorForm('API not loaded')
+      return
     }
+    handleQuery(await balance(api, address), (v) => setBalanceFree(v.free.toString()), setErrorForm)
   }, [api, address])
 
   return (
