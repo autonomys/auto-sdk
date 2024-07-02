@@ -12,7 +12,7 @@ import { AttributeTypeAndValue, GeneralNames } from '@peculiar/asn1-x509'
 import { Crypto } from '@peculiar/webcrypto'
 import * as x509 from '@peculiar/x509'
 import { KeyObject, createPublicKey } from 'crypto'
-import { doPublicKeysMatch, pemToPublicKey } from './keyManagement'
+import { cryptoKeyToPem, doPublicKeysMatch, pemToPublicKey } from './keyManagement'
 
 const crypto = new Crypto()
 x509.cryptoProvider.set(crypto)
@@ -323,22 +323,4 @@ export class CertificateManager {
     const certificatePem = CertificateManager.certificateToPem(this.certificate)
     await save(filePath, certificatePem)
   }
-}
-
-function arrayBufferToBase64(buffer: ArrayBuffer): string {
-  let binary = ''
-  const bytes = new Uint8Array(buffer)
-  const len = bytes.byteLength
-  for (let i = 0; i < len; i++) {
-    binary += String.fromCharCode(bytes[i])
-  }
-  return btoa(binary)
-}
-
-async function cryptoKeyToPem(key: CryptoKey): Promise<string> {
-  const exported = await crypto.subtle.exportKey(key.type === 'private' ? 'pkcs8' : 'spki', key)
-  const base64 = arrayBufferToBase64(exported)
-  const type = key.type === 'private' ? 'PRIVATE KEY' : 'PUBLIC KEY'
-  const pem = `-----BEGIN ${type}-----\n${base64.match(/.{1,64}/g)?.join('\n')}\n-----END ${type}-----`
-  return pem
 }

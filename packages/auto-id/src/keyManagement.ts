@@ -1,4 +1,6 @@
 import { read, save } from '@autonomys/auto-utils'
+import { Crypto } from '@peculiar/webcrypto'
+import * as x509 from '@peculiar/x509'
 import { KeyObject, createPrivateKey, createPublicKey, generateKeyPairSync } from 'crypto'
 
 /**
@@ -19,10 +21,7 @@ export function generateRsaKeyPair(keySize: number = 2048): [string, string] {
   return [privateKey, publicKey]
 }
 
-import { Crypto } from '@peculiar/webcrypto'
-import * as x509 from '@peculiar/x509'
 const crypto = new Crypto()
-
 // FIXME: keep one function. need to modify the tests.
 export async function generateEd25519KeyPair2(): Promise<[CryptoKey, CryptoKey]> {
   const keyPair = await crypto.subtle.generateKey(
@@ -110,6 +109,25 @@ export function keyToPem(key: KeyObject, password?: string): string {
     }
   }
   throw new Error('Invalid key type. Key must be a private or public key object.')
+}
+
+function arrayBufferToBase64(buffer: ArrayBuffer): string {
+  let binary = ''
+  const bytes = new Uint8Array(buffer)
+  const len = bytes.byteLength
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i])
+  }
+  return btoa(binary)
+}
+
+// TODO: Add test for this function
+export async function cryptoKeyToPem(key: CryptoKey): Promise<string> {
+  const exported = await crypto.subtle.exportKey(key.type === 'private' ? 'pkcs8' : 'spki', key)
+  const base64 = arrayBufferToBase64(exported)
+  const type = key.type === 'private' ? 'PRIVATE KEY' : 'PUBLIC KEY'
+  const pem = `-----BEGIN ${type}-----\n${base64.match(/.{1,64}/g)?.join('\n')}\n-----END ${type}-----`
+  return pem
 }
 
 /**
