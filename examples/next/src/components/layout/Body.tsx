@@ -6,17 +6,17 @@ import { balance } from '@autonomys/auto-consensus'
 import { parseTokenAmount } from '@autonomys/auto-utils'
 import { useParams } from 'next/navigation'
 import { FC, useCallback, useEffect, useMemo, useState } from 'react'
-import { Balance } from './actions/balance'
-import { Deregister } from './actions/deregister'
-import { NominateOperator } from './actions/nominate'
-import { Operator } from './actions/operator'
-import { RegisterOperator } from './actions/register'
-import { Transfer } from './actions/transfer'
-import { UnlockFunds } from './actions/unlockFunds'
-import { UnlockNominator } from './actions/unlockNominator'
-import { Withdraw } from './actions/withdraw'
+import { Balance } from '../actions/balance'
+import { Deregister } from '../actions/deregister'
+import { NominateOperator } from '../actions/nominate'
+import { Operator } from '../actions/operator'
+import { RegisterOperator } from '../actions/register'
+import { Transfer } from '../actions/transfer'
+import { UnlockFunds } from '../actions/unlockFunds'
+import { UnlockNominator } from '../actions/unlockNominator'
+import { Withdraw } from '../actions/withdraw'
 
-export const ActionBody: FC = () => {
+export const Body: FC = () => {
   const params = useParams()
   const { api } = useApi()
   const { selectedWallet } = useWallets()

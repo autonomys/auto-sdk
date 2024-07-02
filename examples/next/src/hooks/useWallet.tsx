@@ -1,6 +1,5 @@
-import { wallets } from '@/constants/wallets'
 import { useWalletsStates } from '@/states/wallets'
-import { mockWallets } from '@autonomys/auto-utils'
+import { mockURIs, mockWallets } from '@autonomys/auto-utils'
 import { useParams } from 'next/navigation'
 import { useCallback, useEffect, useMemo } from 'react'
 import { useNetwork } from './useNetwork'
@@ -21,13 +20,13 @@ export const useWallets = () => {
   }, [handleLoadWallet])
 
   useEffect(() => {
-    const walletIndex = wallets.findIndex((w) => w.name === walletName)
+    const walletIndex = mockURIs.findIndex((w) => w === `//${walletName}`)
     if (walletIndex === -1) return
     setSelectedWallet(walletsSigners[walletIndex])
   }, [walletName])
 
   const selectedWallet = useMemo(() => {
-    const walletIndex = wallets.findIndex((w) => w.name === walletName)
+    const walletIndex = mockURIs.findIndex((w) => w === `//${walletName}`)
     if (walletIndex === -1) return
     return walletsSigners[walletIndex]
   }, [walletName, walletsSigners])

@@ -1,8 +1,7 @@
 'use client'
 
-import { wallets } from '@/constants/wallets'
 import { useNetwork } from '@/hooks/useNetwork'
-import { link } from 'fs'
+import { mockURIs } from '@autonomys/auto-utils'
 import { useParams } from 'next/navigation'
 import React, { useCallback, useState } from 'react'
 
@@ -52,15 +51,18 @@ export const Header = () => {
           </button>
           {dropdownOpen.wallet && (
             <div className='absolute mt-2 z-40 bg-white text-black rounded-md shadow-lg'>
-              {wallets.map((wallet) => (
-                <a
-                  key={wallet.name}
-                  href={link(`/wallet/${wallet.name}`)}
-                  className='block px-4 py-2 hover:bg-gray-200'
-                >
-                  {wallet.name}
-                </a>
-              ))}
+              {mockURIs.map((uri) => {
+                const wallet = uri.slice(2)
+                return (
+                  <a
+                    key={wallet}
+                    href={link(`/wallet/${wallet}`)}
+                    className='block px-4 py-2 hover:bg-gray-200'
+                  >
+                    {wallet}
+                  </a>
+                )
+              })}
             </div>
           )}
         </div>

@@ -1,10 +1,7 @@
-import { wallets } from '@/constants/wallets'
-import { Wallets } from '@/types/wallet'
 import { WalletActivated } from '@autonomys/auto-utils'
 import { create } from 'zustand'
 
 interface MultiSigDefaultState {
-  wallets: Wallets
   walletsSigners: WalletActivated[]
   selectedWallet: WalletActivated | null
 }
@@ -16,7 +13,6 @@ interface MultiSigState extends MultiSigDefaultState {
 }
 
 const initialState: MultiSigDefaultState = {
-  wallets,
   walletsSigners: [],
   selectedWallet: null,
 }
