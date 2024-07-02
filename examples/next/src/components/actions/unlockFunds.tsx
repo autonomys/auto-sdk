@@ -1,4 +1,4 @@
-import { useApi } from '@/hooks/useApi'
+import { useTx } from '@/hooks/useTx'
 import { useWallets } from '@/hooks/useWallet'
 import { unlockFunds } from '@autonomys/auto-consensus'
 import React, { useCallback, useState } from 'react'
@@ -6,41 +6,22 @@ import React, { useCallback, useState } from 'react'
 export const UnlockFunds = () => {
   const [operatorId, setOperatorId] = useState('')
   const [errorForm, setErrorForm] = useState('')
-  const [txHash, setTxHash] = useState('')
-  const { api } = useApi()
   const { selectedWallet } = useWallets()
+  const { handleTx, txHash } = useTx()
 
   const handleUnlockFunds = useCallback(async () => {
-    setErrorForm('')
-    try {
-      if (!api || !selectedWallet) {
-        setErrorForm('API not loaded')
-        return
-      }
-
-      const tx = await unlockFunds({
+    if (!selectedWallet) {
+      setErrorForm('No wallet selected')
+      return
+    }
+    await handleTx(
+      await unlockFunds({
         api: selectedWallet.api,
         operatorId,
-      })
-      if (!tx) {
-        setErrorForm('Error creating unlock funds tx')
-        return
-      }
-
-      setTxHash(tx.hash.toString())
-
-      await tx.signAndSend(selectedWallet.accounts[0], (result: any) => {
-        console.log('unlock result', result)
-        if (result.status.isInBlock) {
-          console.log('Successful unlock of funds')
-        } else if (result.status.isFinalized) {
-          console.log('Finalized unlock of funds')
-        }
-      })
-    } catch (error) {
-      setErrorForm((error as any).message)
-    }
-  }, [api, selectedWallet])
+      }),
+      setErrorForm,
+    )
+  }, [operatorId, selectedWallet])
 
   return (
     <div className='flex flex-col items-center p-4 rounded shadow-md'>

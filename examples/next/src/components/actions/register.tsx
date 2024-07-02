@@ -1,5 +1,5 @@
-import { useApi } from '@/hooks/useApi'
 import { useNetwork } from '@/hooks/useNetwork'
+import { useTx } from '@/hooks/useTx'
 import { useWallets } from '@/hooks/useWallet'
 import { registerOperator } from '@autonomys/auto-consensus'
 import { ActivateWalletInput, activateWallet } from '@autonomys/auto-utils'
@@ -12,25 +12,21 @@ export const RegisterOperator = () => {
   const [minimumNominatorStake, setMinimumNominatorStake] = useState('')
   const [nominationTax, setNominationTax] = useState('')
   const [errorForm, setErrorForm] = useState('')
-  const [txHash, setTxHash] = useState('')
-  const { api } = useApi()
   const { config } = useNetwork()
   const { selectedWallet } = useWallets()
+  const { handleTx, txHash } = useTx()
 
   const handleRegisterOperator = useCallback(async () => {
-    setErrorForm('')
-    try {
-      if (!api || !selectedWallet) {
-        setErrorForm('API not loaded')
-        return
-      }
-
-      const { accounts: operatorAccounts } = await activateWallet({
-        ...config,
-        uri: operatorSeed,
-      } as ActivateWalletInput)
-
-      const tx = await registerOperator({
+    if (!selectedWallet) {
+      setErrorForm('No wallet selected')
+      return
+    }
+    const { accounts: operatorAccounts } = await activateWallet({
+      ...config,
+      uri: operatorSeed,
+    } as ActivateWalletInput)
+    await handleTx(
+      await registerOperator({
         api: selectedWallet.api,
         senderAddress: selectedWallet.accounts[0].address,
         Operator: operatorAccounts[0],
@@ -38,26 +34,10 @@ export const RegisterOperator = () => {
         amountToStake,
         minimumNominatorStake,
         nominationTax,
-      })
-      if (!tx) {
-        setErrorForm('Error creating register operator tx')
-        return
-      }
-
-      setTxHash(tx.hash.toString())
-
-      await tx.signAndSend(selectedWallet.accounts[0], (result: any) => {
-        console.log('registration result', result)
-        if (result.status.isInBlock) {
-          console.log('Successful registration of operator')
-        } else if (result.status.isFinalized) {
-          console.log('Finalized registration of operator')
-        }
-      })
-    } catch (error) {
-      setErrorForm((error as any).message)
-    }
-  }, [api, selectedWallet])
+      }),
+      setErrorForm,
+    )
+  }, [amountToStake, selectedWallet, domainId, minimumNominatorStake, nominationTax, operatorSeed])
 
   return (
     <div className='flex flex-col items-center p-4 rounded shadow-md'>

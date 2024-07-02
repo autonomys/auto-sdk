@@ -1,4 +1,4 @@
-import { useApi } from '@/hooks/useApi'
+import { useTx } from '@/hooks/useTx'
 import { useWallets } from '@/hooks/useWallet'
 import { unlockNominator } from '@autonomys/auto-consensus'
 import React, { useCallback, useState } from 'react'
@@ -6,41 +6,22 @@ import React, { useCallback, useState } from 'react'
 export const UnlockNominator = () => {
   const [operatorId, setOperatorId] = useState('')
   const [errorForm, setErrorForm] = useState('')
-  const [txHash, setTxHash] = useState('')
-  const { api } = useApi()
   const { selectedWallet } = useWallets()
+  const { handleTx, txHash } = useTx()
 
   const handleUnlockNominators = useCallback(async () => {
-    setErrorForm('')
-    try {
-      if (!api || !selectedWallet) {
-        setErrorForm('API not loaded')
-        return
-      }
-
-      const tx = await unlockNominator({
+    if (!selectedWallet) {
+      setErrorForm('No wallet selected')
+      return
+    }
+    await handleTx(
+      await unlockNominator({
         api: selectedWallet.api,
         operatorId,
-      })
-      if (!tx) {
-        setErrorForm('Error creating unlock nominator tx')
-        return
-      }
-
-      setTxHash(tx.hash.toString())
-
-      await tx.signAndSend(selectedWallet.accounts[0], (result: any) => {
-        console.log('unlock result', result)
-        if (result.status.isInBlock) {
-          console.log('Successful unlock of nominators')
-        } else if (result.status.isFinalized) {
-          console.log('Finalized unlock of nominators')
-        }
-      })
-    } catch (error) {
-      setErrorForm((error as any).message)
-    }
-  }, [api, selectedWallet])
+      }),
+      setErrorForm,
+    )
+  }, [operatorId, selectedWallet])
 
   return (
     <div className='flex flex-col items-center p-4 rounded shadow-md'>

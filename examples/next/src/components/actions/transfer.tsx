@@ -1,4 +1,4 @@
-import { useApi } from '@/hooks/useApi'
+import { useTx } from '@/hooks/useTx'
 import { useWallets } from '@/hooks/useWallet'
 import { transfer } from '@autonomys/auto-consensus'
 import React, { useCallback, useState } from 'react'
@@ -7,38 +7,16 @@ export const Transfer = () => {
   const [to, setTo] = useState('')
   const [amount, setAmount] = useState('')
   const [errorForm, setErrorForm] = useState('')
-  const [txHash, setTxHash] = useState('')
-  const { api } = useApi()
   const { selectedWallet } = useWallets()
+  const { handleTx, txHash } = useTx()
 
   const handleTransfer = useCallback(async () => {
-    setErrorForm('')
-    try {
-      if (!api || !selectedWallet) {
-        setErrorForm('API not loaded')
-        return
-      }
-
-      const tx = await transfer(selectedWallet.api, to, amount)
-      if (!tx) {
-        setErrorForm('Transfer failed')
-        return
-      }
-
-      setTxHash(tx.hash.toString())
-
-      await tx.signAndSend(selectedWallet.accounts[0], (result: any) => {
-        console.log('transferTx result', result)
-        if (result.status.isInBlock) {
-          console.log('Successful transfer')
-        } else if (result.status.isFinalized) {
-          console.log('Finalized transfer')
-        }
-      })
-    } catch (error) {
-      setErrorForm((error as any).message)
+    if (!selectedWallet) {
+      setErrorForm('No wallet selected')
+      return
     }
-  }, [api, to, amount, selectedWallet])
+    await handleTx(await transfer(selectedWallet.api, to, amount), setErrorForm)
+  }, [to, amount, selectedWallet])
 
   return (
     <div className='flex flex-col items-center p-4 rounded shadow-md'>

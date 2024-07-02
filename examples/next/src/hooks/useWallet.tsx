@@ -10,26 +10,21 @@ export const useWallets = () => {
   const { walletsSigners, setWalletsSigners, setSelectedWallet } = useWalletsStates()
   const walletName = params.walletName
 
-  const handleLoadWallet = useCallback(async () => {
-    const wallets = await mockWallets(config)
-    setWalletsSigners(wallets)
-  }, [])
+  const handleLoadWallet = useCallback(async () => setWalletsSigners(await mockWallets(config)), [])
 
   useEffect(() => {
     handleLoadWallet()
   }, [handleLoadWallet])
-
-  useEffect(() => {
-    const walletIndex = mockURIs.findIndex((w) => w === `//${walletName}`)
-    if (walletIndex === -1) return
-    setSelectedWallet(walletsSigners[walletIndex])
-  }, [walletName])
 
   const selectedWallet = useMemo(() => {
     const walletIndex = mockURIs.findIndex((w) => w === `//${walletName}`)
     if (walletIndex === -1) return
     return walletsSigners[walletIndex]
   }, [walletName, walletsSigners])
+
+  useEffect(() => {
+    if (selectedWallet) setSelectedWallet(selectedWallet)
+  }, [selectedWallet])
 
   return { handleLoadWallet, walletsSigners, selectedWallet }
 }

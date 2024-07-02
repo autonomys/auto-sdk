@@ -1,4 +1,4 @@
-import { useApi } from '@/hooks/useApi'
+import { useTx } from '@/hooks/useTx'
 import { useWallets } from '@/hooks/useWallet'
 import { withdrawStake } from '@autonomys/auto-consensus'
 import React, { useCallback, useState } from 'react'
@@ -7,42 +7,23 @@ export const Withdraw = () => {
   const [operatorId, setOperatorId] = useState('')
   const [shares, setShares] = useState('')
   const [errorForm, setErrorForm] = useState('')
-  const [txHash, setTxHash] = useState('')
-  const { api } = useApi()
   const { selectedWallet } = useWallets()
+  const { handleTx, txHash } = useTx()
 
   const handleWithdrawStake = useCallback(async () => {
-    setErrorForm('')
-    try {
-      if (!api || !selectedWallet) {
-        setErrorForm('API not loaded')
-        return
-      }
-
-      const tx = await withdrawStake({
+    if (!selectedWallet) {
+      setErrorForm('No wallet selected')
+      return
+    }
+    await handleTx(
+      await withdrawStake({
         api: selectedWallet.api,
         operatorId,
         shares,
-      })
-      if (!tx) {
-        setErrorForm('Error creating withdraw stake tx')
-        return
-      }
-
-      setTxHash(tx.hash.toString())
-
-      await tx.signAndSend(selectedWallet.accounts[0], (result: any) => {
-        console.log('withdraw result', result)
-        if (result.status.isInBlock) {
-          console.log('Successful withdraw of operator')
-        } else if (result.status.isFinalized) {
-          console.log('Finalized withdraw of operator')
-        }
-      })
-    } catch (error) {
-      setErrorForm((error as any).message)
-    }
-  }, [api, selectedWallet])
+      }),
+      setErrorForm,
+    )
+  }, [operatorId, shares, selectedWallet])
 
   return (
     <div className='flex flex-col items-center p-4 rounded shadow-md'>

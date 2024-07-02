@@ -6,10 +6,7 @@ export const useApi = () => {
   const { config } = useNetwork()
   const [api, setApi] = useState<ApiPromise | null>(null)
 
-  const handleLoadApi = useCallback(async () => {
-    const _api = await activate(config)
-    setApi(_api)
-  }, [])
+  const handleLoadApi = useCallback(async () => setApi(await activate(config)), [])
 
   useEffect(() => {
     if (api === null) handleLoadApi()

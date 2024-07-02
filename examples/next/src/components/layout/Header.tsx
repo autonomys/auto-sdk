@@ -26,9 +26,11 @@ export const Header = () => {
     settings: false,
   })
 
-  const toggleDropdown = useCallback((position: keyof DropDowns) => {
-    setDropdownOpen((prevState) => ({ ...prevState, [position]: !prevState[position] }))
-  }, [])
+  const toggleDropdown = useCallback(
+    (position: keyof DropDowns) =>
+      setDropdownOpen((prevState) => ({ ...prevState, [position]: !prevState[position] })),
+    [],
+  )
 
   const link = useCallback(
     (link: string) => {
