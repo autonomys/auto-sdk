@@ -2395,6 +2395,27 @@ __metadata:
   languageName: node
   linkType: hard
 
+"auto-sdk-next-example@workspace:examples/next":
+  version: 0.0.0-use.local
+  resolution: "auto-sdk-next-example@workspace:examples/next"
+  dependencies:
+    "@autonomys/auto-consensus": "workspace:*"
+    "@autonomys/auto-utils": "workspace:*"
+    "@types/node": "npm:^20"
+    "@types/react": "npm:^18"
+    "@types/react-dom": "npm:^18"
+    eslint: "npm:^8"
+    eslint-config-next: "npm:14.2.4"
+    next: "npm:14.2.4"
+    postcss: "npm:^8"
+    react: "npm:^18"
+    react-dom: "npm:^18"
+    tailwindcss: "npm:^3.4.1"
+    typescript: "npm:^5"
+    zustand: "npm:^4.5.2"
+  languageName: unknown
+  linkType: soft
+
 "available-typed-arrays@npm:^1.0.7":
   version: 1.0.7
   resolution: "available-typed-arrays@npm:1.0.7"
@@ -5694,25 +5715,6 @@ __metadata:
   checksum: 10c0/630c2a197b57c1f29caf4672a0f8fb74dbb048e77e4513f567279467332212f3eebcb68279885f1d525d7aaebbb452f522b02c0b5cd3ca66f385341e4b4eac67
   languageName: node
   linkType: hard
-
-"next@workspace:examples/next":
-  version: 0.0.0-use.local
-  resolution: "next@workspace:examples/next"
-  dependencies:
-    "@types/node": "npm:^20"
-    "@types/react": "npm:^18"
-    "@types/react-dom": "npm:^18"
-    eslint: "npm:^8"
-    eslint-config-next: "npm:14.2.4"
-    next: "npm:14.2.4"
-    postcss: "npm:^8"
-    react: "npm:^18"
-    react-dom: "npm:^18"
-    tailwindcss: "npm:^3.4.1"
-    typescript: "npm:^5"
-    zustand: "npm:^4.5.2"
-  languageName: unknown
-  linkType: soft
 
 "nock@npm:^13.5.0":
   version: 13.5.4

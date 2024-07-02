@@ -1,5 +1,5 @@
 {
-  "name": "next",
+  "name": "auto-sdk-next-example",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -8,7 +8,17 @@
     "start": "next start",
     "lint": "next lint"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/subspace/auto-sdk"
+  },
+  "author": {
+    "name": "Autonomys",
+    "url": "https://www.autonomys.net"
+  },
   "dependencies": {
+    "@autonomys/auto-consensus": "workspace:*",
+    "@autonomys/auto-utils": "workspace:*",
     "next": "14.2.4",
     "react": "^18",
     "react-dom": "^18",
