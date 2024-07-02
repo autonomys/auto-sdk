@@ -1,35 +1,36 @@
 import { wallets } from '@/constants/wallets'
 import { useWalletsStates } from '@/states/wallets'
-import { WalletsSigners } from '@/types/wallet'
-import { ActivateWalletInput, activateWallet } from '@autonomys/auto-utils'
-import { useCallback, useEffect } from 'react'
+import { mockWallets } from '@autonomys/auto-utils'
+import { useParams } from 'next/navigation'
+import { useCallback, useEffect, useMemo } from 'react'
 import { useNetwork } from './useNetwork'
 
 export const useWallets = () => {
+  const params = useParams()
   const { config } = useNetwork()
-  const { walletsSigners, setWalletsSigners } = useWalletsStates()
+  const { walletsSigners, setWalletsSigners, setSelectedWallet } = useWalletsStates()
+  const walletName = params.walletName
 
   const handleLoadWallet = useCallback(async () => {
-    const walletsSigners: WalletsSigners = []
-
-    for (let w = 0; w < wallets.length; w++) {
-      const { api, accounts } = await activateWallet({
-        ...config,
-        uri: wallets[w].uri,
-      } as ActivateWalletInput)
-      walletsSigners.push({
-        ...wallets[w],
-        accounts,
-        api,
-      })
-    }
-
-    setWalletsSigners(walletsSigners)
+    const wallets = await mockWallets(config)
+    setWalletsSigners(wallets)
   }, [])
 
   useEffect(() => {
-    if (walletsSigners.length === 0) handleLoadWallet()
-  }, [handleLoadWallet, walletsSigners])
+    handleLoadWallet()
+  }, [handleLoadWallet])
 
-  return { handleLoadWallet, walletsSigners }
+  useEffect(() => {
+    const walletIndex = wallets.findIndex((w) => w.name === walletName)
+    if (walletIndex === -1) return
+    setSelectedWallet(walletsSigners[walletIndex])
+  }, [walletName])
+
+  const selectedWallet = useMemo(() => {
+    const walletIndex = wallets.findIndex((w) => w.name === walletName)
+    if (walletIndex === -1) return
+    return walletsSigners[walletIndex]
+  }, [walletName, walletsSigners])
+
+  return { handleLoadWallet, walletsSigners, selectedWallet }
 }

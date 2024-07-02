@@ -4,10 +4,3 @@ export type Wallet = {
 }
 
 export type Wallets = Wallet[]
-
-export interface WalletSigner extends Wallet {
-  accounts: any[]
-  api: any
-}
-
-export type WalletsSigners = WalletSigner[]
