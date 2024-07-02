@@ -1,3 +1,5 @@
+// file: src/info.ts
+
 import { activate } from '@autonomys/auto-utils'
 
 export const networkTimestamp = async (networkId?: string) => {

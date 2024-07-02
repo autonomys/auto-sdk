@@ -1,3 +1,5 @@
+// file: src/read.ts
+
 export const read = async (key: string) => {
   // detect if we are in the browser or in node
   if (typeof window !== 'undefined') return readFromLocalStorage(key)
@@ -22,7 +24,7 @@ export const readFromFileSystem = async (key: string) => {
     const fs = await import('fs/promises')
     try {
       const data = await fs.readFile(key, { encoding: 'utf-8' })
-      return JSON.parse(data);
+      return JSON.parse(data)
     } catch (error) {
       throw new Error('Failed to read or parse file: ' + error)
     }

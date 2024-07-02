@@ -1,6 +1,6 @@
 {
   "name": "@autonomys/auto-consensus",
-  "version": "0.1.0",
+  "version": "0.1.3-alpha.1",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
@@ -21,7 +21,7 @@
     "url": "https://www.autonomys.net"
   },
   "dependencies": {
-    "@autonomys/auto-utils": "workspace:*"
+    "@autonomys/auto-utils": "^0.1.3-alpha.1"
   },
   "devDependencies": {
     "@polkadot/types-codec": "^11.2.1",
@@ -31,5 +31,6 @@
     "prettier": "^3.2.5",
     "ts-jest": "^29.1.4",
     "typescript": "^5.4.5"
-  }
+  },
+  "gitHead": "040b7e1835cbdc80a897e37f03579901dbb50243"
 }

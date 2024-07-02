@@ -8,10 +8,11 @@
     "examples/*"
   ],
   "scripts": {
-    "build": "yarn workspaces foreach --all run build",
-    "clean": "yarn workspaces foreach --all run clean",
-    "format": "yarn workspaces foreach --all run format",
-    "test": "yarn workspaces foreach --all run test"
+    "build": "lerna run build",
+    "clean": "lerna run clean",
+    "format": "lerna run format",
+    "test": "lerna run test",
+    "publish": "lerna publish --no-private"
   },
   "packageManager": "yarn@4.2.2",
   "engines": {
@@ -29,6 +30,7 @@
     "@types/jest": "^29.5.12",
     "eslint": "^8.57.0",
     "jest": "^29.7.0",
+    "lerna": "^8.1.5",
     "prettier": "^3.2.5",
     "ts-jest": "^29.1.4",
     "typescript": "^5.4.5"

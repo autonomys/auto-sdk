@@ -1,3 +1,5 @@
+// file: src/types/events.ts
+
 export type ActionEvents = string | string[]
 export type Events = ActionEvents | ActionEvents[]
 
