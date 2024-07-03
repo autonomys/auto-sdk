@@ -11,6 +11,17 @@ a)AAAA  u)   UU   t)    o)OOO           s)SSSS  d)DDDD k)  KK
 a)   A  u)   UU   t)   o)   OO              s) d)   DD k) KK  
  a)AAAA  u)UUU    t)T   o)OOO          s)SSSS   d)DDDD k)  KK
 `,
+  '\x1b[33m',
+  `
+                                           l)L          
+                                            l)          
+e)EEEEE x)   XX a)AAAA   m)MM MMM  p)PPPP   l)  e)EEEEE 
+e)EEEE    x)X    a)AAA  m)  MM  MM p)   PP  l)  e)EEEE  
+e)        x)X   a)   A  m)  MM  MM p)   PP  l)  e)      
+ e)EEEE x)   XX  a)AAAA m)      MM p)PPPP  l)LL  e)EEEE 
+                                   p)                   
+                                   p)                   
+`,
   '\x1b[0m',
 )
 
