@@ -1,9 +1,20 @@
-// src/cli.ts
 import { Command } from 'commander'
 
 const program = new Command()
+console.log(
+  '\x1b[34m',
+  `
+                  t)                                d) k)     
+                t)tTTT                              d) k)     
+a)AAAA  u)   UU   t)    o)OOO           s)SSSS  d)DDDD k)  KK 
+ a)AAA  u)   UU   t)   o)   OO ####### s)SSSS  d)   DD k)KK   
+a)   A  u)   UU   t)   o)   OO              s) d)   DD k) KK  
+ a)AAAA  u)UUU    t)T   o)OOO          s)SSSS   d)DDDD k)  KK
+`,
+  '\x1b[0m',
+)
 
-program.name('auto-cli').description('CLI for Autonomys functions').version('0.1.0')
+program.name('auto-sdk-example-cli').description('CLI for Autonomys functions').version('0.1.0')
 
 program
   .command('address')
