@@ -5,10 +5,10 @@ on:
     branches:
       - main
     paths-ignore:
-      - "**.md"
+      - '**.md'
   pull_request:
     paths-ignore:
-      - "**.md"
+      - '**.md'
   workflow_dispatch:
 
 jobs:
@@ -32,9 +32,6 @@ jobs:
 
       - name: Install dependencies
         run: yarn install
-
-      - name: Build auto-utils package 🔧
-        run: yarn workspace @autonomys/auto-utils build
 
       - name: Build all packages 🔧
         run: yarn build
