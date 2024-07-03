@@ -8,6 +8,13 @@ interface DropdownProps {
   toggleDropdown: (name: keyof DropDown) => void
 }
 
+const Functions = [
+  {
+    name: 'Auto ID',
+    link: 'id',
+  },
+]
+
 export const AutoIdDropdown: FC<DropdownProps> = ({ walletName, isOpen, toggleDropdown }) => {
   return (
     <div className='relative'>
@@ -19,13 +26,16 @@ export const AutoIdDropdown: FC<DropdownProps> = ({ walletName, isOpen, toggleDr
       </button>
       {isOpen && (
         <div className='absolute mt-2 z-40 bg-white text-black rounded-md shadow-lg'>
-          <Link
-            key={'id'}
-            href={`/wallet/${walletName}/auto-id/id`}
-            className='block px-4 py-2 hover:bg-gray-200'
-          >
-            ID
-          </Link>
+          {Functions.map((func) => (
+            <Link
+              key={func.link}
+              href={`/wallet/${walletName}/auto-id/${func.link}`}
+              onClick={() => toggleDropdown('autoId')}
+              className='block px-4 py-2 hover:bg-gray-200'
+            >
+              {func.name}
+            </Link>
+          ))}
         </div>
       )}
     </div>

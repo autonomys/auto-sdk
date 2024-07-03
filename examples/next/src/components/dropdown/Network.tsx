@@ -27,7 +27,10 @@ export const NetworkDropdown: FC<DropdownProps> = ({ networks, isOpen, toggleDro
             <Link
               key={network.id}
               href={`/network/${network.id}`}
-              onClick={() => handleNetworkChange(network.id)}
+              onClick={() => {
+                handleNetworkChange(network.id)
+                toggleDropdown('network')
+              }}
               className='block px-4 py-2 hover:bg-gray-200'
             >
               {network.name}
