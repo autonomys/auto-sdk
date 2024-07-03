@@ -1,7 +1,7 @@
 import { operator, withdrawStake } from '@autonomys/auto-consensus'
 import { setup, signAndSend } from './utils'
 
-const main = async () => {
+export const withdrawStakeFunction = async () => {
   const { api, alice } = await setup()
 
   const operatorId = '1'
@@ -19,7 +19,7 @@ const main = async () => {
   await signAndSend(alice[0], tx)
 }
 
-main()
+withdrawStakeFunction()
   .then(() => {
     console.log('\x1b[34m%s\x1b[0m', 'Script executed successfully')
     process.exit(0)
