@@ -23,7 +23,7 @@ export const useApi = () => {
           return
         }
 
-        setValue(query())
+        setValue(query)
       } catch (error) {
         setErrorForm && setErrorForm((error as any).message)
       }
