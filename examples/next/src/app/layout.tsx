@@ -26,7 +26,7 @@ export default function RootLayout({
         <main className='flex min-h-screen flex-col items-center justify-between p-24 relative'>
           <div className='absolute inset-0'>
             <Image
-              src='/images/auto-background.png'
+              src='/auto-background.png'
               alt='Background'
               layout='fill'
               objectFit='cover'
