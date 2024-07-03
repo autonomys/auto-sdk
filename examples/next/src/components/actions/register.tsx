@@ -93,6 +93,7 @@ export const RegisterOperator = () => {
           value={nominationTax}
           options={['1', '5', '10']}
           set={setNominationTax}
+          formatOption={(e) => e.toString()}
         />
       </div>
       {errorForm && <div className='mt-4 text-red-500'>{errorForm}</div>}

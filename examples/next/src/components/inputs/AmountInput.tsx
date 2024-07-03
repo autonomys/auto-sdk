@@ -1,3 +1,4 @@
+import { formatTokenAmount } from '@autonomys/auto-utils'
 import { FC } from 'react'
 
 interface InputProps {
@@ -5,9 +6,16 @@ interface InputProps {
   value?: string
   options?: string[]
   set?: (e: string) => void
+  formatOption?: (e: number | bigint) => string
 }
 
-export const AmountInput: FC<InputProps> = ({ id = 'amount', value, options, set }) => (
+export const AmountInput: FC<InputProps> = ({
+  id = 'amount',
+  value,
+  options,
+  set,
+  formatOption = formatTokenAmount,
+}) => (
   <div className='relative inline-block'>
     <input
       id={id}
@@ -22,7 +30,7 @@ export const AmountInput: FC<InputProps> = ({ id = 'amount', value, options, set
           <button
             key={`address-receiver-index-${index}`}
             className={'relative items-center gap-2 rounded-full'}
-            onClick={() => set && set(option)}
+            onClick={() => set && set(formatOption(parseInt(option)).toString())}
           >
             {option}
           </button>
