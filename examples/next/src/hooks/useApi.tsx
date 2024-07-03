@@ -1,4 +1,5 @@
-import { ApiPromise, activate } from '@autonomys/auto-utils'
+import { activate } from '@autonomys/auto-utils'
+import type { ApiPromise } from '@polkadot/api'
 import { useCallback, useEffect, useState } from 'react'
 import { useNetwork } from './useNetwork'
 
