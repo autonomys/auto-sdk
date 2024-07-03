@@ -30,7 +30,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@autonomys/auto-id@workspace:packages/auto-id":
+"@autonomys/auto-id@workspace:*, @autonomys/auto-id@workspace:packages/auto-id":
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-id@workspace:packages/auto-id"
   dependencies:
@@ -2025,6 +2025,18 @@ __metadata:
   checksum: 10c0/bb8eaf4040c8f49dd475566874986f5976b81bae65a6b5526e2208a13cdca323e69ce297bcd435fdda3eb6933defe888e71974d705b6fcb14f2734a907f8aed4
   languageName: node
   linkType: hard
+
+"auto-id-examples@workspace:examples/auto-id":
+  version: 0.0.0-use.local
+  resolution: "auto-id-examples@workspace:examples/auto-id"
+  dependencies:
+    "@autonomys/auto-id": "workspace:*"
+    "@types/node": "npm:^20.12.12"
+    dotenv: "npm:^16.4.5"
+    ts-node: "npm:^10.9.2"
+    typescript: "npm:^5.4.5"
+  languageName: unknown
+  linkType: soft
 
 "babel-jest@npm:^29.7.0":
   version: 29.7.0

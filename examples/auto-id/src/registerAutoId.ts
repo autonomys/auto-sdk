@@ -2,11 +2,11 @@
  * Example of how to register an auto-id
  */
 
+import { CertificateManager, Registry, generateEd25519KeyPair2 } from '@autonomys/auto-id'
 import * as x509 from '@peculiar/x509'
 import { Keyring } from '@polkadot/api'
 import { cryptoWaitReady } from '@polkadot/util-crypto'
 import { config } from 'dotenv'
-import { CertificateManager, Registry, generateEd25519KeyPair2 } from '../src/index'
 
 function loadEnv(): { RPC_URL: string; KEYPAIR_URI: string } {
   const myEnv = config()
@@ -58,12 +58,12 @@ async function main() {
 
   const keys = await generateEd25519KeyPair2()
   const selfIssuedCm = new CertificateManager(null, keys[0], keys[1])
-  const selfIssuedCert = await selfIssuedCm.selfIssueCertificate('test')
+  const selfIssuedCert = await selfIssuedCm.selfIssueCertificate('test1')
   const issuerId = await register(selfIssuedCert, registry)
 
   const userKeys = await generateEd25519KeyPair2()
   const userCm = new CertificateManager(null, userKeys[0], userKeys[1])
-  const userCsr = await userCm.createAndSignCSR('user')
+  const userCsr = await userCm.createAndSignCSR('user1')
   const userCert = await selfIssuedCm.issueCertificate(userCsr)
   CertificateManager.prettyPrintCertificate(userCert)
   const registerUser = await register(userCert, registry, issuerId!)

@@ -6,8 +6,7 @@
     "build": "tsc",
     "clean": "rm -rf dist",
     "format": "prettier --write \"src/**/*.ts\"",
-    "test": "jest",
-    "register": "tsc && ts-node examples/registerAutoId.ts"
+    "test": "jest"
   },
   "dependencies": {
     "@autonomys/auto-utils": "workspace:*",
@@ -18,10 +17,6 @@
     "asn1js": "^3.0.5",
     "dotenv": "^16.4.5"
   },
-  "files": [
-    "dist",
-    "README.md"
-  ],
   "devDependencies": {
     "@types/jest": "^29.5.12",
     "@types/node": "^20.12.12",
@@ -29,5 +24,13 @@
     "ts-jest": "^29.1.4",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/subspace/auto-sdk"
+  },
+  "author": {
+    "name": "Autonomys",
+    "url": "https://www.autonomys.net"
   }
 }
