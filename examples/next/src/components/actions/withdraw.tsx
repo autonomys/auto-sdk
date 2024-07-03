@@ -2,6 +2,8 @@ import { useTx } from '@/hooks/useTx'
 import { useWallets } from '@/hooks/useWallet'
 import { withdrawStake } from '@autonomys/auto-consensus'
 import React, { useCallback, useState } from 'react'
+import { AmountInput } from '../inputs/AmountInput'
+import { OperatorIdInput } from '../inputs/OperatorIdInput'
 
 export const Withdraw = () => {
   const [operatorId, setOperatorId] = useState('')
@@ -32,25 +34,13 @@ export const Withdraw = () => {
         <label className='block text-gray-700 text-sm font-bold mb-2' htmlFor='to'>
           Operator Id
         </label>
-        <input
-          id='operatorId'
-          type='number'
-          value={operatorId}
-          onChange={(e) => setOperatorId(e.target.value)}
-          className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'
-        />
+        <OperatorIdInput value={operatorId} set={setOperatorId} />
       </div>
       <div className='w-full max-w-xs mt-4'>
         <label className='block text-gray-700 text-sm font-bold mb-2' htmlFor='amount'>
           Qty of Shares
         </label>
-        <input
-          id='shares'
-          type='number'
-          value={shares}
-          onChange={(e) => setShares(e.target.value)}
-          className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'
-        />
+        <AmountInput id='shares' value={shares} set={setShares} />
       </div>
       {errorForm && <div className='mt-4 text-red-500'>{errorForm}</div>}
       <button

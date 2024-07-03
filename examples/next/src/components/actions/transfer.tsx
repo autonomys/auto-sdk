@@ -2,6 +2,8 @@ import { useTx } from '@/hooks/useTx'
 import { useWallets } from '@/hooks/useWallet'
 import { transfer } from '@autonomys/auto-consensus'
 import React, { useCallback, useState } from 'react'
+import { AmountInput } from '../inputs/AmountInput'
+import { ReceiverInput } from '../inputs/ReceiverInput'
 
 export const Transfer = () => {
   const [to, setTo] = useState('')
@@ -25,25 +27,13 @@ export const Transfer = () => {
         <label className='block text-gray-700 text-sm font-bold mb-2' htmlFor='to'>
           To
         </label>
-        <input
-          id='to'
-          type='text'
-          value={to}
-          onChange={(e) => setTo(e.target.value)}
-          className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'
-        />
+        <ReceiverInput id='to' value={to} set={setTo} />
       </div>
       <div className='w-full max-w-xs mt-4'>
         <label className='block text-gray-700 text-sm font-bold mb-2' htmlFor='amount'>
           Amount
         </label>
-        <input
-          id='amount'
-          type='number'
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'
-        />
+        <AmountInput id='amount' value={amount} set={setAmount} />
       </div>
       {errorForm && <div className='mt-4 text-red-500'>{errorForm}</div>}
       <button

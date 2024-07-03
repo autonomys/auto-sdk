@@ -4,6 +4,8 @@ import { useWallets } from '@/hooks/useWallet'
 import { registerOperator } from '@autonomys/auto-consensus'
 import { ActivateWalletInput, activateWallet } from '@autonomys/auto-utils'
 import React, { useCallback, useState } from 'react'
+import { AmountInput } from '../inputs/AmountInput'
+import { OperatorIdInput } from '../inputs/OperatorIdInput'
 
 export const RegisterOperator = () => {
   const [operatorSeed, setOperatorSeed] = useState('')
@@ -58,49 +60,29 @@ export const RegisterOperator = () => {
         <label className='block text-gray-700 text-sm font-bold mb-2' htmlFor='to'>
           Domain Id
         </label>
-        <input
-          id='domainId'
-          type='number'
-          value={domainId}
-          onChange={(e) => setDomainId(e.target.value)}
-          className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'
-        />
+        <OperatorIdInput id='domainId' value={domainId} set={setDomainId} />
       </div>
       <div className='w-full max-w-xs mt-4'>
         <label className='block text-gray-700 text-sm font-bold mb-2' htmlFor='amount'>
           Amount to Stake
         </label>
-        <input
-          id='amountToStake'
-          type='number'
-          value={amountToStake}
-          onChange={(e) => setAmountToStake(e.target.value)}
-          className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'
-        />
+        <AmountInput id='amountToStake' value={amountToStake} set={setAmountToStake} />
       </div>
       <div className='w-full max-w-xs mt-4'>
         <label className='block text-gray-700 text-sm font-bold mb-2' htmlFor='amount'>
           Minimum Nominator Stake
         </label>
-        <input
+        <AmountInput
           id='minimumNominatorStake'
-          type='number'
           value={minimumNominatorStake}
-          onChange={(e) => setMinimumNominatorStake(e.target.value)}
-          className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'
+          set={setMinimumNominatorStake}
         />
       </div>
       <div className='w-full max-w-xs mt-4'>
         <label className='block text-gray-700 text-sm font-bold mb-2' htmlFor='amount'>
           Nomination Tax
         </label>
-        <input
-          id='nominationTax'
-          type='number'
-          value={nominationTax}
-          onChange={(e) => setNominationTax(e.target.value)}
-          className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'
-        />
+        <AmountInput id='nominationTax' value={nominationTax} set={setNominationTax} />
       </div>
       {errorForm && <div className='mt-4 text-red-500'>{errorForm}</div>}
       <button
