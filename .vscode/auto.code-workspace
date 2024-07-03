@@ -17,7 +17,11 @@
       "path": "../packages/auto-id",
     },
     {
-      "name": "node-examples",
+      "name": "Example - NextJS",
+      "path": "../examples/next",
+    },
+    {
+      "name": "Example - Node",
       "path": "../examples/node",
     },
   ],
