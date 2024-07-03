@@ -1,3 +1,5 @@
+// file: src/types/wallet.ts
+
 export type Mnemonic = {
   mnemonic: string
 }

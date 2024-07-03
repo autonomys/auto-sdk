@@ -1,3 +1,5 @@
+// file: src/types/transaction.ts
+
 import type { Events } from '../types/events'
 
 export type EventsValidated = {

@@ -1,3 +1,5 @@
+// file: src/wallet.ts
+
 import type { ApiPromise } from '@polkadot/api'
 import { Keyring } from '@polkadot/api'
 import type { InjectedAccountWithMeta } from '@polkadot/extension-inject/types'
@@ -39,7 +41,11 @@ export const activateWallet = async (input: ActivateWalletInput): Promise<Wallet
 
   const accounts: InjectedAccountWithMeta[] & KeyringPair[] = []
 
-  if (typeof window !== 'undefined') {
+  if ((input as Mnemonic).mnemonic || (input as URI).uri) {
+    // Attach the wallet in a node environment
+    const account = await setupWallet(input)
+    accounts.push(account)
+  } else if (typeof window !== 'undefined') {
     const { web3Enable, web3Accounts } = await import('@polkadot/extension-dapp')
 
     // Enable Polkadot.js extension in the browser
@@ -49,10 +55,6 @@ export const activateWallet = async (input: ActivateWalletInput): Promise<Wallet
     const allAccounts = await web3Accounts()
     accounts.push(...allAccounts)
     if (allAccounts.length === 0) console.warn('No accounts found in the Polkadot.js extension')
-  } else if ((input as Mnemonic).mnemonic || (input as URI).uri) {
-    // Attach the wallet in a node environment
-    const account = await setupWallet(input)
-    accounts.push(account)
   } else throw new Error('No wallet provided')
 
   return { api, accounts }

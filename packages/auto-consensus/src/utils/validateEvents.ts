@@ -1,3 +1,5 @@
+// file: src/utils/validateEvents.ts
+
 import type { EventRecord } from '@polkadot/types/interfaces'
 import type { Events } from '../types/events'
 import type { EventsValidated } from '../types/transaction'

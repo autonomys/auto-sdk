@@ -1,3 +1,5 @@
+// file: src/constants/wallet.ts
+
 export const mockURIs = [
   '//Alice',
   '//Bob',
