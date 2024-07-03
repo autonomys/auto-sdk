@@ -16,7 +16,6 @@
     "build": "tsc",
     "clean": "rm -rf dist",
     "format": "prettier --write \"src/**/*.ts\"",
-    "test": "jest",
     "register": "tsc && ts-node src/registerAutoId.ts"
   },
   "dependencies": {
