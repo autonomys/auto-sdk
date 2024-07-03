@@ -31,9 +31,20 @@ export const useApi = () => {
     [api],
   )
 
+  const handleRefreshNetwork = useCallback(async () => {
+    if (api) {
+      await api.disconnect()
+      handleLoadApi()
+    }
+  }, [api, handleLoadApi])
+
   useEffect(() => {
     if (api === null) handleLoadApi()
   }, [handleLoadApi, api])
+
+  useEffect(() => {
+    handleRefreshNetwork()
+  }, [config])
 
   return { handleLoadApi, handleQuery, api }
 }
