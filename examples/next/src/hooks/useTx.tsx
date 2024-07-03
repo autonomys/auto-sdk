@@ -1,5 +1,7 @@
 import { useApi } from '@/hooks/useApi'
 import { useWallets } from '@/hooks/useWallet'
+import type { SubmittableExtrinsic } from '@polkadot/api/types'
+import type { ISubmittableResult } from '@polkadot/types/types'
 import { useCallback, useState } from 'react'
 
 export const useTx = () => {
@@ -8,7 +10,7 @@ export const useTx = () => {
   const [txHash, setTxHash] = useState('')
 
   const handleTx = useCallback(
-    async (tx: any, setErrorForm: any) => {
+    async (tx: SubmittableExtrinsic<'promise', ISubmittableResult>, setErrorForm: any) => {
       try {
         if (!selectedWallet) {
           setErrorForm('Wallet not selected')
@@ -19,7 +21,7 @@ export const useTx = () => {
             if (result.status.isInBlock) console.log('Successful tx')
             else if (result.status.isFinalized) console.log('Finalized tx')
           }),
-          (v) => setTxHash(v.hash.toString()),
+          () => setTxHash(tx.hash.toString()),
           setErrorForm,
         )
       } catch (error) {
