@@ -33,7 +33,12 @@ export const Transfer = () => {
         <label className='block text-gray-700 text-sm font-bold mb-2' htmlFor='amount'>
           Amount
         </label>
-        <AmountInput id='amount' value={amount} set={setAmount} />
+        <AmountInput
+          id='amount'
+          value={amount}
+          options={['0.01', '1', '5', '10', '100']}
+          set={setAmount}
+        />
       </div>
       {errorForm && <div className='mt-4 text-red-500'>{errorForm}</div>}
       <button

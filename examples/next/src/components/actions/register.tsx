@@ -66,7 +66,12 @@ export const RegisterOperator = () => {
         <label className='block text-gray-700 text-sm font-bold mb-2' htmlFor='amount'>
           Amount to Stake
         </label>
-        <AmountInput id='amountToStake' value={amountToStake} set={setAmountToStake} />
+        <AmountInput
+          id='amountToStake'
+          value={amountToStake}
+          options={['100', '250', '500', '1000']}
+          set={setAmountToStake}
+        />
       </div>
       <div className='w-full max-w-xs mt-4'>
         <label className='block text-gray-700 text-sm font-bold mb-2' htmlFor='amount'>
@@ -75,6 +80,7 @@ export const RegisterOperator = () => {
         <AmountInput
           id='minimumNominatorStake'
           value={minimumNominatorStake}
+          options={['0', '1', '50', '100']}
           set={setMinimumNominatorStake}
         />
       </div>
@@ -82,7 +88,12 @@ export const RegisterOperator = () => {
         <label className='block text-gray-700 text-sm font-bold mb-2' htmlFor='amount'>
           Nomination Tax
         </label>
-        <AmountInput id='nominationTax' value={nominationTax} set={setNominationTax} />
+        <AmountInput
+          id='nominationTax'
+          value={nominationTax}
+          options={['1', '5', '10']}
+          set={setNominationTax}
+        />
       </div>
       {errorForm && <div className='mt-4 text-red-500'>{errorForm}</div>}
       <button
