@@ -1,5 +1,4 @@
 import {
-  address,
   balance,
   deregisterOperator,
   events,
@@ -9,8 +8,13 @@ import {
   sudo,
   withdrawStake,
 } from '@autonomys/auto-consensus'
-import { ActivateWalletInput, activateWallet, getMockWallet } from '@autonomys/auto-utils'
-import { mnemonicGenerate } from '@polkadot/util-crypto'
+import {
+  ActivateWalletInput,
+  activateWallet,
+  address,
+  generateWallet,
+  getMockWallet,
+} from '@autonomys/auto-utils'
 import {
   setup,
   signAndSendTx,
@@ -26,10 +30,10 @@ describe('Verify staking functions', () => {
   if (isLocalhost) {
     describe('Test registerOperator()', () => {
       test('Check Alice can register random wallet as an operator', async () => {
-        const mnemonicOperator = mnemonicGenerate()
+        const { mnemonic } = generateWallet()
         const { accounts: operatorAccounts } = await activateWallet({
           ...TEST_NETWORK,
-          uri: mnemonicOperator,
+          mnemonic,
         } as ActivateWalletInput)
 
         const sender = alice.accounts[0]
@@ -87,10 +91,10 @@ describe('Verify staking functions', () => {
       }, 10000)
 
       test('Check Operator can addFunds after registration', async () => {
-        const mnemonicOperator = mnemonicGenerate()
+        const { mnemonic } = generateWallet()
         const { accounts: operatorAccounts } = await activateWallet({
           ...TEST_NETWORK,
-          uri: mnemonicOperator,
+          mnemonic,
         } as ActivateWalletInput)
 
         const sender = alice.accounts[0]
@@ -139,10 +143,10 @@ describe('Verify staking functions', () => {
 
     describe('Test deregisterOperator()', () => {
       test('Check Operator can deregisterOperator after registration', async () => {
-        const mnemonicOperator = mnemonicGenerate()
+        const { mnemonic } = generateWallet()
         const { accounts: operatorAccounts } = await activateWallet({
           ...TEST_NETWORK,
-          uri: mnemonicOperator,
+          mnemonic,
         } as ActivateWalletInput)
 
         const sender = alice.accounts[0]
@@ -181,7 +185,7 @@ describe('Verify staking functions', () => {
               api: alice.api,
               operatorId: findOperator.operatorId,
             }),
-            [events.operatorDeRegistered],
+            [events.operatorDeregistered],
           )
         }
       }, 60000)

@@ -1,6 +1,5 @@
 import { Events, signAndSendTx as signAndSend } from '@autonomys/auto-consensus'
-import type { AddressOrPair, SubmittableExtrinsic } from '@polkadot/api/types'
-import type { ISubmittableResult } from '@polkadot/types/types'
+import type { AddressOrPair, ISubmittableResult, SubmittableExtrinsic } from '@autonomys/auto-utils'
 
 export const signAndSendTx = async (
   sender: AddressOrPair,
