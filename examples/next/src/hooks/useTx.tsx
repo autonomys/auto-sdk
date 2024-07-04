@@ -1,5 +1,6 @@
 import { useApi } from '@/hooks/useApi'
 import { useWallets } from '@/hooks/useWallet'
+import { signAndSendTx, TransactionSignedAndSend } from '@autonomys/auto-consensus'
 import type { SubmittableExtrinsic } from '@polkadot/api/types'
 import type { ISubmittableResult } from '@polkadot/types/types'
 import { useCallback, useState } from 'react'
@@ -17,10 +18,7 @@ export const useTx = () => {
           return
         }
         await handleQuery(
-          await tx.signAndSend(selectedWallet.accounts[0], (result: any) => {
-            if (result.status.isInBlock) console.log('Successful tx')
-            else if (result.status.isFinalized) console.log('Finalized tx')
-          }),
+          await signAndSendTx(selectedWallet.accounts[0], tx, [], false),
           () => setTxHash(tx.hash.toString()),
           setErrorForm,
         )

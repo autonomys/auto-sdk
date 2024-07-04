@@ -10,11 +10,7 @@ export const useApi = () => {
   const handleLoadApi = useCallback(async () => setApi(await activate(config)), [])
 
   const handleQuery = useCallback(
-    async (
-      query: () => any,
-      setValue: (value: any) => void,
-      setErrorForm?: (error: any) => void,
-    ) => {
+    async (query: any, setValue: (value: any) => void, setErrorForm?: (error: any) => void) => {
       setErrorForm && setErrorForm('')
       try {
         if (!api) {
