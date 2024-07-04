@@ -4,13 +4,14 @@ import { withdrawStake } from '@autonomys/auto-consensus'
 import React, { useCallback, useState } from 'react'
 import { AmountInput } from '../inputs/AmountInput'
 import { OperatorIdInput } from '../inputs/OperatorIdInput'
+import { TxButton } from '../tx/TxButton'
 
 export const Withdraw = () => {
   const [operatorId, setOperatorId] = useState('')
   const [shares, setShares] = useState('')
   const [errorForm, setErrorForm] = useState('')
   const { selectedWallet } = useWallets()
-  const { handleTx, txHash } = useTx()
+  const { handleTx } = useTx()
 
   const handleWithdrawStake = useCallback(async () => {
     if (!selectedWallet) {
@@ -43,17 +44,7 @@ export const Withdraw = () => {
         <AmountInput id='shares' value={shares} set={setShares} />
       </div>
       {errorForm && <div className='mt-4 text-red-500'>{errorForm}</div>}
-      <button
-        onClick={handleWithdrawStake}
-        className='mt-6 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline'
-      >
-        Withdraw Stake
-      </button>
-      {txHash && (
-        <div className='mt-4'>
-          <b>Transaction Hash:</b> {txHash}
-        </div>
-      )}
+      <TxButton label='Withdraw Stake' onClick={handleWithdrawStake} />
     </div>
   )
 }

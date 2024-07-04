@@ -1,6 +1,6 @@
 import { useApi } from '@/hooks/useApi'
 import { useWallets } from '@/hooks/useWallet'
-import { signAndSendTx, TransactionSignedAndSend } from '@autonomys/auto-consensus'
+import { signAndSendTx } from '@autonomys/auto-consensus'
 import type { SubmittableExtrinsic } from '@polkadot/api/types'
 import type { ISubmittableResult } from '@polkadot/types/types'
 import { useCallback, useState } from 'react'
@@ -9,6 +9,7 @@ export const useTx = () => {
   const { handleQuery } = useApi()
   const { selectedWallet } = useWallets()
   const [txHash, setTxHash] = useState('')
+  const [blockHash, setBlockHash] = useState('')
 
   const handleTx = useCallback(
     async (tx: SubmittableExtrinsic<'promise', ISubmittableResult>, setErrorForm: any) => {
@@ -19,7 +20,10 @@ export const useTx = () => {
         }
         await handleQuery(
           await signAndSendTx(selectedWallet.accounts[0], tx, [], false),
-          () => setTxHash(tx.hash.toString()),
+          (r) => {
+            setTxHash(r.txHash)
+            setBlockHash(r.blockHash)
+          },
           setErrorForm,
         )
       } catch (error) {
@@ -29,5 +33,5 @@ export const useTx = () => {
     [handleQuery, selectedWallet],
   )
 
-  return { handleTx, txHash }
+  return { handleTx, txHash, blockHash }
 }

@@ -4,13 +4,14 @@ import { transfer } from '@autonomys/auto-consensus'
 import React, { useCallback, useState } from 'react'
 import { AmountInput } from '../inputs/AmountInput'
 import { ReceiverInput } from '../inputs/ReceiverInput'
+import { TxButton } from '../tx/TxButton'
 
 export const Transfer = () => {
   const [to, setTo] = useState('')
   const [amount, setAmount] = useState('')
   const [errorForm, setErrorForm] = useState('')
   const { selectedWallet } = useWallets()
-  const { handleTx, txHash } = useTx()
+  const { handleTx } = useTx()
 
   const handleTransfer = useCallback(async () => {
     if (!selectedWallet) {
@@ -41,17 +42,7 @@ export const Transfer = () => {
         />
       </div>
       {errorForm && <div className='mt-4 text-red-500'>{errorForm}</div>}
-      <button
-        onClick={handleTransfer}
-        className='mt-6 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline'
-      >
-        Transfer
-      </button>
-      {txHash && (
-        <div className='mt-4'>
-          <b>Transaction Hash:</b> {txHash}
-        </div>
-      )}
+      <TxButton label='Transfer' onClick={handleTransfer} />
     </div>
   )
 }

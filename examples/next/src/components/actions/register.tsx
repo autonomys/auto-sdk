@@ -6,6 +6,7 @@ import { ActivateWalletInput, activateWallet } from '@autonomys/auto-utils'
 import React, { useCallback, useState } from 'react'
 import { AmountInput } from '../inputs/AmountInput'
 import { OperatorIdInput } from '../inputs/OperatorIdInput'
+import { TxButton } from '../tx/TxButton'
 
 export const RegisterOperator = () => {
   const [operatorSeed, setOperatorSeed] = useState('')
@@ -16,7 +17,7 @@ export const RegisterOperator = () => {
   const [errorForm, setErrorForm] = useState('')
   const { config } = useNetwork()
   const { selectedWallet } = useWallets()
-  const { handleTx, txHash } = useTx()
+  const { handleTx } = useTx()
 
   const handleRegisterOperator = useCallback(async () => {
     if (!selectedWallet) {
@@ -97,17 +98,7 @@ export const RegisterOperator = () => {
         />
       </div>
       {errorForm && <div className='mt-4 text-red-500'>{errorForm}</div>}
-      <button
-        onClick={handleRegisterOperator}
-        className='mt-6 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline'
-      >
-        Register Operator
-      </button>
-      {txHash && (
-        <div className='mt-4'>
-          <b>Transaction Hash:</b> {txHash}
-        </div>
-      )}
+      <TxButton label='Register Operator' onClick={handleRegisterOperator} />
     </div>
   )
 }
