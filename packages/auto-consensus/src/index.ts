@@ -1,6 +1,5 @@
 // file: src/index.ts
 
-export * from './address'
 export * from './balances'
 export * from './batch'
 export * from './info'
