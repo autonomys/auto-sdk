@@ -1,7 +1,7 @@
 // file: src/types/wallet.ts
 
 import type { ApiPromise } from '@polkadot/api'
-import type { Signer, SignerResult } from '@polkadot/api/types'
+import type { AddressOrPair, Signer, SignerResult } from '@polkadot/api/types'
 import type { InjectedAccountWithMeta } from '@polkadot/extension-inject/types'
 import type { KeyringPair } from '@polkadot/keyring/types'
 import type { DomainInput, NetworkInput } from './network'
@@ -39,4 +39,11 @@ export type WalletActivated = {
   address: string
 }
 
-export type { ApiPromise, InjectedAccountWithMeta, KeyringPair, Signer, SignerResult }
+export type {
+  AddressOrPair,
+  ApiPromise,
+  InjectedAccountWithMeta,
+  KeyringPair,
+  Signer,
+  SignerResult,
+}
