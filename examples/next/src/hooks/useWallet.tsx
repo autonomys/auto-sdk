@@ -17,7 +17,7 @@ export const useWallets = () => {
 
   useEffect(() => {
     handleLoadWallet()
-  }, [])
+  }, [config])
 
   const selectedWallet = useMemo(() => {
     const walletIndex = mockURIs.findIndex((w) => w === `//${walletName}`)

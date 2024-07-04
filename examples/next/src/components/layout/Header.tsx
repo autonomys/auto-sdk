@@ -75,6 +75,7 @@ export const Header = () => {
           toggleDropdown={toggleDropdown}
         />
         <NetworkDropdown
+          walletName={walletName}
           networks={networks}
           isOpen={dropdownOpen.network}
           toggleDropdown={toggleDropdown}

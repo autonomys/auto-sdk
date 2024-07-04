@@ -36,7 +36,7 @@ export const Balance = () => {
       </button>
       {balanceFree && (
         <div className='mt-4'>
-          <b>Free:</b> {parseTokenAmount(balanceFree)}
+          <b>Free:</b> {parseTokenAmount(balanceFree)} tSSC
         </div>
       )}
     </div>

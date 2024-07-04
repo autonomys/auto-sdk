@@ -36,7 +36,7 @@ export const useApi = () => {
   const handleRefreshNetwork = useCallback(async () => {
     if (api) {
       await api.disconnect()
-      handleLoadApi()
+      await handleLoadApi()
     }
   }, [api, handleLoadApi])
 

@@ -2,16 +2,26 @@ import { useNetwork } from '@/hooks/useNetwork'
 import type { DropDown } from '@/types/layout'
 import type { Network } from '@autonomys/auto-utils'
 import Link from 'next/link'
+import { useParams } from 'next/navigation'
 import type { FC } from 'react'
 
 interface DropdownProps {
+  walletName: string | string[]
   networks: Network[]
   isOpen: boolean
   toggleDropdown: (name: keyof DropDown) => void
 }
 
-export const NetworkDropdown: FC<DropdownProps> = ({ networks, isOpen, toggleDropdown }) => {
+export const NetworkDropdown: FC<DropdownProps> = ({
+  walletName,
+  networks,
+  isOpen,
+  toggleDropdown,
+}) => {
   const { handleNetworkChange } = useNetwork()
+  const params = useParams()
+  const packageName = params.package
+  const action = params.action
 
   return (
     <div className='relative'>
@@ -26,7 +36,7 @@ export const NetworkDropdown: FC<DropdownProps> = ({ networks, isOpen, toggleDro
           {networks.map((network) => (
             <Link
               key={network.id}
-              href={`/network/${network.id}`}
+              href={`/network/${network.id}/wallet/${walletName}/${packageName}/${action}`}
               onClick={() => {
                 handleNetworkChange(network.id)
                 toggleDropdown('network')
