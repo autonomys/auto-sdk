@@ -1,7 +1,7 @@
 import { address, balance, transfer } from '@autonomys/auto-consensus'
 import { setup, signAndSend } from './utils'
 
-const main = async () => {
+export const transferFunction = async () => {
   const { api, alice, bob } = await setup()
 
   // Alice's Addresses
@@ -62,7 +62,7 @@ const main = async () => {
   )
 }
 
-main()
+transferFunction()
   .then(() => {
     console.log('\x1b[34m%s\x1b[0m', 'Script executed successfully')
     process.exit(0)

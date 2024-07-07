@@ -1,7 +1,7 @@
 import { operators } from '@autonomys/auto-consensus'
 import { setup } from './utils/setup'
 
-const main = async () => {
+export const operatorsFunction = async () => {
   const { api } = await setup()
 
   // Query all operators
@@ -9,7 +9,7 @@ const main = async () => {
   console.log('\x1b[36m%s\x1b[0m', 'allOperators:', allOperators, '\x1b[0m')
 }
 
-main()
+operatorsFunction()
   .then(() => {
     console.log('\x1b[34m%s\x1b[0m', 'Script executed successfully')
     process.exit(0)

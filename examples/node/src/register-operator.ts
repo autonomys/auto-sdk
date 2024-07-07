@@ -1,7 +1,7 @@
 import { address, balance, registerOperator } from '@autonomys/auto-consensus'
 import { setup, signAndSend } from './utils'
 
-const main = async () => {
+export const registerOperatorFunction = async () => {
   const { api, alice, randomUser } = await setup()
 
   // Alice's Addresses
@@ -46,7 +46,7 @@ const main = async () => {
   )
 }
 
-main()
+registerOperatorFunction()
   .then(() => {
     console.log('\x1b[34m%s\x1b[0m', 'Script executed successfully')
     process.exit(0)
