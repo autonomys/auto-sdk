@@ -1,6 +1,6 @@
 // file: src/transfer.ts
 
-import type { ApiPromise } from '@polkadot/api'
+import type { ApiPromise } from '@autonomys/auto-utils'
 
 export type Amount = BigInt | number | string
 
