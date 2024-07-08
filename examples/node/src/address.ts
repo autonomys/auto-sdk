@@ -1,7 +1,7 @@
 import { address } from '@autonomys/auto-consensus'
 import { setup } from './utils/setup'
 
-const main = async () => {
+export const addressFunction = async () => {
   const { alice, bob } = await setup()
 
   // Alice's Addresses
@@ -15,7 +15,7 @@ const main = async () => {
   console.log('\x1b[32m%s\x1b[0m', 'Bob Clean Address:', bobAddress, '\n')
 }
 
-main()
+addressFunction()
   .then(() => {
     console.log('\x1b[34m%s\x1b[0m', 'Script executed successfully')
     process.exit(0)
