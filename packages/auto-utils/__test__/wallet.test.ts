@@ -31,7 +31,7 @@ describe('Verify wallet functions', () => {
     wallets = await mockWallets()
     aliceWallet = wallets[0].accounts[0]
     bobWallet = wallets[1].accounts[0]
-  })
+  }, 20000)
 
   describe('Test setupWallet()', () => {
     test('Check setupWallet return a pair with matching address and public key when provided with a mnemonic', async () => {
