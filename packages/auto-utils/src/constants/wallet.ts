@@ -12,3 +12,5 @@ export const mockURIs = [
   '//Ivy',
   '//Jacob',
 ]
+
+export const DEFAULT_SS58_FORMAT = 2254
