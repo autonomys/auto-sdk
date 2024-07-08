@@ -9,7 +9,13 @@ import { Keyring } from '@polkadot/api'
 import { cryptoWaitReady } from '@polkadot/util-crypto'
 import { config } from 'dotenv'
 import { CertificateManager, Registry, generateEd25519KeyPair2, saveKey } from '../src/index'
-import { cryptoKeyToPem, generateRsaKeyPair, pemToPrivateKey } from '../src/keyManagement'
+import {
+  cryptoKeyToPem,
+  generateRsaKeyPair,
+  generateRsaKeyPair2,
+  pemToHex,
+  pemToPrivateKey,
+} from '../src/keyManagement'
 
 function loadEnv(): { RPC_URL: string; KEYPAIR_URI: string } {
   const myEnv = config()
@@ -44,33 +50,45 @@ async function main(taskName: string, identifier: string) {
 
   if (taskName === 'register') {
     /* Register Auto ID for issuer */
-    const issuerKeys = await generateEd25519KeyPair2()
+    console.log('\n===================== ISSUER =====================')
+    const issuerKeys = await generateRsaKeyPair2() // RSA
+    // const issuerKeys = await generateEd25519KeyPair2() // Ed25519
+    console.debug("user's private key algorithm: ", issuerKeys[0].algorithm.name)
+    console.debug('Issuer public key:', pemToHex(await cryptoKeyToPem(issuerKeys[1])))
     // Convert the CryptoKey to a PEM string
     const issuerPemString = await cryptoKeyToPem(issuerKeys[0])
     // save issuer private key for later use
-    saveKey(pemToPrivateKey(issuerPemString), './res/private.issuer.pem')
+    saveKey(pemToPrivateKey(issuerPemString), './res/private.rsa.issuer.pem')
+    // saveKey(pemToPrivateKey(issuerPemString), './res/private.issuer.pem')
+    console.log("issuer's private key algorithm: ", issuerKeys[0].algorithm.name)
+
     const selfIssuedCm = new CertificateManager(null, issuerKeys[0], issuerKeys[1])
-    const selfIssuedCert = await selfIssuedCm.selfIssueCertificate('test22')
+    const selfIssuedCert = await selfIssuedCm.selfIssueCertificate('test')
     const registerIssuer = await registry.registerAutoId(selfIssuedCert)
+    CertificateManager.prettyPrintCertificate(selfIssuedCert)
     const issuerAutoIdIdentifier = registerIssuer.identifier!
     console.log(
       `===\nRegistered auto id from issuer cert: ${CertificateManager.getCertificateAutoId(selfIssuedCert)} with identifier: ${issuerAutoIdIdentifier} in block #${registerIssuer.receipt?.blockNumber?.toString()}`,
     )
 
+    console.log('\n\n===================== USER =====================')
     /* Register Auto ID for user */
-    // const userKeys = generateRsaKeyPair()
-    // saveKey(pemToPrivateKey(userKeys[0]), './res/private.leaf.pem')
-    // const userCm = new CertificateManager(null, userKeys[0], userKeys[1])
+    const userKeys = await generateRsaKeyPair2() // RSA
+    // const userKeys = await generateEd25519KeyPair2() // Ed25519
 
-    const userKeys = await generateEd25519KeyPair2()
+    console.debug("user's private key algorithm: ", userKeys[0].algorithm.name)
+    console.debug('User public key:', pemToHex(await cryptoKeyToPem(userKeys[1])))
     // Convert the CryptoKey to a PEM string
     const userPemString = await cryptoKeyToPem(userKeys[0])
     // save issuer private key for later use
-    saveKey(pemToPrivateKey(userPemString), './res/private.leaf.pem')
+    saveKey(pemToPrivateKey(userPemString), './res/private.rsa.leaf.pem')
+    // saveKey(pemToPrivateKey(userPemString), './res/private.leaf.pem')
     const userCm = new CertificateManager(null, userKeys[0], userKeys[1])
-    const userCsr = await userCm.createAndSignCSR('user22')
+    const userCsr = await userCm.createAndSignCSR('user')
+    // TODO: I think here 🤔, `selfIssuedCm` should be replaced with `userCm`. Then, the publicKeyInfo in the user's onchain certificate would be of user's public key than issuer's public key.
     const userCert = await selfIssuedCm.issueCertificate(userCsr)
     CertificateManager.prettyPrintCertificate(userCert)
+    // NOTE: Ideally, this could be registered by anyone (user/registrar), not just the issuer. Notes in Notion. Here, it's the issuer (Alice) sending the tx.
     const registerUser = await registry.registerAutoId(userCert, issuerAutoIdIdentifier)
     console.log(
       `Registered auto id from user cert: ${CertificateManager.getCertificateAutoId(userCert)} with identifier: ${registerUser.identifier} in block #${registerUser.receipt?.blockNumber?.toString()}`,

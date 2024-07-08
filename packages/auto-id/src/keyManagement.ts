@@ -6,15 +6,13 @@ import { KeyObject, createPrivateKey, createPublicKey, generateKeyPairSync } fro
 /**
  * Generates an RSA key pair.
  * @param keySize The size of the key in bits. Default is 2048.
- * @returns A tuple containing the the RSA private key and public key.
+ * @returns A tuple containing the the RSA private key and public key in PEM format.
  */
 export function generateRsaKeyPair(keySize: number = 2048): [string, string] {
   const { publicKey, privateKey } = generateKeyPairSync('rsa', {
     modulusLength: keySize,
     publicExponent: 65537,
-    // TODO: Need to select the correct type - `"pkcs1" | "spki"`
     publicKeyEncoding: { type: 'spki', format: 'pem' },
-    // TODO: Need to select the correct type - `"pkcs1" | "pkcs8"`
     privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
   })
 
@@ -22,23 +20,10 @@ export function generateRsaKeyPair(keySize: number = 2048): [string, string] {
 }
 
 const crypto = new Crypto()
-// FIXME: keep one function. need to modify the tests.
-export async function generateEd25519KeyPair2(): Promise<[CryptoKey, CryptoKey]> {
-  const keyPair = await crypto.subtle.generateKey(
-    {
-      name: 'Ed25519',
-      namedCurve: 'Ed25519',
-    },
-    true,
-    ['sign', 'verify'],
-  )
-
-  return [keyPair.privateKey, keyPair.publicKey]
-}
 
 /**
  * Generates an Ed25519 key pair.
- * @returns A tuple containing the Ed25519 private key and public key.
+ * @returns A tuple containing the Ed25519 private key and public key in PEM format.
  */
 export function generateEd25519KeyPair(): [string, string] {
   const { publicKey, privateKey } = generateKeyPairSync('ed25519', {
@@ -47,6 +32,46 @@ export function generateEd25519KeyPair(): [string, string] {
   })
 
   return [privateKey, publicKey]
+}
+
+// NOTE: 'RSA-OAEP', primarily for encryption/decryption. And 'RSASSA-PKCS1-v1_5' for signing and verification.
+/**
+ * Generates an RSA key pair for signing and returns CryptoKey objects.
+ * @param keySize The size of the key in bits. Default is 2048.
+ * @returns A promise that resolves to an object containing both the privateKey and publicKey as CryptoKey objects.
+ */
+// FIXME: keep one function. need to modify the tests.
+export async function generateRsaKeyPair2(keySize: number = 2048): Promise<[CryptoKey, CryptoKey]> {
+  const keyPair = await crypto.subtle.generateKey(
+    {
+      name: 'RSASSA-PKCS1-v1_5',
+      modulusLength: keySize, // can be 1024, 2048, or 4096
+      publicExponent: new Uint8Array([1, 0, 1]), // 65537
+      hash: { name: 'SHA-256' },
+    },
+    true, // whether the key is extractable (i.e. can be exported)
+    ['sign', 'verify'], // key usages
+  )
+
+  return [keyPair.privateKey, keyPair.publicKey]
+}
+
+/**
+ * Generates an Ed25519 key pair for signing and returns CryptoKey objects.
+ * @returns A promise that resolves to an object containing both the privateKey and publicKey as CryptoKey objects.
+ */
+// FIXME: keep one function. need to modify the tests.
+export async function generateEd25519KeyPair2(): Promise<[CryptoKey, CryptoKey]> {
+  const keyPair = await crypto.subtle.generateKey(
+    {
+      name: 'Ed25519',
+      namedCurve: 'Ed25519',
+    },
+    true, // whether the key is extractable (i.e. can be exported)
+    ['sign', 'verify'], // key usages
+  )
+
+  return [keyPair.privateKey, keyPair.publicKey]
 }
 
 /**
@@ -65,7 +90,6 @@ export function generateEd25519KeyPair(): [string, string] {
  * @throws Will throw an error if the provided `key` is neither a private nor a public key object.
  *
  * @example
- * Follow "../examples/eg3.ts" & "../examples/eg4.ts" for a complete example.
  * // Create a private key object (assuming you have the appropriate private key data)
  * const privateKey = createPrivateKey({
  *     key: '-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANB ...',
@@ -109,16 +133,6 @@ export function keyToPem(key: KeyObject, password?: string): string {
     }
   }
   throw new Error('Invalid key type. Key must be a private or public key object.')
-}
-
-function arrayBufferToBase64(buffer: ArrayBuffer): string {
-  let binary = ''
-  const bytes = new Uint8Array(buffer)
-  const len = bytes.byteLength
-  for (let i = 0; i < len; i++) {
-    binary += String.fromCharCode(bytes[i])
-  }
-  return btoa(binary)
 }
 
 // TODO: Add test for this function
@@ -181,6 +195,24 @@ export function pemToPrivateKey(pemData: string, password?: string): KeyObject {
 }
 
 /**
+ * Converts a PEM-encoded string to a public key object.
+ *
+ * @param pemData The PEM string to convert to a public key.
+ * @returns The public key object.
+ *
+ * @example
+ * const pemString = '-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA...';
+ * const publicKey = pemToPublicKey(pemString);
+ * console.log('Public Key:', publicKey);
+ */
+export function pemToPublicKey(pemData: string): KeyObject {
+  return createPublicKey({
+    key: pemData,
+    format: 'pem' as 'pem',
+  })
+}
+
+/**
  * Loads a private key from a file. If the file is encrypted, a password must be provided.
  *
  * @param filePath Path to the private key file.
@@ -207,24 +239,6 @@ export async function loadPrivateKey(filePath: string, password?: string): Promi
   } catch (error: any) {
     throw new Error(`Failed to load private key: ${error.message}`)
   }
-}
-
-/**
- * Converts a PEM-encoded string to a public key object.
- *
- * @param pemData The PEM string to convert to a public key.
- * @returns The public key object.
- *
- * @example
- * const pemString = '-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA...';
- * const publicKey = pemToPublicKey(pemString);
- * console.log('Public Key:', publicKey);
- */
-export function pemToPublicKey(pemData: string): KeyObject {
-  return createPublicKey({
-    key: pemData,
-    format: 'pem' as 'pem',
-  })
 }
 
 /**
@@ -288,6 +302,99 @@ export function keyToHex(key: KeyObject): string {
   // Convert the binary data to a hexadecimal string
   return keyData.toString('hex')
 }
+/**
+ * Converts a PEM key (private or public key) to a hex string representation.
+ * @param pem pem key
+ * @returns hex string representation of the key
+ * @example
+ * const pem = '-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANB ...';
+ * const keyHex = pemToHex(pem); // --> 0x302a300506032b657003210012533ac395885661e254e171c3e5c57b38b122b1bec02dec4757bdec5566edd9
+ *
+ */
+export function pemToHex(pem: string): string {
+  const pemLines = pem.split('\n').filter((line) => line.trim() && !line.trim().startsWith('-----'))
+  const base64Content = pemLines.join('')
+  const buffer = Buffer.from(base64Content, 'base64')
+
+  let keyData: Buffer
+
+  if (pem.includes('BEGIN PRIVATE KEY')) {
+    // Standard PKCS#8 format
+    const privateKey = createPrivateKey({ key: buffer, format: 'der', type: 'pkcs8' })
+    keyData = privateKey.export({ type: 'pkcs8', format: 'der' })
+  } else if (pem.includes('BEGIN PUBLIC KEY')) {
+    // Standard SPKI format
+    const publicKey = createPublicKey({ key: buffer, format: 'der', type: 'spki' })
+    keyData = publicKey.export({ type: 'spki', format: 'der' })
+  } else if (pem.includes('BEGIN RSA PRIVATE KEY')) {
+    // PKCS#1 format for RSA private keys
+    const privateKey = createPrivateKey({ key: buffer, format: 'der', type: 'pkcs1' })
+    keyData = privateKey.export({ type: 'pkcs1', format: 'der' })
+  } else {
+    throw new Error('Unsupported key format')
+  }
+
+  return '0x' + keyData.toString('hex')
+}
+
+enum KeyType {
+  PRIVATE = 'PRIVATE',
+  PUBLIC = 'PUBLIC',
+}
+
+/**
+ * Converts a PEM key (private or public key) to a CryptoKey format.
+ * @param pem pem string
+ * @returns private/public key in CryptoKey format
+ */
+export async function pemToCryptoKeyForSigning(
+  pem: string,
+  algorithmName: string,
+): Promise<CryptoKey> {
+  const [keyType, base64Final] = pemToArrayBuffer(pem)
+
+  // TODO: auto-detect the signature algorithm retrieving OID from the onchain certificate.
+  // Define common parameters
+  const algorithm =
+    // algorithmName === 'RSA-OAEP'   // CLEANUP: unsure so kept temporarily.
+    algorithmName === 'RSASSA-PKCS1-v1_5'
+      ? {
+          // NOTE: RSA-OAEP is typically used for encryption, not signing. If RSA is
+          // intended for signing, you should use RSASSA-PKCS1-v1_5 or another RSA signing variant.
+          name: 'RSASSA-PKCS1-v1_5',
+          hash: { name: 'SHA-256' },
+        }
+      : {
+          name: 'Ed25519',
+        }
+
+  let formatType: 'pkcs8' | 'spki' | 'raw'
+  // TODO: need to decide the key usages properly.
+  let keyUsages: Iterable<KeyUsage>
+  if (keyType === KeyType.PRIVATE) {
+    formatType = 'pkcs8'
+    keyUsages = ['decrypt']
+  } else if (keyType === KeyType.PUBLIC) {
+    formatType = 'spki'
+    keyUsages = ['encrypt']
+  }
+  // else if (keyType === KeyType.RSA_PRIVATE) {
+  //   formatType = 'jwk'
+  //   keyUsages = ['decrypt']
+  // }
+  else {
+    throw new Error('Unsupported key format')
+  }
+
+  // Import the key
+  return crypto.subtle.importKey(
+    formatType,
+    base64Final,
+    algorithm,
+    true, // extractable
+    keyUsages,
+  )
+}
 
 /**
  * Checks if two public keys match.
@@ -324,7 +431,7 @@ export function doPublicKeysMatch(publicKey1: KeyObject, publicKey2: KeyObject):
   return publicKey1Der.equals(publicKey2Der)
 }
 
-// TODO: finalize which function is to keep (from node's crypto or webcrypto)
+// TODO: finalize which function is to keep (from 'node's crypto' or 'webcrypto')
 //      This can be done only after completing the AutoID package and testing
 //      it to see which one is useful.
 // export async function doPublicKeysMatch(
@@ -360,4 +467,48 @@ export async function validateCertificatePublicKey(
     .join('')
 
   return certPublicKeyHex === derivedPublicKeyHex
+}
+
+/** ======= Utils ======= */
+
+function arrayBufferToBase64(buffer: ArrayBuffer): string {
+  let binary = ''
+  const bytes = new Uint8Array(buffer)
+  const len = bytes.byteLength
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i])
+  }
+  return btoa(binary)
+}
+
+function base64ToArrayBuffer(base64: string) {
+  // Node.js Buffer provides a more robust handling of base64.
+  const buffer = Buffer.from(base64, 'base64')
+  return new Uint8Array(buffer)
+}
+
+// get the key type & base64 final string from the PEM string (private or public key)
+function stripPemHeaders(pem: string): string {
+  return pem
+    .replace(/-----BEGIN .*? KEY-----/g, '')
+    .replace(/-----END .*? KEY-----/g, '')
+    .replace(/\s+/g, '') // Remove all whitespace, including newlines and spaces
+}
+
+function pemToArrayBuffer(pem: string): [KeyType, Uint8Array] {
+  let keyType: KeyType
+
+  if (pem.includes('-----BEGIN PRIVATE KEY-----')) {
+    keyType = KeyType.PRIVATE
+  } else if (pem.includes('-----BEGIN PUBLIC KEY-----')) {
+    keyType = KeyType.PUBLIC
+  }
+  // else if (pem.includes('-----BEGIN RSA PRIVATE KEY-----')) {
+  //   keyType = KeyType.RSA_PRIVATE
+  // }
+  else {
+    throw new Error('Unsupported key format')
+  }
+
+  return [keyType, base64ToArrayBuffer(stripPemHeaders(pem))]
 }

@@ -51,7 +51,7 @@ export class CertificateManager {
       return { privateKey: privateKey, algorithm: null }
     }
 
-    if (privateKey.algorithm.name === 'rsa') {
+    if (privateKey.algorithm.name === 'RSASSA-PKCS1-v1_5') {
       return { privateKey: privateKey, algorithm: 'sha256' }
     }
 
@@ -127,7 +127,7 @@ export class CertificateManager {
     let signingAlgorithm: Algorithm | EcdsaParams
     if (privateKey.algorithm.name === 'Ed25519') {
       signingAlgorithm = { name: 'Ed25519' }
-    } else if (privateKey.algorithm.name === 'rsa') {
+    } else if (privateKey.algorithm.name === 'RSASSA-PKCS1-v1_5') {
       signingAlgorithm = { name: 'RSASSA-PKCS1-v1_5', hash: { name: 'SHA-256' } }
     } else {
       throw new Error('Unsupported key type for signing')
