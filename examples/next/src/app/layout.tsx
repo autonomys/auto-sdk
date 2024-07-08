@@ -20,13 +20,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang='en'>
-      <link rel='icon' type='image/svg+xml' href='/assets/images/favicon.svg' />
-      <link rel='icon' type='image/png' href='/assets/images/favicon.png' />
+      <link rel='icon' type='image/svg+xml' href='/favicon.svg' />
+      <link rel='icon' type='image/png' href='/favicon.png' />
       <body className={inter.className}>
         <main className='flex min-h-screen flex-col items-center justify-between p-24 relative'>
           <div className='absolute inset-0'>
             <Image
-              src='/images/auto-background.png'
+              src='/auto-background.png'
               alt='Background'
               layout='fill'
               objectFit='cover'
