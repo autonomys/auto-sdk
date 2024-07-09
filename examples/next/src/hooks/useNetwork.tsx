@@ -1,11 +1,17 @@
 import { networks } from '@autonomys/auto-utils'
-import { useCallback, useMemo, useState } from 'react'
+import { useParams } from 'next/navigation'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 export const useNetwork = () => {
+  const params = useParams()
+  const networkName = params.networkName
+
   const [config, setConfig] = useState(
-    process.env.LOCALHOST === 'true' || process.env.NEXT_PUBLIC_LOCALHOST === 'true'
-      ? { networkId: 'autonomys-localhost' }
-      : { networkId: networks[0].id },
+    !networkName || Array.isArray(networkName)
+      ? process.env.LOCALHOST === 'true' || process.env.NEXT_PUBLIC_LOCALHOST === 'true'
+        ? { networkId: 'autonomys-localhost' }
+        : { networkId: networks[0].id }
+      : { networkId: networkName },
   )
 
   const listOfNetworks = useMemo(() => networks.map((network) => network.id), [])
@@ -20,6 +26,11 @@ export const useNetwork = () => {
     },
     [listOfNetworks],
   )
+
+  useEffect(() => {
+    if (networkName && config.networkId !== networkName && Array.isArray(networkName) === false)
+      handleNetworkChange(networkName)
+  }, [networkName])
 
   return { config, handleNetworkChange }
 }
