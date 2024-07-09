@@ -104,7 +104,7 @@ export class Registry {
 
     const baseCertificate = {
       certificate: compactAddLength(new Uint8Array(tbsCertificateDerVec)),
-      signature_algorithm: derEncodedOID,
+      signature_algorithm: compactAddLength(derEncodedOID),
       signature: compactAddLength(new Uint8Array(certificate.signature)),
     }
 

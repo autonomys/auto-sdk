@@ -41,8 +41,7 @@ export function derEncodeSignatureAlgorithmOID(oid: string): Uint8Array {
   derSequence.set(new Uint8Array(oidEncoded), sequenceHeader.length)
   derSequence.set(nullParameter, sequenceHeader.length + oidEncoded.byteLength)
 
-  // Apply SCALE encoding by prepending the compact length of the entire DER sequence
-  return compactAddLength(derSequence)
+  return derSequence
 }
 
 // CLEANUP: Remove later when all registry functionalities work.
