@@ -1,5 +1,4 @@
 import { AsnParser } from '@peculiar/asn1-schema' // A library to parse ASN.1
-// TODO: See why X509Certificate (from crypto) is not compatible argument.
 import { Certificate } from '@peculiar/asn1-x509' // Assuming X.509 certificate handling
 import fs from 'fs'
 import { derEncodeSignatureAlgorithmOID } from '../src/utils'
@@ -18,12 +17,11 @@ describe('Verify crypto functions', () => {
 
     // DER encode the OID
     const derEncodedOID = derEncodeSignatureAlgorithmOID(signatureAlgorithmOID)
-    // <Buffer 3c 30 0d 06 09 2a 86 48 86 f7 0d 01 01 0b 05 00>
 
     // Convert derEncodedOID to hex string for comparison
     const derEncodedOIDHex = Buffer.from(derEncodedOID).toString('hex')
 
     // Expected DER encoded OID from the result of tests in https://github.com/subspace/subspace/blob/d875a5aac35c1732eec61ce4359782eff58ff6fc/domains/pallets/auto-id/src/tests.rs#L127
-    expect(derEncodedOIDHex).toEqual('3c300d06092a864886f70d01010b0500')
+    expect(derEncodedOIDHex).toEqual('300d06092a864886f70d01010b0500')
   })
 })

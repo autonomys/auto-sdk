@@ -48,7 +48,6 @@ __metadata:
     "@peculiar/x509": "npm:^1.11.0"
     "@types/jest": "npm:^29.5.12"
     "@types/node": "npm:^20.12.12"
-    asn1js: "npm:^3.0.5"
     dotenv: "npm:^16.4.5"
     jest: "npm:^29.7.0"
     ts-jest: "npm:^29.1.4"
