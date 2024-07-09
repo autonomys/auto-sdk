@@ -3,6 +3,7 @@ import Link from 'next/link'
 import type { FC } from 'react'
 
 interface DropdownProps {
+  networkName: string
   walletName: string | string[]
   isOpen: boolean
   toggleDropdown: (name: keyof DropDown) => void
@@ -48,6 +49,7 @@ const Functions = [
 ]
 
 export const AutoConsensusDropdown: FC<DropdownProps> = ({
+  networkName,
   walletName,
   isOpen,
   toggleDropdown,
@@ -65,7 +67,7 @@ export const AutoConsensusDropdown: FC<DropdownProps> = ({
           {Functions.map((func) => (
             <Link
               key={func.name}
-              href={`/wallet/${walletName}/auto-consensus/${func.link}`}
+              href={`/network/${networkName}/wallet/${walletName}/auto-consensus/${func.link}`}
               onClick={() => toggleDropdown('autoConsensus')}
               className='block px-4 py-2 hover:bg-gray-200'
             >
