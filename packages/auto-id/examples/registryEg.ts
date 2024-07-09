@@ -57,8 +57,8 @@ async function main(taskName: string, identifier: string) {
   if (taskName === 'register') {
     /* Register Auto ID for issuer */
     console.log('\n===================== ISSUER =====================')
-    const issuerKeys = await generateRsaKeyPair2() // RSA
-    // const issuerKeys = await generateEd25519KeyPair2() // Ed25519
+    // const issuerKeys = await generateRsaKeyPair2() // RSA
+    const issuerKeys = await generateEd25519KeyPair2() // Ed25519
     console.debug("user's private key algorithm: ", issuerKeys[0].algorithm.name)
     const issuerPublicKeyInfo = pemToHex(await cryptoKeyToPem(issuerKeys[1]))
     console.debug('Issuer public key info:', issuerPublicKeyInfo)
@@ -70,7 +70,7 @@ async function main(taskName: string, identifier: string) {
     console.debug("issuer's private key algorithm: ", issuerKeys[0].algorithm.name)
 
     const selfIssuedCm = new CertificateManager(null, issuerKeys[0], issuerKeys[1])
-    const selfIssuedCert = await selfIssuedCm.selfIssueCertificate('test107')
+    const selfIssuedCert = await selfIssuedCm.selfIssueCertificate('test109')
     const registerIssuer = await registry.registerAutoId(selfIssuedCert)
     CertificateManager.prettyPrintCertificate(selfIssuedCert)
     const issuerAutoIdIdentifier = registerIssuer.identifier!
@@ -80,8 +80,8 @@ async function main(taskName: string, identifier: string) {
 
     console.log('\n\n===================== USER =====================')
     /* Register Auto ID for user */
-    const userKeys = await generateRsaKeyPair2() // RSA
-    // const userKeys = await generateEd25519KeyPair2() // Ed25519
+    // const userKeys = await generateRsaKeyPair2() // RSA
+    const userKeys = await generateEd25519KeyPair2() // Ed25519
     console.debug("user's private key algorithm: ", userKeys[0].algorithm.name)
     const userPublicKeyInfo = pemToHex(await cryptoKeyToPem(issuerKeys[1]))
     console.debug('User public key info:', userPublicKeyInfo)
@@ -92,7 +92,7 @@ async function main(taskName: string, identifier: string) {
     saveKey(pemToPrivateKey(userPemString), './res/private.leaf.pem')
 
     const userCm = new CertificateManager(null, userKeys[0], userKeys[1])
-    const userCsr = await userCm.createAndSignCSR('user107')
+    const userCsr = await userCm.createAndSignCSR('user109')
     // TODO: I think here 🤔, `selfIssuedCm` should be replaced with `userCm`. Then, the publicKeyInfo in the user's onchain certificate would be of user's public key than issuer's public key.
     const userCert = await selfIssuedCm.issueCertificate(userCsr)
     CertificateManager.prettyPrintCertificate(userCert)

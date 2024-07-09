@@ -1,69 +1,30 @@
-import { ObjectIdentifier } from 'asn1js'
+import { AsnConvert, OctetString } from '@peculiar/asn1-schema'
+import { AlgorithmIdentifier as AsnAlgorithmIdentifier } from '@peculiar/asn1-x509'
 
 /**
  * Encodes a given string representation of an OID into its DER format,
+ * appropriately handling the parameters.
  *
  * @param oid The string representation of the ObjectIdentifier to be encoded.
- * @returns Uint8Array containing the DER-encoded OID with appended NULL parameter.
+ * @param parameters Optional parameters, null if no parameters.
+ * @returns Uint8Array containing the DER-encoded OID with appended parameters.
  */
-export function derEncodeSignatureAlgorithmOID(oid: string): Uint8Array {
-  const objectIdentifier = new ObjectIdentifier({ value: oid })
-  const oidEncoded = objectIdentifier.toBER(false)
+export function derEncodeSignatureAlgorithmOID(
+  oid: string,
+  parameters: ArrayBuffer | null = null,
+): Uint8Array {
+  // Create an instance of AlgorithmIdentifier with proper handling of parameters
+  const algorithmIdentifier = new AsnAlgorithmIdentifier({
+    algorithm: oid,
+    parameters: parameters ? AsnConvert.serialize(new OctetString(parameters)) : null,
+  })
 
-  // Typically, in X.509, the algorithm identifier is followed by parameters; for many algorithms, this is just NULL.
-  const nullParameter = [0x05, 0x00] // DER encoding for NULL
+  // Convert the entire AlgorithmIdentifier to DER
+  const derEncoded = AsnConvert.serialize(algorithmIdentifier)
 
-  // Calculate the total length including OID and NULL parameter
-  const totalLength = oidEncoded.byteLength + nullParameter.length
-
-  // Construct the sequence header
-  const sequenceHeader = [0x30] // 0x30 is the DER tag for SEQUENCE
-  if (totalLength < 128) {
-    sequenceHeader.push(totalLength) // Short form length
-  } else {
-    // Long form length encoding
-    const lengthBytes = []
-    let tempLength = totalLength
-    while (tempLength > 0) {
-      lengthBytes.push(tempLength & 0xff)
-      tempLength >>= 8
-    }
-    sequenceHeader.push(0x80 | lengthBytes.length, ...lengthBytes.reverse())
-  }
-
-  // Combine the sequence header, OID, and NULL parameter into one Uint8Array
-  const derSequence = new Uint8Array(
-    sequenceHeader.length + oidEncoded.byteLength + nullParameter.length,
-  )
-  derSequence.set(sequenceHeader, 0)
-  derSequence.set(new Uint8Array(oidEncoded), sequenceHeader.length)
-  derSequence.set(nullParameter, sequenceHeader.length + oidEncoded.byteLength)
-
-  return derSequence
+  // Return the resulting DER-encoded data
+  return new Uint8Array(derEncoded)
 }
-
-// CLEANUP: Remove later when all registry functionalities work.
-// /**
-//  * Encodes a given string representation of an OID into its DER format.
-//  * This function is specifically used to encode signature algorithm OIDs.
-//  *
-//  * @param oid The string representation of the ObjectIdentifier to be encoded.
-//  * @returns Uint8Array containing the DER encoded OID along with NULL params of X.509 signature algorithm.
-//  */
-// export function derEncodeSignatureAlgorithmOID(oid: string): Uint8Array {
-//   const objectIdentifier = new ObjectIdentifier({ value: oid })
-//   const berArrayBuffer = objectIdentifier.toBER(false)
-
-//   // Typically, in X.509, the algorithm identifier is followed by parameters; for many algorithms, this is just NULL.
-//   const nullParameter = [0x05, 0x00] // DER encoding for NULL
-
-//   // Calculate the total length including OID and NULL parameter
-//   const totalLength = berArrayBuffer.byteLength + nullParameter.length
-
-//   const sequenceHeader = [0x30, totalLength] // 0x30 is the DER tag for SEQUENCE
-
-//   return new Uint8Array([...sequenceHeader, ...new Uint8Array(berArrayBuffer), ...nullParameter])
-// }
 
 export function addDaysToCurrentDate(days: number): Date {
   const currentDate = new Date() // This gives you the current date and time
