@@ -3,6 +3,7 @@ import {
   NetworkInput,
   WalletActivated,
   activateWallet,
+  address,
   mockWallets,
   networks,
   setupWallet,
@@ -30,22 +31,25 @@ describe('Verify wallet functions', () => {
     wallets = await mockWallets()
     aliceWallet = wallets[0].accounts[0]
     bobWallet = wallets[1].accounts[0]
-  })
+  }, 20000)
 
   describe('Test setupWallet()', () => {
     test('Check setupWallet return a pair with matching address and public key when provided with a mnemonic', async () => {
-      const pair = await setupWallet({ mnemonic: TEST_MNEMONIC })
-      expect(pair.address).toEqual(TEST_ADDRESS)
+      const wallet = setupWallet({ mnemonic: TEST_MNEMONIC })
+      expect(wallet.commonAddress).toEqual(TEST_ADDRESS)
+      expect(wallet.address).toEqual(address(TEST_ADDRESS))
     })
 
     test('Check setupWallet return a pair with matching private key when provided with Alice seed', async () => {
-      const pair = await setupWallet({ uri: ALICE_URI })
-      expect(pair.address).toEqual(aliceWallet.address)
+      const wallet = setupWallet({ uri: ALICE_URI })
+      expect(wallet.commonAddress).toEqual(aliceWallet.address)
+      expect(wallet.address).toEqual(address(aliceWallet.address))
     })
 
     test('Check setupWallet return a pair with matching private key when provided with Bob seed', async () => {
-      const pair = await setupWallet({ uri: BOB_URI })
-      expect(pair.address).toEqual(bobWallet.address)
+      const wallet = setupWallet({ uri: BOB_URI })
+      expect(wallet.commonAddress).toEqual(bobWallet.address)
+      expect(wallet.address).toEqual(address(bobWallet.address))
     })
   })
 

@@ -1,4 +1,5 @@
-import { ApiPromise, activate } from '@autonomys/auto-utils'
+import { activate } from '@autonomys/auto-utils'
+import type { ApiPromise } from '@polkadot/api'
 import { useCallback, useEffect, useState } from 'react'
 import { useNetwork } from './useNetwork'
 
@@ -22,7 +23,9 @@ export const useApi = () => {
           return
         }
 
-        setValue(query())
+        setValue(query)
+
+        return query
       } catch (error) {
         setErrorForm && setErrorForm((error as any).message)
       }
@@ -30,9 +33,20 @@ export const useApi = () => {
     [api],
   )
 
+  const handleRefreshNetwork = useCallback(async () => {
+    if (api) {
+      await api.disconnect()
+      await handleLoadApi()
+    }
+  }, [api, handleLoadApi])
+
   useEffect(() => {
     if (api === null) handleLoadApi()
   }, [handleLoadApi, api])
+
+  useEffect(() => {
+    handleRefreshNetwork()
+  }, [config])
 
   return { handleLoadApi, handleQuery, api }
 }

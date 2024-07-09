@@ -10,11 +10,14 @@ export const useWallets = () => {
   const { walletsSigners, setWalletsSigners, setSelectedWallet } = useWalletsStates()
   const walletName = params.walletName
 
-  const handleLoadWallet = useCallback(async () => setWalletsSigners(await mockWallets(config)), [])
+  const handleLoadWallet = useCallback(
+    async () => setWalletsSigners(await mockWallets(config)),
+    [config],
+  )
 
   useEffect(() => {
     handleLoadWallet()
-  }, [handleLoadWallet])
+  }, [config])
 
   const selectedWallet = useMemo(() => {
     const walletIndex = mockURIs.findIndex((w) => w === `//${walletName}`)

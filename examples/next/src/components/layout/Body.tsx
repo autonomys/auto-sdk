@@ -1,6 +1,7 @@
 'use client'
 
 import { useApi } from '@/hooks/useApi'
+import { useNetwork } from '@/hooks/useNetwork'
 import { useWallets } from '@/hooks/useWallet'
 import { balance } from '@autonomys/auto-consensus'
 import { parseTokenAmount } from '@autonomys/auto-utils'
@@ -18,10 +19,12 @@ import { Withdraw } from '../actions/withdraw'
 
 export const Body: FC = () => {
   const params = useParams()
+  const { config } = useNetwork()
   const { api, handleQuery } = useApi()
   const { selectedWallet } = useWallets()
   const [currentWalletBalance, setCurrentWalletBalance] = useState('0')
   const walletName = params.walletName
+  const networkName = params.networkName
   const packageName = params.package
   const action = params.action
 
@@ -30,7 +33,7 @@ export const Body: FC = () => {
       handleQuery(await balance(api, selectedWallet.accounts[0].address), (v) =>
         setCurrentWalletBalance(v.free.toString()),
       )
-  }, [handleQuery, api, selectedWallet])
+  }, [handleQuery, config, api, selectedWallet])
 
   const body = useMemo(() => {
     switch (packageName) {
@@ -66,6 +69,11 @@ export const Body: FC = () => {
     handleCurrentWalletBalance()
   }, [handleCurrentWalletBalance])
 
+  const networkToDisplay = useMemo(
+    () => networkName || config.networkId,
+    [networkName, config.networkId],
+  )
+
   return (
     <div className='relative height-full w-1/2'>
       {walletName && (
@@ -73,10 +81,16 @@ export const Body: FC = () => {
           <b>{walletName}</b> wallet has {parseTokenAmount(currentWalletBalance)} tSSC
         </>
       )}
+      {networkToDisplay && (
+        <>
+          <br />
+          Using <b>{networkToDisplay}</b> network
+        </>
+      )}
       {packageName && (
         <>
           <br />
-          <b>{packageName}</b>
+          Currently testing <b>{packageName}</b>
         </>
       )}
       {action ? (

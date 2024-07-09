@@ -4,6 +4,9 @@ import { useWallets } from '@/hooks/useWallet'
 import { registerOperator } from '@autonomys/auto-consensus'
 import { ActivateWalletInput, activateWallet } from '@autonomys/auto-utils'
 import React, { useCallback, useState } from 'react'
+import { AmountInput } from '../inputs/AmountInput'
+import { OperatorIdInput } from '../inputs/OperatorIdInput'
+import { TxButton } from '../tx/TxButton'
 
 export const RegisterOperator = () => {
   const [operatorSeed, setOperatorSeed] = useState('')
@@ -14,7 +17,7 @@ export const RegisterOperator = () => {
   const [errorForm, setErrorForm] = useState('')
   const { config } = useNetwork()
   const { selectedWallet } = useWallets()
-  const { handleTx, txHash } = useTx()
+  const { handleTx } = useTx()
 
   const handleRegisterOperator = useCallback(async () => {
     if (!selectedWallet) {
@@ -58,62 +61,44 @@ export const RegisterOperator = () => {
         <label className='block text-gray-700 text-sm font-bold mb-2' htmlFor='to'>
           Domain Id
         </label>
-        <input
-          id='domainId'
-          type='number'
-          value={domainId}
-          onChange={(e) => setDomainId(e.target.value)}
-          className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'
-        />
+        <OperatorIdInput id='domainId' value={domainId} set={setDomainId} />
       </div>
       <div className='w-full max-w-xs mt-4'>
         <label className='block text-gray-700 text-sm font-bold mb-2' htmlFor='amount'>
           Amount to Stake
         </label>
-        <input
+        <AmountInput
           id='amountToStake'
-          type='number'
           value={amountToStake}
-          onChange={(e) => setAmountToStake(e.target.value)}
-          className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'
+          options={['100', '250', '500', '1000']}
+          set={setAmountToStake}
         />
       </div>
       <div className='w-full max-w-xs mt-4'>
         <label className='block text-gray-700 text-sm font-bold mb-2' htmlFor='amount'>
           Minimum Nominator Stake
         </label>
-        <input
+        <AmountInput
           id='minimumNominatorStake'
-          type='number'
           value={minimumNominatorStake}
-          onChange={(e) => setMinimumNominatorStake(e.target.value)}
-          className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'
+          options={['0', '1', '50', '100']}
+          set={setMinimumNominatorStake}
         />
       </div>
       <div className='w-full max-w-xs mt-4'>
         <label className='block text-gray-700 text-sm font-bold mb-2' htmlFor='amount'>
           Nomination Tax
         </label>
-        <input
+        <AmountInput
           id='nominationTax'
-          type='number'
           value={nominationTax}
-          onChange={(e) => setNominationTax(e.target.value)}
-          className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'
+          options={['1', '5', '10']}
+          set={setNominationTax}
+          formatOption={(e) => e.toString()}
         />
       </div>
       {errorForm && <div className='mt-4 text-red-500'>{errorForm}</div>}
-      <button
-        onClick={handleRegisterOperator}
-        className='mt-6 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline'
-      >
-        Register Operator
-      </button>
-      {txHash && (
-        <div className='mt-4'>
-          <b>Transaction Hash:</b> {txHash}
-        </div>
-      )}
+      <TxButton label='Register Operator' onClick={handleRegisterOperator} />
     </div>
   )
 }

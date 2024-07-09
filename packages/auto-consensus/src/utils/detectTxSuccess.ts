@@ -1,6 +1,6 @@
 // file: src/utils/detectTxSuccess.ts
 
-import type { EventRecord } from '@polkadot/types/interfaces'
+import type { EventRecord } from '@autonomys/auto-utils'
 import { expectSuccessfulTxEvent } from './events'
 
 export const detectTxSuccess = (events: EventRecord[]): boolean => {
