@@ -8,7 +8,13 @@
 import { Keyring } from '@polkadot/api'
 import { cryptoWaitReady } from '@polkadot/util-crypto'
 import { config } from 'dotenv'
-import { CertificateManager, Registry, generateEd25519KeyPair2, saveKey } from '../src/index'
+import {
+  CertificateManager,
+  Registry,
+  extractSignatureAlgorithmOID,
+  generateEd25519KeyPair2,
+  saveKey,
+} from '../src/index'
 import {
   cryptoKeyToPem,
   generateRsaKeyPair,
@@ -54,16 +60,17 @@ async function main(taskName: string, identifier: string) {
     const issuerKeys = await generateRsaKeyPair2() // RSA
     // const issuerKeys = await generateEd25519KeyPair2() // Ed25519
     console.debug("user's private key algorithm: ", issuerKeys[0].algorithm.name)
-    console.debug('Issuer public key:', pemToHex(await cryptoKeyToPem(issuerKeys[1])))
+    const issuerPublicKeyInfo = pemToHex(await cryptoKeyToPem(issuerKeys[1]))
+    console.debug('Issuer public key info:', issuerPublicKeyInfo)
+    console.debug('PKI Algorithm OID:', extractSignatureAlgorithmOID(issuerPublicKeyInfo))
+
     // Convert the CryptoKey to a PEM string
     const issuerPemString = await cryptoKeyToPem(issuerKeys[0])
-    // save issuer private key for later use
-    saveKey(pemToPrivateKey(issuerPemString), './res/private.rsa.issuer.pem')
-    // saveKey(pemToPrivateKey(issuerPemString), './res/private.issuer.pem')
-    console.log("issuer's private key algorithm: ", issuerKeys[0].algorithm.name)
+    saveKey(pemToPrivateKey(issuerPemString), './res/private.issuer.pem')
+    console.debug("issuer's private key algorithm: ", issuerKeys[0].algorithm.name)
 
     const selfIssuedCm = new CertificateManager(null, issuerKeys[0], issuerKeys[1])
-    const selfIssuedCert = await selfIssuedCm.selfIssueCertificate('test')
+    const selfIssuedCert = await selfIssuedCm.selfIssueCertificate('test107')
     const registerIssuer = await registry.registerAutoId(selfIssuedCert)
     CertificateManager.prettyPrintCertificate(selfIssuedCert)
     const issuerAutoIdIdentifier = registerIssuer.identifier!
@@ -75,16 +82,17 @@ async function main(taskName: string, identifier: string) {
     /* Register Auto ID for user */
     const userKeys = await generateRsaKeyPair2() // RSA
     // const userKeys = await generateEd25519KeyPair2() // Ed25519
-
     console.debug("user's private key algorithm: ", userKeys[0].algorithm.name)
-    console.debug('User public key:', pemToHex(await cryptoKeyToPem(userKeys[1])))
+    const userPublicKeyInfo = pemToHex(await cryptoKeyToPem(issuerKeys[1]))
+    console.debug('User public key info:', userPublicKeyInfo)
+    console.debug('PKI Algorithm OID:', extractSignatureAlgorithmOID(userPublicKeyInfo))
+
     // Convert the CryptoKey to a PEM string
     const userPemString = await cryptoKeyToPem(userKeys[0])
-    // save issuer private key for later use
-    saveKey(pemToPrivateKey(userPemString), './res/private.rsa.leaf.pem')
-    // saveKey(pemToPrivateKey(userPemString), './res/private.leaf.pem')
+    saveKey(pemToPrivateKey(userPemString), './res/private.leaf.pem')
+
     const userCm = new CertificateManager(null, userKeys[0], userKeys[1])
-    const userCsr = await userCm.createAndSignCSR('user')
+    const userCsr = await userCm.createAndSignCSR('user107')
     // TODO: I think here 🤔, `selfIssuedCm` should be replaced with `userCm`. Then, the publicKeyInfo in the user's onchain certificate would be of user's public key than issuer's public key.
     const userCert = await selfIssuedCm.issueCertificate(userCsr)
     CertificateManager.prettyPrintCertificate(userCert)

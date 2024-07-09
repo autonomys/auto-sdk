@@ -349,34 +349,24 @@ enum KeyType {
  */
 export async function pemToCryptoKeyForSigning(
   pem: string,
-  algorithmName: string,
+  algorithm:
+    | AlgorithmIdentifier
+    | RsaHashedImportParams
+    | EcKeyImportParams
+    | HmacImportParams
+    | AesKeyAlgorithm,
 ): Promise<CryptoKey> {
   const [keyType, base64Final] = pemToArrayBuffer(pem)
-
-  // TODO: auto-detect the signature algorithm retrieving OID from the onchain certificate.
-  // Define common parameters
-  const algorithm =
-    // algorithmName === 'RSA-OAEP'   // CLEANUP: unsure so kept temporarily.
-    algorithmName === 'RSASSA-PKCS1-v1_5'
-      ? {
-          // NOTE: RSA-OAEP is typically used for encryption, not signing. If RSA is
-          // intended for signing, you should use RSASSA-PKCS1-v1_5 or another RSA signing variant.
-          name: 'RSASSA-PKCS1-v1_5',
-          hash: { name: 'SHA-256' },
-        }
-      : {
-          name: 'Ed25519',
-        }
 
   let formatType: 'pkcs8' | 'spki' | 'raw'
   // TODO: need to decide the key usages properly.
   let keyUsages: Iterable<KeyUsage>
   if (keyType === KeyType.PRIVATE) {
     formatType = 'pkcs8'
-    keyUsages = ['decrypt']
+    keyUsages = ['sign']
   } else if (keyType === KeyType.PUBLIC) {
-    formatType = 'spki'
-    keyUsages = ['encrypt']
+    formatType = 'spki' // 'raw' for Ed25519
+    keyUsages = ['verify']
   }
   // else if (keyType === KeyType.RSA_PRIVATE) {
   //   formatType = 'jwk'

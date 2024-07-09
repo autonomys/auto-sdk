@@ -1,5 +1,9 @@
 import { AsnParser, AsnSerializer } from '@peculiar/asn1-schema'
-import { Certificate } from '@peculiar/asn1-x509'
+import {
+  AlgorithmIdentifier as AsnAlgorithmIdentifier,
+  Certificate,
+  SubjectPublicKeyInfo,
+} from '@peculiar/asn1-x509'
 import { Crypto } from '@peculiar/webcrypto'
 import { X509Certificate } from '@peculiar/x509'
 import { ApiPromise, SubmittableResult, WsProvider } from '@polkadot/api'
@@ -96,7 +100,7 @@ interface RegistrationResult {
 // Returns a tuple of two Uint8Array.
 function x509CertificateToCertDerVec(certificate: X509Certificate): [Uint8Array, Uint8Array] {
   const certificateBuffer = Buffer.from(certificate.rawData)
-  console.log(`Certificate Buffer of len ${certificateBuffer.byteLength}:`)
+  console.debug(`Certificate Buffer of len ${certificateBuffer.byteLength}:`)
   console.debug(certificateBuffer) // --> '.....autoid:auto:307866386536......'
   console.debug(`Certificate Buffer Hex: 0x${certificateBuffer.toString('hex')}`)
 
@@ -104,7 +108,7 @@ function x509CertificateToCertDerVec(certificate: X509Certificate): [Uint8Array,
   const cert = AsnParser.parse(certificateBuffer, Certificate)
   // Extract the OID of the signature algorithm
   const signatureAlgorithmOID = cert.signatureAlgorithm.algorithm
-  console.debug(`Signature Algorithm OID: ${signatureAlgorithmOID}`) // --> 1.3.101.112
+  console.debug('Cert Signature Algorithm OID:', signatureAlgorithmOID) // --> 1.3.101.112
 
   const derEncodedOID = derEncodeSignatureAlgorithmOID(signatureAlgorithmOID)
   console.debug(`DER encoded OID: ${derEncodedOID}`) // --> 36,48,7,6,3,43,101,112,5,0
@@ -148,7 +152,7 @@ export class Registry {
 
     const baseCertificate = {
       certificate: compactAddLength(tbsCertificateDerVec),
-      signature_algorithm: derEncodedOID,
+      signature_algorithm: compactAddLength(derEncodedOID),
       signature: compactAddLength(new Uint8Array(certificate.signature)),
     }
 
@@ -215,43 +219,28 @@ export class Registry {
       throw new Error('Auto ID Identifier found in Certificate Revocation List')
     }
 
-    const autoIdCertificate = await this.api.query.autoId.autoIds(autoIdIdentifier)
-    const autoIdCertificateJson: AutoIdX509Certificate = JSON.parse(
-      JSON.stringify(autoIdCertificate.toHuman(), null, 2),
-    ).certificate.X509
+    const certificate = await this.getCertificate(autoIdIdentifier)
 
-    const certificateRaw = autoIdCertificateJson.raw
-    console.log(`Certificate Raw hex: ${certificateRaw}`)
+    const subjectPublicKeyInfo = certificate.subjectPublicKeyInfo
+    const algorithmOid = extractSignatureAlgorithmOID(subjectPublicKeyInfo)
 
-    // decode TBS certificate
-    const certificateBuffer = Buffer.from(certificateRaw.slice(2), 'hex') // Remove '0x' prefix and convert to buffer
-    console.log(`Certificate Buffer of len ${certificateBuffer.byteLength}:`)
-    console.log(certificateBuffer)
-
-    // FIXME: Some raw certificate bytes are missing. expected
-    const x509Certificate = AsnParser.parse(certificateBuffer, Certificate)
-    const tbsCertificate = x509Certificate.tbsCertificate
-    const signatureAlgorithm = x509Certificate.signatureAlgorithm.algorithm
-    console.log(`Signature Algorithm: ${signatureAlgorithm}`)
-
-    const signatureValue = x509Certificate.signatureValue
-    console.log(`Signature Value: ${new Uint8Array(signatureValue)}`)
-
-    console.debug(`Decoded TBS Certificate: ${JSON.stringify(tbsCertificate, null, 2)}`)
-
-    const isIssuer = autoIdCertificateJson.issuerId === null ? true : false
+    const isIssuer = certificate.issuerId === null ? true : false
     console.debug(`Is issuer: ${isIssuer}`)
 
-    // M-1: Create the signing data
-    // const signingData = {
-    //   id: autoIdIdentifier,
-    //   nonce: nonce,
-    //   action_type: CertificateActionType.RevokeCertificate,
-    // }
+    // === M-1: Create the signing data
+    const signingData = {
+      id: autoIdIdentifier,
+      nonce: certificate.nonce,
+      action_type: CertificateActionType.RevokeCertificate,
+    }
 
-    // M-2: Convert individual properties to Uint8Array
-    const nonce = BigInt(autoIdCertificateJson.nonce)
+    // TODO: SCALE encode it
+
+    // === M-2: Convert individual properties to Uint8Array
     const idU8a = stringToU8a(autoIdIdentifier)
+    // const nonceU8a = stringToU8a(new String(certificate.nonce))
+
+    const nonce = BigInt(certificate.nonce)
     const nonceU8a = bnToU8a(nonce, { bitLength: 256, isLe: false, isNegative: false }) // For BigInt
     const actionTypeU8a = new Uint8Array([CertificateActionType.RevokeCertificate])
 
@@ -259,18 +248,26 @@ export class Registry {
     const serializedData = u8aConcat(idU8a, nonceU8a, actionTypeU8a)
 
     console.debug('Data to Sign (Hex):', Buffer.from(serializedData).toString('hex'))
+
     // Sign the data and prepare it for blockchain submission
-    // FIXME: algorithm name hardcoded. Need to retrieve via `signatureAlgorithm` from the OID stored in certificate onchain.
-    const signature = await signPreimage(serializedData, isIssuer, signatureAlgorithm)
+    const signature = await signPreimage(serializedData, isIssuer, algorithmOid)
     console.debug('Generated Signature (Hex):', Buffer.from(signature.value).toString('hex'))
     const signatureEncoded = {
-      signature_algorithm: compactAddLength(signature.signature_algorithm), // Ed25519 does not use this
+      signature_algorithm: compactAddLength(signature.signature_algorithm),
       value: compactAddLength(signature.value),
+      // signature_algorithm: signature.signature_algorithm,
+      // value: signature.value,
     }
 
     const receipt: SubmittableResult = await new Promise((resolve, reject) => {
       this.api.tx.autoId
         .revokeCertificate(autoIdIdentifier, signatureEncoded)
+        // .revokeCertificate(
+        //   autoIdIdentifier,
+        //   compactAddLength(
+        //     new Uint8Array([...signatureEncoded.signature_algorithm, ...signatureEncoded.value]),
+        //   ),
+        // )
         .signAndSend(this.signer!, async (result) => {
           const { events = [], status, dispatchError } = result
 
@@ -306,7 +303,17 @@ export class Registry {
     return receipt
   }
 
-  // TODO: Add a utility function to search for a certificate by certificate's subject public key info
+  // Get certificate from auto id identifier.
+  async getCertificate(autoIdIdentifier: string): Promise<AutoIdX509Certificate> {
+    const certificate = await this.api.query.autoId.autoIds(autoIdIdentifier)
+    const autoIdCertificateJson: AutoIdX509Certificate = JSON.parse(
+      JSON.stringify(certificate.toHuman(), null, 2),
+    ).certificate.X509
+
+    return autoIdCertificateJson
+  }
+
+  // TODO: Get revocation list from auto id identifier.
 }
 
 interface Signature {
@@ -316,55 +323,76 @@ interface Signature {
 
 /** ===== Utils ===== */
 
-// Get the OID for the supported algorithm
-function getOid(algorithmName: string): string {
-  let oid: string
+/**
+ * Extracts the OID of the signature algorithm from the subjectPublicKeyInfo of an X.509 certificate.
+ * @param subjectPublicKeyInfo hex string format
+ * @returns algorithm identifier
+ */
+export function extractSignatureAlgorithmOID(subjectPublicKeyInfo: string): AsnAlgorithmIdentifier {
+  const publicKeyInfoHex = subjectPublicKeyInfo.startsWith('0x')
+    ? subjectPublicKeyInfo.slice(2)
+    : subjectPublicKeyInfo
+  const publicKeyInfoBuffer: Buffer | Uint8Array = Buffer.from(publicKeyInfoHex, 'hex')
 
-  if (algorithmName === 'Ed25519') {
-    oid = '1.3.101.112' // OID for Ed25519
-  } else if (algorithmName === 'RSASSA-PKCS1-v1_5') {
-    oid = '1.2.840.113549.1.1.11' // OID for RSASSA-PKCS1-v1_5
-  }
-  // TODO: add more algorithms as needed
-  else {
-    throw new Error('Unsupported algorithm')
-  }
+  // Parse the subjectPublicKeyInfo using ASN1 Parser
+  const publicKeyInfo = AsnParser.parse(publicKeyInfoBuffer, SubjectPublicKeyInfo)
 
-  return oid
+  return publicKeyInfo.algorithm
+}
+
+function convertToWebCryptoAlgorithm(
+  asnAlgId: AsnAlgorithmIdentifier,
+):
+  | AlgorithmIdentifier
+  | RsaHashedImportParams
+  | EcKeyImportParams
+  | HmacImportParams
+  | AesKeyAlgorithm {
+  // TODO: Use some library to avoid manual mapping
+  switch (asnAlgId.algorithm) {
+    case '1.2.840.113549.1.1.11': // OID for sha256WithRSAEncryption
+    case '1.2.840.113549.1.1.1': // OID for RSAES-PKCS1-v1_5
+      return {
+        name: 'RSASSA-PKCS1-v1_5',
+        hash: { name: 'SHA-256' },
+      }
+    case '1.3.101.112': // OID for Ed25519
+      return { name: 'Ed25519' }
+    default:
+      throw new Error('Unsupported algorithm OID: ' + asnAlgId.algorithm)
+  }
 }
 
 /**
  * Sign the preimage using the signer's keypair.
  * NOTE: Ed25519 algorithm identifier is used. Change this for other key types.
- * @param data Data to be signed as Uint8Array.
+ * @param data Data to be signed as Buffer | Uint8Array.
  * @param isIssuer Boolean flag to choose key type.
  * @returns A Promise that resolves to a Signature object.
  */
 async function signPreimage(
   data: Uint8Array,
   isIssuer: boolean,
-  algorithmName: string,
+  algorithmId: AsnAlgorithmIdentifier,
 ): Promise<Signature> {
-  // Load the private key from a file
-  const privateKeyPath = isIssuer ? './res/private.rsa.issuer.pem' : './res/private.rsa.leaf.pem' // RSA
-  // const privateKeyPath = isIssuer ? './res/private.issuer.pem' : './res/private.leaf.pem' // Ed25519
+  const privateKeyPath = isIssuer ? './res/private.issuer.pem' : './res/private.leaf.pem'
   const privateKeyPEMRaw = fs.readFileSync(privateKeyPath, 'utf8')
-  // const privateKeyPEM = privateKeyPEMRaw.replace(/\\n/gm, '\n') // remove the ending \n
-  const privateKeyPEM = privateKeyPEMRaw
+  const privateKeyPEM = privateKeyPEMRaw.replace(/\\n/gm, '\n') // remove the ending \n
+  // const privateKeyPEM = privateKeyPEMRaw
+  // console.debug('privateKeyPEM: ', privateKeyPEM)
 
-  // TODO: detect certificate signature algorithm from the certificate, then we don't have to parse the algorithmName arg.
+  // Convert the ASN.1 algorithm identifier to a WebCrypto algorithm
+  const webCryptoAlgorithm = convertToWebCryptoAlgorithm(algorithmId)
+
   // Convert PEM to CryptoKey
-  const privateKey: CryptoKey = await pemToCryptoKeyForSigning(privateKeyPEM, algorithmName)
-  console.log(`private key algorithm: ${privateKey.algorithm.name}`)
+  const privateKey: CryptoKey = await pemToCryptoKeyForSigning(privateKeyPEM, webCryptoAlgorithm)
+  console.debug(`private key algorithm: ${privateKey.algorithm.name}`)
 
+  console.debug('Algorithm OID:', algorithmId.algorithm)
   // sign the data with the private key
-  const signature = await crypto.subtle.sign({ name: privateKey.algorithm.name }, privateKey, data)
+  const signature = await crypto.subtle.sign(webCryptoAlgorithm, privateKey, data)
 
-  // Specify the algorithm identifier for RSA PKCS1 SHA256
-  let oid = getOid(privateKey.algorithm.name)
-  console.debug('OID:', oid)
-
-  const derEncodedOID = derEncodeSignatureAlgorithmOID(oid)
+  const derEncodedOID = derEncodeSignatureAlgorithmOID(algorithmId.algorithm)
 
   return {
     signature_algorithm: derEncodedOID,

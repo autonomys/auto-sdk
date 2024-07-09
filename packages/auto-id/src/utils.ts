@@ -1,12 +1,10 @@
-import { compactAddLength } from '@polkadot/util'
 import { ObjectIdentifier } from 'asn1js'
 
 /**
  * Encodes a given string representation of an OID into its DER format,
- * and then applies SCALE encoding by prepending the length of the DER-encoded data in compact format.
  *
  * @param oid The string representation of the ObjectIdentifier to be encoded.
- * @returns Uint8Array containing the SCALE encoded, DER-encoded OID with appended NULL parameter.
+ * @returns Uint8Array containing the DER-encoded OID with appended NULL parameter.
  */
 export function derEncodeSignatureAlgorithmOID(oid: string): Uint8Array {
   const objectIdentifier = new ObjectIdentifier({ value: oid })
@@ -41,8 +39,7 @@ export function derEncodeSignatureAlgorithmOID(oid: string): Uint8Array {
   derSequence.set(new Uint8Array(oidEncoded), sequenceHeader.length)
   derSequence.set(nullParameter, sequenceHeader.length + oidEncoded.byteLength)
 
-  // Apply SCALE encoding by prepending the compact length of the entire DER sequence
-  return compactAddLength(derSequence)
+  return derSequence
 }
 
 // CLEANUP: Remove later when all registry functionalities work.
