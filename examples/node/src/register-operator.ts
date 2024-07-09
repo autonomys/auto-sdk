@@ -1,4 +1,5 @@
-import { address, balance, registerOperator } from '@autonomys/auto-consensus'
+import { balance, registerOperator } from '@autonomys/auto-consensus'
+import { address } from '@autonomys/auto-utils'
 import { setup, signAndSend } from './utils'
 
 export const registerOperatorFunction = async () => {

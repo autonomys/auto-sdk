@@ -1,4 +1,5 @@
-import { address, balance } from '@autonomys/auto-consensus'
+import { balance } from '@autonomys/auto-consensus'
+import { address } from '@autonomys/auto-utils'
 import { setup } from './utils/setup'
 
 export const balanceFunction = async () => {

@@ -1,4 +1,5 @@
-import { address, balance, nominateOperator } from '@autonomys/auto-consensus'
+import { balance, nominateOperator } from '@autonomys/auto-consensus'
+import { address } from '@autonomys/auto-utils'
 import { setup, signAndSend } from './utils'
 
 export const nominateOperatorFunction = async () => {
