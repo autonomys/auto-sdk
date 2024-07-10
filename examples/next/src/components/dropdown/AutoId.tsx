@@ -3,6 +3,7 @@ import Link from 'next/link'
 import type { FC } from 'react'
 
 interface DropdownProps {
+  networkName: string | string[]
   walletName: string | string[]
   isOpen: boolean
   toggleDropdown: (name: keyof DropDown) => void
@@ -15,7 +16,12 @@ const Functions = [
   },
 ]
 
-export const AutoIdDropdown: FC<DropdownProps> = ({ walletName, isOpen, toggleDropdown }) => {
+export const AutoIdDropdown: FC<DropdownProps> = ({
+  networkName,
+  walletName,
+  isOpen,
+  toggleDropdown,
+}) => {
   return (
     <div className='relative'>
       <button
@@ -29,7 +35,7 @@ export const AutoIdDropdown: FC<DropdownProps> = ({ walletName, isOpen, toggleDr
           {Functions.map((func) => (
             <Link
               key={func.link}
-              href={`/wallet/${walletName}/auto-id/${func.link}`}
+              href={`/network/${networkName}/wallet/${walletName}/auto-id/${func.link}`}
               onClick={() => toggleDropdown('autoId')}
               className='block px-4 py-2 hover:bg-gray-200'
             >

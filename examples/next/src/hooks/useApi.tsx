@@ -15,6 +15,7 @@ export const useApi = () => {
       try {
         if (!api) {
           setErrorForm && setErrorForm('API not loaded')
+          await handleLoadApi()
           return
         }
 
@@ -38,7 +39,7 @@ export const useApi = () => {
       await api.disconnect()
       await handleLoadApi()
     }
-  }, [api, handleLoadApi])
+  }, [config, api, handleLoadApi])
 
   useEffect(() => {
     if (api === null) handleLoadApi()

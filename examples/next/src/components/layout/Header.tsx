@@ -1,5 +1,6 @@
 'use client'
 
+import { useNetwork } from '@/hooks/useNetwork'
 import type { DropDown } from '@/types/layout'
 import { mockURIs, networks } from '@autonomys/auto-utils'
 import { useParams } from 'next/navigation'
@@ -10,6 +11,7 @@ import { NetworkDropdown } from '../dropdown/Network'
 
 export const Header = () => {
   const params = useParams()
+  const { config } = useNetwork()
   const walletName = params.walletName
   const packageName = params.package
   const action = params.action
@@ -53,7 +55,7 @@ export const Header = () => {
                 return (
                   <a
                     key={wallet}
-                    href={link(`/wallet/${wallet}`)}
+                    href={link(`/network/${config.networkId}/wallet/${wallet}`)}
                     onClick={() => toggleDropdown('wallet')}
                     className='block px-4 py-2 hover:bg-gray-200'
                   >
@@ -65,11 +67,13 @@ export const Header = () => {
           )}
         </div>
         <AutoConsensusDropdown
+          networkName={config.networkId}
           walletName={walletName}
           isOpen={dropdownOpen.autoConsensus}
           toggleDropdown={toggleDropdown}
         />
         <AutoIdDropdown
+          networkName={config.networkId}
           walletName={walletName}
           isOpen={dropdownOpen.autoId}
           toggleDropdown={toggleDropdown}
