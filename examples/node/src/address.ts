@@ -1,4 +1,4 @@
-import { address } from '@autonomys/auto-consensus'
+import { address } from '@autonomys/auto-utils'
 import { setup } from './utils/setup'
 
 export const addressFunction = async () => {

@@ -1,4 +1,5 @@
-import { address, balance, transfer } from '@autonomys/auto-consensus'
+import { balance, transfer } from '@autonomys/auto-consensus'
+import { address } from '@autonomys/auto-utils'
 import { setup, signAndSend } from './utils'
 
 export const transferFunction = async () => {
