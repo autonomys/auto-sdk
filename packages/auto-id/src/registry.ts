@@ -15,7 +15,7 @@ import { derEncodeSignatureAlgorithmOID } from './utils'
 
 const crypto = new Crypto()
 
-// Errors copied from the auto-id pallet.
+// Errors from the auto-id pallet.
 export enum AutoIdError {
   UnknownIssuer = 'UnknownIssuer',
   UnknownAutoId = 'UnknownAutoId',
@@ -227,19 +227,8 @@ export class Registry {
     const isIssuer = certificate.issuerId === null ? true : false
     console.debug(`Is issuer: ${isIssuer}`)
 
-    // === M-1: Create the signing data
-    const signingData = {
-      id: autoIdIdentifier,
-      nonce: certificate.nonce,
-      action_type: CertificateActionType.RevokeCertificate,
-    }
-
-    // TODO: SCALE encode it
-
-    // === M-2: Convert individual properties to Uint8Array
+    // Convert individual properties to Uint8Array for the signing data
     const idU8a = hexStringToU8a(autoIdIdentifier)
-    // const nonceU8a = stringToU8a(new String(certificate.nonce))
-
     const nonce = BigInt(certificate.nonce)
     const nonceU8a = bnToU8a(nonce, { bitLength: 256, isLe: false, isNegative: false }) // For BigInt
     const actionTypeU8a = new Uint8Array([CertificateActionType.RevokeCertificate])
@@ -255,19 +244,11 @@ export class Registry {
     const signatureEncoded = {
       signature_algorithm: compactAddLength(signature.signature_algorithm),
       value: compactAddLength(signature.value),
-      // signature_algorithm: signature.signature_algorithm,
-      // value: signature.value,
     }
 
     const receipt: SubmittableResult = await new Promise((resolve, reject) => {
       this.api.tx.autoId
         .revokeCertificate(autoIdIdentifier, signatureEncoded)
-        // .revokeCertificate(
-        //   autoIdIdentifier,
-        //   compactAddLength(
-        //     new Uint8Array([...signatureEncoded.signature_algorithm, ...signatureEncoded.value]),
-        //   ),
-        // )
         .signAndSend(this.signer!, async (result) => {
           const { events = [], status, dispatchError } = result
 
@@ -380,10 +361,9 @@ async function signPreimage(
   algorithmId: AsnAlgorithmIdentifier,
 ): Promise<Signature> {
   const privateKeyPath = isIssuer ? './res/private.issuer.pem' : './res/private.leaf.pem'
-  const privateKeyPEMRaw = fs.readFileSync(privateKeyPath, 'utf8')
-  const privateKeyPEM = privateKeyPEMRaw.replace(/\\n/gm, '\n') // remove the ending \n
-  // const privateKeyPEM = privateKeyPEMRaw
-  // console.debug('privateKeyPEM: ', privateKeyPEM)
+
+  const privateKeyPEM = fs.readFileSync(privateKeyPath, 'utf8').replace(/\\n/gm, '\n')
+  console.debug('privateKeyPEM: ', privateKeyPEM)
 
   // Convert the ASN.1 algorithm identifier to a WebCrypto algorithm
   const webCryptoAlgorithm = convertToWebCryptoAlgorithm(algorithmId)
@@ -393,7 +373,8 @@ async function signPreimage(
   console.debug(`private key algorithm: ${privateKey.algorithm.name}`)
 
   console.debug('Algorithm OID:', algorithmId.algorithm)
-  // sign the data with the private key
+
+  /* sign the data with the private key */
   const signature = await crypto.subtle.sign(webCryptoAlgorithm, privateKey, data)
 
   const derEncodedOID = derEncodeSignatureAlgorithmOID(algorithmId.algorithm)
