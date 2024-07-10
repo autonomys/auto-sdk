@@ -8,7 +8,7 @@ import { Crypto } from '@peculiar/webcrypto'
 import { X509Certificate } from '@peculiar/x509'
 import { ApiPromise, SubmittableResult, WsProvider } from '@polkadot/api'
 import { KeyringPair } from '@polkadot/keyring/types'
-import { bnToU8a, compactAddLength, stringToU8a, u8aConcat } from '@polkadot/util'
+import { bnToU8a, compactAddLength, hexToU8a, u8aConcat } from '@polkadot/util'
 import * as fs from 'fs'
 import { pemToCryptoKeyForSigning } from './keyManagement'
 import { derEncodeSignatureAlgorithmOID } from './utils'
@@ -237,7 +237,7 @@ export class Registry {
     // TODO: SCALE encode it
 
     // === M-2: Convert individual properties to Uint8Array
-    const idU8a = stringToU8a(autoIdIdentifier)
+    const idU8a = hexStringToU8a(autoIdIdentifier)
     // const nonceU8a = stringToU8a(new String(certificate.nonce))
 
     const nonce = BigInt(certificate.nonce)
@@ -322,6 +322,10 @@ interface Signature {
 }
 
 /** ===== Utils ===== */
+// Converts a hex string to a Uint8Array
+function hexStringToU8a(hexString: string): Uint8Array {
+  return hexToU8a(hexString.startsWith('0x') ? hexString : `0x${hexString}`)
+}
 
 /**
  * Extracts the OID of the signature algorithm from the subjectPublicKeyInfo of an X.509 certificate.

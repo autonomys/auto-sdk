@@ -17,7 +17,6 @@ describe('Verify crypto functions', () => {
 
     // DER encode the OID
     const derEncodedOID = derEncodeSignatureAlgorithmOID(signatureAlgorithmOID)
-    // <Buffer 3c 30 0d 06 09 2a 86 48 86 f7 0d 01 01 0b 05 00>
 
     // Convert derEncodedOID to hex string for comparison
     const derEncodedOIDHex = Buffer.from(derEncodedOID).toString('hex')
