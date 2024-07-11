@@ -1,11 +1,22 @@
 import { balance, totalIssuance } from '@autonomys/auto-consensus'
-import { ActivateWalletInput, activateWallet, address, getMockWallet } from '@autonomys/auto-utils'
+import type { ActivateWalletInput, ApiPromise, WalletActivated } from '@autonomys/auto-utils'
+import { activate, activateWallet, address, disconnect, mockWallets } from '@autonomys/auto-utils'
 import { setup } from './helpers'
 
 describe('Verify balances functions', () => {
-  const { isLocalhost, TEST_NETWORK, TEST_MNEMONIC, TEST_ADDRESS, wallets } = setup()
+  const { isLocalhost, TEST_NETWORK, TEST_MNEMONIC, TEST_ADDRESS } = setup()
 
-  const alice = getMockWallet('Alice', wallets)
+  let wallets: WalletActivated[] = []
+  let api: ApiPromise
+
+  beforeAll(async () => {
+    api = await activate(TEST_NETWORK)
+    wallets = await mockWallets(TEST_NETWORK)
+  }, 15000)
+
+  afterAll(async () => {
+    await disconnect(api)
+  }, 10000)
 
   describe('Test totalIssuance()', () => {
     test('Check totalIssuance return a number greater than zero', async () => {
@@ -33,6 +44,7 @@ describe('Verify balances functions', () => {
 
     if (isLocalhost) {
       test('Check balance of Alice wallet is greater than 0', async () => {
+        const alice = wallets[0]
         const _balance = await balance(alice.api, address(alice.accounts[0].address))
         expect(_balance.free).toBeGreaterThan(BigInt(0))
       })

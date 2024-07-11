@@ -12,6 +12,6 @@ export const signMessage = async (signer: Signer, address: string, data: string)
   })
 }
 
-export const signingKey = async (publicKey: Uint8Array) => u8aToHex(publicKey)
+export const signingKey = (publicKey: Uint8Array) => u8aToHex(publicKey)
 
 export { signatureVerify }
