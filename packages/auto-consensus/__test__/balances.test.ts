@@ -1,5 +1,5 @@
 import { balance, totalIssuance } from '@autonomys/auto-consensus'
-import type { ActivateWalletInput, ApiPromise, WalletActivated } from '@autonomys/auto-utils'
+import type { ActivateWalletParams, ApiPromise, WalletActivated } from '@autonomys/auto-utils'
 import { activate, activateWallet, address, disconnect, mockWallets } from '@autonomys/auto-utils'
 import { setup } from './helpers'
 
@@ -34,7 +34,7 @@ describe('Verify balances functions', () => {
       const { api, accounts } = await activateWallet({
         ...TEST_NETWORK,
         mnemonic: TEST_MNEMONIC,
-      } as ActivateWalletInput)
+      } as ActivateWalletParams)
       expect(accounts.length).toBeGreaterThan(0)
       expect(accounts[0].address).toEqual(TEST_ADDRESS)
 

@@ -1,4 +1,4 @@
-import { ActivateWalletInput, activateWallet, mockWallets, networks } from '@autonomys/auto-utils'
+import { ActivateWalletParams, activateWallet, mockWallets, networks } from '@autonomys/auto-utils'
 import { mnemonicGenerate } from '@polkadot/util-crypto'
 import 'dotenv/config'
 
@@ -16,7 +16,7 @@ export const setup = async () => {
   const { api, accounts: randomUser } = await activateWallet({
     ...config,
     uri: randomMnemonic,
-  } as ActivateWalletInput)
+  } as ActivateWalletParams)
 
   return { api, alice: wallets[0].accounts, bob: wallets[1].accounts, randomUser }
 }

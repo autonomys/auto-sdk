@@ -6,7 +6,7 @@ The Autonomys Auto Consensus SDK provides functionalities for blockchain consens
 
 ## Address Management
 
-- `generateAddress(input: MnemonicOrURI): string`: Generates a new address.
+- `generateAddress(params: MnemonicOrURI): string`: Generates a new address.
 
 ## Balances
 

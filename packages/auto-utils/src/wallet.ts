@@ -8,25 +8,25 @@ import { address } from './address'
 import { activate, activateDomain } from './api'
 import { defaultNetwork } from './constants/network'
 import { mockURIs } from './constants/wallet'
-import type { DomainInput, Mnemonic, MnemonicOrURI, NetworkInput, URI } from './types'
+import type { DomainParams, Mnemonic, MnemonicOrURI, NetworkParams, URI } from './types'
 import type {
-  ActivateWalletInput,
+  ActivateWalletParams,
   ApiPromise,
   GeneratedWallet,
   Wallet,
   WalletActivated,
 } from './types/wallet'
 
-export const setupWallet = (input: MnemonicOrURI): Wallet => {
+export const setupWallet = (params: MnemonicOrURI): Wallet => {
   const keyring = new Keyring({ type: 'sr25519' })
 
   let keyringPair: Wallet['keyringPair']
-  if ((input as URI).uri) {
+  if ((params as URI).uri) {
     // Treat as uri
-    keyringPair = keyring.addFromUri((input as URI).uri)
-  } else if ((input as Mnemonic).mnemonic) {
+    keyringPair = keyring.addFromUri((params as URI).uri)
+  } else if ((params as Mnemonic).mnemonic) {
     // Treat as mnemonic
-    keyringPair = keyring.addFromUri((input as Mnemonic).mnemonic)
+    keyringPair = keyring.addFromUri((params as Mnemonic).mnemonic)
   } else throw new Error('Invalid mnemonic or private key')
 
   return {
@@ -48,26 +48,26 @@ export const generateWallet = (): GeneratedWallet => {
   }
 }
 
-export const activateWallet = async (input: ActivateWalletInput): Promise<WalletActivated> => {
-  if (!input.api) {
+export const activateWallet = async (params: ActivateWalletParams): Promise<WalletActivated> => {
+  if (!params.api) {
     // Create the API instance if not provided
-    input.api =
-      (input as DomainInput).domainId === undefined
-        ? await activate(input)
-        : await activateDomain(input as DomainInput)
+    params.api =
+      (params as DomainParams).domainId === undefined
+        ? await activate(params)
+        : await activateDomain(params as DomainParams)
   }
 
   const accounts: InjectedAccountWithMeta[] & KeyringPair[] = []
 
-  if ((input as Mnemonic).mnemonic || (input as URI).uri) {
+  if ((params as Mnemonic).mnemonic || (params as URI).uri) {
     // Attach the wallet in a node environment
-    const { keyringPair } = setupWallet(input)
+    const { keyringPair } = setupWallet(params)
     if (keyringPair) accounts.push(keyringPair)
   } else if (typeof window !== 'undefined') {
     const { web3Enable, web3Accounts } = await import('@polkadot/extension-dapp')
 
     // Enable Polkadot.js extension in the browser
-    await web3Enable(input.appName || 'Auto')
+    await web3Enable(params.appName || 'Auto')
 
     // Get the list of accounts from the extension
     const allAccounts = await web3Accounts()
@@ -75,11 +75,11 @@ export const activateWallet = async (input: ActivateWalletInput): Promise<Wallet
     if (allAccounts.length === 0) console.warn('No accounts found in the Polkadot.js extension')
   } else throw new Error('No wallet provided')
 
-  return { api: input.api, accounts, address: address(accounts[0].address) }
+  return { api: params.api, accounts, address: address(accounts[0].address) }
 }
 
 export const mockWallets = async (
-  network: NetworkInput | DomainInput = { networkId: defaultNetwork.id },
+  network: NetworkParams | DomainParams = { networkId: defaultNetwork.id },
   api?: ApiPromise,
 ): Promise<WalletActivated[]> => {
   const wallets: WalletActivated[] = []
@@ -88,7 +88,7 @@ export const mockWallets = async (
       ...network,
       uri,
       api,
-    } as ActivateWalletInput)
+    } as ActivateWalletParams)
     wallets.push(wallet)
   }
   return wallets

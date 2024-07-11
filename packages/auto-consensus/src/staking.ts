@@ -41,7 +41,7 @@ export type Operator = {
 
 type StringNumberOrBigInt = string | number | bigint
 
-export type RegisterOperatorInput = {
+export type RegisterOperatorParams = {
   api: ApiPromise
   senderAddress: string
   Operator: KeyringPair
@@ -51,16 +51,16 @@ export type RegisterOperatorInput = {
   nominationTax: StringNumberOrBigInt
 }
 
-export type StakingInput = {
+export type StakingParams = {
   api: ApiPromise
   operatorId: StringNumberOrBigInt
 }
 
-export interface WithdrawStakeInput extends StakingInput {
+export interface WithdrawStakeParams extends StakingParams {
   shares: StringNumberOrBigInt
 }
 
-export interface NominateOperatorInput extends StakingInput {
+export interface NominateOperatorParams extends StakingParams {
   amountToStake: StringNumberOrBigInt
 }
 
@@ -112,7 +112,7 @@ export const operator = async (api: ApiPromise, operatorId: StringNumberOrBigInt
   }
 }
 
-export const registerOperator = async (input: RegisterOperatorInput) => {
+export const registerOperator = async (params: RegisterOperatorParams) => {
   try {
     const {
       api,
@@ -122,7 +122,7 @@ export const registerOperator = async (input: RegisterOperatorInput) => {
       amountToStake,
       minimumNominatorStake,
       nominationTax,
-    } = input
+    } = params
 
     const message = createAccountIdType(api, senderAddress)
     const signature = Operator.sign(message)
@@ -143,9 +143,9 @@ export const registerOperator = async (input: RegisterOperatorInput) => {
   }
 }
 
-export const nominateOperator = async (input: NominateOperatorInput) => {
+export const nominateOperator = async (params: NominateOperatorParams) => {
   try {
-    const { api, operatorId, amountToStake } = input
+    const { api, operatorId, amountToStake } = params
 
     return await api.tx.domains.nominateOperator(
       parseString(operatorId),
@@ -157,9 +157,9 @@ export const nominateOperator = async (input: NominateOperatorInput) => {
   }
 }
 
-export const withdrawStake = async (input: WithdrawStakeInput) => {
+export const withdrawStake = async (params: WithdrawStakeParams) => {
   try {
-    const { api, operatorId, shares } = input
+    const { api, operatorId, shares } = params
 
     return await api.tx.domains.withdrawStake(parseString(operatorId), parseString(shares))
   } catch (error) {
@@ -168,9 +168,9 @@ export const withdrawStake = async (input: WithdrawStakeInput) => {
   }
 }
 
-export const deregisterOperator = async (input: StakingInput) => {
+export const deregisterOperator = async (params: StakingParams) => {
   try {
-    const { api, operatorId } = input
+    const { api, operatorId } = params
 
     return await api.tx.domains.deregisterOperator(parseString(operatorId))
   } catch (error) {
@@ -179,9 +179,9 @@ export const deregisterOperator = async (input: StakingInput) => {
   }
 }
 
-export const unlockFunds = async (input: StakingInput) => {
+export const unlockFunds = async (params: StakingParams) => {
   try {
-    const { api, operatorId } = input
+    const { api, operatorId } = params
 
     return await api.tx.domains.unlockFunds(parseString(operatorId))
   } catch (error) {
@@ -190,9 +190,9 @@ export const unlockFunds = async (input: StakingInput) => {
   }
 }
 
-export const unlockNominator = async (input: StakingInput) => {
+export const unlockNominator = async (params: StakingParams) => {
   try {
-    const { api, operatorId } = input
+    const { api, operatorId } = params
 
     return await api.tx.domains.unlockNominator(parseString(operatorId))
   } catch (error) {

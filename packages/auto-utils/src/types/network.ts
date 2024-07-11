@@ -22,13 +22,13 @@ export type Network = {
   isLocalhost?: boolean
 }
 
-export type NetworkInput = { networkId?: string } | undefined
+export type NetworkParams = { networkId?: string } | undefined
 
-export type DomainInput = {
+export type DomainParams = {
   networkId?: string
   domainId: string
 }
 
-export type ActivateInput<T> = T & ApiOptions
+export type ActivateParams<T> = T & ApiOptions
 
 export type { ApiOptions }
