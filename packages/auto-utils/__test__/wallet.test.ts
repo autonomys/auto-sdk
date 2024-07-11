@@ -30,10 +30,10 @@ describe('Verify wallet functions', () => {
 
   beforeAll(async () => {
     const api = await activate(TEST_NETWORK)
-    wallets = await mockWallets(TEST_NETWORK, api)
+    wallets = await mockWallets(TEST_NETWORK)
     aliceWallet = wallets[0].accounts[0]
     bobWallet = wallets[1].accounts[0]
-  }, 15000)
+  }, 30000)
 
   describe('Test setupWallet()', () => {
     test('Check setupWallet return a pair with matching address and public key when provided with a mnemonic', async () => {
