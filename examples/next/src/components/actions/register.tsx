@@ -4,8 +4,8 @@ import { useWallets } from '@/hooks/useWallet'
 import { registerOperator } from '@autonomys/auto-consensus'
 import { ActivateWalletParams, activateWallet } from '@autonomys/auto-utils'
 import React, { useCallback, useState } from 'react'
-import { AmountParams } from '../inputs/AmountInput'
-import { OperatorIdParams } from '../inputs/OperatorIdInput'
+import { AmountInput } from '../inputs/AmountInput'
+import { OperatorIdInput } from '../inputs/OperatorIdInput'
 import { TxButton } from '../tx/TxButton'
 
 export const RegisterOperator = () => {
@@ -61,13 +61,13 @@ export const RegisterOperator = () => {
         <label className='block text-gray-700 text-sm font-bold mb-2' htmlFor='to'>
           Domain Id
         </label>
-        <OperatorIdParams id='domainId' value={domainId} set={setDomainId} />
+        <OperatorIdInput id='domainId' value={domainId} set={setDomainId} />
       </div>
       <div className='w-full max-w-xs mt-4'>
         <label className='block text-gray-700 text-sm font-bold mb-2' htmlFor='amount'>
           Amount to Stake
         </label>
-        <AmountParams
+        <AmountInput
           id='amountToStake'
           value={amountToStake}
           options={['100', '250', '500', '1000']}
@@ -78,7 +78,7 @@ export const RegisterOperator = () => {
         <label className='block text-gray-700 text-sm font-bold mb-2' htmlFor='amount'>
           Minimum Nominator Stake
         </label>
-        <AmountParams
+        <AmountInput
           id='minimumNominatorStake'
           value={minimumNominatorStake}
           options={['0', '1', '50', '100']}
@@ -89,7 +89,7 @@ export const RegisterOperator = () => {
         <label className='block text-gray-700 text-sm font-bold mb-2' htmlFor='amount'>
           Nomination Tax
         </label>
-        <AmountParams
+        <AmountInput
           id='nominationTax'
           value={nominationTax}
           options={['1', '5', '10']}

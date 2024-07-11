@@ -1,12 +1,12 @@
 import { FC } from 'react'
 
-interface ParamsProps {
+interface InputProps {
   id?: string
   value?: string
   set?: (e: string) => void
 }
 
-export const OperatorIdParams: FC<ParamsProps> = ({ id = 'operatorId', value, set }) => (
+export const OperatorIdInput: FC<InputProps> = ({ id = 'operatorId', value, set }) => (
   <input
     id={id}
     type='number'

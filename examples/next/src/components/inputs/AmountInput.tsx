@@ -1,7 +1,7 @@
 import { formatTokenAmount } from '@autonomys/auto-utils'
 import { FC } from 'react'
 
-interface ParamsProps {
+interface InputProps {
   id?: string
   value?: string
   options?: string[]
@@ -9,7 +9,7 @@ interface ParamsProps {
   formatOption?: (e: number | bigint) => string
 }
 
-export const AmountParams: FC<ParamsProps> = ({
+export const AmountInput: FC<InputProps> = ({
   id = 'amount',
   value,
   options,

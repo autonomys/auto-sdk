@@ -2,7 +2,7 @@ import { useApi } from '@/hooks/useApi'
 import { useWallets } from '@/hooks/useWallet'
 import { operator, OperatorDetails } from '@autonomys/auto-consensus'
 import React, { useCallback, useState } from 'react'
-import { OperatorIdParams } from '../inputs/OperatorIdInput'
+import { OperatorIdInput } from '../inputs/OperatorIdInput'
 
 export const Operator = () => {
   const [operatorId, setOperatorId] = useState('')
@@ -26,7 +26,7 @@ export const Operator = () => {
         <label className='block text-gray-700 text-sm font-bold mb-2' htmlFor='to'>
           Operator Id
         </label>
-        <OperatorIdParams value={operatorId} set={setOperatorId} />
+        <OperatorIdInput value={operatorId} set={setOperatorId} />
       </div>
       {errorForm && <div className='mt-4 text-red-500'>{errorForm}</div>}
       <button
