@@ -11,7 +11,7 @@ describe('Verify balances functions', () => {
 
   beforeAll(async () => {
     api = await activate(TEST_NETWORK)
-    wallets = await mockWallets(TEST_NETWORK)
+    wallets = await mockWallets(TEST_NETWORK, api)
   }, 15000)
 
   afterAll(async () => {
@@ -40,7 +40,7 @@ describe('Verify balances functions', () => {
 
       const _balance = await balance(api, address(accounts[0].address))
       expect(_balance.free).toEqual(BigInt(0))
-    })
+    }, 20000)
 
     if (isLocalhost) {
       test('Check balance of Alice wallet is greater than 0', async () => {

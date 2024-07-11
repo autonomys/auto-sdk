@@ -11,5 +11,5 @@ describe('Verify info functions', () => {
     const timestamp = BigInt(rawTimestamp.toString())
     // Check if the issuance is greater than zero
     expect(timestamp).toBeGreaterThan(BigInt(0))
-  })
+  }, 15000)
 })

@@ -33,7 +33,7 @@ describe('Verify staking functions', () => {
 
   beforeAll(async () => {
     api = await activate(TEST_NETWORK)
-    wallets = await mockWallets(TEST_NETWORK)
+    wallets = await mockWallets(TEST_NETWORK, api)
   }, 15000)
 
   afterAll(async () => {
@@ -70,7 +70,6 @@ describe('Verify staking functions', () => {
         const tx = await registerOperator(txInput)
         await signAndSendTx(sender, tx, [events.operatorRegistered])
         const findOperator = await verifyOperatorRegistration(txInput)
-        console.log('findOperator', findOperator)
         const _balanceSenderEnd = await balance(alice.api, address(sender.address))
         expect(_balanceSenderEnd.free).toBeLessThan(
           _balanceSenderStart.free - BigInt(amountToStake),
@@ -104,7 +103,7 @@ describe('Verify staking functions', () => {
           }),
           [events.operatorNominated],
         )
-      }, 10000)
+      }, 15000)
 
       test('Check Operator can addFunds after registration', async () => {
         const { mnemonic } = generateWallet()
