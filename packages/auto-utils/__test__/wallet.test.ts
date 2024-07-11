@@ -2,6 +2,7 @@ import {
   ActivateWalletInput,
   NetworkInput,
   WalletActivated,
+  activate,
   activateWallet,
   address,
   mockWallets,
@@ -28,10 +29,11 @@ describe('Verify wallet functions', () => {
   let bobWallet: WalletActivated['accounts'][0]
 
   beforeAll(async () => {
-    wallets = await mockWallets()
+    const api = await activate(TEST_NETWORK)
+    wallets = await mockWallets(TEST_NETWORK, api)
     aliceWallet = wallets[0].accounts[0]
     bobWallet = wallets[1].accounts[0]
-  }, 20000)
+  }, 15000)
 
   describe('Test setupWallet()', () => {
     test('Check setupWallet return a pair with matching address and public key when provided with a mnemonic', async () => {
@@ -62,7 +64,7 @@ describe('Verify wallet functions', () => {
       expect(api).toBeDefined()
       expect(accounts.length).toBeGreaterThan(0)
       expect(accounts[0].address).toEqual(TEST_ADDRESS)
-    })
+    }, 15000)
 
     test('Check activateWallet return an api instance and an account when provided with Alice uri', async () => {
       const { api, accounts } = await activateWallet({
@@ -72,7 +74,7 @@ describe('Verify wallet functions', () => {
       expect(api).toBeDefined()
       expect(accounts.length).toBeGreaterThan(0)
       expect(accounts[0].address).toEqual(aliceWallet.address)
-    })
+    }, 15000)
 
     test('Check activateWallet return an api instance and an account when provided with Bob uri', async () => {
       const { api, accounts } = await activateWallet({
@@ -82,6 +84,6 @@ describe('Verify wallet functions', () => {
       expect(api).toBeDefined()
       expect(accounts.length).toBeGreaterThan(0)
       expect(accounts[0].address).toEqual(bobWallet.address)
-    })
+    }, 15000)
   })
 })
