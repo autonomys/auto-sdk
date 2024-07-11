@@ -2,7 +2,7 @@ import { useApi } from '@/hooks/useApi'
 import { balance } from '@autonomys/auto-consensus'
 import { parseTokenAmount } from '@autonomys/auto-utils'
 import React, { useCallback, useState } from 'react'
-import { ReceiverParams } from '../inputs/ReceiverParams'
+import { ReceiverParams } from '../inputs/ReceiverInput'
 
 export const Balance = () => {
   const [address, setAddress] = useState('')

@@ -2,8 +2,8 @@ import { useTx } from '@/hooks/useTx'
 import { useWallets } from '@/hooks/useWallet'
 import { transfer } from '@autonomys/auto-consensus'
 import React, { useCallback, useState } from 'react'
-import { AmountParams } from '../inputs/AmountParams'
-import { ReceiverParams } from '../inputs/ReceiverParams'
+import { AmountParams } from '../inputs/AmountInput'
+import { ReceiverParams } from '../inputs/ReceiverInput'
 import { TxButton } from '../tx/TxButton'
 
 export const Transfer = () => {

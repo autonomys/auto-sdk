@@ -2,7 +2,7 @@ import { useApi } from '@/hooks/useApi'
 import { useWallets } from '@/hooks/useWallet'
 import { operator, OperatorDetails } from '@autonomys/auto-consensus'
 import React, { useCallback, useState } from 'react'
-import { OperatorIdParams } from '../inputs/OperatorIdParams'
+import { OperatorIdParams } from '../inputs/OperatorIdInput'
 
 export const Operator = () => {
   const [operatorId, setOperatorId] = useState('')

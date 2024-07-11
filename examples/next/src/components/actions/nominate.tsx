@@ -2,8 +2,8 @@ import { useTx } from '@/hooks/useTx'
 import { useWallets } from '@/hooks/useWallet'
 import { nominateOperator } from '@autonomys/auto-consensus'
 import React, { useCallback, useState } from 'react'
-import { AmountParams } from '../inputs/AmountParams'
-import { OperatorIdParams } from '../inputs/OperatorIdParams'
+import { AmountParams } from '../inputs/AmountInput'
+import { OperatorIdParams } from '../inputs/OperatorIdInput'
 import { TxButton } from '../tx/TxButton'
 
 export const NominateOperator = () => {

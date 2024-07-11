@@ -2,7 +2,7 @@ import { useTx } from '@/hooks/useTx'
 import { useWallets } from '@/hooks/useWallet'
 import { unlockFunds } from '@autonomys/auto-consensus'
 import React, { useCallback, useState } from 'react'
-import { OperatorIdParams } from '../inputs/OperatorIdParams'
+import { OperatorIdParams } from '../inputs/OperatorIdInput'
 import { TxButton } from '../tx/TxButton'
 
 export const UnlockFunds = () => {
