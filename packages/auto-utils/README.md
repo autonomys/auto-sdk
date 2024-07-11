@@ -6,8 +6,8 @@ The Autonomys Auto SDK Utility provides functionalities for wallet setup, networ
 
 ## Wallet Management
 
-- `setupWallet(input: MnemonicOrURI): Promise<KeyringPair>`: Initializes a wallet using a mnemonic or URI.
-- `activateWallet(input: ActivateWalletInput): Promise<WalletActivated>`: Activates a wallet and returns API and accounts.
+- `setupWallet(params: MnemonicOrURI): Promise<KeyringPair>`: Initializes a wallet using a mnemonic or URI.
+- `activateWallet(params: ActivateWalletInput): Promise<WalletActivated>`: Activates a wallet and returns API and accounts.
 - `mockWallets(network: NetworkInput | DomainInput): Promise<WalletActivated[]>`: Creates mock wallets for testing.
 - `getMockWallet(name: string, wallets: WalletActivated[]): WalletActivated`: Retrieves a mock wallet by name.
 
@@ -15,8 +15,8 @@ The Autonomys Auto SDK Utility provides functionalities for wallet setup, networ
 
 - `getNetworkDetails(input?: NetworkInput): Network`: Gets network details.
 - `getNetworkRpcUrls(input?: NetworkInput): string[]`: Gets network RPC URLs.
-- `getNetworkDomainDetails(input: DomainInput): Domain`: Gets domain details.
-- `getNetworkDomainRpcUrls(input: DomainInput): string[]`: Gets domain RPC URLs.
+- `getNetworkDomainDetails(params: DomainInput): Domain`: Gets domain details.
+- `getNetworkDomainRpcUrls(params: DomainInput): string[]`: Gets domain RPC URLs.
 
 ## Data Storage
 
@@ -32,7 +32,7 @@ The Autonomys Auto SDK Utility provides functionalities for wallet setup, networ
 ## API Activation
 
 - `activate(input?: NetworkInput): Promise<ApiPromise>`: Activates the API for a network.
-- `activateDomain(input: DomainInput): Promise<ApiPromise>`: Activates the API for a domain.
+- `activateDomain(params: DomainInput): Promise<ApiPromise>`: Activates the API for a domain.
 - `disconnect()`: Disconnects the API.
 - `disconnectDomain()`: Disconnects the domain API.
 

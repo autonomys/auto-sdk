@@ -25,8 +25,8 @@ export const getNetworkRpcUrls = (input?: NetworkInput) => {
   return network.rpcUrls
 }
 
-export const getNetworkDomainDetails = (input: DomainInput) => {
-  const { networkId, domainId } = input
+export const getNetworkDomainDetails = (params: DomainInput) => {
+  const { networkId, domainId } = params
 
   // Find the network with the provided id
   const network = getNetworkDetails({ networkId })
@@ -39,9 +39,9 @@ export const getNetworkDomainDetails = (input: DomainInput) => {
   return domain
 }
 
-export const getNetworkDomainRpcUrls = (input: DomainInput) => {
+export const getNetworkDomainRpcUrls = (params: DomainInput) => {
   // Get the network details
-  const domain = getNetworkDomainDetails(input)
+  const domain = getNetworkDomainDetails(params)
   if (!domain.rpcUrls || domain.rpcUrls.length === 0) throw new Error(`Domain has no rpcUrls`)
 
   return domain.rpcUrls

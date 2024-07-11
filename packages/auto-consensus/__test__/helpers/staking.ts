@@ -6,21 +6,21 @@ const STORAGE_FEE_DEPOSIT_PERCENTAGE = 20 // 20%
 export const parseBigInt = (operatorId: string | number | bigint): bigint =>
   typeof operatorId === 'bigint' ? operatorId : BigInt(operatorId)
 
-export const calculateStake = (input: RegisterOperatorInput) => {
-  const { amountToStake, nominationTax } = input
+export const calculateStake = (params: RegisterOperatorInput) => {
+  const { amountToStake, nominationTax } = params
 
   return (parseBigInt(amountToStake) * BigInt(100 - STORAGE_FEE_DEPOSIT_PERCENTAGE)) / BigInt(100)
   // To-Do: Add the nomination tax
 }
 
-export const calculateStorageFee = (input: RegisterOperatorInput) => {
-  const { amountToStake } = input
+export const calculateStorageFee = (params: RegisterOperatorInput) => {
+  const { amountToStake } = params
 
   return (parseBigInt(amountToStake) * BigInt(STORAGE_FEE_DEPOSIT_PERCENTAGE)) / BigInt(100)
 }
 
-export const verifyOperatorRegistration = async (input: RegisterOperatorInput) => {
-  const { api, Operator, domainId, minimumNominatorStake, nominationTax } = input
+export const verifyOperatorRegistration = async (params: RegisterOperatorInput) => {
+  const { api, Operator, domainId, minimumNominatorStake, nominationTax } = params
 
   const operatorsList = await operators(api)
   const findOperator = operatorsList.find(
@@ -46,8 +46,8 @@ export const verifyOperatorRegistration = async (input: RegisterOperatorInput) =
   return findOperator
 }
 
-export const verifyOperatorRegistrationFinal = async (input: RegisterOperatorInput) => {
-  const { api, Operator, domainId, amountToStake, minimumNominatorStake, nominationTax } = input
+export const verifyOperatorRegistrationFinal = async (params: RegisterOperatorInput) => {
+  const { api, Operator, domainId, amountToStake, minimumNominatorStake, nominationTax } = params
 
   const operatorsList = await operators(api)
   const findOperator = operatorsList.find(

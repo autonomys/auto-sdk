@@ -19,20 +19,20 @@ export const createConnection = async (
   return api
 }
 
-export const activate = async (input?: ActivateInput<NetworkInput>): Promise<ApiPromise> => {
+export const activate = async (params?: ActivateInput<NetworkInput>): Promise<ApiPromise> => {
   // Get the first rpc urls for the network
-  const endpoint = getNetworkRpcUrls(input)
+  const endpoint = getNetworkRpcUrls(params)
   // Remove the networkId from the input
-  if (input) delete input.networkId
+  if (params) delete params.networkId
 
-  return await createConnection(endpoint[0], input)
+  return await createConnection(endpoint[0], params)
 }
 
-export const activateDomain = async (input: ActivateInput<DomainInput>): Promise<ApiPromise> => {
+export const activateDomain = async (params: ActivateInput<DomainInput>): Promise<ApiPromise> => {
   // Get the first rpc urls for the network
-  const endpoint = getNetworkDomainRpcUrls(input)
+  const endpoint = getNetworkDomainRpcUrls(params)
   // Remove the domainId from the input
-  const { domainId, ...rest } = input
+  const { domainId, ...rest } = params
 
   return await createConnection(endpoint[0], rest)
 }
