@@ -5,22 +5,20 @@
  *
  */
 
-import { Keyring } from '@polkadot/api'
-import { cryptoWaitReady } from '@polkadot/util-crypto'
-import { config } from 'dotenv'
 import {
   CertificateManager,
   Registry,
+  cryptoKeyToPem,
   extractSignatureAlgorithmOID,
   generateEd25519KeyPair2,
-  saveKey,
-} from '../src/index'
-import {
-  cryptoKeyToPem,
   generateRsaKeyPair2,
   pemToHex,
   pemToPrivateKey,
-} from '../src/keyManagement'
+  saveKey,
+} from '@autonomys/auto-id'
+import { Keyring } from '@polkadot/api'
+import { cryptoWaitReady } from '@polkadot/util-crypto'
+import { config } from 'dotenv'
 
 function loadEnv(): { RPC_URL: string; KEYPAIR_URI: string } {
   const myEnv = config()
@@ -56,20 +54,20 @@ async function main(taskName: string, identifier: string) {
   if (taskName === 'register') {
     /* Register Auto ID for issuer */
     console.log('\n===================== ISSUER =====================')
-    const issuerKeys = await generateRsaKeyPair2() // RSA
-    // const issuerKeys = await generateEd25519KeyPair2() // Ed25519
-    console.debug("user's private key algorithm: ", issuerKeys[0].algorithm.name)
-    const issuerPublicKeyInfo = pemToHex(await cryptoKeyToPem(issuerKeys[1]))
-    console.debug('Issuer public key info:', issuerPublicKeyInfo)
-    console.debug('PKI Algorithm OID:', extractSignatureAlgorithmOID(issuerPublicKeyInfo))
+    // const issuerKeys = await generateRsaKeyPair2() // TODO: RSA
+    const issuerKeys = await generateEd25519KeyPair2() // Ed25519
+    // console.debug("user's private key algorithm: ", issuerKeys[0].algorithm.name)
+    // const issuerPublicKeyInfo = pemToHex(await cryptoKeyToPem(issuerKeys[1]))
+    // console.debug('Issuer public key info:', issuerPublicKeyInfo)
+    // console.debug('PKI Algorithm OID:', extractSignatureAlgorithmOID(issuerPublicKeyInfo))
 
     // Convert the CryptoKey to a PEM string
     const issuerPemString = await cryptoKeyToPem(issuerKeys[0])
     saveKey(pemToPrivateKey(issuerPemString), './res/private.issuer.pem')
-    console.debug("issuer's private key algorithm: ", issuerKeys[0].algorithm.name)
+    // console.debug("issuer's private key algorithm: ", issuerKeys[0].algorithm.name)
 
     const selfIssuedCm = new CertificateManager(null, issuerKeys[0], issuerKeys[1])
-    const selfIssuedCert = await selfIssuedCm.selfIssueCertificate('test112')
+    const selfIssuedCert = await selfIssuedCm.selfIssueCertificate('test8')
     const registerIssuer = await registry.registerAutoId(selfIssuedCert)
     CertificateManager.prettyPrintCertificate(selfIssuedCert)
     const issuerAutoIdIdentifier = registerIssuer.identifier!
@@ -79,19 +77,19 @@ async function main(taskName: string, identifier: string) {
 
     console.log('\n\n===================== USER =====================')
     /* Register Auto ID for user */
-    const userKeys = await generateRsaKeyPair2() // RSA
-    // const userKeys = await generateEd25519KeyPair2() // Ed25519
-    console.debug("user's private key algorithm: ", userKeys[0].algorithm.name)
-    const userPublicKeyInfo = pemToHex(await cryptoKeyToPem(issuerKeys[1]))
-    console.debug('User public key info:', userPublicKeyInfo)
-    console.debug('PKI Algorithm OID:', extractSignatureAlgorithmOID(userPublicKeyInfo))
+    // const userKeys = await generateRsaKeyPair2() // TODO: RSA
+    const userKeys = await generateEd25519KeyPair2() // Ed25519
+    // console.debug("user's private key algorithm: ", userKeys[0].algorithm.name)
+    // const userPublicKeyInfo = pemToHex(await cryptoKeyToPem(issuerKeys[1]))
+    // console.debug('User public key info:', userPublicKeyInfo)
+    // console.debug('PKI Algorithm OID:', extractSignatureAlgorithmOID(userPublicKeyInfo))
 
     // Convert the CryptoKey to a PEM string
     const userPemString = await cryptoKeyToPem(userKeys[0])
     saveKey(pemToPrivateKey(userPemString), './res/private.leaf.pem')
 
     const userCm = new CertificateManager(null, userKeys[0], userKeys[1])
-    const userCsr = await userCm.createAndSignCSR('user112')
+    const userCsr = await userCm.createAndSignCSR('user8')
     // TODO: I think here 🤔, `selfIssuedCm` should be replaced with `userCm`. Then, the publicKeyInfo in the user's onchain certificate would be of user's public key than issuer's public key.
     const userCert = await selfIssuedCm.issueCertificate(userCsr)
     CertificateManager.prettyPrintCertificate(userCert)
@@ -103,10 +101,29 @@ async function main(taskName: string, identifier: string) {
   } else if (taskName === 'revoke') {
     /* Revoke self Certificate */
     const revoked = await registry.revokeCertificate(identifier)
-    console.log(
-      `Revoked registered user certificate with identifier: ${identifier} in block #${revoked.blockNumber?.toString()}`,
-    )
-  } else {
+    if (revoked) {
+      console.log(
+        `Revoked registered user certificate with identifier: ${identifier} in block #${revoked.blockNumber?.toString()}`,
+      )
+    }
+  } else if (taskName === 'deactivate') {
+    /* Deactivate Auto ID */
+    const deactivated = await registry.deactivateAutoId(identifier)
+    if (deactivated) {
+      console.log(
+        `Deactivated auto id with identifier: ${identifier} in block #${deactivated.blockNumber?.toString()}`,
+      )
+    }
+  }
+  // FIXME: Not working yet
+  // else if (taskName === 'view-cert') {
+  //   const cert = await registry.getCertificate(identifier)
+  //   console.log(cert)
+  // } else if (taskName === 'view-revoked-list') {
+  //   const revokedList = await registry.getCertificateRevocationList(identifier)
+  //   console.log(revokedList)
+  // }
+  else {
     throw new Error('Task not recognized')
   }
 }

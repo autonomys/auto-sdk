@@ -19,7 +19,7 @@ x509.cryptoProvider.set(crypto)
 
 interface SigningParams {
   privateKey: CryptoKey
-  algorithm: 'sha256' | null // Only 'sha256' or null for Ed25519
+  algorithm: 'SHA-256' | null // Only 'sha256' or null for Ed25519
 }
 
 export const OID_COMMON_NAME = '2.5.4.3' // OID for Common Name, not available in the library.
@@ -52,7 +52,7 @@ export class CertificateManager {
     }
 
     if (privateKey.algorithm.name === 'RSASSA-PKCS1-v1_5') {
-      return { privateKey: privateKey, algorithm: 'sha256' }
+      return { privateKey: privateKey, algorithm: 'SHA-256' }
     }
 
     throw new Error('Unsupported key type for signing.')

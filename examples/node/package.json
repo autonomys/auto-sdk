@@ -20,6 +20,7 @@
     "transfer": "npx ts-node ./src/transfer.ts",
     "operators": "npx ts-node ./src/operators.ts",
     "register-operator": "npx ts-node ./src/register-operator.ts",
+    "registry": "npx ts-node src/registry-autoid.ts",
     "nominate-operator": "npx ts-node ./src/nominate-operator.ts",
     "withdraw-stake": "npx ts-node ./src/withdraw-stake.ts",
     "deregister-operator": "npx ts-node ./src/deregister-operator.ts",
@@ -28,6 +29,7 @@
   },
   "dependencies": {
     "@autonomys/auto-consensus": "workspace:*",
+    "@autonomys/auto-id": "workspace:*",
     "@autonomys/auto-utils": "workspace:*"
   },
   "devDependencies": {

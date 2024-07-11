@@ -100,18 +100,18 @@ interface RegistrationResult {
 // Returns a tuple of two Uint8Array.
 function x509CertificateToCertDerVec(certificate: X509Certificate): [Uint8Array, Uint8Array] {
   const certificateBuffer = Buffer.from(certificate.rawData)
-  console.debug(`Certificate Buffer of len ${certificateBuffer.byteLength}:`)
-  console.debug(certificateBuffer) // --> '.....autoid:auto:307866386536......'
-  console.debug(`Certificate Buffer Hex: 0x${certificateBuffer.toString('hex')}`)
+  // console.debug(`Certificate Buffer of len ${certificateBuffer.byteLength}:`)
+  // console.debug(certificateBuffer) // --> '.....autoid:auto:307866386536......'
+  // console.debug(`Certificate Buffer Hex: 0x${certificateBuffer.toString('hex')}`)
 
   // Load and parse the certificate
   const cert = AsnParser.parse(certificateBuffer, Certificate)
   // Extract the OID of the signature algorithm
   const signatureAlgorithmOID = cert.signatureAlgorithm.algorithm
-  console.debug('Cert Signature Algorithm OID:', signatureAlgorithmOID) // --> 1.3.101.112
+  // console.debug('Cert Signature Algorithm OID:', signatureAlgorithmOID) // --> 1.3.101.112
 
   const derEncodedOID = derEncodeSignatureAlgorithmOID(signatureAlgorithmOID)
-  console.debug(`DER encoded OID: ${derEncodedOID}`) // --> 36,48,7,6,3,43,101,112,5,0
+  // console.debug(`DER encoded OID: ${derEncodedOID}`) // --> 36,48,7,6,3,43,101,112,5,0
   // console.debug(`derEncodedOID Buffer: ${Buffer.from(derEncodedOID)}`)
   // console.debug(`Bytes length: ${derEncodedOID.length}`)
 
@@ -120,7 +120,7 @@ function x509CertificateToCertDerVec(certificate: X509Certificate): [Uint8Array,
 
   // Serialize the TBS Certificate back to DER format
   const tbsCertificateDerVec = AsnSerializer.serialize(tbsCertificate)
-  console.debug(`TBS Certificate DER Vec: ${new Uint8Array(tbsCertificateDerVec)}`) // --> 48,130,1,55,160,3,2,1,2,2,16,6,63,42,209,226,214,20,114,22,195,30,195,.......
+  // console.debug(`TBS Certificate DER Vec: ${new Uint8Array(tbsCertificateDerVec)}`) // --> 48,130,1,55,160,3,2,1,2,2,16,6,63,42,209,226,214,20,114,22,195,30,195,.......
 
   return [derEncodedOID, new Uint8Array(tbsCertificateDerVec)]
 }
@@ -211,21 +211,26 @@ export class Registry {
       throw new Error('No signer provided')
     }
 
+    const certificate = await this.getCertificate(autoIdIdentifier)
+    if (!certificate) {
+      throw new Error('Certificate not found or already deactivated')
+    }
+
     const certificateRevocationList =
       await this.api.query.autoId.certificateRevocationList(autoIdIdentifier)
 
     // ensure the revocation list is empty for the given auto id identifier
     if (!certificateRevocationList.isEmpty) {
-      throw new Error('Auto ID Identifier found in Certificate Revocation List')
+      throw new Error(
+        'Auto ID Identifier found in Certificate Revocation List. So, already revoked.',
+      )
     }
-
-    const certificate = await this.getCertificate(autoIdIdentifier)
 
     const subjectPublicKeyInfo = certificate.subjectPublicKeyInfo
     const algorithmOid = extractSignatureAlgorithmOID(subjectPublicKeyInfo)
 
     const isIssuer = certificate.issuerId === null ? true : false
-    console.debug(`Is issuer: ${isIssuer}`)
+    // console.debug(`Is issuer: ${isIssuer}`)
 
     // Convert individual properties to Uint8Array for the signing data
     const idU8a = hexStringToU8a(autoIdIdentifier)
@@ -236,11 +241,11 @@ export class Registry {
     // Concatenate all Uint8Array
     const serializedData = u8aConcat(idU8a, nonceU8a, actionTypeU8a)
 
-    console.debug('Data to Sign (Hex):', Buffer.from(serializedData).toString('hex'))
+    // console.debug('Data to Sign (Hex):', Buffer.from(serializedData).toString('hex'))
 
     // Sign the data and prepare it for blockchain submission
     const signature = await signPreimage(serializedData, isIssuer, algorithmOid)
-    console.debug('Generated Signature (Hex):', Buffer.from(signature.value).toString('hex'))
+    // console.debug('Generated Signature (Hex):', Buffer.from(signature.value).toString('hex'))
     const signatureEncoded = {
       signature_algorithm: compactAddLength(signature.signature_algorithm),
       value: compactAddLength(signature.value),
@@ -284,9 +289,100 @@ export class Registry {
     return receipt
   }
 
+  // deactivate auto id
+  async deactivateAutoId(autoIdIdentifier: string): Promise<SubmittableResult> {
+    await this.api.isReady
+
+    if (!this.signer) {
+      throw new Error('No signer provided')
+    }
+
+    const certificate = await this.getCertificate(autoIdIdentifier)
+    if (!certificate) {
+      throw new Error('Certificate not found or already deactivated')
+    }
+
+    const certificateRevocationList =
+      await this.api.query.autoId.certificateRevocationList(autoIdIdentifier)
+
+    // ensure the revocation list is empty for the given auto id identifier.
+    // NOTE: Deactivation not possible for certificates that are already revoked.
+    if (!certificateRevocationList.isEmpty) {
+      throw new Error(
+        "As Auto ID Identifier is found in CRL, so, you can't deactivate an auto ID whose cert is already revoked.",
+      )
+    }
+
+    const subjectPublicKeyInfo = certificate.subjectPublicKeyInfo
+    const algorithmOid = extractSignatureAlgorithmOID(subjectPublicKeyInfo)
+
+    const isIssuer = certificate.issuerId === null ? true : false
+    // console.debug(`Is issuer: ${isIssuer}`)
+
+    // Convert individual properties to Uint8Array for the signing data
+    const idU8a = hexStringToU8a(autoIdIdentifier)
+    const nonce = BigInt(certificate.nonce)
+    const nonceU8a = bnToU8a(nonce, { bitLength: 256, isLe: false, isNegative: false }) // For BigInt
+    const actionTypeU8a = new Uint8Array([CertificateActionType.DeactivateAutoId])
+
+    // Concatenate all Uint8Array
+    const serializedData = u8aConcat(idU8a, nonceU8a, actionTypeU8a)
+
+    // console.debug('Data to Sign (Hex):', Buffer.from(serializedData).toString('hex'))
+
+    // Sign the data and prepare it for blockchain submission
+    const signature = await signPreimage(serializedData, isIssuer, algorithmOid)
+    // console.debug('Generated Signature (Hex):', Buffer.from(signature.value).toString('hex'))
+    const signatureEncoded = {
+      signature_algorithm: compactAddLength(signature.signature_algorithm),
+      value: compactAddLength(signature.value),
+    }
+
+    const receipt: SubmittableResult = await new Promise((resolve, reject) => {
+      this.api.tx.autoId
+        .deactivateAutoId(autoIdIdentifier, signatureEncoded)
+        .signAndSend(this.signer!, async (result) => {
+          const { events = [], status, dispatchError } = result
+
+          if (status.isInBlock || status.isFinalized) {
+            const blockHash = status.isInBlock
+              ? status.asInBlock.toString()
+              : status.asFinalized.toString()
+
+            try {
+              // Retrieve the block using the hash to get the block number
+              const signedBlock = await this.api.rpc.chain.getBlock(blockHash)
+              events.forEach(({ event: { section, method } }) => {
+                if (section === 'system' && method === 'ExtrinsicFailed') {
+                  const dispatchErrorJson = JSON.parse(dispatchError!.toString())
+
+                  reject(
+                    new Error(
+                      `Deactivate Auto ID | Extrinsic failed: ${mapErrorCodeToEnum(dispatchErrorJson.module.error)} in block #${signedBlock.block.header.number.toString()}`,
+                    ),
+                  )
+                }
+              })
+              resolve(result)
+            } catch (err: any) {
+              reject(new Error(`Failed to retrieve block information: ${err.message}`))
+            }
+          } else if (status.isDropped || status.isInvalid) {
+            reject(new Error('Transaction dropped or invalid'))
+          }
+        })
+    })
+
+    return receipt
+  }
+
   // Get certificate from auto id identifier.
-  async getCertificate(autoIdIdentifier: string): Promise<AutoIdX509Certificate> {
+  async getCertificate(autoIdIdentifier: string): Promise<AutoIdX509Certificate | null> {
     const certificate = await this.api.query.autoId.autoIds(autoIdIdentifier)
+    if (certificate.isEmpty) {
+      return null
+    }
+
     const autoIdCertificateJson: AutoIdX509Certificate = JSON.parse(
       JSON.stringify(certificate.toHuman(), null, 2),
     ).certificate.X509
@@ -294,7 +390,17 @@ export class Registry {
     return autoIdCertificateJson
   }
 
-  // TODO: Get revocation list from auto id identifier.
+  // Get revocation list from auto id identifier.
+  async getCertificateRevocationList(autoIdIdentifier: string): Promise<string[]> {
+    // Fetch the revocation list for the given identifier
+    const revokedCertificatesCodec =
+      await this.api.query.autoId.certificateRevocationList(autoIdIdentifier)
+    // Decode the Codec to get the actual BTreeSet
+    const revokedCertificates = revokedCertificatesCodec.toJSON() as string[]
+    // Convert the BTreeSet to an array
+    const revokedCertificatesArray = Array.from(revokedCertificates)
+    return revokedCertificatesArray
+  }
 }
 
 interface Signature {
@@ -363,16 +469,16 @@ async function signPreimage(
   const privateKeyPath = isIssuer ? './res/private.issuer.pem' : './res/private.leaf.pem'
 
   const privateKeyPEM = fs.readFileSync(privateKeyPath, 'utf8').replace(/\\n/gm, '\n')
-  console.debug('privateKeyPEM: ', privateKeyPEM)
+  // console.debug('privateKeyPEM: ', privateKeyPEM)
 
   // Convert the ASN.1 algorithm identifier to a WebCrypto algorithm
   const webCryptoAlgorithm = convertToWebCryptoAlgorithm(algorithmId)
 
   // Convert PEM to CryptoKey
   const privateKey: CryptoKey = await pemToCryptoKeyForSigning(privateKeyPEM, webCryptoAlgorithm)
-  console.debug(`private key algorithm: ${privateKey.algorithm.name}`)
+  // console.debug(`private key algorithm: ${privateKey.algorithm.name}`)
 
-  console.debug('Algorithm OID:', algorithmId.algorithm)
+  // console.debug('Algorithm OID:', algorithmId.algorithm)
 
   /* sign the data with the private key */
   const signature = await crypto.subtle.sign(webCryptoAlgorithm, privateKey, data)
@@ -384,62 +490,3 @@ async function signPreimage(
     value: new Uint8Array(signature),
   }
 }
-
-// TODO: add this to class's methods
-// deactivate auto id
-// async deactivateAutoId(
-//   autoIdIdentifier: string,
-//   certificate: X509Certificate,
-// ): Promise<SubmittableResult> {
-//   await this.api.isReady
-
-//   if (!this.signer) {
-//     throw new Error('No signer provided')
-//   }
-
-//   const [derEncodedOID] = x509CertificateToCertDerVec(certificate)
-//   const signature = {
-//     signature_algorithm: derEncodedOID,
-//     value: compactAddLength(new Uint8Array(certificate.signature)),
-//   }
-
-//   // TODO: verify signature before sending the transaction
-
-//   const receipt: SubmittableResult = await new Promise((resolve, reject) => {
-//     this.api.tx.autoId
-//       .deactivateAutoId(autoIdIdentifier, signature)
-//       .signAndSend(this.signer!, async (result) => {
-//         const { events = [], status, dispatchError } = result
-
-//         if (status.isInBlock || status.isFinalized) {
-//           const blockHash = status.isInBlock
-//             ? status.asInBlock.toString()
-//             : status.asFinalized.toString()
-
-//           try {
-//             // Retrieve the block using the hash to get the block number
-//             const signedBlock = await this.api.rpc.chain.getBlock(blockHash)
-//             events.forEach(({ event: { section, method } }) => {
-//               if (section === 'system' && method === 'ExtrinsicFailed') {
-//                 const dispatchErrorJson = JSON.parse(dispatchError!.toString())
-
-//                 reject(
-//                   new Error(
-//                     `Deactivate Auto ID | Extrinsic failed: ${mapErrorCodeToEnum(dispatchErrorJson.module.error)} in block #${signedBlock.block.header.number.toString()}`,
-//                   ),
-//                 )
-//               }
-//             })
-//             resolve(result)
-//           } catch (err: any) {
-//             reject(new Error(`Failed to retrieve block information: ${err.message}`))
-//           }
-//         } else if (status.isDropped || status.isInvalid) {
-//           reject(new Error('Transaction dropped or invalid'))
-//         }
-//       })
-//   })
-
-//   return receipt
-// }
-// }
