@@ -5,16 +5,20 @@
       "path": "..",
     },
     {
-      "name": "auto-utils",
+      "name": "Auto-utils",
       "path": "../packages/auto-utils",
     },
     {
-      "name": "auto-consensus",
+      "name": "Auto-Consensus",
       "path": "../packages/auto-consensus",
     },
     {
-      "name": "auto-id",
+      "name": "Auto-ID",
       "path": "../packages/auto-id",
+    },
+    {
+      "name": "Auto-XDM",
+      "path": "../packages/auto-xdm",
     },
     {
       "name": "Example - NextJS",
