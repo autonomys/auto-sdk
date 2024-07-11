@@ -1,27 +1,21 @@
 {
   "name": "@autonomys/auto-id",
-  "version": "0.1.0",
+  "version": "0.1.4",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
     "clean": "rm -rf dist",
     "format": "prettier --write \"src/**/*.ts\"",
-    "test": "jest",
-    "hello": "tsc && ts-node examples/hello.ts",
-    "registry": "tsc && ts-node examples/registryEg.ts"
+    "test": "jest"
   },
   "dependencies": {
-    "@autonomys/auto-utils": "workspace:*",
+    "@autonomys/auto-utils": "^0.1.4",
     "@peculiar/asn1-schema": "^2.3.8",
     "@peculiar/asn1-x509": "^2.3.8",
     "@peculiar/webcrypto": "^1.5.0",
     "@peculiar/x509": "^1.11.0",
     "dotenv": "^16.4.5"
   },
-  "files": [
-    "dist",
-    "README.md"
-  ],
   "devDependencies": {
     "@types/jest": "^29.5.12",
     "@types/node": "^20.12.12",
@@ -29,5 +23,13 @@
     "ts-jest": "^29.1.4",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/subspace/auto-sdk"
+  },
+  "author": {
+    "name": "Autonomys",
+    "url": "https://www.autonomys.net"
   }
 }

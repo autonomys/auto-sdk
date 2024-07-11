@@ -1,5 +1,5 @@
-import { address, balance, events, transfer } from '@autonomys/auto-consensus'
-import { getMockWallet } from '@autonomys/auto-utils'
+import { balance, events, transfer } from '@autonomys/auto-consensus'
+import { address, getMockWallet } from '@autonomys/auto-utils'
 import { setup, signAndSendTx } from './helpers'
 
 describe('Verify transfer functions', () => {

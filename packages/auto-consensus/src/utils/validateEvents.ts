@@ -1,4 +1,6 @@
-import type { EventRecord } from '@polkadot/types/interfaces'
+// file: src/utils/validateEvents.ts
+
+import type { EventRecord } from '@autonomys/auto-utils'
 import type { Events } from '../types/events'
 import type { EventsValidated } from '../types/transaction'
 import { expectSuccessfulTxEvent } from './events'

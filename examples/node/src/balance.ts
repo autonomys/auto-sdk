@@ -1,7 +1,8 @@
-import { address, balance } from '@autonomys/auto-consensus'
+import { balance } from '@autonomys/auto-consensus'
+import { address } from '@autonomys/auto-utils'
 import { setup } from './utils/setup'
 
-const main = async () => {
+export const balanceFunction = async () => {
   const { api, alice, bob } = await setup()
 
   // Alice's Addresses and Balance
@@ -32,7 +33,7 @@ const main = async () => {
   )
 }
 
-main()
+balanceFunction()
   .then(() => {
     console.log('\x1b[34m%s\x1b[0m', 'Script executed successfully')
     process.exit(0)

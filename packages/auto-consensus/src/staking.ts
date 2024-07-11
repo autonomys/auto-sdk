@@ -1,9 +1,9 @@
-import type { ApiPromise } from '@polkadot/api'
-import type { KeyringPair } from '@polkadot/keyring/types'
+// file: src/staking.ts
+
+import type { ApiPromise, KeyringPair } from '@autonomys/auto-utils'
+import { createAccountIdType, signingKey } from '@autonomys/auto-utils'
 import type { StorageKey } from '@polkadot/types'
-import { createType } from '@polkadot/types'
 import type { AnyTuple, Codec } from '@polkadot/types-codec/types'
-import { u8aToHex } from '@polkadot/util'
 
 type RawOperatorId = string[]
 type RawOperatorDetails = {
@@ -124,15 +124,14 @@ export const registerOperator = async (input: RegisterOperatorInput) => {
       nominationTax,
     } = input
 
-    const message = createType(api.registry, 'AccountId', senderAddress).toU8a()
-    const signingKey = u8aToHex(Operator.publicKey)
+    const message = createAccountIdType(api, senderAddress)
     const signature = Operator.sign(message)
 
     return await api.tx.domains.registerOperator(
       parseString(domainId),
       parseString(amountToStake),
       {
-        signingKey,
+        signingKey: signingKey(Operator.publicKey),
         minimumNominatorStake: parseString(minimumNominatorStake),
         nominationTax: parseString(nominationTax),
       },

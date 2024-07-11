@@ -1,6 +1,11 @@
-import { ApiPromise } from '@polkadot/api'
-import type { AddressOrPair, SubmittableExtrinsic } from '@polkadot/api/types'
-import type { ISubmittableResult } from '@polkadot/types/types'
+// file: src/utils/sudo.ts
+
+import type {
+  AddressOrPair,
+  ApiPromise,
+  ISubmittableResult,
+  SubmittableExtrinsic,
+} from '@autonomys/auto-utils'
 import type { Events } from '../types/events'
 import { expectSuccessfulTxEvent } from './events'
 import { signAndSendTx } from './signAndSendTx'

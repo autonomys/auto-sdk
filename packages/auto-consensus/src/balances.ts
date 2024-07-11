@@ -1,6 +1,7 @@
+// file: src/balances.ts
+
+import type { ApiPromise, BN } from '@autonomys/auto-utils'
 import { activate } from '@autonomys/auto-utils'
-import type { ApiPromise } from '@polkadot/api'
-import type { BN } from '@polkadot/util'
 
 type RawBalanceData = {
   free: BN

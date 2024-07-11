@@ -1,33 +1,45 @@
-import type { ApiPromise } from '@polkadot/api'
+// file: src/wallet.ts
+
 import { Keyring } from '@polkadot/api'
 import type { InjectedAccountWithMeta } from '@polkadot/extension-inject/types'
 import type { KeyringPair } from '@polkadot/keyring/types'
-import { cryptoWaitReady } from '@polkadot/util-crypto'
+import { mnemonicGenerate } from '@polkadot/util-crypto'
+import { address } from './address'
 import { activate, activateDomain } from './api'
 import { defaultNetwork } from './constants/network'
 import { mockURIs } from './constants/wallet'
-import type { AppName, DomainInput, Mnemonic, MnemonicOrURI, NetworkInput, URI } from './types'
+import type { DomainInput, Mnemonic, MnemonicOrURI, NetworkInput, URI } from './types'
+import type { ActivateWalletInput, GeneratedWallet, Wallet, WalletActivated } from './types/wallet'
 
-export const setupWallet = async (input: MnemonicOrURI): Promise<KeyringPair> => {
-  await cryptoWaitReady()
+export const setupWallet = (input: MnemonicOrURI): Wallet => {
   const keyring = new Keyring({ type: 'sr25519' })
 
-  let pair: KeyringPair
+  let keyringPair: Wallet['keyringPair']
   if ((input as URI).uri) {
     // Treat as uri
-    pair = keyring.addFromUri((input as URI).uri)
+    keyringPair = keyring.addFromUri((input as URI).uri)
   } else if ((input as Mnemonic).mnemonic) {
     // Treat as mnemonic
-    pair = keyring.addFromUri((input as Mnemonic).mnemonic)
+    keyringPair = keyring.addFromUri((input as Mnemonic).mnemonic)
   } else throw new Error('Invalid mnemonic or private key')
 
-  return pair
+  return {
+    keyringPair,
+    address: address(keyringPair.address),
+    commonAddress: keyringPair.address,
+  }
 }
 
-export type ActivateWalletInput = (NetworkInput | DomainInput) & MnemonicOrURI & AppName
-export type WalletActivated = {
-  api: ApiPromise
-  accounts: InjectedAccountWithMeta[] & KeyringPair[]
+export const generateWallet = (): GeneratedWallet => {
+  const mnemonic = mnemonicGenerate()
+  const { keyringPair, address, commonAddress } = setupWallet({ mnemonic })
+
+  return {
+    mnemonic,
+    keyringPair,
+    address,
+    commonAddress,
+  }
 }
 
 export const activateWallet = async (input: ActivateWalletInput): Promise<WalletActivated> => {
@@ -39,7 +51,11 @@ export const activateWallet = async (input: ActivateWalletInput): Promise<Wallet
 
   const accounts: InjectedAccountWithMeta[] & KeyringPair[] = []
 
-  if (typeof window !== 'undefined') {
+  if ((input as Mnemonic).mnemonic || (input as URI).uri) {
+    // Attach the wallet in a node environment
+    const { keyringPair } = setupWallet(input)
+    if (keyringPair) accounts.push(keyringPair)
+  } else if (typeof window !== 'undefined') {
     const { web3Enable, web3Accounts } = await import('@polkadot/extension-dapp')
 
     // Enable Polkadot.js extension in the browser
@@ -49,13 +65,9 @@ export const activateWallet = async (input: ActivateWalletInput): Promise<Wallet
     const allAccounts = await web3Accounts()
     accounts.push(...allAccounts)
     if (allAccounts.length === 0) console.warn('No accounts found in the Polkadot.js extension')
-  } else if ((input as Mnemonic).mnemonic || (input as URI).uri) {
-    // Attach the wallet in a node environment
-    const account = await setupWallet(input)
-    accounts.push(account)
   } else throw new Error('No wallet provided')
 
-  return { api, accounts }
+  return { api, accounts, address: address(accounts[0].address) }
 }
 
 export const mockWallets = async (

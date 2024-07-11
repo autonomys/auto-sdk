@@ -1,5 +1,6 @@
-import type { AddressOrPair, SubmittableExtrinsic } from '@polkadot/api/types'
-import type { ISubmittableResult } from '@polkadot/types/types'
+// file: src/utils/signAndSendTx.ts
+
+import type { AddressOrPair, ISubmittableResult, SubmittableExtrinsic } from '@autonomys/auto-utils'
 import type { Events } from '../types/events'
 import type { EventsValidated, TransactionSignedAndSend } from '../types/transaction'
 import { detectTxSuccess } from './detectTxSuccess'

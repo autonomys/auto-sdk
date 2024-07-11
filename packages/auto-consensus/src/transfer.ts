@@ -1,9 +1,13 @@
-import type { ApiPromise } from '@polkadot/api'
+// file: src/transfer.ts
+
+import type { ApiPromise } from '@autonomys/auto-utils'
+
+export type Amount = BigInt | number | string
 
 export const transfer = async (
   api: ApiPromise,
   receiver: string,
-  amount: BigInt | number | string,
+  amount: Amount,
   allowDeath?: boolean,
 ) => {
   // Transfer the tokens

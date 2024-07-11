@@ -1,0 +1,51 @@
+name: Publish Packages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18'
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Set Yarn version to Berry
+        run: corepack prepare yarn@4.2.2 --activate
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Configure npm
+        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+
+      - name: Build packages
+        run: yarn build
+
+      - name: Version bump and tag
+        run: yarn publish
+
+      - name: Publish packages
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          packages=("packages/@autonomys/auto-utils")
+
+          for package in "${packages[@]}"; do
+            echo "Publishing $package"
+            cd $package
+            npm publish --access public
+            cd ../..
+          done
