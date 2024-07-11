@@ -14,12 +14,8 @@
     "@peculiar/asn1-x509": "^2.3.8",
     "@peculiar/webcrypto": "^1.5.0",
     "@peculiar/x509": "^1.11.0",
-    "asn1js": "^3.0.5"
+    "dotenv": "^16.4.5"
   },
-  "files": [
-    "dist",
-    "README.md"
-  ],
   "devDependencies": {
     "@types/jest": "^29.5.12",
     "@types/node": "^20.12.12",
@@ -28,5 +24,12 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5"
   },
-  "gitHead": "bf1aacdebad697135f8cbcf4a359e7c2a9188e24"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/subspace/auto-sdk"
+  },
+  "author": {
+    "name": "Autonomys",
+    "url": "https://www.autonomys.net"
+  }
 }
