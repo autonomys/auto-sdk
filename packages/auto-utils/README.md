@@ -7,16 +7,16 @@ The Autonomys Auto SDK Utility provides functionalities for wallet setup, networ
 ## Wallet Management
 
 - `setupWallet(params: MnemonicOrURI): Promise<KeyringPair>`: Initializes a wallet using a mnemonic or URI.
-- `activateWallet(params: ActivateWalletInput): Promise<WalletActivated>`: Activates a wallet and returns API and accounts.
-- `mockWallets(network: NetworkInput | DomainInput): Promise<WalletActivated[]>`: Creates mock wallets for testing.
+- `activateWallet(params: ActivateWalletParams): Promise<WalletActivated>`: Activates a wallet and returns API and accounts.
+- `mockWallets(network: NetworkParams | DomainParams): Promise<WalletActivated[]>`: Creates mock wallets for testing.
 - `getMockWallet(name: string, wallets: WalletActivated[]): WalletActivated`: Retrieves a mock wallet by name.
 
 ## Network Management
 
-- `getNetworkDetails(input?: NetworkInput): Network`: Gets network details.
-- `getNetworkRpcUrls(input?: NetworkInput): string[]`: Gets network RPC URLs.
-- `getNetworkDomainDetails(params: DomainInput): Domain`: Gets domain details.
-- `getNetworkDomainRpcUrls(params: DomainInput): string[]`: Gets domain RPC URLs.
+- `getNetworkDetails(input?: NetworkParams): Network`: Gets network details.
+- `getNetworkRpcUrls(input?: NetworkParams): string[]`: Gets network RPC URLs.
+- `getNetworkDomainDetails(params: DomainParams): Domain`: Gets domain details.
+- `getNetworkDomainRpcUrls(params: DomainParams): string[]`: Gets domain RPC URLs.
 
 ## Data Storage
 
@@ -31,8 +31,8 @@ The Autonomys Auto SDK Utility provides functionalities for wallet setup, networ
 
 ## API Activation
 
-- `activate(input?: NetworkInput): Promise<ApiPromise>`: Activates the API for a network.
-- `activateDomain(params: DomainInput): Promise<ApiPromise>`: Activates the API for a domain.
+- `activate(input?: NetworkParams): Promise<ApiPromise>`: Activates the API for a network.
+- `activateDomain(params: DomainParams): Promise<ApiPromise>`: Activates the API for a domain.
 - `disconnect()`: Disconnects the API.
 - `disconnectDomain()`: Disconnects the domain API.
 
@@ -44,7 +44,7 @@ The Autonomys Auto SDK Utility provides functionalities for wallet setup, networ
 
 ## Types
 
-- `Network`, `Domain`, `Explorer`, `NetworkInput`, `DomainInput`
+- `Network`, `Domain`, `Explorer`, `NetworkParams`, `DomainParams`
 - `Mnemonic`, `URI`, `AppName`, `MnemonicOrURI`
 
 For more details, refer to the source files in the `src` directory.

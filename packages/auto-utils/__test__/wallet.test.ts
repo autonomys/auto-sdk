@@ -1,7 +1,7 @@
 import {
-  ActivateWalletInput,
+  ActivateWalletParams,
   ApiPromise,
-  NetworkInput,
+  NetworkParams,
   WalletActivated,
   activate,
   activateWallet,
@@ -15,7 +15,7 @@ describe('Verify wallet functions', () => {
   const isLocalhost = process.env.LOCALHOST === 'true'
 
   // Define the test network and its details
-  const TEST_NETWORK: NetworkInput = !isLocalhost
+  const TEST_NETWORK: NetworkParams = !isLocalhost
     ? { networkId: networks[0].id }
     : { networkId: 'autonomys-localhost' }
   const TEST_NETWORK_DETAIL = networks.find((network) => network.id === TEST_NETWORK.networkId)
@@ -62,7 +62,7 @@ describe('Verify wallet functions', () => {
       const { api, accounts } = await activateWallet({
         ...TEST_NETWORK,
         mnemonic: TEST_MNEMONIC,
-      } as ActivateWalletInput)
+      } as ActivateWalletParams)
       expect(api).toBeDefined()
       expect(accounts.length).toBeGreaterThan(0)
       expect(accounts[0].address).toEqual(TEST_ADDRESS)
@@ -72,7 +72,7 @@ describe('Verify wallet functions', () => {
       const { api, accounts } = await activateWallet({
         ...TEST_NETWORK,
         uri: ALICE_URI,
-      } as ActivateWalletInput)
+      } as ActivateWalletParams)
       expect(api).toBeDefined()
       expect(accounts.length).toBeGreaterThan(0)
       expect(accounts[0].address).toEqual(aliceWallet.address)
@@ -82,7 +82,7 @@ describe('Verify wallet functions', () => {
       const { api, accounts } = await activateWallet({
         ...TEST_NETWORK,
         uri: BOB_URI,
-      } as ActivateWalletInput)
+      } as ActivateWalletParams)
       expect(api).toBeDefined()
       expect(accounts.length).toBeGreaterThan(0)
       expect(accounts[0].address).toEqual(bobWallet.address)

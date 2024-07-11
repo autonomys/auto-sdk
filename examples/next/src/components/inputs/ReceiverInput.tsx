@@ -2,13 +2,13 @@ import { useWallets } from '@/hooks/useWallet'
 import { mockURIs } from '@autonomys/auto-utils'
 import { FC } from 'react'
 
-interface InputProps {
+interface ParamsProps {
   id?: string
   value?: string
   set?: (e: string) => void
 }
 
-export const ReceiverInput: FC<InputProps> = ({ id = 'to', value, set }) => {
+export const ReceiverParams: FC<ParamsProps> = ({ id = 'to', value, set }) => {
   const { walletsSigners } = useWallets()
 
   return (

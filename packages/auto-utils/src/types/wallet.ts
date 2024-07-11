@@ -4,7 +4,7 @@ import type { ApiPromise } from '@polkadot/api'
 import type { AddressOrPair, Signer, SignerResult } from '@polkadot/api/types'
 import type { InjectedAccountWithMeta } from '@polkadot/extension-inject/types'
 import type { KeyringPair } from '@polkadot/keyring/types'
-import type { DomainInput, NetworkInput } from './network'
+import type { DomainParams, NetworkParams } from './network'
 
 export type Mnemonic = {
   mnemonic: string
@@ -32,7 +32,7 @@ export interface GeneratedWallet extends Wallet {
   mnemonic: string
 }
 
-export type ActivateWalletInput = (NetworkInput | DomainInput) &
+export type ActivateWalletParams = (NetworkParams | DomainParams) &
   MnemonicOrURI &
   ExtraActivationOptions
 

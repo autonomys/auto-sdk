@@ -2,8 +2,8 @@ import { useTx } from '@/hooks/useTx'
 import { useWallets } from '@/hooks/useWallet'
 import { transfer } from '@autonomys/auto-consensus'
 import React, { useCallback, useState } from 'react'
-import { AmountInput } from '../inputs/AmountInput'
-import { ReceiverInput } from '../inputs/ReceiverInput'
+import { AmountParams } from '../inputs/AmountParams'
+import { ReceiverParams } from '../inputs/ReceiverParams'
 import { TxButton } from '../tx/TxButton'
 
 export const Transfer = () => {
@@ -28,13 +28,13 @@ export const Transfer = () => {
         <label className='block text-gray-700 text-sm font-bold mb-2' htmlFor='to'>
           To
         </label>
-        <ReceiverInput id='to' value={to} set={setTo} />
+        <ReceiverParams id='to' value={to} set={setTo} />
       </div>
       <div className='w-full max-w-xs mt-4'>
         <label className='block text-gray-700 text-sm font-bold mb-2' htmlFor='amount'>
           Amount
         </label>
-        <AmountInput
+        <AmountParams
           id='amount'
           value={amount}
           options={['0.01', '1', '5', '10', '100']}

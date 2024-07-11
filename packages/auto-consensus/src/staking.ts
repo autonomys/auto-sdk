@@ -41,7 +41,7 @@ export type Operator = {
 
 type StringNumberOrBigInt = string | number | bigint
 
-export type RegisterOperatorInput = {
+export type RegisterOperatorParams = {
   api: ApiPromise
   senderAddress: string
   Operator: KeyringPair
@@ -51,16 +51,16 @@ export type RegisterOperatorInput = {
   nominationTax: StringNumberOrBigInt
 }
 
-export type StakingInput = {
+export type StakingParams = {
   api: ApiPromise
   operatorId: StringNumberOrBigInt
 }
 
-export interface WithdrawStakeInput extends StakingInput {
+export interface WithdrawStakeParams extends StakingParams {
   shares: StringNumberOrBigInt
 }
 
-export interface NominateOperatorInput extends StakingInput {
+export interface NominateOperatorParams extends StakingParams {
   amountToStake: StringNumberOrBigInt
 }
 
@@ -112,7 +112,7 @@ export const operator = async (api: ApiPromise, operatorId: StringNumberOrBigInt
   }
 }
 
-export const registerOperator = async (params: RegisterOperatorInput) => {
+export const registerOperator = async (params: RegisterOperatorParams) => {
   try {
     const {
       api,
@@ -143,7 +143,7 @@ export const registerOperator = async (params: RegisterOperatorInput) => {
   }
 }
 
-export const nominateOperator = async (params: NominateOperatorInput) => {
+export const nominateOperator = async (params: NominateOperatorParams) => {
   try {
     const { api, operatorId, amountToStake } = params
 
@@ -157,7 +157,7 @@ export const nominateOperator = async (params: NominateOperatorInput) => {
   }
 }
 
-export const withdrawStake = async (params: WithdrawStakeInput) => {
+export const withdrawStake = async (params: WithdrawStakeParams) => {
   try {
     const { api, operatorId, shares } = params
 
@@ -168,7 +168,7 @@ export const withdrawStake = async (params: WithdrawStakeInput) => {
   }
 }
 
-export const deregisterOperator = async (params: StakingInput) => {
+export const deregisterOperator = async (params: StakingParams) => {
   try {
     const { api, operatorId } = params
 
@@ -179,7 +179,7 @@ export const deregisterOperator = async (params: StakingInput) => {
   }
 }
 
-export const unlockFunds = async (params: StakingInput) => {
+export const unlockFunds = async (params: StakingParams) => {
   try {
     const { api, operatorId } = params
 
@@ -190,7 +190,7 @@ export const unlockFunds = async (params: StakingInput) => {
   }
 }
 
-export const unlockNominator = async (params: StakingInput) => {
+export const unlockNominator = async (params: StakingParams) => {
   try {
     const { api, operatorId } = params
 

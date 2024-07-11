@@ -8,9 +8,9 @@ import { address } from './address'
 import { activate, activateDomain } from './api'
 import { defaultNetwork } from './constants/network'
 import { mockURIs } from './constants/wallet'
-import type { DomainInput, Mnemonic, MnemonicOrURI, NetworkInput, URI } from './types'
+import type { DomainParams, Mnemonic, MnemonicOrURI, NetworkParams, URI } from './types'
 import type {
-  ActivateWalletInput,
+  ActivateWalletParams,
   ApiPromise,
   GeneratedWallet,
   Wallet,
@@ -48,13 +48,13 @@ export const generateWallet = (): GeneratedWallet => {
   }
 }
 
-export const activateWallet = async (params: ActivateWalletInput): Promise<WalletActivated> => {
+export const activateWallet = async (params: ActivateWalletParams): Promise<WalletActivated> => {
   if (!params.api) {
     // Create the API instance if not provided
     params.api =
-      (params as DomainInput).domainId === undefined
+      (params as DomainParams).domainId === undefined
         ? await activate(params)
-        : await activateDomain(params as DomainInput)
+        : await activateDomain(params as DomainParams)
   }
 
   const accounts: InjectedAccountWithMeta[] & KeyringPair[] = []
@@ -79,7 +79,7 @@ export const activateWallet = async (params: ActivateWalletInput): Promise<Walle
 }
 
 export const mockWallets = async (
-  network: NetworkInput | DomainInput = { networkId: defaultNetwork.id },
+  network: NetworkParams | DomainParams = { networkId: defaultNetwork.id },
   api?: ApiPromise,
 ): Promise<WalletActivated[]> => {
   const wallets: WalletActivated[] = []
@@ -88,7 +88,7 @@ export const mockWallets = async (
       ...network,
       uri,
       api,
-    } as ActivateWalletInput)
+    } as ActivateWalletParams)
     wallets.push(wallet)
   }
   return wallets

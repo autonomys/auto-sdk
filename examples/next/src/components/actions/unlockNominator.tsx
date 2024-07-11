@@ -2,7 +2,7 @@ import { useTx } from '@/hooks/useTx'
 import { useWallets } from '@/hooks/useWallet'
 import { unlockNominator } from '@autonomys/auto-consensus'
 import React, { useCallback, useState } from 'react'
-import { OperatorIdInput } from '../inputs/OperatorIdInput'
+import { OperatorIdParams } from '../inputs/OperatorIdParams'
 import { TxButton } from '../tx/TxButton'
 
 export const UnlockNominator = () => {
@@ -32,7 +32,7 @@ export const UnlockNominator = () => {
         <label className='block text-gray-700 text-sm font-bold mb-2' htmlFor='to'>
           Operator Id
         </label>
-        <OperatorIdInput value={operatorId} set={setOperatorId} />
+        <OperatorIdParams value={operatorId} set={setOperatorId} />
       </div>
       {errorForm && <div className='mt-4 text-red-500'>{errorForm}</div>}
       <TxButton label='Unlock Nominators' onClick={handleUnlockNominators} />

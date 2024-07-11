@@ -1,6 +1,6 @@
 import { ApiPromise, WsProvider } from '@polkadot/api'
 import { getNetworkDomainRpcUrls, getNetworkRpcUrls } from './network'
-import type { ActivateInput, ApiOptions, DomainInput, NetworkInput } from './types/network'
+import type { ActivateParams, ApiOptions, DomainParams, NetworkParams } from './types/network'
 
 export const createConnection = async (
   endpoint: string,
@@ -19,7 +19,7 @@ export const createConnection = async (
   return api
 }
 
-export const activate = async (params?: ActivateInput<NetworkInput>): Promise<ApiPromise> => {
+export const activate = async (params?: ActivateParams<NetworkParams>): Promise<ApiPromise> => {
   // Get the first rpc urls for the network
   const endpoint = getNetworkRpcUrls(params)
   // Remove the networkId from the input
@@ -28,7 +28,7 @@ export const activate = async (params?: ActivateInput<NetworkInput>): Promise<Ap
   return await createConnection(endpoint[0], params)
 }
 
-export const activateDomain = async (params: ActivateInput<DomainInput>): Promise<ApiPromise> => {
+export const activateDomain = async (params: ActivateParams<DomainParams>): Promise<ApiPromise> => {
   // Get the first rpc urls for the network
   const endpoint = getNetworkDomainRpcUrls(params)
   // Remove the domainId from the input

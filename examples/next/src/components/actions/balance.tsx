@@ -2,7 +2,7 @@ import { useApi } from '@/hooks/useApi'
 import { balance } from '@autonomys/auto-consensus'
 import { parseTokenAmount } from '@autonomys/auto-utils'
 import React, { useCallback, useState } from 'react'
-import { ReceiverInput } from '../inputs/ReceiverInput'
+import { ReceiverParams } from '../inputs/ReceiverParams'
 
 export const Balance = () => {
   const [address, setAddress] = useState('')
@@ -25,7 +25,7 @@ export const Balance = () => {
         <label className='block text-gray-700 text-sm font-bold mb-2' htmlFor='to'>
           Of
         </label>
-        <ReceiverInput id='address' value={address} set={setAddress} />
+        <ReceiverParams id='address' value={address} set={setAddress} />
       </div>
       {errorForm && <div className='mt-4 text-red-500'>{errorForm}</div>}
       <button

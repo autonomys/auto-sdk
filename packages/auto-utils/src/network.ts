@@ -1,9 +1,9 @@
 // file: src/network.ts
 
 import { defaultNetwork, networks } from './constants/network'
-import type { DomainInput, NetworkInput } from './types/network'
+import type { DomainParams, NetworkParams } from './types/network'
 
-export const getNetworkDetails = (input?: NetworkInput) => {
+export const getNetworkDetails = (input?: NetworkParams) => {
   // If no id is provided, return the default network
   if (!input || !input.networkId) return defaultNetwork
 
@@ -16,7 +16,7 @@ export const getNetworkDetails = (input?: NetworkInput) => {
   return network
 }
 
-export const getNetworkRpcUrls = (input?: NetworkInput) => {
+export const getNetworkRpcUrls = (input?: NetworkParams) => {
   // Get the network details
   const network = getNetworkDetails(input)
 
@@ -25,7 +25,7 @@ export const getNetworkRpcUrls = (input?: NetworkInput) => {
   return network.rpcUrls
 }
 
-export const getNetworkDomainDetails = (params: DomainInput) => {
+export const getNetworkDomainDetails = (params: DomainParams) => {
   const { networkId, domainId } = params
 
   // Find the network with the provided id
@@ -39,7 +39,7 @@ export const getNetworkDomainDetails = (params: DomainInput) => {
   return domain
 }
 
-export const getNetworkDomainRpcUrls = (params: DomainInput) => {
+export const getNetworkDomainRpcUrls = (params: DomainParams) => {
   // Get the network details
   const domain = getNetworkDomainDetails(params)
   if (!domain.rpcUrls || domain.rpcUrls.length === 0) throw new Error(`Domain has no rpcUrls`)

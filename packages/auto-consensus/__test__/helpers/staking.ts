@@ -1,25 +1,25 @@
 import { u8aToHex } from '@polkadot/util'
-import { operator, operators, RegisterOperatorInput } from '../../src/staking'
+import { operator, operators, RegisterOperatorParams } from '../../src/staking'
 
 const STORAGE_FEE_DEPOSIT_PERCENTAGE = 20 // 20%
 
 export const parseBigInt = (operatorId: string | number | bigint): bigint =>
   typeof operatorId === 'bigint' ? operatorId : BigInt(operatorId)
 
-export const calculateStake = (params: RegisterOperatorInput) => {
+export const calculateStake = (params: RegisterOperatorParams) => {
   const { amountToStake, nominationTax } = params
 
   return (parseBigInt(amountToStake) * BigInt(100 - STORAGE_FEE_DEPOSIT_PERCENTAGE)) / BigInt(100)
   // To-Do: Add the nomination tax
 }
 
-export const calculateStorageFee = (params: RegisterOperatorInput) => {
+export const calculateStorageFee = (params: RegisterOperatorParams) => {
   const { amountToStake } = params
 
   return (parseBigInt(amountToStake) * BigInt(STORAGE_FEE_DEPOSIT_PERCENTAGE)) / BigInt(100)
 }
 
-export const verifyOperatorRegistration = async (params: RegisterOperatorInput) => {
+export const verifyOperatorRegistration = async (params: RegisterOperatorParams) => {
   const { api, Operator, domainId, minimumNominatorStake, nominationTax } = params
 
   const operatorsList = await operators(api)
@@ -46,7 +46,7 @@ export const verifyOperatorRegistration = async (params: RegisterOperatorInput) 
   return findOperator
 }
 
-export const verifyOperatorRegistrationFinal = async (params: RegisterOperatorInput) => {
+export const verifyOperatorRegistrationFinal = async (params: RegisterOperatorParams) => {
   const { api, Operator, domainId, amountToStake, minimumNominatorStake, nominationTax } = params
 
   const operatorsList = await operators(api)
