@@ -9,7 +9,13 @@ import { activate, activateDomain } from './api'
 import { defaultNetwork } from './constants/network'
 import { mockURIs } from './constants/wallet'
 import type { DomainInput, Mnemonic, MnemonicOrURI, NetworkInput, URI } from './types'
-import type { ActivateWalletInput, GeneratedWallet, Wallet, WalletActivated } from './types/wallet'
+import type {
+  ActivateWalletInput,
+  ApiPromise,
+  GeneratedWallet,
+  Wallet,
+  WalletActivated,
+} from './types/wallet'
 
 export const setupWallet = (input: MnemonicOrURI): Wallet => {
   const keyring = new Keyring({ type: 'sr25519' })
@@ -43,11 +49,13 @@ export const generateWallet = (): GeneratedWallet => {
 }
 
 export const activateWallet = async (input: ActivateWalletInput): Promise<WalletActivated> => {
-  // Create the API instance
-  const api =
-    (input as DomainInput).domainId === undefined
-      ? await activate(input)
-      : await activateDomain(input as DomainInput)
+  if (!input.api) {
+    // Create the API instance if not provided
+    input.api =
+      (input as DomainInput).domainId === undefined
+        ? await activate(input)
+        : await activateDomain(input as DomainInput)
+  }
 
   const accounts: InjectedAccountWithMeta[] & KeyringPair[] = []
 
@@ -67,20 +75,24 @@ export const activateWallet = async (input: ActivateWalletInput): Promise<Wallet
     if (allAccounts.length === 0) console.warn('No accounts found in the Polkadot.js extension')
   } else throw new Error('No wallet provided')
 
-  return { api, accounts, address: address(accounts[0].address) }
+  return { api: input.api, accounts, address: address(accounts[0].address) }
 }
 
 export const mockWallets = async (
   network: NetworkInput | DomainInput = { networkId: defaultNetwork.id },
-): Promise<WalletActivated[]> =>
-  await Promise.all(
-    mockURIs.map((uri) =>
-      activateWallet({
-        ...network,
-        uri,
-      } as ActivateWalletInput),
-    ),
-  )
+  api?: ApiPromise,
+): Promise<WalletActivated[]> => {
+  const wallets: WalletActivated[] = []
+  for (const uri of mockURIs) {
+    const wallet = await activateWallet({
+      ...network,
+      uri,
+      api,
+    } as ActivateWalletInput)
+    wallets.push(wallet)
+  }
+  return wallets
+}
 
 export const getMockWallet = (name: string, wallets: WalletActivated[]): WalletActivated =>
   wallets[Object.values(mockURIs).indexOf(`//${name}`)]

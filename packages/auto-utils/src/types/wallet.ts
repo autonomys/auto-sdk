@@ -14,8 +14,9 @@ export type URI = {
   uri: string
 }
 
-export type AppName = {
-  appName: string
+export type ExtraActivationOptions = {
+  appName?: string
+  api?: ApiPromise
 }
 
 export type MnemonicOrURI = Mnemonic | URI
@@ -31,7 +32,9 @@ export interface GeneratedWallet extends Wallet {
   mnemonic: string
 }
 
-export type ActivateWalletInput = (NetworkInput | DomainInput) & MnemonicOrURI & AppName
+export type ActivateWalletInput = (NetworkInput | DomainInput) &
+  MnemonicOrURI &
+  ExtraActivationOptions
 
 export type WalletActivated = {
   api: ApiPromise
