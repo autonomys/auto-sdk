@@ -86,6 +86,21 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@autonomys/auto-xdm@workspace:packages/auto-xdm":
+  version: 0.0.0-use.local
+  resolution: "@autonomys/auto-xdm@workspace:packages/auto-xdm"
+  dependencies:
+    "@autonomys/auto-utils": "npm:^0.1.4"
+    "@polkadot/types-codec": "npm:^11.2.1"
+    "@types/jest": "npm:^29.5.12"
+    eslint: "npm:^8.57.0"
+    jest: "npm:^29.7.0"
+    prettier: "npm:^3.2.5"
+    ts-jest: "npm:^29.1.4"
+    typescript: "npm:^5.4.5"
+  languageName: unknown
+  linkType: soft
+
 "@babel/code-frame@npm:^7.0.0, @babel/code-frame@npm:^7.12.13, @babel/code-frame@npm:^7.24.6":
   version: 7.24.6
   resolution: "@babel/code-frame@npm:7.24.6"
