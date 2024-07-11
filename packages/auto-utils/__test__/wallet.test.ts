@@ -2,7 +2,6 @@ import {
   ActivateWalletInput,
   NetworkInput,
   WalletActivated,
-  activate,
   activateWallet,
   address,
   mockWallets,
@@ -29,7 +28,6 @@ describe('Verify wallet functions', () => {
   let bobWallet: WalletActivated['accounts'][0]
 
   beforeAll(async () => {
-    const api = await activate(TEST_NETWORK)
     wallets = await mockWallets(TEST_NETWORK)
     aliceWallet = wallets[0].accounts[0]
     bobWallet = wallets[1].accounts[0]
