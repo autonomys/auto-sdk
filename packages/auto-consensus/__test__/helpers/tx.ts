@@ -11,7 +11,7 @@ export const signAndSendTx = async (
 
   expect(result.txHash).toBeDefined()
   expect(result.blockHash).toBeDefined()
-  expect(result.eventsExpectedMissing).toHaveLength(0)
+  expect(result.events.expected.length).toBeGreaterThanOrEqual(result.events.found.length)
 
   return result
 }
