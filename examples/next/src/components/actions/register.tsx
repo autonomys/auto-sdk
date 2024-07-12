@@ -2,7 +2,7 @@ import { useNetwork } from '@/hooks/useNetwork'
 import { useTx } from '@/hooks/useTx'
 import { useWallets } from '@/hooks/useWallet'
 import { registerOperator } from '@autonomys/auto-consensus'
-import { ActivateWalletInput, activateWallet } from '@autonomys/auto-utils'
+import { ActivateWalletParams, activateWallet } from '@autonomys/auto-utils'
 import React, { useCallback, useState } from 'react'
 import { AmountInput } from '../inputs/AmountInput'
 import { OperatorIdInput } from '../inputs/OperatorIdInput'
@@ -27,7 +27,7 @@ export const RegisterOperator = () => {
     const { accounts: operatorAccounts } = await activateWallet({
       ...config,
       uri: operatorSeed,
-    } as ActivateWalletInput)
+    } as ActivateWalletParams)
     await handleTx(
       await registerOperator({
         api: selectedWallet.api,

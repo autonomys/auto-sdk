@@ -1,11 +1,11 @@
-import type { NetworkInput } from '@autonomys/auto-utils'
+import type { NetworkParams } from '@autonomys/auto-utils'
 import { networks } from '@autonomys/auto-utils'
 
 export const setup = () => {
   const isLocalhost = process.env.LOCALHOST === 'true'
 
   // Define the test network and its details
-  const TEST_NETWORK: NetworkInput = !isLocalhost
+  const TEST_NETWORK: NetworkParams = !isLocalhost
     ? { networkId: networks[0].id }
     : { networkId: 'autonomys-localhost' }
   const TEST_INVALID_NETWORK = { networkId: 'invalid-network' }

@@ -11,7 +11,7 @@ describe('Verify transfer functions', () => {
 
   beforeAll(async () => {
     api = await activate(TEST_NETWORK)
-    wallets = await mockWallets(TEST_NETWORK)
+    wallets = await mockWallets(TEST_NETWORK, api)
   }, 15000)
 
   afterAll(async () => {
