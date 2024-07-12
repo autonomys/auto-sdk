@@ -85,6 +85,13 @@ interface AutoIdX509Certificate {
   nonce: number
 }
 
+interface RenewX509Certificate {
+  issuer_id: string | null
+  certificate: Uint8Array
+  signature_algorithm: Uint8Array
+  signature: Uint8Array
+}
+
 enum CertificateActionType {
   RevokeCertificate,
   DeactivateAutoId,
@@ -133,6 +140,10 @@ export class Registry {
     this.api = new ApiPromise({ provider: new WsProvider(rpcUrl) })
     this.signer = signer
   }
+
+  // ============================
+  // Setters
+  // ============================
 
   // register auto id
   async registerAutoId(
@@ -211,41 +222,14 @@ export class Registry {
       throw new Error('No signer provided')
     }
 
-    const certificate = await this.getCertificate(autoIdIdentifier)
-    if (!certificate) {
-      throw new Error('Certificate not found or already deactivated')
-    }
+    const { serializedData, isIssuer, algorithmOid } = await prepareSigningData(
+      this.api,
+      autoIdIdentifier,
+      this.getCertificate.bind(this),
+      CertificateActionType.RevokeCertificate,
+    )
 
-    const certificateRevocationList =
-      await this.api.query.autoId.certificateRevocationList(autoIdIdentifier)
-
-    // ensure the revocation list is empty for the given auto id identifier
-    if (!certificateRevocationList.isEmpty) {
-      throw new Error(
-        'Auto ID Identifier found in Certificate Revocation List. So, already revoked.',
-      )
-    }
-
-    const subjectPublicKeyInfo = certificate.subjectPublicKeyInfo
-    const algorithmOid = extractSignatureAlgorithmOID(subjectPublicKeyInfo)
-
-    const isIssuer = certificate.issuerId === null ? true : false
-    // console.debug(`Is issuer: ${isIssuer}`)
-
-    // Convert individual properties to Uint8Array for the signing data
-    const idU8a = hexStringToU8a(autoIdIdentifier)
-    const nonce = BigInt(certificate.nonce)
-    const nonceU8a = bnToU8a(nonce, { bitLength: 256, isLe: false, isNegative: false }) // For BigInt
-    const actionTypeU8a = new Uint8Array([CertificateActionType.RevokeCertificate])
-
-    // Concatenate all Uint8Array
-    const serializedData = u8aConcat(idU8a, nonceU8a, actionTypeU8a)
-
-    // console.debug('Data to Sign (Hex):', Buffer.from(serializedData).toString('hex'))
-
-    // Sign the data and prepare it for blockchain submission
-    const signature = await signPreimage(serializedData, isIssuer, algorithmOid)
-    // console.debug('Generated Signature (Hex):', Buffer.from(signature.value).toString('hex'))
+    const signature = await signData(serializedData, isIssuer, algorithmOid)
     const signatureEncoded = {
       signature_algorithm: compactAddLength(signature.signature_algorithm),
       value: compactAddLength(signature.value),
@@ -290,6 +274,7 @@ export class Registry {
   }
 
   // deactivate auto id
+  // NOTE: Deactivation not possible for already revoked certificates.
   async deactivateAutoId(autoIdIdentifier: string): Promise<SubmittableResult> {
     await this.api.isReady
 
@@ -297,42 +282,15 @@ export class Registry {
       throw new Error('No signer provided')
     }
 
-    const certificate = await this.getCertificate(autoIdIdentifier)
-    if (!certificate) {
-      throw new Error('Certificate not found or already deactivated')
-    }
-
-    const certificateRevocationList =
-      await this.api.query.autoId.certificateRevocationList(autoIdIdentifier)
-
-    // ensure the revocation list is empty for the given auto id identifier.
-    // NOTE: Deactivation not possible for certificates that are already revoked.
-    if (!certificateRevocationList.isEmpty) {
-      throw new Error(
-        "As Auto ID Identifier is found in CRL, so, you can't deactivate an auto ID whose cert is already revoked.",
-      )
-    }
-
-    const subjectPublicKeyInfo = certificate.subjectPublicKeyInfo
-    const algorithmOid = extractSignatureAlgorithmOID(subjectPublicKeyInfo)
-
-    const isIssuer = certificate.issuerId === null ? true : false
-    // console.debug(`Is issuer: ${isIssuer}`)
-
-    // Convert individual properties to Uint8Array for the signing data
-    const idU8a = hexStringToU8a(autoIdIdentifier)
-    const nonce = BigInt(certificate.nonce)
-    const nonceU8a = bnToU8a(nonce, { bitLength: 256, isLe: false, isNegative: false }) // For BigInt
-    const actionTypeU8a = new Uint8Array([CertificateActionType.DeactivateAutoId])
-
-    // Concatenate all Uint8Array
-    const serializedData = u8aConcat(idU8a, nonceU8a, actionTypeU8a)
-
-    // console.debug('Data to Sign (Hex):', Buffer.from(serializedData).toString('hex'))
+    const { serializedData, isIssuer, algorithmOid } = await prepareSigningData(
+      this.api,
+      autoIdIdentifier,
+      this.getCertificate.bind(this),
+      CertificateActionType.DeactivateAutoId,
+    )
 
     // Sign the data and prepare it for blockchain submission
-    const signature = await signPreimage(serializedData, isIssuer, algorithmOid)
-    // console.debug('Generated Signature (Hex):', Buffer.from(signature.value).toString('hex'))
+    const signature = await signData(serializedData, isIssuer, algorithmOid)
     const signatureEncoded = {
       signature_algorithm: compactAddLength(signature.signature_algorithm),
       value: compactAddLength(signature.value),
@@ -376,6 +334,10 @@ export class Registry {
     return receipt
   }
 
+  // ============================
+  // Getters
+  // ============================
+
   // Get certificate from auto id identifier.
   async getCertificate(autoIdIdentifier: string): Promise<AutoIdX509Certificate | null> {
     const certificate = await this.api.query.autoId.autoIds(autoIdIdentifier)
@@ -403,12 +365,59 @@ export class Registry {
   }
 }
 
+// ============================
+// Utils
+// ============================
+
+// Utility function to prepare signing data
+async function prepareSigningData(
+  api: ApiPromise,
+  autoIdIdentifier: string,
+  getCertificate: (id: string) => Promise<AutoIdX509Certificate | null>,
+  actionType: CertificateActionType,
+): Promise<{
+  serializedData: Uint8Array
+  isIssuer: boolean
+  algorithmOid: AsnAlgorithmIdentifier
+}> {
+  const certificate = await checkCertificateAndRevocationList(api, autoIdIdentifier, getCertificate)
+  const subjectPublicKeyInfo = certificate.subjectPublicKeyInfo
+  const algorithmOid = extractSignatureAlgorithmOID(subjectPublicKeyInfo)
+  const isIssuer = certificate.issuerId === null
+
+  const idU8a = hexStringToU8a(autoIdIdentifier)
+  const nonceU8a = bnToU8a(BigInt(certificate.nonce), { bitLength: 256, isLe: false })
+  const actionTypeU8a = new Uint8Array([actionType])
+  const serializedData = u8aConcat(idU8a, nonceU8a, actionTypeU8a)
+
+  return { serializedData, isIssuer, algorithmOid }
+}
+
+// Utility function to handle common certificate checks
+async function checkCertificateAndRevocationList(
+  api: ApiPromise,
+  autoIdIdentifier: string,
+  getCertificate: (id: string) => Promise<AutoIdX509Certificate | null>,
+): Promise<AutoIdX509Certificate> {
+  const certificate = await getCertificate(autoIdIdentifier)
+  if (!certificate) {
+    throw new Error('Certificate not found or already deactivated')
+  }
+
+  const certificateRevocationList =
+    await api.query.autoId.certificateRevocationList(autoIdIdentifier)
+  if (!certificateRevocationList.isEmpty) {
+    throw new Error('Auto ID Identifier found in Certificate Revocation List. So, already revoked.')
+  }
+
+  return certificate
+}
+
 interface Signature {
   signature_algorithm: Uint8Array // use Uint8Array to handle DER bytes
   value: Uint8Array
 }
 
-/** ===== Utils ===== */
 // Converts a hex string to a Uint8Array
 function hexStringToU8a(hexString: string): Uint8Array {
   return hexToU8a(hexString.startsWith('0x') ? hexString : `0x${hexString}`)
@@ -431,6 +440,7 @@ export function extractSignatureAlgorithmOID(subjectPublicKeyInfo: string): AsnA
   return publicKeyInfo.algorithm
 }
 
+// Convert the ASN.1 algorithm identifier to a WebCrypto algorithm
 function convertToWebCryptoAlgorithm(
   asnAlgId: AsnAlgorithmIdentifier,
 ):
@@ -454,35 +464,20 @@ function convertToWebCryptoAlgorithm(
   }
 }
 
-/**
- * Sign the preimage using the signer's keypair.
- * NOTE: Ed25519 algorithm identifier is used. Change this for other key types.
- * @param data Data to be signed as Buffer | Uint8Array.
- * @param isIssuer Boolean flag to choose key type.
- * @returns A Promise that resolves to a Signature object.
- */
-async function signPreimage(
+// Utility function to sign data
+async function signData(
   data: Uint8Array,
   isIssuer: boolean,
   algorithmId: AsnAlgorithmIdentifier,
 ): Promise<Signature> {
   const privateKeyPath = isIssuer ? './res/private.issuer.pem' : './res/private.leaf.pem'
-
   const privateKeyPEM = fs.readFileSync(privateKeyPath, 'utf8').replace(/\\n/gm, '\n')
   // console.debug('privateKeyPEM: ', privateKeyPEM)
-
-  // Convert the ASN.1 algorithm identifier to a WebCrypto algorithm
   const webCryptoAlgorithm = convertToWebCryptoAlgorithm(algorithmId)
-
-  // Convert PEM to CryptoKey
   const privateKey: CryptoKey = await pemToCryptoKeyForSigning(privateKeyPEM, webCryptoAlgorithm)
   // console.debug(`private key algorithm: ${privateKey.algorithm.name}`)
-
   // console.debug('Algorithm OID:', algorithmId.algorithm)
-
-  /* sign the data with the private key */
   const signature = await crypto.subtle.sign(webCryptoAlgorithm, privateKey, data)
-
   const derEncodedOID = derEncodeSignatureAlgorithmOID(algorithmId.algorithm)
 
   return {

@@ -1,8 +1,12 @@
 /**
  * Example of using auto-id registry:
  * - Register auto id for issuer and user
- * - Revoke certificate of issuer or user
- *
+ * - Revoke certificate of
+ *   - [x] issuer
+ *   - [ ] TODO: user
+ * - Deactivate auto id of:
+ *   - [x] issuer
+ *   - [ ] TODO: user
  */
 
 import {
@@ -67,7 +71,7 @@ async function main(taskName: string, identifier: string) {
     // console.debug("issuer's private key algorithm: ", issuerKeys[0].algorithm.name)
 
     const selfIssuedCm = new CertificateManager(null, issuerKeys[0], issuerKeys[1])
-    const selfIssuedCert = await selfIssuedCm.selfIssueCertificate('test8')
+    const selfIssuedCert = await selfIssuedCm.selfIssueCertificate('test4')
     const registerIssuer = await registry.registerAutoId(selfIssuedCert)
     CertificateManager.prettyPrintCertificate(selfIssuedCert)
     const issuerAutoIdIdentifier = registerIssuer.identifier!
@@ -89,7 +93,7 @@ async function main(taskName: string, identifier: string) {
     saveKey(pemToPrivateKey(userPemString), './res/private.leaf.pem')
 
     const userCm = new CertificateManager(null, userKeys[0], userKeys[1])
-    const userCsr = await userCm.createAndSignCSR('user8')
+    const userCsr = await userCm.createAndSignCSR('user4')
     // TODO: I think here 🤔, `selfIssuedCm` should be replaced with `userCm`. Then, the publicKeyInfo in the user's onchain certificate would be of user's public key than issuer's public key.
     const userCert = await selfIssuedCm.issueCertificate(userCsr)
     CertificateManager.prettyPrintCertificate(userCert)
@@ -119,7 +123,8 @@ async function main(taskName: string, identifier: string) {
   // else if (taskName === 'view-cert') {
   //   const cert = await registry.getCertificate(identifier)
   //   console.log(cert)
-  // } else if (taskName === 'view-revoked-list') {
+  // }
+  // else if (taskName === 'view-revoked-list') {
   //   const revokedList = await registry.getCertificateRevocationList(identifier)
   //   console.log(revokedList)
   // }
@@ -136,9 +141,3 @@ main(taskName, identifier)
     console.error(error)
     process.exit(1)
   })
-
-/* Deactivate Certificate */
-// const deactivated = await registry.deactivateAutoId(registerUser.identifier!, userCert)
-// console.log(
-//   `Deactivated registered user certificate with identifier: ${registerUser.identifier!} in block #${deactivated.blockNumber?.toString()}`,
-// )
