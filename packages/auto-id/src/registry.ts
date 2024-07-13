@@ -1,3 +1,4 @@
+import { blake2b_256 } from '@autonomys/auto-utils'
 import { AsnParser, AsnSerializer } from '@peculiar/asn1-schema'
 import {
   AlgorithmIdentifier as AsnAlgorithmIdentifier,
@@ -9,7 +10,9 @@ import { X509Certificate } from '@peculiar/x509'
 import { ApiPromise, SubmittableResult, WsProvider } from '@polkadot/api'
 import { KeyringPair } from '@polkadot/keyring/types'
 import { bnToU8a, compactAddLength, hexToU8a, u8aConcat } from '@polkadot/util'
+import { assert } from 'console'
 import * as fs from 'fs'
+import { CertificateManager } from './certificateManager'
 import { pemToCryptoKeyForSigning } from './keyManagement'
 import { derEncodeSignatureAlgorithmOID } from './utils'
 
@@ -38,7 +41,7 @@ export enum AutoIdError {
  */
 function mapErrorCodeToEnum(errorCode: string): AutoIdError | null {
   // Remove the '0x' prefix and extract the relevant part of the error code
-  const relevantPart = errorCode.slice(2, 4) // Gets the byte corresponding to the specific error
+  const relevantPart = errorCode.slice(2, 4).toLowerCase() // Gets the byte corresponding to the specific error
 
   switch (relevantPart) {
     case '00':
@@ -61,9 +64,9 @@ function mapErrorCodeToEnum(errorCode: string): AutoIdError | null {
       return AutoIdError.NonceOverflow
     case '09':
       return AutoIdError.AutoIdIdentifierAlreadyExists
-    case '0A':
+    case '0a':
       return AutoIdError.AutoIdIdentifierMismatch
-    case '0B':
+    case '0b':
       return AutoIdError.PublicKeyMismatch
     default:
       return null // Or handle unknown error types differently
@@ -72,7 +75,7 @@ function mapErrorCodeToEnum(errorCode: string): AutoIdError | null {
 
 // taken from auto-id pallet
 interface AutoIdX509Certificate {
-  issuerId: string
+  issuerId: string | null
   serial: string
   subjectCommonName: string
   subjectPublicKeyInfo: string
@@ -102,10 +105,13 @@ interface RegistrationResult {
   identifier: string | null
 }
 
-// CLEANUP: Remove debug logs
+// CLEANUP: Remove debug logs from this file once all the functionalities are tested.
+
 // x509 Certificate to DER format & tbsCertificate.
 // Returns a tuple of two Uint8Array.
-function x509CertificateToCertDerVec(certificate: X509Certificate): [Uint8Array, Uint8Array] {
+function convertX509CertToDerEncodedComponents(
+  certificate: X509Certificate,
+): [Uint8Array, Uint8Array] {
   const certificateBuffer = Buffer.from(certificate.rawData)
   // console.debug(`Certificate Buffer of len ${certificateBuffer.byteLength}:`)
   // console.debug(certificateBuffer) // --> '.....autoid:auto:307866386536......'
@@ -122,14 +128,13 @@ function x509CertificateToCertDerVec(certificate: X509Certificate): [Uint8Array,
   // console.debug(`derEncodedOID Buffer: ${Buffer.from(derEncodedOID)}`)
   // console.debug(`Bytes length: ${derEncodedOID.length}`)
 
-  // The TBS Certificate is accessible directly via the `tbsCertificate` property
   const tbsCertificate = cert.tbsCertificate
 
   // Serialize the TBS Certificate back to DER format
-  const tbsCertificateDerVec = AsnSerializer.serialize(tbsCertificate)
-  // console.debug(`TBS Certificate DER Vec: ${new Uint8Array(tbsCertificateDerVec)}`) // --> 48,130,1,55,160,3,2,1,2,2,16,6,63,42,209,226,214,20,114,22,195,30,195,.......
+  const tbsCertificateDerVec = new Uint8Array(AsnSerializer.serialize(tbsCertificate))
+  // console.debug('TBS Certificate DER Vec:', ${tbsCertificateDerVec}) // --> 48,130,1,55,160,3,2,1,2,2,16,6,63,42,209,226,214,20,114,22,195,30,195,.......
 
-  return [derEncodedOID, new Uint8Array(tbsCertificateDerVec)]
+  return [derEncodedOID, tbsCertificateDerVec]
 }
 
 export class Registry {
@@ -156,10 +161,14 @@ export class Registry {
       throw new Error('No signer provided')
     }
 
-    // TODO: add check for certificate if it's already registered so as to avoid paying fees for invalid auto id registration
-    // https://github.com/subspace/subspace/blob/ea685ddfdcb6b96122b9311d9137c3ab22176633/domains/pallets/auto-id/src/lib.rs#L468-L472
+    // Add check for certificate if it's already registered so as to avoid paying fees for invalid auto id registration.
+    const certIdentifier = identifierFromX509Cert(issuerId, certificate)
+    const registeredCert = await this.getCertificate(certIdentifier)
+    if (registeredCert) {
+      throw new Error('Certificate already registered')
+    }
 
-    const [derEncodedOID, tbsCertificateDerVec] = x509CertificateToCertDerVec(certificate)
+    const [derEncodedOID, tbsCertificateDerVec] = convertX509CertToDerEncodedComponents(certificate)
 
     const baseCertificate = {
       certificate: compactAddLength(tbsCertificateDerVec),
@@ -334,6 +343,89 @@ export class Registry {
     return receipt
   }
 
+  // renew auto id
+  async renewAutoId(
+    autoIdIdentifier: string,
+    newCertificate: X509Certificate,
+  ): Promise<RegistrationResult> {
+    await this.api.isReady
+
+    if (!this.signer) {
+      throw new Error('No signer provided')
+    }
+
+    // TODO: check for "Register >> Revoke >> Renew" flow
+    // const fetchedCertificate = await checkCertificateAndRevocationList(
+    //   this.api,
+    //   autoIdIdentifier,
+    //   this.getCertificate,
+    // )
+
+    const oldCertificate = await this.getCertificate(autoIdIdentifier)
+    if (!oldCertificate) {
+      throw new Error('Certificate not found or already deactivated')
+    }
+
+    const issuerId = oldCertificate.issuerId
+
+    // Assert the identifiers of both `fetchedCertificate` and `certificate`
+    assert(identifierFromX509Cert(issuerId, newCertificate) === autoIdIdentifier)
+
+    const [derEncodedOID, tbsCertificateDerVec] =
+      convertX509CertToDerEncodedComponents(newCertificate)
+
+    const renewCertificate = {
+      issuer_id: issuerId,
+      certificate: compactAddLength(tbsCertificateDerVec),
+      signature_algorithm: compactAddLength(derEncodedOID),
+      signature: compactAddLength(new Uint8Array(newCertificate.signature)),
+    }
+
+    const req = { X509: renewCertificate }
+
+    let identifier: string | null = null
+
+    const receipt: SubmittableResult = await new Promise((resolve, reject) => {
+      this.api.tx.autoId
+        .renewAutoId(autoIdIdentifier, req)
+        .signAndSend(this.signer!, async (result) => {
+          const { events = [], status, dispatchError } = result
+
+          if (status.isInBlock || status.isFinalized) {
+            const blockHash = status.isInBlock
+              ? status.asInBlock.toString()
+              : status.asFinalized.toString()
+
+            try {
+              // Retrieve the block using the hash to get the block number
+              const signedBlock = await this.api.rpc.chain.getBlock(blockHash)
+              events.forEach(({ event: { section, method, data } }) => {
+                if (section === 'system' && method === 'ExtrinsicFailed') {
+                  const dispatchErrorJson = JSON.parse(dispatchError!.toString())
+
+                  reject(
+                    new Error(
+                      `Renew Auto ID | Extrinsic failed: ${mapErrorCodeToEnum(dispatchErrorJson.module.error)} in block #${signedBlock.block.header.number.toString()}`,
+                    ),
+                  )
+                }
+                if (section === 'autoId' && method === 'AutoIdRenewed') {
+                  identifier = data[0].toString()
+                }
+              })
+              resolve(result)
+            } catch (err: any) {
+              reject(new Error(`Failed to retrieve block information: ${err.message}`))
+            }
+          } else if (status.isDropped || status.isInvalid) {
+            reject(new Error('Transaction dropped or invalid'))
+          }
+        })
+    })
+
+    return { receipt, identifier }
+  }
+
   // ============================
   // Getters
   // ============================
@@ -368,6 +460,30 @@ export class Registry {
 // ============================
 // Utils
 // ============================
+
+export function identifierFromX509Cert(
+  issuerId: string | null | undefined,
+  certificate: X509Certificate,
+): string {
+  const subjectCommonName = CertificateManager.getSubjectCommonName(certificate.subjectName)
+  if (!subjectCommonName) {
+    throw new Error('Subject Common Name not found')
+  }
+
+  // convert from string to bytes.
+  const subjectCommonNameBytes = new TextEncoder().encode(subjectCommonName)
+
+  if (issuerId) {
+    const issuerIdBytes = new TextEncoder().encode(issuerId)
+    const data = new Uint8Array(issuerIdBytes.length + subjectCommonNameBytes.length)
+    data.set(issuerIdBytes)
+    data.set(subjectCommonNameBytes, issuerIdBytes.length)
+
+    return blake2b_256(data)
+  } else {
+    return blake2b_256(subjectCommonNameBytes)
+  }
+}
 
 // Utility function to prepare signing data
 async function prepareSigningData(
