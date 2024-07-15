@@ -68,10 +68,10 @@ export const verifyOperatorRegistrationFinal = async (params: RegisterOperatorPa
     )
     const thisOperator = await operator(api, findOperator.operatorId)
     expect(thisOperator.currentDomainId).toEqual(BigInt(domainId))
-    expect(thisOperator.currentTotalStake).toEqual(calculateStake(input))
+    expect(thisOperator.currentTotalStake).toEqual(calculateStake(params))
     expect(thisOperator.minimumNominatorStake).toEqual(BigInt(minimumNominatorStake))
     expect(thisOperator.nominationTax).toEqual(Number(nominationTax))
-    expect(thisOperator.totalStorageFeeDeposit).toEqual(calculateStorageFee(input))
+    expect(thisOperator.totalStorageFeeDeposit).toEqual(calculateStorageFee(params))
   }
 
   return findOperator
