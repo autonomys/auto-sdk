@@ -88,13 +88,6 @@ interface AutoIdX509Certificate {
   nonce: number
 }
 
-interface RenewX509Certificate {
-  issuer_id: string | null
-  certificate: Uint8Array
-  signature_algorithm: Uint8Array
-  signature: Uint8Array
-}
-
 enum CertificateActionType {
   RevokeCertificate,
   DeactivateAutoId,
@@ -432,6 +425,8 @@ export class Registry {
 
   // Get certificate from auto id identifier.
   async getCertificate(autoIdIdentifier: string): Promise<AutoIdX509Certificate | null> {
+    await this.api.isReady
+
     const certificate = await this.api.query.autoId.autoIds(autoIdIdentifier)
     if (certificate.isEmpty) {
       return null
@@ -446,6 +441,8 @@ export class Registry {
 
   // Get revocation list from auto id identifier.
   async getCertificateRevocationList(autoIdIdentifier: string): Promise<string[]> {
+    await this.api.isReady
+
     // Fetch the revocation list for the given identifier
     const revokedCertificatesCodec =
       await this.api.query.autoId.certificateRevocationList(autoIdIdentifier)

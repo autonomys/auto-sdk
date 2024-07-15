@@ -4,7 +4,14 @@
  *   - [ ] TODO: user
  */
 
-import { Registry } from '@autonomys/auto-id'
+import {
+  CertificateManager,
+  Registry,
+  cryptoKeyToPem,
+  generateEd25519KeyPair2,
+  pemToPrivateKey,
+  saveKey,
+} from '@autonomys/auto-id'
 import { Keyring } from '@polkadot/api'
 import { cryptoWaitReady } from '@polkadot/util-crypto'
 import { config } from 'dotenv'
@@ -28,7 +35,23 @@ function loadEnv(): { RPC_URL: string; KEYPAIR_URI: string } {
   return { RPC_URL, KEYPAIR_URI }
 }
 
-async function main(identifier: string) {
+async function registerAutoId(registry: Registry, filePath: string): Promise<string> {
+  const issuerKeys = await generateEd25519KeyPair2() // Ed25519
+  const issuerPemString = await cryptoKeyToPem(issuerKeys[0])
+  saveKey(pemToPrivateKey(issuerPemString), filePath)
+
+  const selfIssuedCm = new CertificateManager(null, issuerKeys[0], issuerKeys[1])
+  const selfIssuedCert = await selfIssuedCm.selfIssueCertificate('test200')
+  const registerIssuer = await registry.registerAutoId(selfIssuedCert)
+  CertificateManager.prettyPrintCertificate(selfIssuedCert)
+  const issuerAutoIdIdentifier = registerIssuer.identifier!
+  console.log(
+    `===\nRegistered auto id from issuer cert: ${CertificateManager.getCertificateAutoId(selfIssuedCert)} with identifier: ${issuerAutoIdIdentifier} in block #${registerIssuer.receipt?.blockNumber?.toString()}`,
+  )
+  return issuerAutoIdIdentifier
+}
+
+async function main() {
   await cryptoWaitReady()
 
   const { RPC_URL, KEYPAIR_URI } = loadEnv()
@@ -40,17 +63,20 @@ async function main(identifier: string) {
   // Initialize the Registry instance
   const registry = new Registry(RPC_URL!, issuer)
 
+  /* Register Auto ID */
+  const filePath = './res/private.issuer.pem'
+  const issuerAutoIdIdentifier = await registerAutoId(registry, filePath)
+
   /* Revoke self Certificate */
-  const revoked = await registry.revokeCertificate(identifier)
+  const revoked = await registry.revokeCertificate(issuerAutoIdIdentifier)
   if (revoked) {
     console.log(
-      `Revoked registered user certificate with identifier: ${identifier} in block #${revoked.blockNumber?.toString()}`,
+      `Revoked registered user certificate with identifier: ${issuerAutoIdIdentifier} in block #${revoked.blockNumber?.toString()}`,
     )
   }
 }
 
-const identifier = process.argv[2]
-main(identifier)
+main()
   .then(() => process.exit(0))
   .catch((error) => {
     console.error(error)

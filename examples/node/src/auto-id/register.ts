@@ -36,7 +36,7 @@ function loadEnv(): { RPC_URL: string; KEYPAIR_URI: string } {
   return { RPC_URL, KEYPAIR_URI }
 }
 
-// CLEANUP: Remove debug logs from this file once all the functionalities are tested.
+// CLEANUP: Remove debug logs from this file once RSA is tested ok.
 
 async function main() {
   await cryptoWaitReady()
@@ -65,7 +65,7 @@ async function main() {
   // console.debug("issuer's private key algorithm: ", issuerKeys[0].algorithm.name)
 
   const selfIssuedCm = new CertificateManager(null, issuerKeys[0], issuerKeys[1])
-  const selfIssuedCert = await selfIssuedCm.selfIssueCertificate('test7')
+  const selfIssuedCert = await selfIssuedCm.selfIssueCertificate('test100')
   const registerIssuer = await registry.registerAutoId(selfIssuedCert)
   CertificateManager.prettyPrintCertificate(selfIssuedCert)
   const issuerAutoIdIdentifier = registerIssuer.identifier!
@@ -87,7 +87,7 @@ async function main() {
   saveKey(pemToPrivateKey(userPemString), './res/private.leaf.pem')
 
   const userCm = new CertificateManager(null, userKeys[0], userKeys[1])
-  const userCsr = await userCm.createAndSignCSR('user7')
+  const userCsr = await userCm.createAndSignCSR('user100')
   // TODO: I think here 🤔, `selfIssuedCm` should be replaced with `userCm`. Then, the publicKeyInfo in the user's onchain certificate would be of user's public key than issuer's public key.
   const userCert = await selfIssuedCm.issueCertificate(userCsr)
   CertificateManager.prettyPrintCertificate(userCert)
