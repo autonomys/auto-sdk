@@ -35,7 +35,7 @@ export const transferFunction = async () => {
 
   // Transfer 2x10^18 ATC tokens from Alice to Bob
   const transferAmount = BigInt(2 * 10 ** 18)
-  const tx = await transfer(api, bob[0].address, transferAmount)
+  const tx = transfer(api, bob[0].address, transferAmount)
 
   console.log('\x1b[32m%s\x1b[0m', 'Transaction Prepared! (with hash:', tx.hash.toHex(), ')')
   console.log('\x1b[33m%s\x1b[0m', 'Now broadcasting transaction!\n')

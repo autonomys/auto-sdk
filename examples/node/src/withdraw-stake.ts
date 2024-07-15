@@ -7,7 +7,7 @@ export const withdrawStakeFunction = async () => {
   const operatorId = '1'
   const operatorOne = await operator(api, operatorId)
 
-  const tx = await withdrawStake({
+  const tx = withdrawStake({
     api,
     operatorId,
     shares: operatorOne.currentTotalShares,
