@@ -112,7 +112,7 @@ export const operator = async (api: ApiPromise, operatorId: StringNumberOrBigInt
   }
 }
 
-export const registerOperator = async (params: RegisterOperatorParams) => {
+export const registerOperator = (params: RegisterOperatorParams) => {
   try {
     const {
       api,
@@ -127,7 +127,7 @@ export const registerOperator = async (params: RegisterOperatorParams) => {
     const message = createAccountIdType(api, senderAddress)
     const signature = Operator.sign(message)
 
-    return await api.tx.domains.registerOperator(
+    return api.tx.domains.registerOperator(
       parseString(domainId),
       parseString(amountToStake),
       {
@@ -143,58 +143,55 @@ export const registerOperator = async (params: RegisterOperatorParams) => {
   }
 }
 
-export const nominateOperator = async (params: NominateOperatorParams) => {
+export const nominateOperator = (params: NominateOperatorParams) => {
   try {
     const { api, operatorId, amountToStake } = params
 
-    return await api.tx.domains.nominateOperator(
-      parseString(operatorId),
-      parseString(amountToStake),
-    )
+    return api.tx.domains.nominateOperator(parseString(operatorId), parseString(amountToStake))
   } catch (error) {
     console.error('error', error)
     throw new Error('Error creating nominate operator tx.' + error)
   }
 }
 
-export const withdrawStake = async (params: WithdrawStakeParams) => {
+export const withdrawStake = (params: WithdrawStakeParams) => {
   try {
     const { api, operatorId, shares } = params
 
-    return await api.tx.domains.withdrawStake(parseString(operatorId), parseString(shares))
+    return api.tx.domains.withdrawStake(parseString(operatorId), parseString(shares))
   } catch (error) {
     console.error('error', error)
     throw new Error('Error creating withdraw stake tx.' + error)
   }
 }
 
-export const deregisterOperator = async (params: StakingParams) => {
+export const deregisterOperator = (params: StakingParams) => {
   try {
     const { api, operatorId } = params
 
-    return await api.tx.domains.deregisterOperator(parseString(operatorId))
+    return api.tx.domains.deregisterOperator(parseString(operatorId))
   } catch (error) {
     console.error('error', error)
     throw new Error('Error creating de-register operator tx.' + error)
   }
 }
 
-export const unlockFunds = async (params: StakingParams) => {
+export const unlockFunds = (params: StakingParams) => {
   try {
     const { api, operatorId } = params
 
-    return await api.tx.domains.unlockFunds(parseString(operatorId))
+    return api.tx.domains.unlockFunds(parseString(operatorId))
   } catch (error) {
     console.error('error', error)
     throw new Error('Error creating unlock funds tx.' + error)
   }
 }
 
-export const unlockNominator = async (params: StakingParams) => {
+export const unlockNominator = (params: StakingParams) => {
   try {
     const { api, operatorId } = params
 
-    return await api.tx.domains.unlockNominator(parseString(operatorId))
+    return api.tx.domains.unlockNominator(parseString(operatorId))
   } catch (error) {
     console.error('error', error)
     throw new Error('Error creating unlock nominator tx.' + error)

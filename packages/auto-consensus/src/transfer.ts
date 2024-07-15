@@ -12,8 +12,8 @@ export const transfer = async (
 ) => {
   // Transfer the tokens
   return !allowDeath
-    ? await api.tx.balances.transferKeepAlive(receiver, amount)
-    : await api.tx.balances.transferAllowDeath(receiver, amount)
+    ? api.tx.balances.transferKeepAlive(receiver, amount)
+    : api.tx.balances.transferAllowDeath(receiver, amount)
 }
 
 export const transferAll = async (
@@ -22,5 +22,5 @@ export const transferAll = async (
   keepAlive: boolean = false,
 ) => {
   // Transfer all the tokens
-  return await api.tx.balances.transferAll(receiver, keepAlive)
+  return api.tx.balances.transferAll(receiver, keepAlive)
 }
