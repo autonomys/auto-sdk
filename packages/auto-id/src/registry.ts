@@ -448,6 +448,11 @@ export class Registry {
       await this.api.query.autoId.certificateRevocationList(autoIdIdentifier)
     // Decode the Codec to get the actual BTreeSet
     const revokedCertificates = revokedCertificatesCodec.toJSON() as string[]
+    // Check if revokedCertificates is iterable
+    if (!revokedCertificates || typeof revokedCertificates[Symbol.iterator] !== 'function') {
+      throw new Error('No revoked certificates found for this identifier.')
+    }
+
     // Convert the BTreeSet to an array
     const revokedCertificatesArray = Array.from(revokedCertificates)
     return revokedCertificatesArray

@@ -2,6 +2,8 @@
  * Register auto id for issuer and user
  */
 
+// CLEANUP: Remove debug logs from this file once RSA is tested ok.
+
 import {
   CertificateManager,
   Registry,
@@ -36,23 +38,11 @@ function loadEnv(): { RPC_URL: string; KEYPAIR_URI: string } {
   return { RPC_URL, KEYPAIR_URI }
 }
 
-// CLEANUP: Remove debug logs from this file once RSA is tested ok.
-
-async function main() {
-  await cryptoWaitReady()
-
-  const { RPC_URL, KEYPAIR_URI } = loadEnv()
-
-  // Initialize the signer keypair
-  const keyring = new Keyring({ type: 'sr25519' })
-  const issuer = keyring.addFromUri(KEYPAIR_URI)
-
-  // Initialize the Registry instance
-  const registry = new Registry(RPC_URL!, issuer)
-
-  /* Register Auto ID for issuer */
-  console.log('\n===================== ISSUER =====================')
-  // const issuerKeys = await generateRsaKeyPair2() // TODO: RSA
+async function registerIssuerAutoId(
+  registry: Registry,
+  filePath: string,
+): Promise<[string, CertificateManager]> {
+  // const issuerKeys = await generateRsaKeyPair2() // FIXME: RSA
   const issuerKeys = await generateEd25519KeyPair2() // Ed25519
   // console.debug("user's private key algorithm: ", issuerKeys[0].algorithm.name)
   // const issuerPublicKeyInfo = pemToHex(await cryptoKeyToPem(issuerKeys[1]))
@@ -73,9 +63,16 @@ async function main() {
     `===\nRegistered auto id from issuer cert: ${CertificateManager.getCertificateAutoId(selfIssuedCert)} with identifier: ${issuerAutoIdIdentifier} in block #${registerIssuer.receipt?.blockNumber?.toString()}`,
   )
 
-  console.log('\n\n===================== USER =====================')
-  /* Register Auto ID for user */
-  // const userKeys = await generateRsaKeyPair2() // TODO: RSA
+  return [issuerAutoIdIdentifier, selfIssuedCm]
+}
+
+async function registerUserAutoId(
+  registry: Registry,
+  filePath: string,
+  issuerCm: CertificateManager,
+  issuerAutoIdIdentifier: string,
+): Promise<string> {
+  // const userKeys = await generateRsaKeyPair2() // FIXME: RSA
   const userKeys = await generateEd25519KeyPair2() // Ed25519
   // console.debug("user's private key algorithm: ", userKeys[0].algorithm.name)
   // const userPublicKeyInfo = pemToHex(await cryptoKeyToPem(issuerKeys[1]))
@@ -84,17 +81,48 @@ async function main() {
 
   // Convert the CryptoKey to a PEM string
   const userPemString = await cryptoKeyToPem(userKeys[0])
-  saveKey(pemToPrivateKey(userPemString), './res/private.leaf.pem')
+  saveKey(pemToPrivateKey(userPemString), filePath)
 
   const userCm = new CertificateManager(null, userKeys[0], userKeys[1])
   const userCsr = await userCm.createAndSignCSR('user100')
   // TODO: I think here 🤔, `selfIssuedCm` should be replaced with `userCm`. Then, the publicKeyInfo in the user's onchain certificate would be of user's public key than issuer's public key.
-  const userCert = await selfIssuedCm.issueCertificate(userCsr)
+  const userCert = await issuerCm.issueCertificate(userCsr)
   CertificateManager.prettyPrintCertificate(userCert)
   // NOTE: Ideally, this could be registered by anyone (user/registrar), not just the issuer. Notes in Notion. Here, it's the issuer (Alice) sending the tx.
   const registerUser = await registry.registerAutoId(userCert, issuerAutoIdIdentifier)
+  const userAutoIdIdentifier = registerUser.identifier!
   console.log(
-    `Registered auto id from user cert: ${CertificateManager.getCertificateAutoId(userCert)} with identifier: ${registerUser.identifier} in block #${registerUser.receipt?.blockNumber?.toString()}`,
+    `Registered auto id from user cert: ${CertificateManager.getCertificateAutoId(userCert)} with identifier: ${userAutoIdIdentifier} in block #${registerUser.receipt?.blockNumber?.toString()}`,
+  )
+
+  return userAutoIdIdentifier
+}
+
+async function main() {
+  await cryptoWaitReady()
+
+  const { RPC_URL, KEYPAIR_URI } = loadEnv()
+
+  // Initialize the signer keypair
+  const keyring = new Keyring({ type: 'sr25519' })
+  const issuer = keyring.addFromUri(KEYPAIR_URI)
+
+  // Initialize the Registry instance
+  const registry = new Registry(RPC_URL!, issuer)
+
+  /* Register Auto ID for issuer */
+  console.log('\n===================== ISSUER =====================')
+  const issuerFilePath = './res/private.issuer.pem'
+  const [issuerAutoIdIdentifier, issuerCm] = await registerIssuerAutoId(registry, issuerFilePath)
+
+  /* Register Auto ID for user */
+  console.log('\n\n===================== USER =====================')
+  const userFilePath = './res/private.leaf.pem'
+  const _userAutoIdIdentifier = await registerUserAutoId(
+    registry,
+    userFilePath,
+    issuerCm,
+    issuerAutoIdIdentifier,
   )
 }
 

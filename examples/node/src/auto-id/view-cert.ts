@@ -42,7 +42,7 @@ async function main(identifier: string) {
   // Initialize the Registry instance
   const registry = new Registry(RPC_URL!, issuer)
 
-  const certificate = await registry.getCertificateRevocationList(identifier)
+  const certificate = await registry.getCertificate(identifier)
   console.log(JSON.stringify(certificate!, null, 2))
 }
 

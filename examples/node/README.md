@@ -31,22 +31,22 @@ yarn unlock-nominator
 
 ```bash
 # register certificate
-yarn autoid-register
+yarn autoid:register
 
 # self revoke certificate
-yarn autoid-revoke
+yarn autoid:revoke
 
 # deactivate auto id
-yarn autoid-deactivate
+yarn autoid:deactivate
 
 # renew auto id
-yarn autoid-renew
+yarn autoid:renew
 
 # view certificate
-yarn autoid-view-cert <AUTO_ID_IDENTIFIER>
+yarn autoid:view-cert <AUTO_ID_IDENTIFIER>
 
 # view revoked certificates
-yarn autoid-view-revoked-certs
+yarn autoid:view-revoked-certs
 ```
 
 > NOTE: Deactivation not possible for certificates that are already revoked.
