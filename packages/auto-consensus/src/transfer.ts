@@ -4,7 +4,7 @@ import type { ApiPromise } from '@autonomys/auto-utils'
 
 export type Amount = BigInt | number | string
 
-export const transfer = async (
+export const transfer = (
   api: ApiPromise,
   receiver: string,
   amount: Amount,
@@ -12,15 +12,11 @@ export const transfer = async (
 ) => {
   // Transfer the tokens
   return !allowDeath
-    ? await api.tx.balances.transferKeepAlive(receiver, amount)
-    : await api.tx.balances.transferAllowDeath(receiver, amount)
+    ? api.tx.balances.transferKeepAlive(receiver, amount)
+    : api.tx.balances.transferAllowDeath(receiver, amount)
 }
 
-export const transferAll = async (
-  api: ApiPromise,
-  receiver: string,
-  keepAlive: boolean = false,
-) => {
+export const transferAll = (api: ApiPromise, receiver: string, keepAlive: boolean = false) => {
   // Transfer all the tokens
-  return await api.tx.balances.transferAll(receiver, keepAlive)
+  return api.tx.balances.transferAll(receiver, keepAlive)
 }
