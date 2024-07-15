@@ -510,7 +510,7 @@ async function prepareSigningData(
 }
 
 // Utility function to handle common certificate checks
-async function checkCertificateAndRevocationList(
+export async function checkCertificateAndRevocationList(
   api: ApiPromise,
   autoIdIdentifier: string,
   getCertificate: (id: string) => Promise<AutoIdX509Certificate | null>,
@@ -557,7 +557,7 @@ export function extractSignatureAlgorithmOID(subjectPublicKeyInfo: string): AsnA
 }
 
 // Convert the ASN.1 algorithm identifier to a WebCrypto algorithm
-function convertToWebCryptoAlgorithm(
+export function convertToWebCryptoAlgorithm(
   asnAlgId: AsnAlgorithmIdentifier,
 ):
   | AlgorithmIdentifier
@@ -600,4 +600,19 @@ async function signData(
     signature_algorithm: derEncodedOID,
     value: new Uint8Array(signature),
   }
+}
+
+export function hexToPemPublicKey(hexString: string): string {
+  // Convert hex string to Buffer
+  const buffer = hexString.startsWith('0x')
+    ? Buffer.from(hexString.slice(2), 'hex')
+    : Buffer.from(hexString, 'hex')
+
+  // Convert to base64
+  const base64Key = buffer.toString('base64')
+
+  // Format as PEM
+  const pemKey = `-----BEGIN PUBLIC KEY-----\n${base64Key.match(/.{1,64}/g)?.join('\n')}\n-----END PUBLIC KEY-----`
+
+  return pemKey
 }

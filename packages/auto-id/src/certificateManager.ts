@@ -32,8 +32,8 @@ export class CertificateManager {
 
   constructor(
     certificate: x509.X509Certificate | null = null,
-    privateKey: CryptoKey | null = null,
-    publicKey: CryptoKey | null = null,
+    privateKey: CryptoKey,
+    publicKey: CryptoKey,
   ) {
     this.certificate = certificate
     this.privateKey = privateKey
