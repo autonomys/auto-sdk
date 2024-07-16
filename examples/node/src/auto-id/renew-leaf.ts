@@ -1,12 +1,11 @@
 /**
- * Renew auto id
- *   - [x] issuer
- *   - [ ] TODO: user
+ * Renew leaf's auto id
  *
  * Certificate is renewed keeping the same
- * - keypair,
+ * - issuer's keypair,
  * - Subject Common Name
  * - Subject Public Key Info
+ * - Auto ID
  *
  * but different serial no.
  */
@@ -49,20 +48,46 @@ function loadEnv(): { RPC_URL: string; KEYPAIR_URI: string } {
   return { RPC_URL, KEYPAIR_URI }
 }
 
-async function registerAutoId(registry: Registry, filePath: string): Promise<string> {
+async function registerIssuerAutoId(
+  registry: Registry,
+  filePath: string,
+): Promise<[string, CertificateManager]> {
   const issuerKeys = await generateEd25519KeyPair2() // Ed25519
   const issuerPemString = await cryptoKeyToPem(issuerKeys[0])
   saveKey(pemToPrivateKey(issuerPemString), filePath)
 
   const selfIssuedCm = new CertificateManager(null, issuerKeys[0], issuerKeys[1])
-  const selfIssuedCert = await selfIssuedCm.selfIssueCertificate('test110')
+  const selfIssuedCert = await selfIssuedCm.selfIssueCertificate('test523')
   const registerIssuer = await registry.registerAutoId(selfIssuedCert)
   CertificateManager.prettyPrintCertificate(selfIssuedCert)
   const issuerAutoIdIdentifier = registerIssuer.identifier!
   console.log(
     `===\nRegistered auto id from issuer cert: ${CertificateManager.getCertificateAutoId(selfIssuedCert)} with identifier: ${issuerAutoIdIdentifier} in block #${registerIssuer.receipt?.blockNumber?.toString()}`,
   )
-  return issuerAutoIdIdentifier
+  return [issuerAutoIdIdentifier, selfIssuedCm]
+}
+
+async function registerLeafAutoId(
+  registry: Registry,
+  filePath: string,
+  issuerCm: CertificateManager,
+  issuerAutoIdIdentifier: string,
+): Promise<string> {
+  const userKeys = await generateEd25519KeyPair2() // Ed25519
+  const userPemString = await cryptoKeyToPem(userKeys[0])
+  saveKey(pemToPrivateKey(userPemString), filePath)
+
+  const userCm = new CertificateManager(null, userKeys[0], userKeys[1])
+  const userCsr = await userCm.createAndSignCSR('user523')
+  const userCert = await issuerCm.issueCertificate(userCsr)
+  CertificateManager.prettyPrintCertificate(userCert)
+  const registerUser = await registry.registerAutoId(userCert, issuerAutoIdIdentifier)
+  const userAutoIdIdentifier = registerUser.identifier!
+  console.log(
+    `Registered auto id from user cert: ${CertificateManager.getCertificateAutoId(userCert)} with identifier: ${userAutoIdIdentifier} in block #${registerUser.receipt?.blockNumber?.toString()}`,
+  )
+
+  return userAutoIdIdentifier
 }
 
 // Get a new certificate with the same private key (saved locally)
@@ -72,6 +97,7 @@ async function getNewCertificate(
   autoIdIdentifier: string,
 ): Promise<X509Certificate> {
   const certificate = await registry.getCertificate(autoIdIdentifier)
+
   const subjectPublicKeyInfo = certificate!.subjectPublicKeyInfo
   const algorithmOid = extractSignatureAlgorithmOID(subjectPublicKeyInfo)
   const webCryptoAlgorithm = convertToWebCryptoAlgorithm(algorithmOid)
@@ -82,7 +108,8 @@ async function getNewCertificate(
 
   // NOTE: publicKeyInfo is treated as the public key of the issuer
   const cm = new CertificateManager(null, privateKey, publicKeyInfo)
-  const newCert = await cm.selfIssueCertificate(certificate!.subjectCommonName!)
+  const userCsr = await cm.createAndSignCSR(certificate!.subjectCommonName)
+  const newCert = await cm.issueCertificate(userCsr)
 
   CertificateManager.prettyPrintCertificate(newCert)
 
@@ -101,18 +128,27 @@ async function main() {
   // Initialize the Registry instance
   const registry = new Registry(RPC_URL!, issuer)
 
-  /* Register Auto ID */
-  const filePath = './res/private.issuer.pem'
-  const issuerAutoIdIdentifier = await registerAutoId(registry, filePath)
+  /* Register Auto ID for issuer & leaf */
+  const filePathIssuer = './res/private.issuer.pem'
+  const [issuerAutoIdIdentifier, issuerCm] = await registerIssuerAutoId(registry, filePathIssuer)
+
+  const filePathLeaf = './res/private.leaf.pem'
+  const leafAutoIdIdentifier = await registerLeafAutoId(
+    registry,
+    filePathLeaf,
+    issuerCm,
+    issuerAutoIdIdentifier,
+  )
 
   /* Issue a new certificate */
-  const newCert = await getNewCertificate(registry, filePath, issuerAutoIdIdentifier)
+  const newCert = await getNewCertificate(registry, filePathIssuer, leafAutoIdIdentifier) // M-1
+  // const newCert = await getNewCertificate(registry, filePathLeaf, leafAutoIdIdentifier) // M-2 ❌
 
   /* Renew Auto ID */
-  const renewed = await registry.renewAutoId(issuerAutoIdIdentifier, newCert)
+  const renewed = await registry.renewAutoId(leafAutoIdIdentifier, newCert)
   if (renewed) {
     console.log(
-      `Renewed certificate of identifier: ${issuerAutoIdIdentifier} in block #${renewed.receipt?.blockNumber?.toString()}`,
+      `Renewed certificate of identifier: ${leafAutoIdIdentifier} in block #${renewed.receipt?.blockNumber?.toString()}`,
     )
   }
 }

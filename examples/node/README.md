@@ -39,8 +39,11 @@ yarn autoid:revoke
 # deactivate auto id
 yarn autoid:deactivate
 
-# renew auto id
-yarn autoid:renew
+# renew auto id for self
+yarn autoid:renew-self
+
+# renew auto id for leaf
+yarn autoid:renew-leaf
 
 # view certificate
 yarn autoid:view-cert <AUTO_ID_IDENTIFIER>

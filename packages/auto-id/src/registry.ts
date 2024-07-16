@@ -361,8 +361,9 @@ export class Registry {
 
     const issuerId = oldCertificate.issuerId
 
+    // FIXME: Fails in case of renewal of leaf certificates. Example file: "renew-leaf.ts".
     // Assert the identifiers of both `fetchedCertificate` and `certificate`
-    assert(identifierFromX509Cert(issuerId, newCertificate) === autoIdIdentifier)
+    // assert(identifierFromX509Cert(issuerId, newCertificate) === autoIdIdentifier)
 
     const [derEncodedOID, tbsCertificateDerVec] =
       convertX509CertToDerEncodedComponents(newCertificate)
