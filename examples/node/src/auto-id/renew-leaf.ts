@@ -57,7 +57,7 @@ async function registerIssuerAutoId(
   saveKey(pemToPrivateKey(issuerPemString), filePath)
 
   const selfIssuedCm = new CertificateManager(null, issuerKeys[0], issuerKeys[1])
-  const selfIssuedCert = await selfIssuedCm.selfIssueCertificate('test523')
+  const selfIssuedCert = await selfIssuedCm.selfIssueCertificate('test600')
   const registerIssuer = await registry.registerAutoId(selfIssuedCert)
   CertificateManager.prettyPrintCertificate(selfIssuedCert)
   const issuerAutoIdIdentifier = registerIssuer.identifier!
@@ -78,7 +78,7 @@ async function registerLeafAutoId(
   saveKey(pemToPrivateKey(userPemString), filePath)
 
   const userCm = new CertificateManager(null, userKeys[0], userKeys[1])
-  const userCsr = await userCm.createAndSignCSR('user523')
+  const userCsr = await userCm.createAndSignCSR('user600')
   const userCert = await issuerCm.issueCertificate(userCsr)
   CertificateManager.prettyPrintCertificate(userCert)
   const registerUser = await registry.registerAutoId(userCert, issuerAutoIdIdentifier)

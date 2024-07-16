@@ -34,7 +34,10 @@ yarn unlock-nominator
 yarn autoid:register
 
 # self revoke certificate
-yarn autoid:revoke
+yarn autoid:revoke-self
+
+# revoke leaf certificate
+yarn autoid:revoke-leaf
 
 # deactivate auto id
 yarn autoid:deactivate
@@ -49,10 +52,8 @@ yarn autoid:renew-leaf
 yarn autoid:view-cert <AUTO_ID_IDENTIFIER>
 
 # view revoked certificates
-yarn autoid:view-revoked-certs
+yarn autoid:view-revoked-certs <AUTO_ID_IDENTIFIER>
 ```
-
-> NOTE: Deactivation not possible for certificates that are already revoked.
 
 ## Utility
 

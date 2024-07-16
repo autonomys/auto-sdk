@@ -1,33 +1,18 @@
 /**
- * Renew issuer's auto id
- *
- * Certificate is renewed keeping the same
- * - issuer's keypair,
- * - Subject Common Name
- * - Subject Public Key Info
- * - Auto ID
- *
- * but different serial no.
+ * Revoke self/issuer certificate
  */
 
 import {
   CertificateManager,
   Registry,
-  convertToWebCryptoAlgorithm,
   cryptoKeyToPem,
-  extractSignatureAlgorithmOID,
   generateEd25519KeyPair2,
-  generateRsaKeyPair2,
-  hexToPemPublicKey,
-  pemToCryptoKeyForSigning,
   pemToPrivateKey,
   saveKey,
 } from '@autonomys/auto-id'
-import { X509Certificate } from '@peculiar/x509'
 import { Keyring } from '@polkadot/api'
 import { cryptoWaitReady } from '@polkadot/util-crypto'
 import { config } from 'dotenv'
-import * as fs from 'fs'
 
 function loadEnv(): { RPC_URL: string; KEYPAIR_URI: string } {
   const myEnv = config()
@@ -54,7 +39,7 @@ async function registerAutoId(registry: Registry, filePath: string): Promise<str
   saveKey(pemToPrivateKey(issuerPemString), filePath)
 
   const selfIssuedCm = new CertificateManager(null, issuerKeys[0], issuerKeys[1])
-  const selfIssuedCert = await selfIssuedCm.selfIssueCertificate('test500')
+  const selfIssuedCert = await selfIssuedCm.selfIssueCertificate('test200')
   const registerIssuer = await registry.registerAutoId(selfIssuedCert)
   CertificateManager.prettyPrintCertificate(selfIssuedCert)
   const issuerAutoIdIdentifier = registerIssuer.identifier!
@@ -62,30 +47,6 @@ async function registerAutoId(registry: Registry, filePath: string): Promise<str
     `===\nRegistered auto id from issuer cert: ${CertificateManager.getCertificateAutoId(selfIssuedCert)} with identifier: ${issuerAutoIdIdentifier} in block #${registerIssuer.receipt?.blockNumber?.toString()}`,
   )
   return issuerAutoIdIdentifier
-}
-
-// Get a new certificate with the same private key (saved locally)
-async function getNewCertificate(
-  registry: Registry,
-  filePath: string,
-  autoIdIdentifier: string,
-): Promise<X509Certificate> {
-  const certificate = await registry.getCertificate(autoIdIdentifier)
-  const subjectPublicKeyInfo = certificate!.subjectPublicKeyInfo
-  const algorithmOid = extractSignatureAlgorithmOID(subjectPublicKeyInfo)
-  const webCryptoAlgorithm = convertToWebCryptoAlgorithm(algorithmOid)
-  const privateKeyPem = fs.readFileSync(filePath, 'utf8').replace(/\\n/gm, '\n')
-  const privateKey: CryptoKey = await pemToCryptoKeyForSigning(privateKeyPem, webCryptoAlgorithm)
-  const publicKeyPem = hexToPemPublicKey(subjectPublicKeyInfo).replace(/\\n/gm, '\n')
-  const publicKeyInfo: CryptoKey = await pemToCryptoKeyForSigning(publicKeyPem, webCryptoAlgorithm)
-
-  // NOTE: publicKeyInfo is treated as the public key of the issuer
-  const cm = new CertificateManager(null, privateKey, publicKeyInfo)
-  const newCert = await cm.selfIssueCertificate(certificate!.subjectCommonName!)
-
-  CertificateManager.prettyPrintCertificate(newCert)
-
-  return newCert
 }
 
 async function main() {
@@ -104,14 +65,11 @@ async function main() {
   const filePath = './res/private.issuer.pem'
   const issuerAutoIdIdentifier = await registerAutoId(registry, filePath)
 
-  /* Issue a new certificate */
-  const newCert = await getNewCertificate(registry, filePath, issuerAutoIdIdentifier)
-
-  /* Renew Auto ID */
-  const renewed = await registry.renewAutoId(issuerAutoIdIdentifier, newCert)
-  if (renewed) {
+  /* Revoke self Certificate */
+  const revoked = await registry.revokeCertificate(issuerAutoIdIdentifier)
+  if (revoked) {
     console.log(
-      `Renewed certificate of identifier: ${issuerAutoIdIdentifier} in block #${renewed.receipt?.blockNumber?.toString()}`,
+      `Revoked registered issuer certificate with identifier: ${issuerAutoIdIdentifier} in block #${revoked.blockNumber?.toString()}`,
     )
   }
 }

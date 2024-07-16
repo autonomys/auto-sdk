@@ -224,14 +224,14 @@ export class Registry {
       throw new Error('No signer provided')
     }
 
-    const { serializedData, isIssuer, algorithmOid } = await prepareSigningData(
+    const { serializedData, algorithmOid } = await prepareSigningData(
       this.api,
       autoIdIdentifier,
       this.getCertificate.bind(this),
       CertificateActionType.RevokeCertificate,
     )
 
-    const signature = await signData(serializedData, isIssuer, algorithmOid)
+    const signature = await signData(serializedData, algorithmOid)
     const signatureEncoded = {
       signature_algorithm: compactAddLength(signature.signature_algorithm),
       value: compactAddLength(signature.value),
@@ -276,7 +276,7 @@ export class Registry {
   }
 
   // deactivate auto id
-  // NOTE: Deactivation not possible for already revoked certificates.
+  // NOTE: Deactivation not possible for auto id whose certificate is already revoked.
   async deactivateAutoId(autoIdIdentifier: string): Promise<SubmittableResult> {
     await this.api.isReady
 
@@ -284,7 +284,7 @@ export class Registry {
       throw new Error('No signer provided')
     }
 
-    const { serializedData, isIssuer, algorithmOid } = await prepareSigningData(
+    const { serializedData, algorithmOid } = await prepareSigningData(
       this.api,
       autoIdIdentifier,
       this.getCertificate.bind(this),
@@ -292,7 +292,7 @@ export class Registry {
     )
 
     // Sign the data and prepare it for blockchain submission
-    const signature = await signData(serializedData, isIssuer, algorithmOid)
+    const signature = await signData(serializedData, algorithmOid)
     const signatureEncoded = {
       signature_algorithm: compactAddLength(signature.signature_algorithm),
       value: compactAddLength(signature.value),
@@ -347,13 +347,6 @@ export class Registry {
       throw new Error('No signer provided')
     }
 
-    // TODO: check for "Register >> Revoke >> Renew" flow
-    // const fetchedCertificate = await checkCertificateAndRevocationList(
-    //   this.api,
-    //   autoIdIdentifier,
-    //   this.getCertificate,
-    // )
-
     const oldCertificate = await this.getCertificate(autoIdIdentifier)
     if (!oldCertificate) {
       throw new Error('Certificate not found or already deactivated')
@@ -361,7 +354,7 @@ export class Registry {
 
     const issuerId = oldCertificate.issuerId
 
-    // FIXME: Fails in case of renewal of leaf certificates. Example file: "renew-leaf.ts".
+    // FIXME: Fails in case of renewal of leaf certificates. So, commented for now. Example file: "renew-leaf.ts".
     // Assert the identifiers of both `fetchedCertificate` and `certificate`
     // assert(identifierFromX509Cert(issuerId, newCertificate) === autoIdIdentifier)
 
@@ -444,9 +437,16 @@ export class Registry {
   async getCertificateRevocationList(autoIdIdentifier: string): Promise<string[]> {
     await this.api.isReady
 
+    const certificate = await this.getCertificate(autoIdIdentifier)
+    if (!certificate) {
+      throw new Error('Certificate not found or already deactivated')
+    }
+
     // Fetch the revocation list for the given identifier
     const revokedCertificatesCodec =
-      await this.api.query.autoId.certificateRevocationList(autoIdIdentifier)
+      certificate.issuerId == null
+        ? await this.api.query.autoId.certificateRevocationList(autoIdIdentifier)
+        : await this.api.query.autoId.certificateRevocationList(certificate.issuerId)
     // Decode the Codec to get the actual BTreeSet
     const revokedCertificates = revokedCertificatesCodec.toJSON() as string[]
     // Check if revokedCertificates is iterable
@@ -496,7 +496,6 @@ async function prepareSigningData(
   actionType: CertificateActionType,
 ): Promise<{
   serializedData: Uint8Array
-  isIssuer: boolean
   algorithmOid: AsnAlgorithmIdentifier
 }> {
   const certificate = await checkCertificateAndRevocationList(api, autoIdIdentifier, getCertificate)
@@ -505,11 +504,21 @@ async function prepareSigningData(
   const isIssuer = certificate.issuerId === null
 
   const idU8a = hexStringToU8a(autoIdIdentifier)
-  const nonceU8a = bnToU8a(BigInt(certificate.nonce), { bitLength: 256, isLe: false })
+  let nonceU8a: Uint8Array
+  if (isIssuer) {
+    nonceU8a = bnToU8a(BigInt(certificate.nonce), { bitLength: 256, isLe: false })
+  } else {
+    const issuerCertificate = await checkCertificateAndRevocationList(
+      api,
+      certificate.issuerId!,
+      getCertificate,
+    )
+    nonceU8a = bnToU8a(BigInt(issuerCertificate.nonce), { bitLength: 256, isLe: false })
+  }
   const actionTypeU8a = new Uint8Array([actionType])
   const serializedData = u8aConcat(idU8a, nonceU8a, actionTypeU8a)
 
-  return { serializedData, isIssuer, algorithmOid }
+  return { serializedData, algorithmOid }
 }
 
 // Utility function to handle common certificate checks
@@ -584,13 +593,8 @@ export function convertToWebCryptoAlgorithm(
 }
 
 // Utility function to sign data
-async function signData(
-  data: Uint8Array,
-  isIssuer: boolean,
-  algorithmId: AsnAlgorithmIdentifier,
-): Promise<Signature> {
-  const privateKeyPath = isIssuer ? './res/private.issuer.pem' : './res/private.leaf.pem'
-  const privateKeyPEM = fs.readFileSync(privateKeyPath, 'utf8').replace(/\\n/gm, '\n')
+async function signData(data: Uint8Array, algorithmId: AsnAlgorithmIdentifier): Promise<Signature> {
+  const privateKeyPEM = fs.readFileSync('./res/private.issuer.pem', 'utf8').replace(/\\n/gm, '\n')
   // console.debug('privateKeyPEM: ', privateKeyPEM)
   const webCryptoAlgorithm = convertToWebCryptoAlgorithm(algorithmId)
   const privateKey: CryptoKey = await pemToCryptoKeyForSigning(privateKeyPEM, webCryptoAlgorithm)

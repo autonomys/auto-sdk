@@ -2,6 +2,8 @@
  * Deactivate auto id
  *   - [x] issuer
  *   - [ ] TODO: user
+ *
+ * NOTE: Deactivation not possible for auto id whose certificate is already revoked.
  */
 
 import {
@@ -41,7 +43,7 @@ async function registerAutoId(registry: Registry, filePath: string): Promise<str
   saveKey(pemToPrivateKey(issuerPemString), filePath)
 
   const selfIssuedCm = new CertificateManager(null, issuerKeys[0], issuerKeys[1])
-  const selfIssuedCert = await selfIssuedCm.selfIssueCertificate('test300')
+  const selfIssuedCert = await selfIssuedCm.selfIssueCertificate('test400')
   const registerIssuer = await registry.registerAutoId(selfIssuedCert)
   CertificateManager.prettyPrintCertificate(selfIssuedCert)
   const issuerAutoIdIdentifier = registerIssuer.identifier!

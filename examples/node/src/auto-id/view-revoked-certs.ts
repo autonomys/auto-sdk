@@ -1,5 +1,10 @@
 /* 
   View serial no.s of revoked certificates from the registry.
+
+  Usage:
+  ======
+  - If an issuer is revoked, then to see the revoked serials parse the issuer's identifier.
+  - If a leaf is revoked, then also parse the issuer's identifier and see the revoked serials.
 */
 
 import { Registry } from '@autonomys/auto-id'
