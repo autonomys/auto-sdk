@@ -2,14 +2,7 @@
  * Revoke user/leaf certificate
  */
 
-import {
-  CertificateManager,
-  Registry,
-  cryptoKeyToPem,
-  generateEd25519KeyPair2,
-  pemToPrivateKey,
-  saveKey,
-} from '@autonomys/auto-id'
+import { CertificateManager, Registry, generateEd25519KeyPair, saveKey } from '@autonomys/auto-id'
 import { Keyring } from '@polkadot/api'
 import { cryptoWaitReady } from '@polkadot/util-crypto'
 import { config } from 'dotenv'
@@ -37,9 +30,8 @@ async function registerIssuerAutoId(
   registry: Registry,
   filePath: string,
 ): Promise<[string, CertificateManager]> {
-  const issuerKeys = await generateEd25519KeyPair2() // Ed25519
-  const issuerPemString = await cryptoKeyToPem(issuerKeys[0])
-  saveKey(pemToPrivateKey(issuerPemString), filePath)
+  const issuerKeys = await generateEd25519KeyPair() // Ed25519
+  saveKey(issuerKeys[0], filePath)
 
   const selfIssuedCm = new CertificateManager(null, issuerKeys[0], issuerKeys[1])
   const selfIssuedCert = await selfIssuedCm.selfIssueCertificate('test300')
@@ -58,9 +50,8 @@ async function registerLeafAutoId(
   issuerCm: CertificateManager,
   issuerAutoIdIdentifier: string,
 ): Promise<string> {
-  const userKeys = await generateEd25519KeyPair2() // Ed25519
-  const userPemString = await cryptoKeyToPem(userKeys[0])
-  saveKey(pemToPrivateKey(userPemString), filePath)
+  const userKeys = await generateEd25519KeyPair() // Ed25519
+  saveKey(userKeys[0], filePath)
 
   const userCm = new CertificateManager(null, userKeys[0], userKeys[1])
   const userCsr = await userCm.createAndSignCSR('user300')

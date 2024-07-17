@@ -6,14 +6,7 @@
  * NOTE: Deactivation not possible for auto id whose certificate is already revoked.
  */
 
-import {
-  CertificateManager,
-  Registry,
-  cryptoKeyToPem,
-  generateEd25519KeyPair2,
-  pemToPrivateKey,
-  saveKey,
-} from '@autonomys/auto-id'
+import { CertificateManager, Registry, generateEd25519KeyPair, saveKey } from '@autonomys/auto-id'
 import { Keyring } from '@polkadot/api'
 import { cryptoWaitReady } from '@polkadot/util-crypto'
 import { config } from 'dotenv'
@@ -38,9 +31,8 @@ function loadEnv(): { RPC_URL: string; KEYPAIR_URI: string } {
 }
 
 async function registerAutoId(registry: Registry, filePath: string): Promise<string> {
-  const issuerKeys = await generateEd25519KeyPair2() // Ed25519
-  const issuerPemString = await cryptoKeyToPem(issuerKeys[0])
-  saveKey(pemToPrivateKey(issuerPemString), filePath)
+  const issuerKeys = await generateEd25519KeyPair() // Ed25519
+  saveKey(issuerKeys[0], filePath)
 
   const selfIssuedCm = new CertificateManager(null, issuerKeys[0], issuerKeys[1])
   const selfIssuedCert = await selfIssuedCm.selfIssueCertificate('test400')

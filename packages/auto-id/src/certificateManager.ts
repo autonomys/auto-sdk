@@ -1,5 +1,6 @@
-//! For key generation, management, `keyManagement.ts` file is used using "crypto" library.
-//! And for certificate related, used "@peculiar/x509" library.
+/* 
+  This file contains the CertificateManager class, which is used to create and manage X.509 certificates.
+*/
 
 import {
   blake2b_256,
@@ -11,8 +12,7 @@ import { AsnConvert } from '@peculiar/asn1-schema'
 import { AttributeTypeAndValue, GeneralNames } from '@peculiar/asn1-x509'
 import { Crypto } from '@peculiar/webcrypto'
 import * as x509 from '@peculiar/x509'
-import { KeyObject, createPublicKey } from 'crypto'
-import { cryptoKeyToPem, doPublicKeysMatch, pemToPublicKey } from './keyManagement'
+import { validateCertificatePublicKey } from './keyManagement'
 
 const crypto = new Crypto()
 x509.cryptoProvider.set(crypto)
@@ -165,21 +165,6 @@ export class CertificateManager {
     return this.signCSR(csr)
   }
 
-  // TODO: later on move to "keyManagement.ts"
-  private static publicKeyToKeyObject(publicKey: x509.PublicKey): KeyObject {
-    // Export the key data to ArrayBuffer
-    const keyData = publicKey.rawData // DER format
-
-    // Create a KeyObject from the key data
-    const keyObject = createPublicKey({
-      key: Buffer.from(keyData),
-      format: 'der',
-      type: 'spki',
-    })
-
-    return keyObject
-  }
-
   async issueCertificate(
     csr: x509.Pkcs10CertificateRequest,
     validityPeriodDays: number = 365,
@@ -201,13 +186,7 @@ export class CertificateManager {
       }
       autoId = blake2b_256(stringToUint8Array(subjectCommonName))
     } else {
-      if (
-        // FIXME: modify
-        !doPublicKeysMatch(
-          CertificateManager.publicKeyToKeyObject(certificate.publicKey),
-          pemToPublicKey(await cryptoKeyToPem(publicKey)),
-        )
-      ) {
+      if (!validateCertificatePublicKey(certificate.publicKey, publicKey)) {
         throw new Error(
           'Issuer certificate public key does not match the private key used for signing.',
         )
@@ -260,18 +239,12 @@ export class CertificateManager {
         value: autoIdSan,
       })
 
-      // const newSanExtension = existingSan + CertificateManager.stringToArrayBuffer(autoIdSan)
       const newSanExtension = new x509.SubjectAlternativeNameExtension(
         generalNames,
         existingSan.critical,
       )
       certificateBuilder.extensions.push(newSanExtension)
     } else {
-      // certificateBuilder.extensions.push(
-      //   new x509.SubjectAlternativeNameExtension([autoIdSan]),
-      //   false,
-      // )
-
       certificateBuilder.extensions.push(
         new x509.SubjectAlternativeNameExtension([
           { type: 'url' /* as x509.GeneralNameType */, value: autoIdSan },
@@ -281,7 +254,6 @@ export class CertificateManager {
 
     // Copy all extensions from the CSR to the certificate
     for (const ext of csr.extensions) {
-      // certificateBuilder.extensions.push(new x509.Extension(ext.value, ext.critical))
       certificateBuilder.extensions.push(ext)
     }
 

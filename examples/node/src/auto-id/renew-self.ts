@@ -14,13 +14,10 @@ import {
   CertificateManager,
   Registry,
   convertToWebCryptoAlgorithm,
-  cryptoKeyToPem,
   extractSignatureAlgorithmOID,
-  generateEd25519KeyPair2,
-  generateRsaKeyPair2,
+  generateEd25519KeyPair,
   hexToPemPublicKey,
   pemToCryptoKeyForSigning,
-  pemToPrivateKey,
   saveKey,
 } from '@autonomys/auto-id'
 import { X509Certificate } from '@peculiar/x509'
@@ -49,9 +46,8 @@ function loadEnv(): { RPC_URL: string; KEYPAIR_URI: string } {
 }
 
 async function registerAutoId(registry: Registry, filePath: string): Promise<string> {
-  const issuerKeys = await generateEd25519KeyPair2() // Ed25519
-  const issuerPemString = await cryptoKeyToPem(issuerKeys[0])
-  saveKey(pemToPrivateKey(issuerPemString), filePath)
+  const issuerKeys = await generateEd25519KeyPair() // Ed25519
+  saveKey(issuerKeys[0], filePath)
 
   const selfIssuedCm = new CertificateManager(null, issuerKeys[0], issuerKeys[1])
   const selfIssuedCert = await selfIssuedCm.selfIssueCertificate('test500')

@@ -14,13 +14,10 @@ import {
   CertificateManager,
   Registry,
   convertToWebCryptoAlgorithm,
-  cryptoKeyToPem,
   extractSignatureAlgorithmOID,
-  generateEd25519KeyPair2,
-  generateRsaKeyPair2,
+  generateEd25519KeyPair,
   hexToPemPublicKey,
   pemToCryptoKeyForSigning,
-  pemToPrivateKey,
   saveKey,
 } from '@autonomys/auto-id'
 import { X509Certificate } from '@peculiar/x509'
@@ -52,9 +49,8 @@ async function registerIssuerAutoId(
   registry: Registry,
   filePath: string,
 ): Promise<[string, CertificateManager]> {
-  const issuerKeys = await generateEd25519KeyPair2() // Ed25519
-  const issuerPemString = await cryptoKeyToPem(issuerKeys[0])
-  saveKey(pemToPrivateKey(issuerPemString), filePath)
+  const issuerKeys = await generateEd25519KeyPair() // Ed25519
+  saveKey(issuerKeys[0], filePath)
 
   const selfIssuedCm = new CertificateManager(null, issuerKeys[0], issuerKeys[1])
   const selfIssuedCert = await selfIssuedCm.selfIssueCertificate('test600')
@@ -73,9 +69,8 @@ async function registerLeafAutoId(
   issuerCm: CertificateManager,
   issuerAutoIdIdentifier: string,
 ): Promise<string> {
-  const userKeys = await generateEd25519KeyPair2() // Ed25519
-  const userPemString = await cryptoKeyToPem(userKeys[0])
-  saveKey(pemToPrivateKey(userPemString), filePath)
+  const userKeys = await generateEd25519KeyPair() // Ed25519
+  saveKey(userKeys[0], filePath)
 
   const userCm = new CertificateManager(null, userKeys[0], userKeys[1])
   const userCsr = await userCm.createAndSignCSR('user600')
@@ -142,7 +137,6 @@ async function main() {
 
   /* Issue a new certificate */
   const newCert = await getNewCertificate(registry, filePathIssuer, leafAutoIdIdentifier) // M-1
-  // const newCert = await getNewCertificate(registry, filePathLeaf, leafAutoIdIdentifier) // M-2 ❌
 
   /* Renew Auto ID */
   const renewed = await registry.renewAutoId(leafAutoIdIdentifier, newCert)

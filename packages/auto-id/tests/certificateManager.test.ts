@@ -3,7 +3,7 @@ import { Certificate } from '@peculiar/asn1-x509'
 import { Crypto } from '@peculiar/webcrypto'
 import * as x509 from '@peculiar/x509'
 import { CertificateManager, OID_COMMON_NAME } from '../src/certificateManager'
-import { generateEd25519KeyPair2, validateCertificatePublicKey } from '../src/keyManagement'
+import { generateEd25519KeyPair, validateCertificatePublicKey } from '../src/keyManagement'
 
 const crypto = new Crypto()
 
@@ -15,7 +15,7 @@ function getTbsCertificate(cert: x509.X509Certificate): ArrayBuffer {
 describe('CertificateManager', () => {
   it('create and sign CSR', async () => {
     // Generate an Ed25519 key pair
-    const [privateKey, publicKey] = await generateEd25519KeyPair2()
+    const [privateKey, publicKey] = await generateEd25519KeyPair()
 
     // Instantiate CertificateManager with the generated private key
     const certificateManager = new CertificateManager(null, privateKey, publicKey)
@@ -34,8 +34,8 @@ describe('CertificateManager', () => {
 
   it('issue certificate', async () => {
     // Generate an Ed25519 key pair
-    const [issuerPrivateKey, issuerPublicKey] = await generateEd25519KeyPair2()
-    const [subjectPrivateKey, subjectPublicKey] = await generateEd25519KeyPair2()
+    const [issuerPrivateKey, issuerPublicKey] = await generateEd25519KeyPair()
+    const [subjectPrivateKey, subjectPublicKey] = await generateEd25519KeyPair()
 
     const issuer = new CertificateManager(null, issuerPrivateKey, issuerPublicKey)
     const _issuerCertificate = await issuer.selfIssueCertificate('issuer')
@@ -76,7 +76,7 @@ describe('CertificateManager', () => {
 
   it('self issue certificate', async () => {
     // Create a private key for testing
-    const [privateKey, publicKey] = await generateEd25519KeyPair2()
+    const [privateKey, publicKey] = await generateEd25519KeyPair()
     const selfIssuer = new CertificateManager(null, privateKey, publicKey)
     const certificate = await selfIssuer.selfIssueCertificate('Test')
 
@@ -109,7 +109,7 @@ describe('CertificateManager', () => {
 
   it('get subject common name', async () => {
     // Create a private key for testing
-    const [privateKey, publicKey] = await generateEd25519KeyPair2()
+    const [privateKey, publicKey] = await generateEd25519KeyPair()
     const selfIssuer = new CertificateManager(null, privateKey, publicKey)
     const certificate = await selfIssuer.selfIssueCertificate('Test')
 
@@ -125,7 +125,7 @@ describe('CertificateManager', () => {
 
   it('Certificate to Pem and back', async () => {
     // Create a private key for testing
-    const [privateKey, publicKey] = await generateEd25519KeyPair2()
+    const [privateKey, publicKey] = await generateEd25519KeyPair()
     const selfIssuer = new CertificateManager(null, privateKey, publicKey)
     // Define the subject name for the certificate
     const subjectName = 'Test'

@@ -9,10 +9,9 @@ import {
   Registry,
   cryptoKeyToPem,
   extractSignatureAlgorithmOID,
-  generateEd25519KeyPair2,
-  generateRsaKeyPair2,
+  generateEd25519KeyPair,
+  generateRsaKeyPair,
   pemToHex,
-  pemToPrivateKey,
   saveKey,
 } from '@autonomys/auto-id'
 import { Keyring } from '@polkadot/api'
@@ -42,16 +41,15 @@ async function registerIssuerAutoId(
   registry: Registry,
   filePath: string,
 ): Promise<[string, CertificateManager]> {
-  // const issuerKeys = await generateRsaKeyPair2() // FIXME: RSA
-  const issuerKeys = await generateEd25519KeyPair2() // Ed25519
+  // const issuerKeys = await generateRsaKeyPair() // FIXME: RSA
+  const issuerKeys = await generateEd25519KeyPair() // Ed25519
   // console.debug("user's private key algorithm: ", issuerKeys[0].algorithm.name)
   // const issuerPublicKeyInfo = pemToHex(await cryptoKeyToPem(issuerKeys[1]))
   // console.debug('Issuer public key info:', issuerPublicKeyInfo)
   // console.debug('PKI Algorithm OID:', extractSignatureAlgorithmOID(issuerPublicKeyInfo))
 
   // Convert the CryptoKey to a PEM string
-  const issuerPemString = await cryptoKeyToPem(issuerKeys[0])
-  saveKey(pemToPrivateKey(issuerPemString), './res/private.issuer.pem')
+  saveKey(issuerKeys[0], './res/private.issuer.pem')
   // console.debug("issuer's private key algorithm: ", issuerKeys[0].algorithm.name)
 
   const selfIssuedCm = new CertificateManager(null, issuerKeys[0], issuerKeys[1])
@@ -72,16 +70,15 @@ async function registerUserAutoId(
   issuerCm: CertificateManager,
   issuerAutoIdIdentifier: string,
 ): Promise<string> {
-  // const userKeys = await generateRsaKeyPair2() // FIXME: RSA
-  const userKeys = await generateEd25519KeyPair2() // Ed25519
+  // const userKeys = await generateRsaKeyPair() // FIXME: RSA
+  const userKeys = await generateEd25519KeyPair() // Ed25519
   // console.debug("user's private key algorithm: ", userKeys[0].algorithm.name)
   // const userPublicKeyInfo = pemToHex(await cryptoKeyToPem(issuerKeys[1]))
   // console.debug('User public key info:', userPublicKeyInfo)
   // console.debug('PKI Algorithm OID:', extractSignatureAlgorithmOID(userPublicKeyInfo))
 
   // Convert the CryptoKey to a PEM string
-  const userPemString = await cryptoKeyToPem(userKeys[0])
-  saveKey(pemToPrivateKey(userPemString), filePath)
+  saveKey(userKeys[0], filePath)
 
   const userCm = new CertificateManager(null, userKeys[0], userKeys[1])
   const userCsr = await userCm.createAndSignCSR('user100')
