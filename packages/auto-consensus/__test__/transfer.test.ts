@@ -1,16 +1,28 @@
 import { balance, events, transfer } from '@autonomys/auto-consensus'
-import { address, getMockWallet } from '@autonomys/auto-utils'
+import type { ApiPromise, WalletActivated } from '@autonomys/auto-utils'
+import { activate, address, disconnect, mockWallets } from '@autonomys/auto-utils'
 import { setup, signAndSendTx } from './helpers'
 
 describe('Verify transfer functions', () => {
-  const { isLocalhost, wallets } = setup()
+  const { isLocalhost, TEST_NETWORK } = setup()
 
-  const alice = getMockWallet('Alice', wallets)
-  const bob = getMockWallet('Bob', wallets)
+  let wallets: WalletActivated[] = []
+  let api: ApiPromise
+
+  beforeAll(async () => {
+    api = await activate(TEST_NETWORK)
+    wallets = await mockWallets(TEST_NETWORK, api)
+  }, 15000)
+
+  afterAll(async () => {
+    await disconnect(api)
+  }, 10000)
 
   if (isLocalhost) {
     describe('Test transfer()', () => {
       test('Check transfer 1 ATC between Alice and Bob and check the balance before and after', async () => {
+        const alice = wallets[0]
+        const bob = wallets[1]
         const sender = alice.accounts[0]
 
         const _balanceSenderStart = await balance(alice.api, address(sender.address))

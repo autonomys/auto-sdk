@@ -1,4 +1,5 @@
 // file: src/types/network.ts
+import type { ApiOptions } from '@polkadot/api/types'
 
 export type Explorer = {
   name: string
@@ -21,9 +22,13 @@ export type Network = {
   isLocalhost?: boolean
 }
 
-export type NetworkInput = { networkId?: string } | undefined
+export type NetworkParams = { networkId?: string } | undefined
 
-export type DomainInput = {
+export type DomainParams = {
   networkId?: string
   domainId: string
 }
+
+export type ActivateParams<T> = T & ApiOptions
+
+export type { ApiOptions }

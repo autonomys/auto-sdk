@@ -41,7 +41,7 @@ export type Operator = {
 
 type StringNumberOrBigInt = string | number | bigint
 
-export type RegisterOperatorInput = {
+export type RegisterOperatorParams = {
   api: ApiPromise
   senderAddress: string
   Operator: KeyringPair
@@ -51,16 +51,16 @@ export type RegisterOperatorInput = {
   nominationTax: StringNumberOrBigInt
 }
 
-export type StakingInput = {
+export type StakingParams = {
   api: ApiPromise
   operatorId: StringNumberOrBigInt
 }
 
-export interface WithdrawStakeInput extends StakingInput {
+export interface WithdrawStakeParams extends StakingParams {
   shares: StringNumberOrBigInt
 }
 
-export interface NominateOperatorInput extends StakingInput {
+export interface NominateOperatorParams extends StakingParams {
   amountToStake: StringNumberOrBigInt
 }
 
@@ -112,7 +112,7 @@ export const operator = async (api: ApiPromise, operatorId: StringNumberOrBigInt
   }
 }
 
-export const registerOperator = async (input: RegisterOperatorInput) => {
+export const registerOperator = (params: RegisterOperatorParams) => {
   try {
     const {
       api,
@@ -122,12 +122,12 @@ export const registerOperator = async (input: RegisterOperatorInput) => {
       amountToStake,
       minimumNominatorStake,
       nominationTax,
-    } = input
+    } = params
 
     const message = createAccountIdType(api, senderAddress)
     const signature = Operator.sign(message)
 
-    return await api.tx.domains.registerOperator(
+    return api.tx.domains.registerOperator(
       parseString(domainId),
       parseString(amountToStake),
       {
@@ -143,58 +143,55 @@ export const registerOperator = async (input: RegisterOperatorInput) => {
   }
 }
 
-export const nominateOperator = async (input: NominateOperatorInput) => {
+export const nominateOperator = (params: NominateOperatorParams) => {
   try {
-    const { api, operatorId, amountToStake } = input
+    const { api, operatorId, amountToStake } = params
 
-    return await api.tx.domains.nominateOperator(
-      parseString(operatorId),
-      parseString(amountToStake),
-    )
+    return api.tx.domains.nominateOperator(parseString(operatorId), parseString(amountToStake))
   } catch (error) {
     console.error('error', error)
     throw new Error('Error creating nominate operator tx.' + error)
   }
 }
 
-export const withdrawStake = async (input: WithdrawStakeInput) => {
+export const withdrawStake = (params: WithdrawStakeParams) => {
   try {
-    const { api, operatorId, shares } = input
+    const { api, operatorId, shares } = params
 
-    return await api.tx.domains.withdrawStake(parseString(operatorId), parseString(shares))
+    return api.tx.domains.withdrawStake(parseString(operatorId), parseString(shares))
   } catch (error) {
     console.error('error', error)
     throw new Error('Error creating withdraw stake tx.' + error)
   }
 }
 
-export const deregisterOperator = async (input: StakingInput) => {
+export const deregisterOperator = (params: StakingParams) => {
   try {
-    const { api, operatorId } = input
+    const { api, operatorId } = params
 
-    return await api.tx.domains.deregisterOperator(parseString(operatorId))
+    return api.tx.domains.deregisterOperator(parseString(operatorId))
   } catch (error) {
     console.error('error', error)
     throw new Error('Error creating de-register operator tx.' + error)
   }
 }
 
-export const unlockFunds = async (input: StakingInput) => {
+export const unlockFunds = (params: StakingParams) => {
   try {
-    const { api, operatorId } = input
+    const { api, operatorId } = params
 
-    return await api.tx.domains.unlockFunds(parseString(operatorId))
+    return api.tx.domains.unlockFunds(parseString(operatorId))
   } catch (error) {
     console.error('error', error)
     throw new Error('Error creating unlock funds tx.' + error)
   }
 }
 
-export const unlockNominator = async (input: StakingInput) => {
+export const unlockNominator = (params: StakingParams) => {
   try {
-    const { api, operatorId } = input
+    const { api, operatorId } = params
 
-    return await api.tx.domains.unlockNominator(parseString(operatorId))
+    return api.tx.domains.unlockNominator(parseString(operatorId))
   } catch (error) {
     console.error('error', error)
     throw new Error('Error creating unlock nominator tx.' + error)

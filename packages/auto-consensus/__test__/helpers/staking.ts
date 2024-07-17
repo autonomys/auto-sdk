@@ -1,26 +1,26 @@
 import { u8aToHex } from '@polkadot/util'
-import { operator, operators, RegisterOperatorInput } from '../../src/staking'
+import { operator, operators, RegisterOperatorParams } from '../../src/staking'
 
 const STORAGE_FEE_DEPOSIT_PERCENTAGE = 20 // 20%
 
 export const parseBigInt = (operatorId: string | number | bigint): bigint =>
   typeof operatorId === 'bigint' ? operatorId : BigInt(operatorId)
 
-export const calculateStake = (input: RegisterOperatorInput) => {
-  const { amountToStake, nominationTax } = input
+export const calculateStake = (params: RegisterOperatorParams) => {
+  const { amountToStake, nominationTax } = params
 
   return (parseBigInt(amountToStake) * BigInt(100 - STORAGE_FEE_DEPOSIT_PERCENTAGE)) / BigInt(100)
   // To-Do: Add the nomination tax
 }
 
-export const calculateStorageFee = (input: RegisterOperatorInput) => {
-  const { amountToStake } = input
+export const calculateStorageFee = (params: RegisterOperatorParams) => {
+  const { amountToStake } = params
 
   return (parseBigInt(amountToStake) * BigInt(STORAGE_FEE_DEPOSIT_PERCENTAGE)) / BigInt(100)
 }
 
-export const verifyOperatorRegistration = async (input: RegisterOperatorInput) => {
-  const { api, Operator, domainId, minimumNominatorStake, nominationTax } = input
+export const verifyOperatorRegistration = async (params: RegisterOperatorParams) => {
+  const { api, Operator, domainId, minimumNominatorStake, nominationTax } = params
 
   const operatorsList = await operators(api)
   const findOperator = operatorsList.find(
@@ -46,8 +46,8 @@ export const verifyOperatorRegistration = async (input: RegisterOperatorInput) =
   return findOperator
 }
 
-export const verifyOperatorRegistrationFinal = async (input: RegisterOperatorInput) => {
-  const { api, Operator, domainId, amountToStake, minimumNominatorStake, nominationTax } = input
+export const verifyOperatorRegistrationFinal = async (params: RegisterOperatorParams) => {
+  const { api, Operator, domainId, amountToStake, minimumNominatorStake, nominationTax } = params
 
   const operatorsList = await operators(api)
   const findOperator = operatorsList.find(
@@ -68,10 +68,10 @@ export const verifyOperatorRegistrationFinal = async (input: RegisterOperatorInp
     )
     const thisOperator = await operator(api, findOperator.operatorId)
     expect(thisOperator.currentDomainId).toEqual(BigInt(domainId))
-    expect(thisOperator.currentTotalStake).toEqual(calculateStake(input))
+    expect(thisOperator.currentTotalStake).toEqual(calculateStake(params))
     expect(thisOperator.minimumNominatorStake).toEqual(BigInt(minimumNominatorStake))
     expect(thisOperator.nominationTax).toEqual(Number(nominationTax))
-    expect(thisOperator.totalStorageFeeDeposit).toEqual(calculateStorageFee(input))
+    expect(thisOperator.totalStorageFeeDeposit).toEqual(calculateStorageFee(params))
   }
 
   return findOperator

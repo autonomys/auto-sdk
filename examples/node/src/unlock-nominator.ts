@@ -6,7 +6,7 @@ export const unlockNominatorFunction = async () => {
 
   const operatorId = '1'
 
-  const tx = await unlockNominator({
+  const tx = unlockNominator({
     api,
     operatorId,
   })

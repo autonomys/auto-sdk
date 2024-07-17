@@ -20,7 +20,7 @@ export const registerOperatorFunction = async () => {
   )
   // Transfer 2x10^18 ATC tokens from Alice to Bob
   const amountToStake = BigInt(100 * 10 ** 18)
-  const tx = await registerOperator({
+  const tx = registerOperator({
     api,
     senderAddress: alice[0].address,
     Operator: randomUser[0],

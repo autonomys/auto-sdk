@@ -6,7 +6,7 @@ export const unlockFundsFunction = async () => {
 
   const operatorId = '1'
 
-  const tx = await unlockFunds({
+  const tx = unlockFunds({
     api,
     operatorId,
   })
