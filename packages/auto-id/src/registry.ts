@@ -217,7 +217,7 @@ export class Registry {
   }
 
   // revoke certificate
-  async revokeCertificate(autoIdIdentifier: string): Promise<SubmittableResult> {
+  async revokeCertificate(autoIdIdentifier: string, filePath: string): Promise<SubmittableResult> {
     await this.api.isReady
 
     if (!this.signer) {
@@ -231,7 +231,7 @@ export class Registry {
       CertificateActionType.RevokeCertificate,
     )
 
-    const signature = await signData(serializedData, algorithmOid)
+    const signature = await signData(serializedData, algorithmOid, filePath)
     const signatureEncoded = {
       signature_algorithm: compactAddLength(signature.signature_algorithm),
       value: compactAddLength(signature.value),
@@ -277,7 +277,7 @@ export class Registry {
 
   // deactivate auto id
   // NOTE: Deactivation not possible for auto id whose certificate is already revoked.
-  async deactivateAutoId(autoIdIdentifier: string): Promise<SubmittableResult> {
+  async deactivateAutoId(autoIdIdentifier: string, filePath: string): Promise<SubmittableResult> {
     await this.api.isReady
 
     if (!this.signer) {
@@ -292,7 +292,7 @@ export class Registry {
     )
 
     // Sign the data and prepare it for blockchain submission
-    const signature = await signData(serializedData, algorithmOid)
+    const signature = await signData(serializedData, algorithmOid, filePath)
     const signatureEncoded = {
       signature_algorithm: compactAddLength(signature.signature_algorithm),
       value: compactAddLength(signature.value),
@@ -593,8 +593,12 @@ export function convertToWebCryptoAlgorithm(
 }
 
 // Utility function to sign data
-async function signData(data: Uint8Array, algorithmId: AsnAlgorithmIdentifier): Promise<Signature> {
-  const privateKeyPEM = fs.readFileSync('./res/private.issuer.pem', 'utf8').replace(/\\n/gm, '\n')
+async function signData(
+  data: Uint8Array,
+  algorithmId: AsnAlgorithmIdentifier,
+  filePath: string,
+): Promise<Signature> {
+  const privateKeyPEM = fs.readFileSync(filePath, 'utf8').replace(/\\n/gm, '\n')
   // console.debug('privateKeyPEM: ', privateKeyPEM)
   const webCryptoAlgorithm = convertToWebCryptoAlgorithm(algorithmId)
   const privateKey: CryptoKey = await pemToCryptoKeyForSigning(privateKeyPEM, webCryptoAlgorithm)

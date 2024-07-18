@@ -2,69 +2,10 @@
  * Revoke user/leaf certificate
  */
 
-import { CertificateManager, Registry, generateEd25519KeyPair, saveKey } from '@autonomys/auto-id'
+import { Registry } from '@autonomys/auto-id'
 import { Keyring } from '@polkadot/api'
 import { cryptoWaitReady } from '@polkadot/util-crypto'
-import { config } from 'dotenv'
-
-function loadEnv(): { RPC_URL: string; KEYPAIR_URI: string } {
-  const myEnv = config()
-  if (myEnv.error) {
-    throw new Error('Failed to load the .env file.')
-  }
-
-  const RPC_URL = process.env.RPC_URL
-  if (!RPC_URL) {
-    throw new Error('Please set your rpc url in a .env file')
-  }
-
-  const KEYPAIR_URI = process.env.KEYPAIR_URI
-  if (!KEYPAIR_URI) {
-    throw new Error('Please set your keypair uri in a .env file')
-  }
-
-  return { RPC_URL, KEYPAIR_URI }
-}
-
-async function registerIssuerAutoId(
-  registry: Registry,
-  filePath: string,
-): Promise<[string, CertificateManager]> {
-  const issuerKeys = await generateEd25519KeyPair() // Ed25519
-  saveKey(issuerKeys[0], filePath)
-
-  const selfIssuedCm = new CertificateManager(null, issuerKeys[0], issuerKeys[1])
-  const selfIssuedCert = await selfIssuedCm.selfIssueCertificate('test300')
-  const registerIssuer = await registry.registerAutoId(selfIssuedCert)
-  CertificateManager.prettyPrintCertificate(selfIssuedCert)
-  const issuerAutoIdIdentifier = registerIssuer.identifier!
-  console.log(
-    `===\nRegistered auto id from issuer cert: ${CertificateManager.getCertificateAutoId(selfIssuedCert)} with identifier: ${issuerAutoIdIdentifier} in block #${registerIssuer.receipt?.blockNumber?.toString()}`,
-  )
-  return [issuerAutoIdIdentifier, selfIssuedCm]
-}
-
-async function registerLeafAutoId(
-  registry: Registry,
-  filePath: string,
-  issuerCm: CertificateManager,
-  issuerAutoIdIdentifier: string,
-): Promise<string> {
-  const userKeys = await generateEd25519KeyPair() // Ed25519
-  saveKey(userKeys[0], filePath)
-
-  const userCm = new CertificateManager(null, userKeys[0], userKeys[1])
-  const userCsr = await userCm.createAndSignCSR('user300')
-  const userCert = await issuerCm.issueCertificate(userCsr)
-  CertificateManager.prettyPrintCertificate(userCert)
-  const registerUser = await registry.registerAutoId(userCert, issuerAutoIdIdentifier)
-  const userAutoIdIdentifier = registerUser.identifier!
-  console.log(
-    `Registered auto id from user cert: ${CertificateManager.getCertificateAutoId(userCert)} with identifier: ${userAutoIdIdentifier} in block #${registerUser.receipt?.blockNumber?.toString()}`,
-  )
-
-  return userAutoIdIdentifier
-}
+import { loadEnv, registerIssuerAutoId, registerLeafAutoId } from './utils'
 
 async function main() {
   await cryptoWaitReady()
@@ -80,18 +21,25 @@ async function main() {
 
   /* Register Auto ID for issuer & leaf */
   const filePathIssuer = './res/private.issuer.pem'
-  const [issuerAutoIdIdentifier, issuerCm] = await registerIssuerAutoId(registry, filePathIssuer)
+  const issuerSubjectCommonName = 'test300'
+  const [issuerAutoIdIdentifier, issuerCm] = await registerIssuerAutoId(
+    registry,
+    filePathIssuer,
+    issuerSubjectCommonName,
+  )
 
   const filePathLeaf = './res/private.leaf.pem'
+  const leafSubjectCommonName = 'user300'
   const leafAutoIdIdentifier = await registerLeafAutoId(
     registry,
     filePathLeaf,
     issuerCm,
     issuerAutoIdIdentifier,
+    leafSubjectCommonName,
   )
 
   /* Revoke leaf Certificate */
-  const revoked = await registry.revokeCertificate(leafAutoIdIdentifier)
+  const revoked = await registry.revokeCertificate(leafAutoIdIdentifier, filePathIssuer)
   if (revoked) {
     console.log(
       `Revoked registered user certificate with identifier: ${leafAutoIdIdentifier} in block #${revoked.blockNumber?.toString()}`,

@@ -6,44 +6,10 @@
  * NOTE: Deactivation not possible for auto id whose certificate is already revoked.
  */
 
-import { CertificateManager, Registry, generateEd25519KeyPair, saveKey } from '@autonomys/auto-id'
+import { Registry } from '@autonomys/auto-id'
 import { Keyring } from '@polkadot/api'
 import { cryptoWaitReady } from '@polkadot/util-crypto'
-import { config } from 'dotenv'
-
-function loadEnv(): { RPC_URL: string; KEYPAIR_URI: string } {
-  const myEnv = config()
-  if (myEnv.error) {
-    throw new Error('Failed to load the .env file.')
-  }
-
-  const RPC_URL = process.env.RPC_URL
-  if (!RPC_URL) {
-    throw new Error('Please set your rpc url in a .env file')
-  }
-
-  const KEYPAIR_URI = process.env.KEYPAIR_URI
-  if (!KEYPAIR_URI) {
-    throw new Error('Please set your keypair uri in a .env file')
-  }
-
-  return { RPC_URL, KEYPAIR_URI }
-}
-
-async function registerAutoId(registry: Registry, filePath: string): Promise<string> {
-  const issuerKeys = await generateEd25519KeyPair() // Ed25519
-  saveKey(issuerKeys[0], filePath)
-
-  const selfIssuedCm = new CertificateManager(null, issuerKeys[0], issuerKeys[1])
-  const selfIssuedCert = await selfIssuedCm.selfIssueCertificate('test400')
-  const registerIssuer = await registry.registerAutoId(selfIssuedCert)
-  CertificateManager.prettyPrintCertificate(selfIssuedCert)
-  const issuerAutoIdIdentifier = registerIssuer.identifier!
-  console.log(
-    `===\nRegistered auto id from issuer cert: ${CertificateManager.getCertificateAutoId(selfIssuedCert)} with identifier: ${issuerAutoIdIdentifier} in block #${registerIssuer.receipt?.blockNumber?.toString()}`,
-  )
-  return issuerAutoIdIdentifier
-}
+import { loadEnv, registerIssuerAutoId } from './utils'
 
 async function main() {
   await cryptoWaitReady()
@@ -59,10 +25,16 @@ async function main() {
 
   /* Register Auto ID */
   const filePath = './res/private.issuer.pem'
-  const issuerAutoIdIdentifier = await registerAutoId(registry, filePath)
+  const subjectCommonName = 'test400'
+
+  const [issuerAutoIdIdentifier, _issuerCm] = await registerIssuerAutoId(
+    registry,
+    filePath,
+    subjectCommonName,
+  )
 
   /* Deactivate Auto ID */
-  const deactivated = await registry.deactivateAutoId(issuerAutoIdIdentifier)
+  const deactivated = await registry.deactivateAutoId(issuerAutoIdIdentifier, filePath)
   if (deactivated) {
     console.log(
       `Deactivated auto id with identifier: ${issuerAutoIdIdentifier} in block #${deactivated.blockNumber?.toString()}`,

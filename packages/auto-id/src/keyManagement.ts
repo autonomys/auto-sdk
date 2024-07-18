@@ -459,7 +459,6 @@ export async function pemToCryptoKeyForSigning(
   const [keyType, base64Final] = pemToArrayBuffer(pem)
 
   let formatType: 'pkcs8' | 'spki' | 'raw'
-  // TODO: need to decide the key usages properly.
   let keyUsages: Iterable<KeyUsage>
   if (keyType === KeyType.PRIVATE) {
     formatType = 'pkcs8'
