@@ -2,6 +2,7 @@
 
 export * from './balances'
 export * from './batch'
+export * from './domain'
 export * from './info'
 export * from './remark'
 export * from './staking'
