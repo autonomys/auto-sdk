@@ -1,5 +1,10 @@
-import { Events, signAndSendTx as signAndSend } from '@autonomys/auto-consensus'
-import type { AddressOrPair, ISubmittableResult, SubmittableExtrinsic } from '@autonomys/auto-utils'
+import {
+  AddressOrPair,
+  Events,
+  ISubmittableResult,
+  signAndSendTx as signAndSend,
+  SubmittableExtrinsic,
+} from '@autonomys/auto-utils'
 
 export const signAndSendTx = async (
   sender: AddressOrPair,
