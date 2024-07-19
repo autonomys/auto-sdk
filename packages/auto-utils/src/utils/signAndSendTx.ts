@@ -5,6 +5,7 @@ import type {
   Events,
   EventsValidated,
   ISubmittableResult,
+  SignerOptions,
   SubmittableExtrinsic,
   TransactionSignedAndSend,
 } from '../types'
@@ -15,6 +16,7 @@ import { validateEvents } from './validateEvents'
 export const signAndSendTx = async (
   sender: AddressOrPair,
   tx: SubmittableExtrinsic<'promise', ISubmittableResult>,
+  options: Partial<SignerOptions> = {},
   eventsExpected: Events = expectSuccessfulTxEvent,
   log: boolean = false,
 ): Promise<TransactionSignedAndSend> => {
@@ -23,7 +25,7 @@ export const signAndSendTx = async (
   let blockHash: string | undefined = undefined
   let eventsValidated: EventsValidated = { expected: [], found: [] }
   await new Promise<void>((resolve, reject) => {
-    tx.signAndSend(sender, ({ events, status, txHash }) => {
+    tx.signAndSend(sender, options, ({ events, status, txHash }) => {
       if (status.isInBlock) {
         txHashHex = txHash.toHex()
         blockHash = status.asInBlock.toHex()
