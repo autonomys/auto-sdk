@@ -16,7 +16,7 @@ import * as fs from 'fs'
 
 import { config } from 'dotenv'
 
-export function loadEnv(): { RPC_URL: string; KEYPAIR_URI: string } {
+export const loadEnv = (): { RPC_URL: string; KEYPAIR_URI: string } => {
   const myEnv = config()
   if (myEnv.error) {
     throw new Error('Failed to load the .env file.')
@@ -35,11 +35,11 @@ export function loadEnv(): { RPC_URL: string; KEYPAIR_URI: string } {
   return { RPC_URL, KEYPAIR_URI }
 }
 
-export async function registerIssuerAutoId(
+export const registerIssuerAutoId = async (
   registry: Registry,
   filePath: string,
   subjectCommonName: string,
-): Promise<[string, CertificateManager]> {
+): Promise<[string, CertificateManager]> => {
   // const issuerKeys = await generateRsaKeyPair() // FIXME: RSA
   const issuerKeys = await generateEd25519KeyPair() // Ed25519
   // console.debug("user's private key algorithm: ", issuerKeys[0].algorithm.name)
@@ -64,13 +64,13 @@ export async function registerIssuerAutoId(
   return [issuerAutoIdIdentifier, selfIssuedCm]
 }
 
-export async function registerLeafAutoId(
+export const registerLeafAutoId = async (
   registry: Registry,
   filePath: string,
   issuerCm: CertificateManager,
   issuerAutoIdIdentifier: string,
   subjectCommonName: string,
-): Promise<string> {
+): Promise<string> => {
   // const userKeys = await generateRsaKeyPair() // FIXME: RSA
   const userKeys = await generateEd25519KeyPair() // Ed25519
   // console.debug("user's private key algorithm: ", userKeys[0].algorithm.name)
@@ -97,11 +97,11 @@ export async function registerLeafAutoId(
 }
 
 // Get a new certificate with the same private key (saved locally)
-export async function getNewCertificate(
+export const getNewCertificate = async (
   registry: Registry,
   filePath: string,
   autoIdIdentifier: string,
-): Promise<X509Certificate> {
+): Promise<X509Certificate> => {
   const certificate = await registry.getCertificate(autoIdIdentifier)
   const subjectPublicKeyInfo = certificate!.subjectPublicKeyInfo
   const algorithmOid = extractSignatureAlgorithmOID(subjectPublicKeyInfo)
