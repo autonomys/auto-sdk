@@ -3,6 +3,7 @@ import { promises as fs } from 'fs'
 import * as path from 'path'
 import {
   cryptoKeyToPem,
+  decryptPem,
   doPublicKeysMatch,
   generateEd25519KeyPair,
   generateRsaKeyPair,
@@ -156,18 +157,24 @@ describe('Save Key', () => {
         expect(fileContents).toBe(privateKeyPem)
       })
 
-      // FIXME: need to modify the tests.
-      // test('should save an encrypted private key to a file', async () => {
-      //   const filePath = path.join(testDir, 'testEncryptedPrivateKey.pem')
-      //   const password = 'testpassword'
-      //   await saveKey(privateKey, filePath, password)
-      //   const fileContents = (await fs.readFile(filePath, { encoding: 'utf8' })).replace(
-      //     /\r\n/g,
-      //     '\n',
-      //   )
-      //   const privateKeyPem = (await cryptoKeyToPem(privateKey, password)).replace(/\r\n/g, '\n')
-      //   expect(fileContents).toBe(privateKeyPem)
-      // })
+      test('should save an encrypted private key to a file and decrypt correctly', async () => {
+        const filePath = path.join(testDir, 'testEncryptedPrivateKey.pem')
+        const password = 'testpassword'
+        await saveKey(privateKey, filePath, password)
+        const fileContents = (await fs.readFile(filePath, { encoding: 'utf8' }))
+          .replace(/\\n/g, '\n')
+          .replace(/"/g, '')
+          .trim()
+
+        // Decrypt the PEM read from file
+        const decryptedKey = await decryptPem(fileContents, password)
+
+        // Get the original private key in PEM format (unencrypted for comparison)
+        const originalPrivateKeyPem = await cryptoKeyToPem(privateKey)
+
+        // Compare the decrypted key with the original
+        expect(decryptedKey.trim()).toBe(originalPrivateKeyPem.trim())
+      })
 
       test('should throw an error when trying to save to an invalid path', async () => {
         const filePath = path.join(testDir, 'non_existent_directory', 'testPrivateKey.pem')
@@ -176,67 +183,6 @@ describe('Save Key', () => {
     })
   }
 })
-
-// describe('Save Key', () => {
-//   const keyGenerators = [
-//     {
-//       name: 'RSA',
-//       generator: generateRsaKeyPair,
-//       algorithm: { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
-//     },
-//     { name: 'Ed25519', generator: generateEd25519KeyPair, algorithm: { name: 'Ed25519' } },
-//   ]
-
-//   for (const { name, generator, algorithm } of keyGenerators) {
-//     describe(`${name}`, () => {
-//       const testDir = path.join(__dirname, 'test_keys')
-//       let privateKey: CryptoKey
-
-//       beforeAll(async () => {
-//         await fs.mkdir(testDir, { recursive: true })
-//       })
-
-//       beforeEach(async () => {
-//         ;[privateKey] = await generator()
-//       })
-
-//       afterAll(async () => {
-//         await fs.rm(testDir, { recursive: true, force: true })
-//       })
-
-//       test('should save a private key to a file', async () => {
-//         const filePath = path.join(testDir, 'testPrivateKey.pem')
-//         const privateKeyPem = await cryptoKeyToPem(privateKey)
-//         await saveKey(createPrivateKey({ key: privateKeyPem, format: 'pem' }), filePath)
-//         const fileContents = await fs.readFile(filePath, { encoding: 'utf8' })
-//         expect(fileContents).toBe(privateKeyPem)
-//       })
-
-//       test('should save an encrypted private key to a file', async () => {
-//         const filePath = path.join(testDir, 'testEncryptedPrivateKey.pem')
-//         const password = 'testpassword'
-//         const privateKeyPem = await cryptoKeyToPem(privateKey, password)
-//         await saveKey(
-//           createPrivateKey({ key: privateKeyPem, format: 'pem', passphrase: password }),
-//           filePath,
-//           password,
-//         )
-//         const fileContents = await fs.readFile(filePath, { encoding: 'utf8' })
-//         expect(fileContents).toBe(privateKeyPem)
-//       })
-
-//       test('should throw an error when trying to save to an invalid path', async () => {
-//         const filePath = path.join(testDir, 'non_existent_directory', 'testPrivateKey.pem')
-//         await expect(
-//           saveKey(
-//             createPrivateKey({ key: await cryptoKeyToPem(privateKey), format: 'pem' }),
-//             filePath,
-//           ),
-//         ).rejects.toThrow()
-//       })
-//     })
-//   }
-// })
 
 describe('Load Key', () => {
   const keyGenerators = [

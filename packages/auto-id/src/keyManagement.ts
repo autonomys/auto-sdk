@@ -484,3 +484,25 @@ export async function pemToCryptoKeyForSigning(
     keyUsages,
   )
 }
+
+/**
+ * Decrypts a PEM-encoded private key using the provided password.
+ */
+export async function decryptPem(pem: string, password: string): Promise<string> {
+  try {
+    const keyObject = createPrivateKey({
+      key: pem,
+      format: 'pem',
+      type: 'pkcs8',
+      passphrase: password,
+    })
+    const pemDecrypted = keyObject.export({
+      type: 'pkcs8',
+      format: 'pem',
+    }) as string
+    return pemDecrypted
+  } catch (error: any) {
+    console.error('Failed to decrypt PEM:', error)
+    throw new Error(`Failed to decrypt PEM: ${error.message}`)
+  }
+}
