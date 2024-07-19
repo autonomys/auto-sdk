@@ -1,6 +1,6 @@
 // file: src/types/transaction.ts
 
-import type { ActionEvents } from '../types/events'
+import type { ActionEvents } from '../types/event'
 
 export type EventsValidated = {
   expected: ActionEvents[]

@@ -6,9 +6,8 @@ import type {
   ISubmittableResult,
   SubmittableExtrinsic,
 } from '@autonomys/auto-utils'
-import type { Events } from '../types/events'
+import { Events, signAndSendTx } from '@autonomys/auto-utils'
 import { expectSuccessfulTxEvent } from './events'
-import { signAndSendTx } from './signAndSendTx'
 
 export const sudo = async (
   api: ApiPromise,

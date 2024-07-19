@@ -1,8 +1,13 @@
 // file: src/utils/signAndSendTx.ts
 
-import type { AddressOrPair, ISubmittableResult, SubmittableExtrinsic } from '@autonomys/auto-utils'
-import type { Events } from '../types/events'
-import type { EventsValidated, TransactionSignedAndSend } from '../types/transaction'
+import type {
+  AddressOrPair,
+  Events,
+  EventsValidated,
+  ISubmittableResult,
+  SubmittableExtrinsic,
+  TransactionSignedAndSend,
+} from '../types'
 import { detectTxSuccess } from './detectTxSuccess'
 import { expectSuccessfulTxEvent } from './events'
 import { validateEvents } from './validateEvents'
