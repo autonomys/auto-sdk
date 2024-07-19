@@ -1,6 +1,6 @@
 import { useApi } from '@/hooks/useApi'
 import { useWallets } from '@/hooks/useWallet'
-import { signAndSendTx } from '@autonomys/auto-consensus'
+import { signAndSendTx } from '@autonomys/auto-utils'
 import type { SubmittableExtrinsic } from '@polkadot/api/types'
 import type { ISubmittableResult } from '@polkadot/types/types'
 import { useCallback, useState } from 'react'
