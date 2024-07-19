@@ -12,7 +12,7 @@ export const signAndSendTx = async (
   eventsExpected: Events = [],
   log: boolean = true,
 ) => {
-  const result = await signAndSend(sender, tx, eventsExpected, log)
+  const result = await signAndSend(sender, tx, {}, eventsExpected, log)
 
   expect(result.txHash).toBeDefined()
   expect(result.blockHash).toBeDefined()

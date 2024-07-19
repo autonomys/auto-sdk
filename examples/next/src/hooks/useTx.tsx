@@ -19,7 +19,7 @@ export const useTx = () => {
           return
         }
         await handleQuery(
-          await signAndSendTx(selectedWallet.accounts[0], tx, [], false),
+          await signAndSendTx(selectedWallet.accounts[0], tx, {}, [], false),
           (r) => {
             setTxHash(r.txHash)
             setBlockHash(r.blockHash)

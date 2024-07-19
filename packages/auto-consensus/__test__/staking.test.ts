@@ -79,6 +79,7 @@ describe('Verify staking functions', () => {
             alice.api,
             sender,
             await alice.api.tx.domains.forceStakingEpochTransition(domainId),
+            {},
             [events.forceDomainEpochTransition],
           )
           await verifyOperatorRegistrationFinal(txParams)
@@ -138,6 +139,7 @@ describe('Verify staking functions', () => {
           alice.api,
           sender,
           await alice.api.tx.domains.forceStakingEpochTransition(domainId),
+          {},
           [events.forceDomainEpochTransition],
         )
         const operator = await verifyOperatorRegistrationFinal(txParams)
@@ -191,6 +193,7 @@ describe('Verify staking functions', () => {
           alice.api,
           sender,
           await alice.api.tx.domains.forceStakingEpochTransition(domainId),
+          {},
           [events.forceDomainEpochTransition],
         )
         const findOperator = await verifyOperatorRegistrationFinal(txParams)
@@ -233,6 +236,7 @@ describe('Verify staking functions', () => {
           alice.api,
           sender,
           await alice.api.tx.domains.forceStakingEpochTransition(operatorDetails.currentDomainId),
+          {},
           [events.forceDomainEpochTransition],
         )
 
