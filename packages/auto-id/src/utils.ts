@@ -119,7 +119,6 @@ export const signAndSendTx = async (
         try {
           // Retrieve the block using the hash to get the block number
           const signedBlock = await api.rpc.chain.getBlock(blockHash)
-          let identifier: string | null = null
           events.forEach(({ event: { section, method, data } }) => {
             if (section === 'system' && method === 'ExtrinsicFailed') {
               const dispatchErrorJson = JSON.parse(dispatchError!.toString())
