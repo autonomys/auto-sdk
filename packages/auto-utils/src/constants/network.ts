@@ -2,9 +2,21 @@
 
 import type { Network } from '../types/network'
 
+export enum NetworkId {
+  AUTONOMYS_GEMINI_3H = 'autonomys-gemini-3h',
+  AUTONOMYS_LOCALHOST = 'autonomys-localhost',
+}
+
+export enum DomainId {
+  AUTO_ID = 'auto-id',
+  NOVA = 'nova',
+}
+
+export const ASTRAL_EXPLORER = 'https://explorer.subspace.network/'
+
 export const networks: Network[] = [
   {
-    id: 'autonomys-gemini-3h',
+    id: NetworkId.AUTONOMYS_GEMINI_3H,
     name: 'Autonomys Testnet - Gemini 3H',
     rpcUrls: [
       'wss://rpc-0.gemini-3h.subspace.network/ws',
@@ -13,7 +25,7 @@ export const networks: Network[] = [
     explorer: [
       {
         name: 'Astral',
-        url: 'https://explorer.subspace.network/gemini-3h/consensus/',
+        url: ASTRAL_EXPLORER + 'gemini-3h/consensus/',
       },
       {
         name: 'Subscan',
@@ -22,12 +34,12 @@ export const networks: Network[] = [
     ],
     domains: [
       {
-        id: 'auto-id',
+        id: DomainId.AUTO_ID,
         name: 'Autonomys - Auto-ID',
-        rpcUrls: ['wss://autoid-0.subspace.network/ws'],
+        rpcUrls: ['wss://autoid-0.gemini-3h.subspace.network/ws'],
       },
       {
-        id: 'nova',
+        id: DomainId.NOVA,
         name: 'Autonomys - Nova (EVM)',
         rpcUrls: ['https://nova-0.gemini-3h.subspace.network/ws'],
       },
@@ -35,23 +47,23 @@ export const networks: Network[] = [
     isTestnet: true,
   },
   {
-    id: 'autonomys-localhost',
+    id: NetworkId.AUTONOMYS_LOCALHOST,
     name: 'Autonomys - Localhost',
     rpcUrls: ['ws://127.0.0.1:9944/ws'],
     explorer: [
       {
         name: 'Astral',
-        url: 'https://explorer.subspace.network/localhost/consensus/',
+        url: ASTRAL_EXPLORER + 'localhost/consensus/',
       },
     ],
     domains: [
       {
-        id: 'auto-id',
+        id: DomainId.AUTO_ID,
         name: 'Autonomys - Auto-ID',
         rpcUrls: ['ws://127.0.0.1:9945/ws'],
       },
       {
-        id: 'nova',
+        id: DomainId.NOVA,
         name: 'Autonomys - Nova (EVM)',
         rpcUrls: ['https:///127.0.0.1:9946/ws'],
       },
