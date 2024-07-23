@@ -1,6 +1,5 @@
 // file: src/info.ts
 
-import { activate } from '@autonomys/auto-utils'
 import { queryMethodPath } from './utils/query'
 
 export const rpc = async (methodPath: string, params: any[] = [], networkId?: string) =>
