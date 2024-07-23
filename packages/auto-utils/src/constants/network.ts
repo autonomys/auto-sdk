@@ -4,6 +4,7 @@ import type { Network } from '../types/network'
 
 export enum NetworkId {
   AUTONOMYS_GEMINI_3H = 'autonomys-gemini-3h',
+  AUTONOMYS_DEVNET = 'autonomys-devnet',
   AUTONOMYS_LOCALHOST = 'autonomys-localhost',
 }
 
@@ -45,6 +46,31 @@ export const networks: Network[] = [
       },
     ],
     isTestnet: true,
+  },
+  {
+    id: NetworkId.AUTONOMYS_DEVNET,
+    name: 'Autonomys - Devnet',
+    rpcUrls: ['ws://rpc.devnet.subspace.network/ws'],
+    explorer: [
+      {
+        name: 'Astral',
+        url: ASTRAL_EXPLORER + '/devnet/consensus/',
+      },
+    ],
+    domains: [
+      {
+        id: DomainId.AUTO_ID,
+        name: 'Autonomys - Auto-ID',
+        rpcUrls: ['ws://autoid.devnet.subspace.network/ws'],
+      },
+      {
+        id: DomainId.NOVA,
+        name: 'Autonomys - Nova (EVM)',
+        rpcUrls: ['https:///nova.devnet.subspace.network/ws'],
+      },
+    ],
+    isTestnet: true,
+    isLocalhost: false,
   },
   {
     id: NetworkId.AUTONOMYS_LOCALHOST,
