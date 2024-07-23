@@ -10,7 +10,7 @@
  * but different serial no.
  */
 
-import { Registry } from '@autonomys/auto-id'
+import { CertificateManager, Registry } from '@autonomys/auto-id'
 import { Keyring } from '@polkadot/api'
 import { cryptoWaitReady } from '@polkadot/util-crypto'
 import { getNewCertificate, loadEnv, registerIssuerAutoId } from './utils'
@@ -38,6 +38,7 @@ async function main() {
 
   /* Issue a new certificate */
   const newCert = await getNewCertificate(registry, filePath, issuerAutoIdIdentifier)
+  CertificateManager.prettyPrintCertificate(newCert)
 
   /* Renew Auto ID */
   const renewed = await registry.renewAutoId(issuerAutoIdIdentifier, newCert)

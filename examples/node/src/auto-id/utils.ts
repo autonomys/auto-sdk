@@ -3,7 +3,7 @@ import {
   Registry,
   convertToWebCryptoAlgorithm,
   cryptoKeyToPem,
-  extractSignatureAlgorithmOID,
+  extractPublicKeyAlgorithmOID,
   generateEd25519KeyPair,
   generateRsaKeyPair,
   hexToPemPublicKey,
@@ -12,9 +12,8 @@ import {
   saveKey,
 } from '@autonomys/auto-id'
 import { X509Certificate } from '@peculiar/x509'
-import * as fs from 'fs'
-
 import { config } from 'dotenv'
+import * as fs from 'fs'
 
 export const loadEnv = (): { RPC_URL: string; KEYPAIR_URI: string } => {
   const myEnv = config()
@@ -40,12 +39,15 @@ export const registerIssuerAutoId = async (
   filePath: string,
   subjectCommonName: string,
 ): Promise<[string, CertificateManager]> => {
-  // const issuerKeys = await generateRsaKeyPair() // FIXME: RSA
-  const issuerKeys = await generateEd25519KeyPair() // Ed25519
+  const issuerKeys = await generateRsaKeyPair() // FIXME: RSA
+  // const issuerKeys = await generateEd25519KeyPair() // Ed25519
   // console.debug("user's private key algorithm: ", issuerKeys[0].algorithm.name)
-  // const issuerPublicKeyInfo = pemToHex(await cryptoKeyToPem(issuerKeys[1]))
+  const issuerPublicKeyInfo = pemToHex(await cryptoKeyToPem(issuerKeys[1]))
   // console.debug('Issuer public key info:', issuerPublicKeyInfo)
-  // console.debug('PKI Algorithm OID:', extractSignatureAlgorithmOID(issuerPublicKeyInfo))
+  // console.debug(
+  //   'Public key Algorithm identifier:',
+  //   extractPublicKeyAlgorithmOID(issuerPublicKeyInfo),
+  // )
 
   // Convert the CryptoKey to a PEM string
   saveKey(issuerKeys[0], filePath)
@@ -71,12 +73,12 @@ export const registerLeafAutoId = async (
   issuerAutoIdIdentifier: string,
   subjectCommonName: string,
 ): Promise<string> => {
-  // const userKeys = await generateRsaKeyPair() // FIXME: RSA
-  const userKeys = await generateEd25519KeyPair() // Ed25519
+  const userKeys = await generateRsaKeyPair() // FIXME: RSA
+  // const userKeys = await generateEd25519KeyPair() // Ed25519
   // console.debug("user's private key algorithm: ", userKeys[0].algorithm.name)
   // const userPublicKeyInfo = pemToHex(await cryptoKeyToPem(issuerKeys[1]))
   // console.debug('User public key info:', userPublicKeyInfo)
-  // console.debug('PKI Algorithm OID:', extractSignatureAlgorithmOID(userPublicKeyInfo))
+  // console.debug('PKI Algorithm OID:', extractPublicKeyAlgorithmOID(userPublicKeyInfo))
 
   // Convert the CryptoKey to a PEM string
   saveKey(userKeys[0], filePath)
@@ -104,7 +106,7 @@ export const getNewCertificate = async (
 ): Promise<X509Certificate> => {
   const certificate = await registry.getCertificate(autoIdIdentifier)
   const subjectPublicKeyInfo = certificate!.subjectPublicKeyInfo
-  const algorithmOid = extractSignatureAlgorithmOID(subjectPublicKeyInfo)
+  const algorithmOid = extractPublicKeyAlgorithmOID(subjectPublicKeyInfo)
   const webCryptoAlgorithm = convertToWebCryptoAlgorithm(algorithmOid)
   const privateKeyPem = fs.readFileSync(filePath, 'utf8').replace(/\\n/gm, '\n')
   const privateKey: CryptoKey = await pemToCryptoKeyForSigning(privateKeyPem, webCryptoAlgorithm)

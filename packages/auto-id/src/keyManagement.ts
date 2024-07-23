@@ -442,6 +442,11 @@ enum KeyType {
   PUBLIC = 'PUBLIC',
 }
 
+interface Algorithm {
+  name: string
+}
+export type WebCryptoAlgorithmIdentifier = Algorithm | string
+
 /**
  * Converts a PEM key (private or public key) to a CryptoKey format.
  * @param pem pem string
@@ -450,7 +455,7 @@ enum KeyType {
 export async function pemToCryptoKeyForSigning(
   pem: string,
   algorithm:
-    | AlgorithmIdentifier
+    | WebCryptoAlgorithmIdentifier
     | RsaHashedImportParams
     | EcKeyImportParams
     | HmacImportParams

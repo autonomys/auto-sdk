@@ -12,7 +12,7 @@ import { bnToU8a, hexToU8a, u8aConcat } from '@polkadot/util'
 import * as fs from 'fs'
 import { CertificateManager } from './certificateManager'
 import { AutoIdX509Certificate, CertificateActionType } from './index'
-import { pemToCryptoKeyForSigning } from './keyManagement'
+import { WebCryptoAlgorithmIdentifier, pemToCryptoKeyForSigning } from './keyManagement'
 
 /**
  * Encodes a given string representation of an OID into its DER format,
@@ -178,11 +178,11 @@ export const prepareSigningData = async (
   actionType: CertificateActionType,
 ): Promise<{
   serializedData: Uint8Array
-  algorithmOid: AsnAlgorithmIdentifier
+  algorithmIdentifier: AsnAlgorithmIdentifier
 }> => {
   const certificate = await checkCertificateAndRevocationList(api, autoIdIdentifier, getCertificate)
   const subjectPublicKeyInfo = certificate.subjectPublicKeyInfo
-  const algorithmOid = extractSignatureAlgorithmOID(subjectPublicKeyInfo)
+  const publicKeyAlgorithmIdentifier = extractPublicKeyAlgorithmOID(subjectPublicKeyInfo)
   const isIssuer = certificate.issuerId === null
 
   const idU8a = hexStringToU8a(autoIdIdentifier)
@@ -200,7 +200,7 @@ export const prepareSigningData = async (
   const actionTypeU8a = new Uint8Array([actionType])
   const serializedData = u8aConcat(idU8a, nonceU8a, actionTypeU8a)
 
-  return { serializedData, algorithmOid }
+  return { serializedData, algorithmIdentifier: publicKeyAlgorithmIdentifier }
 }
 
 // Utility function to handle common certificate checks
@@ -234,11 +234,11 @@ export const hexStringToU8a = (hexString: string): Uint8Array => {
 }
 
 /**
- * Extracts the OID of the signature algorithm from the subjectPublicKeyInfo of an X.509 certificate.
+ * Extracts the public key algorithm OID from the subjectPublicKeyInfo of an X.509 certificate.
  * @param subjectPublicKeyInfo hex string format
  * @returns algorithm identifier
  */
-export const extractSignatureAlgorithmOID = (
+export const extractPublicKeyAlgorithmOID = (
   subjectPublicKeyInfo: string,
 ): AsnAlgorithmIdentifier => {
   const publicKeyInfoHex = subjectPublicKeyInfo.startsWith('0x')
@@ -252,11 +252,30 @@ export const extractSignatureAlgorithmOID = (
   return publicKeyInfo.algorithm
 }
 
-// Convert the ASN.1 algorithm identifier to a WebCrypto algorithm
+export const publicKeyAlgorithmToSignatureAlgorithm = (
+  publicKeyAlgorithmOID: string,
+): AsnAlgorithmIdentifier => {
+  switch (publicKeyAlgorithmOID) {
+    case '1.3.101.112': // Public key Algorithm OID for Ed25519
+      return new AsnAlgorithmIdentifier({
+        algorithm: '1.3.101.112', // Certificate Signature Algorithm OID for Ed25519
+        parameters: null,
+      })
+    case '1.2.840.113549.1.1.1': // Public key Algorithm OID for RSASSA-PKCS1-v1_5
+      return new AsnAlgorithmIdentifier({
+        algorithm: '1.2.840.113549.1.1.11',
+        parameters: null,
+      })
+    default:
+      throw new Error('Unsupported public key algorithm OID: ' + publicKeyAlgorithmOID)
+  }
+}
+
+// Convert the Certificate signature algorithm identifier to a WebCrypto algorithm
 export const convertToWebCryptoAlgorithm = (
   asnAlgId: AsnAlgorithmIdentifier,
 ):
-  | AlgorithmIdentifier
+  | WebCryptoAlgorithmIdentifier
   | RsaHashedImportParams
   | EcKeyImportParams
   | HmacImportParams
@@ -281,17 +300,17 @@ const crypto = new Crypto()
 // Utility function to sign data
 export const signData = async (
   data: Uint8Array,
-  algorithmId: AsnAlgorithmIdentifier,
+  certSigAlgorithmId: AsnAlgorithmIdentifier,
   filePath: string,
 ): Promise<Signature> => {
   const privateKeyPEM = fs.readFileSync(filePath, 'utf8').replace(/\\n/gm, '\n')
   // console.debug('privateKeyPEM: ', privateKeyPEM)
-  const webCryptoAlgorithm = convertToWebCryptoAlgorithm(algorithmId)
+  const webCryptoAlgorithm = convertToWebCryptoAlgorithm(certSigAlgorithmId)
   const privateKey: CryptoKey = await pemToCryptoKeyForSigning(privateKeyPEM, webCryptoAlgorithm)
   // console.debug(`private key algorithm: ${privateKey.algorithm.name}`)
   // console.debug('Algorithm OID:', algorithmId.algorithm)
   const signature = await crypto.subtle.sign(webCryptoAlgorithm, privateKey, data)
-  const derEncodedOID = derEncodeSignatureAlgorithmOID(algorithmId.algorithm)
+  const derEncodedOID = derEncodeSignatureAlgorithmOID(certSigAlgorithmId.algorithm)
 
   return {
     signature_algorithm: derEncodedOID,
