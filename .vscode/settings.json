@@ -12,7 +12,9 @@
   "typescript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyParenthesis": true,
   "editor.formatOnSave": true,
   "cSpell.words": [
+    "autoid",
     "autonomys",
+    "devnet",
     "extrinsics",
     "gemini",
     "graphiql",
