@@ -41,17 +41,9 @@ export const registerIssuerAutoId = async (
 ): Promise<[string, CertificateManager]> => {
   const issuerKeys = await generateRsaKeyPair() // FIXME: RSA
   // const issuerKeys = await generateEd25519KeyPair() // Ed25519
-  // console.debug("user's private key algorithm: ", issuerKeys[0].algorithm.name)
-  const issuerPublicKeyInfo = pemToHex(await cryptoKeyToPem(issuerKeys[1]))
-  // console.debug('Issuer public key info:', issuerPublicKeyInfo)
-  // console.debug(
-  //   'Public key Algorithm identifier:',
-  //   extractPublicKeyAlgorithmOID(issuerPublicKeyInfo),
-  // )
 
   // Convert the CryptoKey to a PEM string
   saveKey(issuerKeys[0], filePath)
-  // console.debug("issuer's private key algorithm: ", issuerKeys[0].algorithm.name)
 
   const selfIssuedCm = new CertificateManager(null, issuerKeys[0], issuerKeys[1])
 
@@ -75,10 +67,6 @@ export const registerLeafAutoId = async (
 ): Promise<string> => {
   const userKeys = await generateRsaKeyPair() // FIXME: RSA
   // const userKeys = await generateEd25519KeyPair() // Ed25519
-  // console.debug("user's private key algorithm: ", userKeys[0].algorithm.name)
-  // const userPublicKeyInfo = pemToHex(await cryptoKeyToPem(issuerKeys[1]))
-  // console.debug('User public key info:', userPublicKeyInfo)
-  // console.debug('PKI Algorithm OID:', extractPublicKeyAlgorithmOID(userPublicKeyInfo))
 
   // Convert the CryptoKey to a PEM string
   saveKey(userKeys[0], filePath)

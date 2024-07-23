@@ -39,35 +39,24 @@ interface RegistrationResult {
   identifier: string | null
 }
 
-// CLEANUP: Remove debug logs from this file once this issue: https://github.com/subspace/auto-sdk/issues/81 is closed.
-
 // x509 Certificate to DER format & tbsCertificate.
 // Returns a tuple of two Uint8Array.
 export const convertX509CertToDerEncodedComponents = (
   certificate: X509Certificate,
 ): [Uint8Array, Uint8Array] => {
   const certificateBuffer = Buffer.from(certificate.rawData)
-  // console.debug(`Certificate Buffer of len ${certificateBuffer.byteLength}:`)
-  // console.debug('certificateBuffer (during register): ', certificateBuffer) // --> '.....autoid:auto:307866386536......'
-  // console.debug(`Certificate Buffer Hex: 0x${certificateBuffer.toString('hex')}`)
 
   // Load and parse the certificate
   const cert = AsnParser.parse(certificateBuffer, Certificate)
   // Extract the OID of the signature algorithm
   const signatureAlgorithmOID = cert.signatureAlgorithm.algorithm
-  // console.debug('Certificate Signature Algorithm identifier:', cert.signatureAlgorithm)
-  // console.debug('Certificate Signature Algorithm OID:', signatureAlgorithmOID) // --> 1.3.101.112
 
   const derEncodedOID = derEncodeSignatureAlgorithmOID(signatureAlgorithmOID)
-  // console.debug(`DER encoded OID: ${derEncodedOID}`) // --> 36,48,7,6,3,43,101,112,5,0
-  // console.debug(`derEncodedOID Buffer: ${Buffer.from(derEncodedOID)}`)
-  // console.debug(`Bytes length: ${derEncodedOID.length}`)
 
   const tbsCertificate = cert.tbsCertificate
 
   // Serialize the TBS Certificate back to DER format
   const tbsCertificateDerVec = new Uint8Array(AsnSerializer.serialize(tbsCertificate))
-  // console.debug('TBS Certificate DER Vec:', ${tbsCertificateDerVec}) // --> 48,130,1,55,160,3,2,1,2,2,16,6,63,42,209,226,214,20,114,22,195,30,195,.......
 
   return [derEncodedOID, tbsCertificateDerVec]
 }

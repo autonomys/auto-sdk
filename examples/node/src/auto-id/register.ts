@@ -2,8 +2,6 @@
  * Register auto id for issuer and user
  */
 
-// CLEANUP: Remove debug logs from this file once RSA is tested ok.
-
 import { Registry } from '@autonomys/auto-id'
 import { Keyring } from '@polkadot/api'
 import { cryptoWaitReady } from '@polkadot/util-crypto'

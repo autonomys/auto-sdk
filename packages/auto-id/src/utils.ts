@@ -304,11 +304,8 @@ export const signData = async (
   filePath: string,
 ): Promise<Signature> => {
   const privateKeyPEM = fs.readFileSync(filePath, 'utf8').replace(/\\n/gm, '\n')
-  // console.debug('privateKeyPEM: ', privateKeyPEM)
   const webCryptoAlgorithm = convertToWebCryptoAlgorithm(certSigAlgorithmId)
   const privateKey: CryptoKey = await pemToCryptoKeyForSigning(privateKeyPEM, webCryptoAlgorithm)
-  // console.debug(`private key algorithm: ${privateKey.algorithm.name}`)
-  // console.debug('Algorithm OID:', algorithmId.algorithm)
   const signature = await crypto.subtle.sign(webCryptoAlgorithm, privateKey, data)
   const derEncodedOID = derEncodeSignatureAlgorithmOID(certSigAlgorithmId.algorithm)
 
