@@ -1,6 +1,6 @@
 {
   "name": "@autonomys/auto-xdm",
-  "version": "0.1.4",
+  "version": "0.1.6-devnet-support",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
@@ -21,7 +21,7 @@
     "url": "https://www.autonomys.net"
   },
   "dependencies": {
-    "@autonomys/auto-utils": "^0.1.4"
+    "@autonomys/auto-utils": "^0.1.6-devnet-support"
   },
   "devDependencies": {
     "@polkadot/types-codec": "^11.2.1",
