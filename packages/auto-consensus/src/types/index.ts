@@ -1,4 +1,5 @@
 // file: src/types/index.ts
 
+export * from './domain'
 export * from './events'
-export * from './transaction'
+export * from './staking'

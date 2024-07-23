@@ -1,6 +1,6 @@
 // file: src/utils/detectTxSuccess.ts
 
-import type { EventRecord } from '@autonomys/auto-utils'
+import type { EventRecord } from '../types/event'
 import { expectSuccessfulTxEvent } from './events'
 
 export const detectTxSuccess = (events: EventRecord[]): boolean => {

@@ -1,6 +1,7 @@
 // file: src/types/transaction.ts
 
-import type { ActionEvents } from '../types/events'
+import type { SignerOptions } from '@polkadot/api/types'
+import type { ActionEvents } from '../types/event'
 
 export type EventsValidated = {
   expected: ActionEvents[]
@@ -13,3 +14,5 @@ export type TransactionSignedAndSend = {
   blockHash: string | undefined
   events: EventsValidated
 }
+
+export { SignerOptions }

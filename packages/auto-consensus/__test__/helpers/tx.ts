@@ -1,5 +1,10 @@
-import { Events, signAndSendTx as signAndSend } from '@autonomys/auto-consensus'
-import type { AddressOrPair, ISubmittableResult, SubmittableExtrinsic } from '@autonomys/auto-utils'
+import {
+  AddressOrPair,
+  Events,
+  ISubmittableResult,
+  signAndSendTx as signAndSend,
+  SubmittableExtrinsic,
+} from '@autonomys/auto-utils'
 
 export const signAndSendTx = async (
   sender: AddressOrPair,
@@ -7,7 +12,7 @@ export const signAndSendTx = async (
   eventsExpected: Events = [],
   log: boolean = true,
 ) => {
-  const result = await signAndSend(sender, tx, eventsExpected, log)
+  const result = await signAndSend(sender, tx, {}, eventsExpected, log)
 
   expect(result.txHash).toBeDefined()
   expect(result.blockHash).toBeDefined()
