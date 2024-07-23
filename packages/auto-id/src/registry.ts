@@ -1,3 +1,4 @@
+import { signAndSendTx } from '@autonomys/auto-utils'
 import { AsnParser, AsnSerializer } from '@peculiar/asn1-schema'
 import { Certificate } from '@peculiar/asn1-x509'
 import { X509Certificate } from '@peculiar/x509'
@@ -10,7 +11,6 @@ import {
   mapErrorCodeToEnum,
   prepareSigningData,
   publicKeyAlgorithmToSignatureAlgorithm,
-  signAndSendTx,
   signData,
 } from './utils'
 
@@ -110,10 +110,13 @@ export class Registry {
       this.api,
       this.api.tx.autoId.registerAutoId(req),
       this.signer,
+      {},
+      [],
+      false,
       mapErrorCodeToEnum,
     )
 
-    return { receipt, identifier }
+    return { receipt, identifier: identifier ?? null }
   }
 
   // revoke certificate
@@ -145,6 +148,9 @@ export class Registry {
       this.api,
       this.api.tx.autoId.revokeCertificate(autoIdIdentifier, signatureEncoded),
       this.signer,
+      {},
+      [],
+      false,
       mapErrorCodeToEnum,
     )
 
@@ -181,6 +187,9 @@ export class Registry {
       this.api,
       this.api.tx.autoId.deactivateAutoId(autoIdIdentifier, signatureEncoded),
       this.signer,
+      {},
+      [],
+      false,
       mapErrorCodeToEnum,
     )
 
@@ -221,10 +230,13 @@ export class Registry {
       this.api,
       this.api.tx.autoId.renewAutoId(autoIdIdentifier, req),
       this.signer,
+      {},
+      [],
+      false,
       mapErrorCodeToEnum,
     )
 
-    return { receipt, identifier }
+    return { receipt, identifier: identifier ?? null }
   }
 
   // ============================

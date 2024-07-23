@@ -22,7 +22,7 @@ async function main() {
   /* Register Auto ID for issuer */
   console.log('\n===================== ISSUER =====================')
   const issuerFilePath = './res/private.issuer.pem'
-  const issuerSubjectCommonName = 'test100'
+  const issuerSubjectCommonName = 'test101'
   const [issuerAutoIdIdentifier, issuerCm] = await registerIssuerAutoId(
     registry,
     issuerFilePath,
@@ -33,7 +33,7 @@ async function main() {
   console.log('\n\n===================== USER =====================')
 
   const userFilePath = './res/private.leaf.pem'
-  const userSubjectCommonName = 'user100'
+  const userSubjectCommonName = 'user101'
   const _userAutoIdIdentifier = await registerLeafAutoId(
     registry,
     userFilePath,

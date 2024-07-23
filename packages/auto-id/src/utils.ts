@@ -100,52 +100,6 @@ export const mapErrorCodeToEnum = (errorCode: string): AutoIdError | null => {
   }
 }
 
-export const signAndSendTx = async (
-  api: ApiPromise,
-  tx: any,
-  signer: KeyringPair,
-  mapErrorCodeToEnum: (errorCode: string) => AutoIdError | null,
-): Promise<{ receipt: SubmittableResult; identifier: string | null }> => {
-  let identifier: string | null = null
-  const receipt: SubmittableResult = await new Promise((resolve, reject) => {
-    tx.signAndSend(signer, async (result: SubmittableResult) => {
-      const { events = [], status, dispatchError } = result
-
-      if (status.isInBlock || status.isFinalized) {
-        const blockHash = status.isInBlock
-          ? status.asInBlock.toString()
-          : status.asFinalized.toString()
-
-        try {
-          // Retrieve the block using the hash to get the block number
-          const signedBlock = await api.rpc.chain.getBlock(blockHash)
-          events.forEach(({ event: { section, method, data } }) => {
-            if (section === 'system' && method === 'ExtrinsicFailed') {
-              const dispatchErrorJson = JSON.parse(dispatchError!.toString())
-
-              reject(
-                new Error(
-                  `Extrinsic failed: ${mapErrorCodeToEnum(dispatchErrorJson.module.error)} in block #${signedBlock.block.header.number.toString()}`,
-                ),
-              )
-            }
-            if (section === 'autoId' && method === 'NewAutoIdRegistered') {
-              identifier = data[0].toString()
-            }
-          })
-          resolve(result)
-        } catch (err: any) {
-          reject(new Error(`Failed to retrieve block information: ${err.message}`))
-        }
-      } else if (status.isDropped || status.isInvalid) {
-        reject(new Error('Transaction dropped or invalid'))
-      }
-    })
-  })
-
-  return { receipt, identifier }
-}
-
 export const identifierFromX509Cert = (
   issuerId: string | null | undefined,
   certificate: X509Certificate,
