@@ -35,6 +35,31 @@ export const networks: Network[] = [
     isTestnet: true,
   },
   {
+    id: 'autonomys-devnet',
+    name: 'Autonomys - Devnet',
+    rpcUrls: ['ws://rpc.devnet.subspace.network/ws'],
+    explorer: [
+      {
+        name: 'Astral',
+        url: 'https://explorer.subspace.network/devnet/consensus/',
+      },
+    ],
+    domains: [
+      {
+        id: 'auto-id', // Placeholder
+        name: 'Autonomys - Auto-ID',
+        rpcUrls: ['ws://autoid.devnet.subspace.network/ws'],
+      },
+      {
+        id: 'auto-evm', // Placeholder
+        name: 'Autonomys - Auto-EVM (Nova)',
+        rpcUrls: ['https:///nova.devnet.subspace.network/ws'],
+      },
+    ],
+    isTestnet: true,
+    isLocalhost: false,
+  },
+  {
     id: 'autonomys-localhost',
     name: 'Autonomys - Localhost',
     rpcUrls: ['ws://127.0.0.1:9944/ws'],
