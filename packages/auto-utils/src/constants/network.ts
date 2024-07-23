@@ -22,13 +22,13 @@ export const networks: Network[] = [
     ],
     domains: [
       {
-        id: 'auto-id', // Placeholder
+        id: 'auto-id',
         name: 'Autonomys - Auto-ID',
-        rpcUrls: ['wss://rpc.auto-id.subspace.network/ws'],
+        rpcUrls: ['wss://autoid-0.subspace.network/ws'],
       },
       {
-        id: 'auto-evm', // Placeholder
-        name: 'Autonomys - Auto-EVM (Nova)',
+        id: 'nova',
+        name: 'Autonomys - Nova (EVM)',
         rpcUrls: ['https://nova-0.gemini-3h.subspace.network/ws'],
       },
     ],
@@ -46,13 +46,13 @@ export const networks: Network[] = [
     ],
     domains: [
       {
-        id: 'auto-id', // Placeholder
+        id: 'auto-id',
         name: 'Autonomys - Auto-ID',
         rpcUrls: ['ws://127.0.0.1:9945/ws'],
       },
       {
-        id: 'auto-evm', // Placeholder
-        name: 'Autonomys - Auto-EVM (Nova)',
+        id: 'nova',
+        name: 'Autonomys - Nova (EVM)',
         rpcUrls: ['https:///127.0.0.1:9946/ws'],
       },
     ],
