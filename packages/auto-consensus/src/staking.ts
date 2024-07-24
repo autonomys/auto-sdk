@@ -1,6 +1,6 @@
 // file: src/staking.ts
 
-import type { ApiPromise } from '@autonomys/auto-utils'
+import type { Api } from '@autonomys/auto-utils'
 import { createAccountIdType, signingKey } from '@autonomys/auto-utils'
 import type {
   NominateOperatorParams,
@@ -17,7 +17,7 @@ import {
   parseWithdrawal,
 } from './utils/parse'
 
-export const operators = async (api: ApiPromise) => {
+export const operators = async (api: Api) => {
   try {
     const _operators = await api.query.domains.operators.entries()
     return _operators.map((o) => parseOperator(o))
@@ -27,7 +27,7 @@ export const operators = async (api: ApiPromise) => {
   }
 }
 
-export const operator = async (api: ApiPromise, operatorId: StringNumberOrBigInt) => {
+export const operator = async (api: Api, operatorId: StringNumberOrBigInt) => {
   try {
     const _operator = await api.query.domains.operators(parseString(operatorId))
     return parseOperatorDetails(_operator)
@@ -38,7 +38,7 @@ export const operator = async (api: ApiPromise, operatorId: StringNumberOrBigInt
 }
 
 export const deposits = async (
-  api: ApiPromise,
+  api: Api,
   operatorId: StringNumberOrBigInt,
   account: string | undefined = undefined,
 ) => {
@@ -52,7 +52,7 @@ export const deposits = async (
 }
 
 export const withdrawals = async (
-  api: ApiPromise,
+  api: Api,
   operatorId: StringNumberOrBigInt,
   account: string | undefined = undefined,
 ) => {
