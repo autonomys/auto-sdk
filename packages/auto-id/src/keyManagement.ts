@@ -1,134 +1,137 @@
 import { read, save } from '@autonomys/auto-utils'
-import { KeyObject, createPrivateKey, createPublicKey, generateKeyPairSync } from 'crypto'
-
-/**
- * Generates an RSA key pair.
- * @param keySize The size of the key in bits. Default is 2048.
- * @returns A tuple containing the the RSA private key and public key.
- */
-export function generateRsaKeyPair(keySize: number = 2048): [string, string] {
-  const { publicKey, privateKey } = generateKeyPairSync('rsa', {
-    modulusLength: keySize,
-    publicExponent: 65537,
-    // TODO: Need to select the correct type - `"pkcs1" | "spki"`
-    publicKeyEncoding: { type: 'spki', format: 'pem' },
-    // TODO: Need to select the correct type - `"pkcs1" | "pkcs8"`
-    privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
-  })
-
-  return [privateKey, publicKey]
-}
-
 import { Crypto } from '@peculiar/webcrypto'
 import * as x509 from '@peculiar/x509'
+import { createPrivateKey, createPublicKey } from 'crypto'
+
 const crypto = new Crypto()
 
-// FIXME: keep one function. need to modify the tests.
-export async function generateEd25519KeyPair2(): Promise<[CryptoKey, CryptoKey]> {
+/**
+ * NOTE: 'RSA-OAEP', primarily for encryption/decryption. And 'RSASSA-PKCS1-v1_5' for signing and verification.
+ * Generates an RSA key pair for signing and returns CryptoKey objects.
+ *
+ * This function uses the Web Crypto API to generate an RSA key pair with the specified key size.
+ * The generated keys are suitable for signing and verification operations.
+ *
+ * @param {number} [keySize=2048] - The size of the key in bits. Can be 1024, 2048, or 4096. Default is 2048.
+ * @returns {Promise<[CryptoKey, CryptoKey]>} A promise that resolves to an array containing the privateKey and publicKey as CryptoKey objects.
+ *
+ * @example
+ * // Generate an RSA key pair with the default key size (2048 bits)
+ * const [privateKey, publicKey] = await generateRsaKeyPair();
+ *
+ * // Generate an RSA key pair with a custom key size (4096 bits)
+ * const [privateKey, publicKey] = await generateRsaKeyPair(4096);
+ */
+export async function generateRsaKeyPair(keySize: number = 2048): Promise<[CryptoKey, CryptoKey]> {
   const keyPair = await crypto.subtle.generateKey(
     {
-      name: 'Ed25519',
-      namedCurve: 'Ed25519',
+      name: 'RSASSA-PKCS1-v1_5',
+      modulusLength: keySize, // can be 1024, 2048, or 4096
+      publicExponent: new Uint8Array([1, 0, 1]), // 65537
+      hash: { name: 'SHA-256' },
     },
-    true,
-    ['sign', 'verify'],
+    true, // whether the key is extractable (i.e. can be exported)
+    ['sign', 'verify'], // key usages
   )
 
   return [keyPair.privateKey, keyPair.publicKey]
 }
 
 /**
- * Generates an Ed25519 key pair.
- * @returns A tuple containing the Ed25519 private key and public key.
+ * Generates an Ed25519 key pair for signing and verification.
+ *
+ * This function uses the Web Crypto API to generate an Ed25519 key pair.
+ * The generated keys are suitable for signing and verification operations.
+ *
+ * @returns {Promise<[CryptoKey, CryptoKey]>} A promise that resolves to an array containing the privateKey and publicKey as CryptoKey objects.
+ *
+ * @example
+ * // Generate an Ed25519 key pair
+ * const [privateKey, publicKey] = await generateEd25519KeyPair();
  */
-export function generateEd25519KeyPair(): [string, string] {
-  const { publicKey, privateKey } = generateKeyPairSync('ed25519', {
-    publicKeyEncoding: { type: 'spki', format: 'pem' },
-    privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
-  })
+export async function generateEd25519KeyPair(): Promise<[CryptoKey, CryptoKey]> {
+  const keyPair = await crypto.subtle.generateKey(
+    {
+      name: 'Ed25519',
+      namedCurve: 'Ed25519',
+    },
+    true, // whether the key is extractable (i.e. can be exported)
+    ['sign', 'verify'], // key usages
+  )
 
-  return [privateKey, publicKey]
+  return [keyPair.privateKey, keyPair.publicKey]
 }
 
 /**
- * Converts a cryptographic key object into a PEM formatted string.
- * This function can handle both private and public key objects.
+ * Converts a CryptoKey object into a PEM formatted string.
+ * This function can handle both private and public CryptoKey objects.
  * For private keys, it supports optional encryption using a passphrase.
  *
- * @param key The cryptographic key object to be exported. It must be either a private or public key object.
+ * @param key The CryptoKey object to be exported. It must be either a private or public key object.
  * @param password Optional passphrase for encrypting the private key. If provided, the private key
  *                 will be exported in an encrypted form using AES-256-CBC cipher. This parameter is ignored
  *                 for public keys.
  *
- * @returns Returns the PEM formatted string of the key. If a private key is provided with a passphrase,
+ * @returns A promise that resolves to the PEM formatted string of the key. If a private key is provided with a passphrase,
  *          it returns the key in an encrypted format. Otherwise, it returns an unencrypted PEM.
  *
  * @throws Will throw an error if the provided `key` is neither a private nor a public key object.
  *
  * @example
- * Follow "../examples/eg3.ts" & "../examples/eg4.ts" for a complete example.
- * // Create a private key object (assuming you have the appropriate private key data)
- * const privateKey = createPrivateKey({
- *     key: '-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANB ...',
- *     format: 'pem'
- * });
- *
- * // Create a public key object from the private key
- * const publicKey = createPublicKey(privateKey);
+ * // Generate an RSA key pair
+ * const [privateKey, publicKey] = await generateRsaKeyPair();
  *
  * // Export the private key without encryption
- * console.log(keyToPem(privateKey));
+ * const privateKeyPem = await cryptoKeyToPem(privateKey);
+ * console.log(privateKeyPem);
  *
  * // Export the private key with encryption
- * console.log(keyToPem(privateKey, 'your-secure-password'));
+ * const privateKeyPemEncrypted = await cryptoKeyToPem(privateKey, 'your-secure-password');
+ * console.log(privateKeyPemEncrypted);
  *
  * // Export the public key
- * console.log(keyToPem(publicKey));
+ * const publicKeyPem = await cryptoKeyToPem(publicKey);
+ * console.log(publicKeyPem);
  */
-export function keyToPem(key: KeyObject, password?: string): string {
-  if (key.asymmetricKeyType) {
-    // Handle private key
-    if (key.type === 'private') {
-      const options: any = {
-        type: 'pkcs8' as 'pkcs8', // type for private keys
-        format: 'pem' as 'pem', // Output format set to 'pem'
-      }
-      // If a password is provided, apply encryption
-      if (password) {
-        options.cipher = 'aes-256-cbc' // Cipher type
-        options.passphrase = password // Passphrase as a string
-      }
-      return key.export(options) as string
-    }
-    // Handle public key
-    else if (key.type === 'public') {
-      const options = {
-        type: 'spki' as 'spki', // type for public keys
-        format: 'pem' as 'pem', // Output format set to 'pem'
-      }
-      return key.export(options) as string
-    }
+export async function cryptoKeyToPem(key: CryptoKey, password?: string): Promise<string> {
+  const exported = await crypto.subtle.exportKey(key.type === 'private' ? 'pkcs8' : 'spki', key)
+  const base64 = arrayBufferToBase64(exported)
+  const type = key.type === 'private' ? 'PRIVATE KEY' : 'PUBLIC KEY'
+  let pem = `-----BEGIN ${type}-----\n${base64.match(/.{1,64}/g)?.join('\n')}\n-----END ${type}-----`
+
+  if (password && key.type === 'private') {
+    const privateKeyObject = createPrivateKey({
+      key: pem,
+      format: 'pem',
+      type: 'pkcs8',
+    })
+    pem = privateKeyObject.export({
+      type: 'pkcs8',
+      format: 'pem',
+      cipher: 'aes-256-cbc',
+      passphrase: password,
+    }) as string
   }
-  throw new Error('Invalid key type. Key must be a private or public key object.')
+
+  return pem
 }
 
 /**
- * Saves a cryptographic key object to a file in PEM format. If it's a private key and a password is provided,
- * the key will be encrypted before being written to the file.
+ * Saves a CryptoKey to a specified file in PEM format.
  *
- * @param key The cryptographic key object to be saved. It must be either a private or public key object.
- * @param filePath The file system path where the key should be saved.
- * @param password Optional password for encrypting the private key.
+ * This function converts the given CryptoKey to a PEM formatted string and saves it to the specified file path.
+ * If a password is provided, the private key will be encrypted using AES-256-CBC cipher.
  *
- * @example
- * // Assuming privateKey is a valid KeyObject
- * saveKey(privateKey, './myPrivateKey.pem', 'strongpassword')
- *   .then(() => console.log('Key saved successfully'))
- *   .catch(err => console.error('Error saving key:', err));
+ * @param {CryptoKey} key - The CryptoKey object to be saved.
+ * @param {string} filePath - The path to the file where the key will be saved.
+ * @param {string} [password] - Optional passphrase for encrypting the private key. This parameter is ignored for public keys.
+ * @returns {Promise<void>} A promise that resolves when the key is successfully saved.
+ *
+ * @throws Will throw an error if the key cannot be saved.
  */
-export async function saveKey(key: KeyObject, filePath: string, password?: string): Promise<void> {
+export async function saveKey(key: CryptoKey, filePath: string, password?: string): Promise<void> {
   try {
-    const pem = keyToPem(key, password)
+    const pem = await cryptoKeyToPem(key, password)
     await save(filePath, pem)
   } catch (e: any) {
     throw new Error(`Failed to save key: ${e.message}`)
@@ -136,55 +139,84 @@ export async function saveKey(key: KeyObject, filePath: string, password?: strin
 }
 
 /**
- * Converts a PEM-encoded string to a private key object. If the PEM string is encrypted,
- * a password must be provided to decrypt it.
+ * Converts a PEM formatted private key to a CryptoKey object.
  *
- * @param pemData The PEM string to convert to a private key.
- * @param password Optional password used to decrypt the encrypted PEM string.
- * @returns The private key object.
+ * This function imports a private key from a PEM formatted string and converts it to a CryptoKey object.
+ * If the PEM data is encrypted, a password must be provided.
  *
- * @example
- * const pemString = '-----BEGIN ENCRYPTED PRIVATE KEY-----\nMIIFDjBABgkqhk ...';
- * const privateKey = pemToPrivateKey(pemString, 'mypassword');
- * console.log(privateKey);
+ * @param {string} pemData - The PEM formatted private key string.
+ * @param {AlgorithmIdentifier | RsaHashedImportParams | EcKeyImportParams} algorithm - The algorithm identifier for the key.
+ * @param {string} [password] - Optional passphrase for decrypting the encrypted key.
+ * @returns {Promise<CryptoKey>} A promise that resolves to the private key as a CryptoKey object.
+ *
+ * @throws Will throw an error if the key cannot be imported.
  */
-export function pemToPrivateKey(pemData: string, password?: string): KeyObject {
-  const options: any = {
+export async function pemToPrivateKey(
+  pemData: string,
+  algorithm: AlgorithmIdentifier | RsaHashedImportParams | EcKeyImportParams,
+  password?: string,
+): Promise<CryptoKey> {
+  const keyObject = createPrivateKey({
     key: pemData,
-    format: 'pem' as 'pem',
-  }
+    format: 'pem',
+    passphrase: password,
+  })
 
-  // Add password to options if it is provided
-  if (password) {
-    options.passphrase = password
-  }
-
-  return createPrivateKey(options)
+  const keyBuffer = keyObject.export({ type: 'pkcs8', format: 'der' })
+  return crypto.subtle.importKey('pkcs8', keyBuffer, algorithm, true, ['sign'])
 }
 
 /**
- * Loads a private key from a file. If the file is encrypted, a password must be provided.
+ * Converts a PEM formatted public key to a CryptoKey object.
  *
- * @param filePath Path to the private key file.
- * @param password Optional password used to decrypt the encrypted key file.
- * @returns The private key object.
+ * This function imports a public key from a PEM formatted string and converts it to a CryptoKey object.
+ *
+ * @param {string} pemData - The PEM formatted public key string.
+ * @param {AlgorithmIdentifier | RsaHashedImportParams | EcKeyImportParams} algorithm - The algorithm identifier for the key.
+ * @returns {Promise<CryptoKey>} A promise that resolves to the public key as a CryptoKey object.
+ *
+ * @throws Will throw an error if the key cannot be imported.
+ */
+export async function pemToPublicKey(
+  pemData: string,
+  algorithm: AlgorithmIdentifier | RsaHashedImportParams | EcKeyImportParams,
+): Promise<CryptoKey> {
+  const keyObject = createPublicKey({
+    key: pemData,
+    format: 'pem',
+  })
+
+  const keyBuffer = keyObject.export({ type: 'spki', format: 'der' })
+  return crypto.subtle.importKey('spki', keyBuffer, algorithm, true, ['verify'])
+}
+
+/**
+ * Loads a private key from a file and converts it to a CryptoKey object.
+ * If the file is encrypted, a password must be provided.
+ *
+ * @param filePath - The path to the private key file.
+ * @param algorithm - The algorithm identifier for the key.
+ * @param password - Optional password used to decrypt the encrypted key file.
+ * @returns A promise that resolves to the private key as a CryptoKey object.
+ *
+ * @throws Will throw an error if the private key cannot be loaded or converted.
  *
  * @example
- * async function main() {
- *   try {
- *     const privateKey = await loadPrivateKey('./path/to/private/key.pem', 'optional-password');
- *     console.log('Private Key:', privateKey);
- *   } catch (error) {
- *     console.error('Error loading private key:', error);
- *   }
- * }
- *
- * main();
+ * // Load an RSA private key
+ * const privateKey = await loadPrivateKey('./path/to/private/key.pem', {
+ *   name: 'RSASSA-PKCS1-v1_5',
+ *   hash: { name: 'SHA-256' },
+ * });
+ * console.log(privateKey);
  */
-export async function loadPrivateKey(filePath: string, password?: string): Promise<KeyObject> {
+export async function loadPrivateKey(
+  filePath: string,
+  algorithm: AlgorithmIdentifier | RsaHashedImportParams | EcKeyImportParams,
+  password?: string,
+): Promise<CryptoKey> {
   try {
     const keyData = await read(filePath)
-    const privateKey = pemToPrivateKey(keyData, password)
+    const privateKey = await pemToPrivateKey(keyData, algorithm, password)
     return privateKey
   } catch (error: any) {
     throw new Error(`Failed to load private key: ${error.message}`)
@@ -192,45 +224,29 @@ export async function loadPrivateKey(filePath: string, password?: string): Promi
 }
 
 /**
- * Converts a PEM-encoded string to a public key object.
+ * Loads a public key from a file and converts it to a CryptoKey object.
  *
- * @param pemData The PEM string to convert to a public key.
- * @returns The public key object.
+ * @param filePath - The path to the public key file.
+ * @param algorithm - The algorithm identifier for the key.
+ * @returns A promise that resolves to the public key as a CryptoKey object.
  *
- * @example
- * const pemString = '-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA...';
- * const publicKey = pemToPublicKey(pemString);
- * console.log('Public Key:', publicKey);
- */
-export function pemToPublicKey(pemData: string): KeyObject {
-  return createPublicKey({
-    key: pemData,
-    format: 'pem' as 'pem',
-  })
-}
-
-/**
- * Loads a public key from a file.
- *
- * @param filePath Path to the public key file.
- * @returns The public key object.
+ * @throws Will throw an error if the public key cannot be loaded or converted.
  *
  * @example
- * async function main() {
- *   try {
- *     const publicKey = await loadPublicKey('./path/to/public/key.pem');
- *     console.log('Public Key:', publicKey);
- *   } catch (error) {
- *     console.error('Error loading public key:', error);
- *   }
- * }
- *
- * main();
+ * // Load an RSA public key
+ * const publicKey = await loadPublicKey('./path/to/public/key.pem', {
+ *   name: 'RSASSA-PKCS1-v1_5',
+ *   hash: { name: 'SHA-256' },
+ * });
+ * console.log(publicKey);
  */
-export async function loadPublicKey(filePath: string): Promise<KeyObject> {
+export async function loadPublicKey(
+  filePath: string,
+  algorithm: AlgorithmIdentifier | RsaHashedImportParams | EcKeyImportParams,
+): Promise<CryptoKey> {
   try {
     const keyData = await read(filePath)
-    const publicKey = pemToPublicKey(keyData)
+    const publicKey = await pemToPublicKey(keyData, algorithm)
     return publicKey
   } catch (error: any) {
     throw new Error(`Failed to load public key: ${error.message}`)
@@ -238,94 +254,94 @@ export async function loadPublicKey(filePath: string): Promise<KeyObject> {
 }
 
 /**
- * Converts a private or public key to a hex string representation.
+ * Converts a private or public CryptoKey to a hex string representation.
  *
- * @param key The key to convert (either a private or public key).
+ * @param key The CryptoKey to convert (either a private or public key).
  * @returns The hex string representation of the key.
  *
  * @example
- * const keyHex = keyToHex(privateKeyObject); // privateKeyObject should be a valid KeyObject
+ * const keyHex = await keyToHex(privateKey); // privateKey should be a valid CryptoKey
  * console.log('Key Hex:', keyHex);
  */
-export function keyToHex(key: KeyObject): string {
-  let keyData: Buffer
+export async function keyToHex(key: CryptoKey): Promise<string> {
+  let keyData: ArrayBuffer
 
   // Check the type of the key to determine how to handle it
   if (key.type === 'private') {
     // Convert private key to DER format
-    keyData = key.export({
-      type: 'pkcs8',
-      format: 'der',
-    })
+    keyData = await crypto.subtle.exportKey('pkcs8', key)
   } else if (key.type === 'public') {
     // Convert public key to DER format
-    keyData = key.export({
-      type: 'spki',
-      format: 'der',
-    })
+    keyData = await crypto.subtle.exportKey('spki', key)
   } else {
     throw new Error('Unsupported key type')
   }
 
   // Convert the binary data to a hexadecimal string
-  return keyData.toString('hex')
+  return Buffer.from(keyData).toString('hex')
 }
 
 /**
- * Checks if two public keys match.
+ * Compares two public keys to check if they match.
  *
- * @param publicKey1 The first public key as a KeyObject.
- * @param publicKey2 The second public key as a KeyObject.
- * @returns True if the keys match, False otherwise.
+ * This function exports the given CryptoKey objects to their raw SPKI format,
+ * converts them to hexadecimal strings, and then compares these strings to
+ * determine if the keys are identical.
+ *
+ * @param publicKey1 - The first public key as a CryptoKey object.
+ * @param publicKey2 - The second public key as a CryptoKey object.
+ * @returns A promise that resolves to `true` if the keys match, `false` otherwise.
  *
  * @example
- * const key1 = createPublicKey({
- *   key: publicKeyPem1,
- *   format: 'pem'
- * });
- * const key2 = createPublicKey({
- *   key: publicKeyPem2,
- *   format: 'pem'
- * });
- * const match = doPublicKeysMatch(key1, key2);
+ * const key1 = await crypto.subtle.generateKey(
+ *   { name: 'RSASSA-PKCS1-v1_5', modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: { name: 'SHA-256' } },
+ *   true,
+ *   ['verify']
+ * );
+ * const key2 = await crypto.subtle.generateKey(
+ *   { name: 'RSASSA-PKCS1-v1_5', modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: { name: 'SHA-256' } },
+ *   true,
+ *   ['verify']
+ * );
+ * const match = await doPublicKeysMatch(key1.publicKey, key2.publicKey);
  * console.log('Keys match:', match);
  */
-export function doPublicKeysMatch(publicKey1: KeyObject, publicKey2: KeyObject): boolean {
-  // Serialize both public keys to DER format for comparison
-  const publicKey1Der = publicKey1.export({
-    type: 'spki',
-    format: 'der',
-  })
+export async function doPublicKeysMatch(
+  publicKey1: CryptoKey,
+  publicKey2: CryptoKey,
+): Promise<boolean> {
+  const publicKey1Raw = new Uint8Array(await crypto.subtle.exportKey('spki', publicKey1))
+  const publicKey2Raw = new Uint8Array(await crypto.subtle.exportKey('spki', publicKey2))
 
-  const publicKey2Der = publicKey2.export({
-    type: 'spki',
-    format: 'der',
-  })
+  const publicKey1Hex = Array.from(new Uint8Array(publicKey1Raw))
+    .map((byte) => byte.toString(16).padStart(2, '0'))
+    .join('')
+  const publicKey2Hex = Array.from(publicKey2Raw)
+    .map((byte) => byte.toString(16).padStart(2, '0'))
+    .join('')
 
-  // Compare the serialized public key data
-  return publicKey1Der.equals(publicKey2Der)
+  return publicKey1Hex === publicKey2Hex
 }
 
-// TODO: finalize which function is to keep (from node's crypto or webcrypto)
-//      This can be done only after completing the AutoID package and testing
-//      it to see which one is useful.
-// export async function doPublicKeysMatch(
-//   publicKey1: CryptoKey,
-//   publicKey2: CryptoKey,
-// ): Promise<boolean> {
-//   const publicKey1Raw = new Uint8Array(await crypto.subtle.exportKey('spki', publicKey1))
-//   const publicKey2Raw = new Uint8Array(await crypto.subtle.exportKey('spki', publicKey2))
+// ===========================================
+//                  Utils
+// ===========================================
 
-//   const publicKey1Hex = Array.from(new Uint8Array(publicKey1Raw))
-//     .map((byte) => byte.toString(16).padStart(2, '0'))
-//     .join('')
-//   const publicKey2Hex = Array.from(publicKey2Raw)
-//     .map((byte) => byte.toString(16).padStart(2, '0'))
-//     .join('')
-
-//   return publicKey1Hex === publicKey2Hex
-// }
-
+/**
+ * Validates if the derived public key matches the certificate's public key.
+ *
+ * This function exports the derived public key to its raw SPKI format, converts both
+ * the certificate's public key and the derived public key to hexadecimal strings, and
+ * compares these strings to determine if they are identical.
+ *
+ * @param {x509.PublicKey} certPublicKey - The public key extracted from the certificate.
+ * @param {CryptoKey} derivedPublicKey - The derived public key to be validated.
+ * @returns {Promise<boolean>} A promise that resolves to `true` if the keys match, `false` otherwise.
+ *
+ * @example
+ * const isValid = await validateCertificatePublicKey(certPublicKey, derivedPublicKey);
+ * console.log('Keys match:', isValid);
+ */
 export async function validateCertificatePublicKey(
   certPublicKey: x509.PublicKey,
   derivedPublicKey: CryptoKey,
@@ -342,4 +358,156 @@ export async function validateCertificatePublicKey(
     .join('')
 
   return certPublicKeyHex === derivedPublicKeyHex
+}
+
+function arrayBufferToBase64(buffer: ArrayBuffer): string {
+  let binary = ''
+  const bytes = new Uint8Array(buffer)
+  const len = bytes.byteLength
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i])
+  }
+  return btoa(binary)
+}
+
+function base64ToArrayBuffer(base64: string) {
+  // Node.js Buffer provides a more robust handling of base64.
+  const buffer = Buffer.from(base64, 'base64')
+  return new Uint8Array(buffer)
+}
+
+// get the key type & base64 final string from the PEM string (private or public key)
+function stripPemHeaders(pem: string): string {
+  return pem
+    .replace(/-----BEGIN .*? KEY-----/g, '')
+    .replace(/-----END .*? KEY-----/g, '')
+    .replace(/\s+/g, '') // Remove all whitespace, including newlines and spaces
+}
+
+function pemToArrayBuffer(pem: string): [KeyType, Uint8Array] {
+  let keyType: KeyType
+
+  if (pem.includes('-----BEGIN PRIVATE KEY-----')) {
+    keyType = KeyType.PRIVATE
+  } else if (pem.includes('-----BEGIN PUBLIC KEY-----')) {
+    keyType = KeyType.PUBLIC
+  }
+  // else if (pem.includes('-----BEGIN RSA PRIVATE KEY-----')) {
+  //   keyType = KeyType.RSA_PRIVATE
+  // }
+  else {
+    throw new Error('Unsupported key format')
+  }
+
+  return [keyType, base64ToArrayBuffer(stripPemHeaders(pem))]
+}
+
+/**
+ * Converts a PEM key (private or public key) to a hex string representation.
+ * @param pem pem key
+ * @returns hex string representation of the key
+ * @example
+ * const pem = '-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANB ...';
+ * const keyHex = pemToHex(pem); // --> 0x302a300506032b657003210012533ac395885661e254e171c3e5c57b38b122b1bec02dec4757bdec5566edd9
+ *
+ */
+export function pemToHex(pem: string): string {
+  const pemLines = pem.split('\n').filter((line) => line.trim() && !line.trim().startsWith('-----'))
+  const base64Content = pemLines.join('')
+  const buffer = Buffer.from(base64Content, 'base64')
+
+  let keyData: Buffer
+
+  if (pem.includes('BEGIN PRIVATE KEY')) {
+    // Standard PKCS#8 format
+    const privateKey = createPrivateKey({ key: buffer, format: 'der', type: 'pkcs8' })
+    keyData = privateKey.export({ type: 'pkcs8', format: 'der' })
+  } else if (pem.includes('BEGIN PUBLIC KEY')) {
+    // Standard SPKI format
+    const publicKey = createPublicKey({ key: buffer, format: 'der', type: 'spki' })
+    keyData = publicKey.export({ type: 'spki', format: 'der' })
+  } else if (pem.includes('BEGIN RSA PRIVATE KEY')) {
+    // PKCS#1 format for RSA private keys
+    const privateKey = createPrivateKey({ key: buffer, format: 'der', type: 'pkcs1' })
+    keyData = privateKey.export({ type: 'pkcs1', format: 'der' })
+  } else {
+    throw new Error('Unsupported key format')
+  }
+
+  return '0x' + keyData.toString('hex')
+}
+
+enum KeyType {
+  PRIVATE = 'PRIVATE',
+  PUBLIC = 'PUBLIC',
+}
+
+interface Algorithm {
+  name: string
+}
+export type WebCryptoAlgorithmIdentifier = Algorithm | string
+
+/**
+ * Converts a PEM key (private or public key) to a CryptoKey format.
+ * @param pem pem string
+ * @returns private/public key in CryptoKey format
+ */
+export async function pemToCryptoKeyForSigning(
+  pem: string,
+  algorithm:
+    | WebCryptoAlgorithmIdentifier
+    | RsaHashedImportParams
+    | EcKeyImportParams
+    | HmacImportParams
+    | AesKeyAlgorithm,
+): Promise<CryptoKey> {
+  const [keyType, base64Final] = pemToArrayBuffer(pem)
+
+  let formatType: 'pkcs8' | 'spki' | 'raw'
+  let keyUsages: Iterable<KeyUsage>
+  if (keyType === KeyType.PRIVATE) {
+    formatType = 'pkcs8'
+    keyUsages = ['sign']
+  } else if (keyType === KeyType.PUBLIC) {
+    formatType = 'spki' // 'raw' for Ed25519
+    keyUsages = ['verify']
+  }
+  // else if (keyType === KeyType.RSA_PRIVATE) {
+  //   formatType = 'jwk'
+  //   keyUsages = ['decrypt']
+  // }
+  else {
+    throw new Error('Unsupported key format')
+  }
+
+  // Import the key
+  return crypto.subtle.importKey(
+    formatType,
+    base64Final,
+    algorithm,
+    true, // extractable
+    keyUsages,
+  )
+}
+
+/**
+ * Decrypts a PEM-encoded private key using the provided password.
+ */
+export async function decryptPem(pem: string, password: string): Promise<string> {
+  try {
+    const keyObject = createPrivateKey({
+      key: pem,
+      format: 'pem',
+      type: 'pkcs8',
+      passphrase: password,
+    })
+    const pemDecrypted = keyObject.export({
+      type: 'pkcs8',
+      format: 'pem',
+    }) as string
+    return pemDecrypted
+  } catch (error: any) {
+    console.error('Failed to decrypt PEM:', error)
+    throw new Error(`Failed to decrypt PEM: ${error.message}`)
+  }
 }

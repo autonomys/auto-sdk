@@ -1,5 +1,6 @@
-//! For key generation, management, `keyManagement.ts` file is used using "crypto" library.
-//! And for certificate related, used "@peculiar/x509" library.
+/* 
+  This file contains the CertificateManager class, which is used to create and manage X.509 certificates.
+*/
 
 import {
   blake2b_256,
@@ -11,15 +12,14 @@ import { AsnConvert } from '@peculiar/asn1-schema'
 import { AttributeTypeAndValue, GeneralNames } from '@peculiar/asn1-x509'
 import { Crypto } from '@peculiar/webcrypto'
 import * as x509 from '@peculiar/x509'
-import { KeyObject, createPublicKey } from 'crypto'
-import { doPublicKeysMatch, pemToPublicKey } from './keyManagement'
+import { validateCertificatePublicKey } from './keyManagement'
 
 const crypto = new Crypto()
 x509.cryptoProvider.set(crypto)
 
 interface SigningParams {
   privateKey: CryptoKey
-  algorithm: 'sha256' | null // Only 'sha256' or null for Ed25519
+  algorithm: 'SHA-256' | null // Only 'sha256' or null for Ed25519
 }
 
 export const OID_COMMON_NAME = '2.5.4.3' // OID for Common Name, not available in the library.
@@ -32,8 +32,8 @@ export class CertificateManager {
 
   constructor(
     certificate: x509.X509Certificate | null = null,
-    privateKey: CryptoKey | null = null,
-    publicKey: CryptoKey | null = null,
+    privateKey: CryptoKey,
+    publicKey: CryptoKey,
   ) {
     this.certificate = certificate
     this.privateKey = privateKey
@@ -51,8 +51,8 @@ export class CertificateManager {
       return { privateKey: privateKey, algorithm: null }
     }
 
-    if (privateKey.algorithm.name === 'rsa') {
-      return { privateKey: privateKey, algorithm: 'sha256' }
+    if (privateKey.algorithm.name === 'RSASSA-PKCS1-v1_5') {
+      return { privateKey: privateKey, algorithm: 'SHA-256' }
     }
 
     throw new Error('Unsupported key type for signing.')
@@ -127,7 +127,7 @@ export class CertificateManager {
     let signingAlgorithm: Algorithm | EcdsaParams
     if (privateKey.algorithm.name === 'Ed25519') {
       signingAlgorithm = { name: 'Ed25519' }
-    } else if (privateKey.algorithm.name === 'rsa') {
+    } else if (privateKey.algorithm.name === 'RSASSA-PKCS1-v1_5') {
       signingAlgorithm = { name: 'RSASSA-PKCS1-v1_5', hash: { name: 'SHA-256' } }
     } else {
       throw new Error('Unsupported key type for signing')
@@ -165,21 +165,6 @@ export class CertificateManager {
     return this.signCSR(csr)
   }
 
-  // TODO: later on move to "keyManagement.ts"
-  private static publicKeyToKeyObject(publicKey: x509.PublicKey): KeyObject {
-    // Export the key data to ArrayBuffer
-    const keyData = publicKey.rawData // DER format
-
-    // Create a KeyObject from the key data
-    const keyObject = createPublicKey({
-      key: Buffer.from(keyData),
-      format: 'der',
-      type: 'spki',
-    })
-
-    return keyObject
-  }
-
   async issueCertificate(
     csr: x509.Pkcs10CertificateRequest,
     validityPeriodDays: number = 365,
@@ -201,13 +186,7 @@ export class CertificateManager {
       }
       autoId = blake2b_256(stringToUint8Array(subjectCommonName))
     } else {
-      if (
-        // FIXME: modify
-        !doPublicKeysMatch(
-          CertificateManager.publicKeyToKeyObject(certificate.publicKey),
-          pemToPublicKey(await cryptoKeyToPem(publicKey)),
-        )
-      ) {
+      if (!validateCertificatePublicKey(certificate.publicKey, publicKey)) {
         throw new Error(
           'Issuer certificate public key does not match the private key used for signing.',
         )
@@ -260,18 +239,12 @@ export class CertificateManager {
         value: autoIdSan,
       })
 
-      // const newSanExtension = existingSan + CertificateManager.stringToArrayBuffer(autoIdSan)
       const newSanExtension = new x509.SubjectAlternativeNameExtension(
         generalNames,
         existingSan.critical,
       )
       certificateBuilder.extensions.push(newSanExtension)
     } else {
-      // certificateBuilder.extensions.push(
-      //   new x509.SubjectAlternativeNameExtension([autoIdSan]),
-      //   false,
-      // )
-
       certificateBuilder.extensions.push(
         new x509.SubjectAlternativeNameExtension([
           { type: 'url' /* as x509.GeneralNameType */, value: autoIdSan },
@@ -281,7 +254,6 @@ export class CertificateManager {
 
     // Copy all extensions from the CSR to the certificate
     for (const ext of csr.extensions) {
-      // certificateBuilder.extensions.push(new x509.Extension(ext.value, ext.critical))
       certificateBuilder.extensions.push(ext)
     }
 
@@ -323,22 +295,4 @@ export class CertificateManager {
     const certificatePem = CertificateManager.certificateToPem(this.certificate)
     await save(filePath, certificatePem)
   }
-}
-
-function arrayBufferToBase64(buffer: ArrayBuffer): string {
-  let binary = ''
-  const bytes = new Uint8Array(buffer)
-  const len = bytes.byteLength
-  for (let i = 0; i < len; i++) {
-    binary += String.fromCharCode(bytes[i])
-  }
-  return btoa(binary)
-}
-
-async function cryptoKeyToPem(key: CryptoKey): Promise<string> {
-  const exported = await crypto.subtle.exportKey(key.type === 'private' ? 'pkcs8' : 'spki', key)
-  const base64 = arrayBufferToBase64(exported)
-  const type = key.type === 'private' ? 'PRIVATE KEY' : 'PUBLIC KEY'
-  const pem = `-----BEGIN ${type}-----\n${base64.match(/.{1,64}/g)?.join('\n')}\n-----END ${type}-----`
-  return pem
 }

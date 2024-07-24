@@ -3129,18 +3129,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"auto-id-examples@workspace:examples/auto-id":
-  version: 0.0.0-use.local
-  resolution: "auto-id-examples@workspace:examples/auto-id"
-  dependencies:
-    "@autonomys/auto-id": "workspace:*"
-    "@types/node": "npm:^20.12.12"
-    dotenv: "npm:^16.4.5"
-    ts-node: "npm:^10.9.2"
-    typescript: "npm:^5.4.5"
-  languageName: unknown
-  linkType: soft
-
 "auto-sdk-next-example@workspace:examples/next":
   version: 0.0.0-use.local
   resolution: "auto-sdk-next-example@workspace:examples/next"
@@ -7949,6 +7937,7 @@ __metadata:
   resolution: "node@workspace:examples/node"
   dependencies:
     "@autonomys/auto-consensus": "workspace:*"
+    "@autonomys/auto-id": "workspace:*"
     "@autonomys/auto-utils": "workspace:*"
     commander: "npm:^12.1.0"
     dotenv: "npm:^16.4.5"
