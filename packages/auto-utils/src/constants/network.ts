@@ -2,9 +2,22 @@
 
 import type { Network } from '../types/network'
 
+export enum NetworkId {
+  AUTONOMYS_GEMINI_3H = 'autonomys-gemini-3h',
+  AUTONOMYS_DEVNET = 'autonomys-devnet',
+  AUTONOMYS_LOCALHOST = 'autonomys-localhost',
+}
+
+export enum DomainId {
+  AUTO_ID = 'auto-id',
+  NOVA = 'nova',
+}
+
+export const ASTRAL_EXPLORER = 'https://explorer.subspace.network/'
+
 export const networks: Network[] = [
   {
-    id: 'autonomys-gemini-3h',
+    id: NetworkId.AUTONOMYS_GEMINI_3H,
     name: 'Autonomys Testnet - Gemini 3H',
     rpcUrls: [
       'wss://rpc-0.gemini-3h.subspace.network/ws',
@@ -13,7 +26,7 @@ export const networks: Network[] = [
     explorer: [
       {
         name: 'Astral',
-        url: 'https://explorer.subspace.network/gemini-3h/consensus/',
+        url: ASTRAL_EXPLORER + 'gemini-3h/consensus/',
       },
       {
         name: 'Subscan',
@@ -22,37 +35,62 @@ export const networks: Network[] = [
     ],
     domains: [
       {
-        id: 'auto-id', // Placeholder
+        id: DomainId.AUTO_ID,
         name: 'Autonomys - Auto-ID',
-        rpcUrls: ['wss://rpc.auto-id.subspace.network/ws'],
+        rpcUrls: ['wss://autoid-0.gemini-3h.subspace.network/ws'],
       },
       {
-        id: 'auto-evm', // Placeholder
-        name: 'Autonomys - Auto-EVM (Nova)',
+        id: DomainId.NOVA,
+        name: 'Autonomys - Nova (EVM)',
         rpcUrls: ['https://nova-0.gemini-3h.subspace.network/ws'],
       },
     ],
     isTestnet: true,
   },
   {
-    id: 'autonomys-localhost',
+    id: NetworkId.AUTONOMYS_DEVNET,
+    name: 'Autonomys - Devnet',
+    rpcUrls: ['ws://rpc.devnet.subspace.network/ws'],
+    explorer: [
+      {
+        name: 'Astral',
+        url: ASTRAL_EXPLORER + '/devnet/consensus/',
+      },
+    ],
+    domains: [
+      {
+        id: DomainId.AUTO_ID,
+        name: 'Autonomys - Auto-ID',
+        rpcUrls: ['ws://autoid.devnet.subspace.network/ws'],
+      },
+      {
+        id: DomainId.NOVA,
+        name: 'Autonomys - Nova (EVM)',
+        rpcUrls: ['https:///nova.devnet.subspace.network/ws'],
+      },
+    ],
+    isTestnet: true,
+    isLocalhost: false,
+  },
+  {
+    id: NetworkId.AUTONOMYS_LOCALHOST,
     name: 'Autonomys - Localhost',
     rpcUrls: ['ws://127.0.0.1:9944/ws'],
     explorer: [
       {
         name: 'Astral',
-        url: 'https://explorer.subspace.network/localhost/consensus/',
+        url: ASTRAL_EXPLORER + 'localhost/consensus/',
       },
     ],
     domains: [
       {
-        id: 'auto-id', // Placeholder
+        id: DomainId.AUTO_ID,
         name: 'Autonomys - Auto-ID',
         rpcUrls: ['ws://127.0.0.1:9945/ws'],
       },
       {
-        id: 'auto-evm', // Placeholder
-        name: 'Autonomys - Auto-EVM (Nova)',
+        id: DomainId.NOVA,
+        name: 'Autonomys - Nova (EVM)',
         rpcUrls: ['https:///127.0.0.1:9946/ws'],
       },
     ],

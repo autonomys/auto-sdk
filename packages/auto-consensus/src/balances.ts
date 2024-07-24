@@ -1,6 +1,6 @@
 // file: src/balances.ts
 
-import type { ApiPromise, BN } from '@autonomys/auto-utils'
+import type { Api, BN } from '@autonomys/auto-utils'
 import { activate } from '@autonomys/auto-utils'
 
 type RawBalanceData = {
@@ -25,7 +25,7 @@ export const totalIssuance = async (networkId?: string) => {
   return totalIssuance
 }
 
-export const balance = async (api: ApiPromise, address: string): Promise<BalanceData> => {
+export const balance = async (api: Api, address: string): Promise<BalanceData> => {
   // Query the balance of the address and parse the data
   try {
     const rawBalance = await api.query.system.account(address)
