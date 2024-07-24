@@ -1,6 +1,5 @@
 // file: src/utils/signAndSendTx.ts
 
-import type { AutoIdError } from '@autonomys/auto-id'
 import type { ApiPromise, SubmittableResult } from '@polkadot/api'
 import { KeyringPair } from '@polkadot/keyring/types'
 import type {
@@ -16,14 +15,13 @@ import { detectTxSuccess } from './detectTxSuccess'
 import { expectSuccessfulTxEvent } from './events'
 import { validateEvents } from './validateEvents'
 
-export const signAndSendTx = async (
-  api: ApiPromise,
-  tx: SubmittableExtrinsic<'promise', ISubmittableResult>,
+export const signAndSendTx = async <TError>(
   sender: AddressOrPair | KeyringPair,
+  tx: SubmittableExtrinsic<'promise', ISubmittableResult>,
   options: Partial<SignerOptions> = {},
   eventsExpected: Events = expectSuccessfulTxEvent,
   log: boolean = false,
-  mapErrorCodeToEnum?: (errorCode: string) => AutoIdError | null,
+  mapErrorCodeToEnum?: (errorCode: string) => TError | undefined,
 ): Promise<
   TransactionSignedAndSend & { receipt: SubmittableResult; identifier?: string | null }
 > => {
@@ -50,13 +48,13 @@ export const signAndSendTx = async (
           else reject(new Error('Events not found'))
         } else {
           try {
-            const signedBlock = await api.rpc.chain.getBlock(blockHash)
             events.forEach(({ event: { section, method, data } }) => {
               if (section === 'system' && method === 'ExtrinsicFailed') {
                 const dispatchErrorJson = JSON.parse(dispatchError!.toString())
+                const errorEnum = mapErrorCodeToEnum?.(dispatchErrorJson.module.error)
                 reject(
                   new Error(
-                    `Extrinsic failed: ${mapErrorCodeToEnum?.(dispatchErrorJson.module.error)} in block #${signedBlock.block.header.number.toString()}`,
+                    `Extrinsic failed: ${errorEnum} in block #${blockHash} with error: ${dispatchErrorJson}`,
                   ),
                 )
               }

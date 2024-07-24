@@ -107,9 +107,8 @@ export class Registry {
     const req = { X509: certificateParam }
 
     const { receipt, identifier } = await signAndSendTx(
-      this.api,
-      this.api.tx.autoId.registerAutoId(req),
       this.signer,
+      this.api.tx.autoId.registerAutoId(req),
       {},
       [],
       false,
@@ -145,9 +144,8 @@ export class Registry {
     }
 
     const { receipt } = await signAndSendTx(
-      this.api,
-      this.api.tx.autoId.revokeCertificate(autoIdIdentifier, signatureEncoded),
       this.signer,
+      this.api.tx.autoId.revokeCertificate(autoIdIdentifier, signatureEncoded),
       {},
       [],
       false,
@@ -184,9 +182,8 @@ export class Registry {
     }
 
     const { receipt } = await signAndSendTx(
-      this.api,
-      this.api.tx.autoId.deactivateAutoId(autoIdIdentifier, signatureEncoded),
       this.signer,
+      this.api.tx.autoId.deactivateAutoId(autoIdIdentifier, signatureEncoded),
       {},
       [],
       false,
@@ -227,9 +224,8 @@ export class Registry {
     const req = { X509: renewCertificate }
 
     const { receipt, identifier } = await signAndSendTx(
-      this.api,
-      this.api.tx.autoId.renewAutoId(autoIdIdentifier, req),
       this.signer,
+      this.api.tx.autoId.renewAutoId(autoIdIdentifier, req),
       {},
       [],
       false,
