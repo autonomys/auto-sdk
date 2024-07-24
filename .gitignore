@@ -42,3 +42,5 @@ tsconfig.tsbuildinfo
 # Directory use by scripts
 executables/
 downloads/
+
+install-state.gz
