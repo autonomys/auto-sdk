@@ -7,7 +7,7 @@ OS="macos" # macos | ubuntu | windows
 ARCHITECTURE="aarch64" # aarch64 | x86_64-skylake | x86_64-v2
 
 # GitHub repository
-REPO="subspace/subspace"
+REPO="autonomys/subspace"
 TAG="latest" # "tags/gemini-3h-2024-may-06" # Tag of the release to download or "latest" for the latest release
 
 # Directories
