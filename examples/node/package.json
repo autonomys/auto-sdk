@@ -6,7 +6,7 @@
   "packageManager": "yarn@4.2.2",
   "repository": {
     "type": "git",
-    "url": "https://github.com/subspace/auto-sdk"
+    "url": "https://github.com/autonomys/auto-sdk"
   },
   "author": {
     "name": "Autonomys",

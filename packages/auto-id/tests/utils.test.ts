@@ -21,7 +21,7 @@ describe('Verify crypto functions', () => {
     // Convert derEncodedOID to hex string for comparison
     const derEncodedOIDHex = Buffer.from(derEncodedOID).toString('hex')
 
-    // Expected DER encoded OID from the result of tests in https://github.com/subspace/subspace/blob/d875a5aac35c1732eec61ce4359782eff58ff6fc/domains/pallets/auto-id/src/tests.rs#L127
+    // Expected DER encoded OID from the result of tests in https://github.com/autonomys/subspace/blob/d875a5aac35c1732eec61ce4359782eff58ff6fc/domains/pallets/auto-id/src/tests.rs#L127
     expect(derEncodedOIDHex).toEqual('300d06092a864886f70d01010b0500')
   })
 })

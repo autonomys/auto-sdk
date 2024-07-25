@@ -19,7 +19,7 @@ The repository is organized as follows:
 
 1. **Clone the repository:**
 
-   `git clone https://github.com/subspace/auto-sdk.git`
+   `git clone https://github.com/autonomys/auto-sdk.git`
 
 2. **Navigate to the project directory:**
 
