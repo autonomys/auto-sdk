@@ -10,6 +10,7 @@ import {
   RawOperatorDetails,
   RawOperatorId,
   RawWithdrawal,
+  RawWithdrawalHeader,
   StringNumberOrBigInt,
   Withdrawal,
 } from '../types/staking'
@@ -73,7 +74,7 @@ export const parseDeposit = (deposit: [StorageKey<AnyTuple>, Codec]): Deposit =>
 }
 
 export const parseWithdrawal = (withdrawal: [StorageKey<AnyTuple>, Codec]): Withdrawal => {
-  const header = withdrawal[0].toHuman() as RawDepositHeader
+  const header = withdrawal[0].toHuman() as RawWithdrawalHeader
   const parsedWithdrawal = withdrawal[1].toJSON() as RawWithdrawal
   return {
     operatorId: parseInt(header[0]),
