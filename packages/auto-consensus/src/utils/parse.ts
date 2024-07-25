@@ -9,6 +9,8 @@ import {
   RawDepositHeader,
   RawOperatorDetails,
   RawOperatorId,
+  RawWithdrawal,
+  RawWithdrawalHeader,
   StringNumberOrBigInt,
   Withdrawal,
 } from '../types/staking'
@@ -49,34 +51,52 @@ export const parseOperator = (operator: [StorageKey<AnyTuple>, Codec]): Operator
 export const parseDeposit = (deposit: [StorageKey<AnyTuple>, Codec]): Deposit => {
   const header = deposit[0].toHuman() as RawDepositHeader
   const parsedDeposit = deposit[1].toJSON() as RawDeposit
-  return {
-    operatorId: BigInt(header[0]),
-    account: header[1],
-    shares: BigInt(parsedDeposit.known.shares.toString()),
-    storageFeeDeposit: BigInt(parsedDeposit.known.storageFeeDeposit.toString()),
-    pending: {
-      amount: BigInt(parsedDeposit.pending.amount),
-      storageFeeDeposit: BigInt(parsedDeposit.pending.storageFeeDeposit),
-    },
-  }
-}
-
-export const parseWithdrawal = (withdrawal: [StorageKey<AnyTuple>, Codec]): Withdrawal => {
-  const header = withdrawal[0].toHuman() as RawDepositHeader
-  const parsedWithdrawal = withdrawal[1].toJSON() as Omit<Withdrawal, 'operatorId'>
+  const pending =
+    parsedDeposit.pending !== null
+      ? {
+          effectiveDomainId: parsedDeposit.pending.effectiveDomainEpoch[0],
+          effectiveDomainEpoch: parsedDeposit.pending.effectiveDomainEpoch[1],
+          amount: BigInt(parsedDeposit.pending.amount),
+          storageFeeDeposit: BigInt(parsedDeposit.pending.storageFeeDeposit),
+        }
+      : null
   return {
     operatorId: parseInt(header[0]),
     account: header[1],
-    totalWithdrawalAmount: parsedWithdrawal.totalWithdrawalAmount,
-    withdrawals: parsedWithdrawal.withdrawals,
+    shares: BigInt(parsedDeposit.known.shares.toString()),
+    storageFeeDeposit: BigInt(parsedDeposit.known.storageFeeDeposit.toString()),
+    known: {
+      shares: BigInt(parsedDeposit.known.shares.toString()),
+      storageFeeDeposit: BigInt(parsedDeposit.known.storageFeeDeposit.toString()),
+    },
+    pending,
+  } as Deposit
+}
+
+export const parseWithdrawal = (withdrawal: [StorageKey<AnyTuple>, Codec]): Withdrawal => {
+  const header = withdrawal[0].toHuman() as RawWithdrawalHeader
+  const parsedWithdrawal = withdrawal[1].toJSON() as RawWithdrawal
+  return {
+    operatorId: parseInt(header[0]),
+    account: header[1],
+    totalWithdrawalAmount: BigInt(parsedWithdrawal.totalWithdrawalAmount),
     withdrawalInShares: {
       domainEpoch: parsedWithdrawal.withdrawalInShares.domainEpoch,
       unlockAtConfirmedDomainBlockNumber:
         parsedWithdrawal.withdrawalInShares.unlockAtConfirmedDomainBlockNumber,
-      shares: BigInt(parsedWithdrawal.withdrawalInShares.shares).toString(10),
-      storageFeeRefund: BigInt(parsedWithdrawal.withdrawalInShares.storageFeeRefund).toString(10),
+      shares: BigInt(parsedWithdrawal.withdrawalInShares.shares),
+      storageFeeRefund: BigInt(parsedWithdrawal.withdrawalInShares.storageFeeRefund),
     },
-  }
+    withdrawals:
+      parsedWithdrawal.withdrawals &&
+      parsedWithdrawal.withdrawals.length > 0 &&
+      parsedWithdrawal.withdrawals.map((w) => ({
+        domainId: w.domainId,
+        unlockAtConfirmedDomainBlockNumber: w.unlockAtConfirmedDomainBlockNumber,
+        amountToUnlock: BigInt(w.amountToUnlock),
+        storageFeeRefund: BigInt(w.storageFeeRefund),
+      })),
+  } as Withdrawal
 }
 
 export const parseString = (operatorId: StringNumberOrBigInt): string =>

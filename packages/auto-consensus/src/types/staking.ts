@@ -2,8 +2,6 @@ import type { ApiPromise, KeyringPair } from '@autonomys/auto-utils'
 
 export type RawOperatorId = string[]
 
-export type RawDepositHeader = [string, string]
-
 export type RawOperatorDetails = {
   signingKey: string
   currentDomainId: number
@@ -49,39 +47,72 @@ export type Operator = {
   operatorDetails: OperatorDetails
 }
 
+export type RawDepositHeader = [string, string]
+
 export type RawDeposit = {
   known: {
     shares: number
     storageFeeDeposit: number
   }
   pending: {
-    effectiveDomainEpoch: number[]
+    effectiveDomainEpoch: [number, number]
     amount: string
     storageFeeDeposit: string
-  }
+  } | null
 }
 
 export type Deposit = {
-  operatorId: bigint
+  operatorId: number
   account: string
   shares: bigint
   storageFeeDeposit: bigint
-  pending: {
-    amount: bigint
+  known: {
+    shares: bigint
     storageFeeDeposit: bigint
   }
+  pending: {
+    effectiveDomainId: number
+    effectiveDomainEpoch: number
+    amount: bigint
+    storageFeeDeposit: bigint
+  } | null
 }
 
-export type Withdrawal = {
-  operatorId: number
-  account: string
-  totalWithdrawalAmount: number
-  withdrawals: string[]
+export type RawWithdrawalHeader = [string, string]
+
+export type RawWithdrawal = {
+  totalWithdrawalAmount: string
+  withdrawals: {
+    domainId: number
+    unlockAtConfirmedDomainBlockNumber: number
+    amountToUnlock: string
+    storageFeeRefund: string
+  }[]
   withdrawalInShares: {
     domainEpoch: number[]
     unlockAtConfirmedDomainBlockNumber: number
     shares: string
     storageFeeRefund: string
+  }
+}
+
+export type WithdrawalUnlock = {
+  domainId: number
+  unlockAtConfirmedDomainBlockNumber: number
+  amountToUnlock: bigint
+  storageFeeRefund: bigint
+}
+
+export type Withdrawal = {
+  operatorId: number
+  account: string
+  totalWithdrawalAmount: bigint
+  withdrawals: WithdrawalUnlock[]
+  withdrawalInShares: {
+    domainEpoch: number[]
+    unlockAtConfirmedDomainBlockNumber: number
+    shares: bigint
+    storageFeeRefund: bigint
   }
 }
 
