@@ -27,7 +27,6 @@ __metadata:
   resolution: "@autonomys/auto-consensus@workspace:packages/auto-consensus"
   dependencies:
     "@autonomys/auto-utils": "npm:^0.1.7"
-    "@polkadot/types-codec": "npm:^11.2.1"
     "@types/jest": "npm:^29.5.12"
     eslint: "npm:^8.57.0"
     jest: "npm:^29.7.0"
@@ -76,6 +75,7 @@ __metadata:
   dependencies:
     "@polkadot/api": "npm:^11.2.1"
     "@polkadot/extension-dapp": "npm:^0.47.5"
+    "@polkadot/types-codec": "npm:^11.2.1"
     "@types/jest": "npm:^29.5.12"
     eslint: "npm:^8.57.0"
     fs: "npm:^0.0.1-security"
