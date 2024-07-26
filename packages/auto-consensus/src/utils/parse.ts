@@ -1,6 +1,5 @@
-import type { StorageKey } from '@polkadot/types'
-import { AnyTuple, Codec } from '@polkadot/types-codec/types'
-import { DomainRegistry } from '../types'
+import type { AnyTuple, Codec, StorageKey } from '@autonomys/auto-utils'
+import { DomainRegistry } from '../types/domain'
 import {
   Deposit,
   Operator,

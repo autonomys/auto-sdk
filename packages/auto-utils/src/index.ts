@@ -3,6 +3,7 @@
 export * from './address'
 export * from './api'
 export * from './crypto'
+export * from './keyring'
 export * from './network'
 export * from './number'
 export * from './read'
