@@ -17,7 +17,7 @@ import {
 
 describe('Generate keypair for', () => {
   test('RSA', async () => {
-    const [privateKey, publicKey] = await generateRsaKeyPair()
+    const { privateKey, publicKey } = await generateRsaKeyPair()
     const privateKeyString = await cryptoKeyToPem(privateKey)
     const publicKeyString = await cryptoKeyToPem(publicKey)
     expect(privateKeyString).toStrictEqual(expect.any(String))
@@ -25,7 +25,7 @@ describe('Generate keypair for', () => {
   })
 
   test('Ed25519', async () => {
-    const [privateKey, publicKey] = await generateEd25519KeyPair()
+    const { privateKey, publicKey } = await generateEd25519KeyPair()
     const privateKeyString = await cryptoKeyToPem(privateKey)
     const publicKeyString = await cryptoKeyToPem(publicKey)
     expect(privateKeyString).toStrictEqual(expect.any(String))
@@ -35,7 +35,7 @@ describe('Generate keypair for', () => {
 
 describe('Private/Public key to PEM with/without password for', () => {
   test('RSA without password', async () => {
-    const [privateKey, publicKey] = await generateRsaKeyPair()
+    const { privateKey, publicKey } = await generateRsaKeyPair()
     const privateKeyPem = await cryptoKeyToPem(privateKey)
     const publicKeyPem = await cryptoKeyToPem(publicKey)
     expect(privateKeyPem).toMatch(/-----BEGIN PRIVATE KEY-----/)
@@ -43,13 +43,13 @@ describe('Private/Public key to PEM with/without password for', () => {
   })
 
   test('RSA with password', async () => {
-    const [privateKey] = await generateRsaKeyPair()
+    const { privateKey } = await generateRsaKeyPair()
     const privateKeyPem = await cryptoKeyToPem(privateKey, 'testpassword')
     expect(privateKeyPem).toMatch(/-----BEGIN ENCRYPTED PRIVATE KEY-----/)
   })
 
   test('Ed25519 without password', async () => {
-    const [privateKey, publicKey] = await generateEd25519KeyPair()
+    const { privateKey, publicKey } = await generateEd25519KeyPair()
     const privateKeyPem = await cryptoKeyToPem(privateKey)
     const publicKeyPem = await cryptoKeyToPem(publicKey)
     expect(privateKeyPem).toMatch(/-----BEGIN PRIVATE KEY-----/)
@@ -57,7 +57,7 @@ describe('Private/Public key to PEM with/without password for', () => {
   })
 
   test('Ed25519 with password', async () => {
-    const [privateKey] = await generateEd25519KeyPair()
+    const { privateKey } = await generateEd25519KeyPair()
     const privateKeyPem = await cryptoKeyToPem(privateKey, 'testpassword')
     expect(privateKeyPem).toMatch(/-----BEGIN ENCRYPTED PRIVATE KEY-----/)
   })
@@ -79,7 +79,7 @@ describe('PEM to Private/Public key for', () => {
       let originalPemPrivKey: string, originalPemPubKey: string
 
       beforeEach(async () => {
-        const [privateKey, publicKey] = await generator()
+        const { privateKey, publicKey } = await generator()
         privateKeyObject = await pemToPrivateKey(await cryptoKeyToPem(privateKey), algorithm)
         publicKeyObject = await pemToPublicKey(await cryptoKeyToPem(publicKey), algorithm)
 
@@ -132,14 +132,14 @@ describe('Save Key', () => {
   for (const { name, generator } of keyGenerators) {
     describe(`${name}`, () => {
       const testDir = path.join(__dirname, 'test_keys')
-      let privateKey: CryptoKey
+      let keyPair: CryptoKeyPair
 
       beforeAll(async () => {
         await fs.mkdir(testDir, { recursive: true })
       })
 
       beforeEach(async () => {
-        ;[privateKey] = await generator()
+        keyPair = await generator()
       })
 
       afterAll(async () => {
@@ -148,6 +148,7 @@ describe('Save Key', () => {
 
       test('should save a private key to a file', async () => {
         const filePath = path.join(testDir, 'testPrivateKey.pem')
+        const { privateKey } = keyPair
         await saveKey(privateKey, filePath)
         const fileContents = (await fs.readFile(filePath, { encoding: 'utf8' }))
           .replace(/\\n/g, '\n')
@@ -160,6 +161,7 @@ describe('Save Key', () => {
       test('should save an encrypted private key to a file and decrypt correctly', async () => {
         const filePath = path.join(testDir, 'testEncryptedPrivateKey.pem')
         const password = 'testpassword'
+        const { privateKey } = keyPair
         await saveKey(privateKey, filePath, password)
         const fileContents = (await fs.readFile(filePath, { encoding: 'utf8' }))
           .replace(/\\n/g, '\n')
@@ -178,6 +180,7 @@ describe('Save Key', () => {
 
       test('should throw an error when trying to save to an invalid path', async () => {
         const filePath = path.join(testDir, 'non_existent_directory', 'testPrivateKey.pem')
+        const { privateKey } = keyPair
         await expect(saveKey(privateKey, filePath)).rejects.toThrow()
       })
     })
@@ -209,27 +212,27 @@ describe('Load Key', () => {
 
       // Load Private Key Tests
       describe('loadPrivateKey', () => {
-        let privateKey: CryptoKey
+        let keyPair: CryptoKeyPair
         const filePath = path.join(testDir, 'testPrivateKey.pem')
         const password = 'testpassword'
 
         beforeAll(async () => {
           // Generate key pair and save private key
-          ;[privateKey] = await generator()
-          await saveKey(privateKey, filePath)
-          await saveKey(privateKey, `${filePath}.enc`, password)
+          keyPair = await generator()
+          await saveKey(keyPair.privateKey, filePath)
+          await saveKey(keyPair.privateKey, `${filePath}.enc`, password)
         })
 
         test('should load a private key from a file', async () => {
           const loadedPrivateKey = await loadPrivateKey(filePath, algorithm)
-          const originalPem = await cryptoKeyToPem(privateKey)
+          const originalPem = await cryptoKeyToPem(keyPair.privateKey)
           const loadedPem = await cryptoKeyToPem(loadedPrivateKey)
           expect(loadedPem).toBe(originalPem)
         })
 
         test('should load an encrypted private key from a file using a password', async () => {
           const loadedPrivateKey = await loadPrivateKey(`${filePath}.enc`, algorithm, password)
-          const originalPem = await cryptoKeyToPem(privateKey)
+          const originalPem = await cryptoKeyToPem(keyPair.privateKey)
           const loadedPem = await cryptoKeyToPem(loadedPrivateKey)
           expect(loadedPem).toBe(originalPem)
         })
@@ -248,7 +251,8 @@ describe('Load Key', () => {
 
         beforeAll(async () => {
           // Generate key pair and save public key
-          ;[, publicKey] = await generator()
+          const keyPair = await generator()
+          publicKey = keyPair.publicKey
           await saveKey(publicKey, filePath)
         })
 
@@ -272,11 +276,13 @@ describe('Private/Public key to hex for', () => {
   let privateKey: CryptoKey, publicKey: CryptoKey
 
   test('RSA', async () => {
-    ;[privateKey, publicKey] = await generateRsaKeyPair()
+    const keyPair = await generateRsaKeyPair()
+    privateKey = keyPair.privateKey
+    publicKey = keyPair.publicKey
   })
 
   test('Ed25519', async () => {
-    ;[privateKey, publicKey] = await generateEd25519KeyPair()
+    const keypair = await generateEd25519KeyPair()
   })
 
   afterEach(async () => {
@@ -300,10 +306,10 @@ describe('Do public keys match for', () => {
       let publicKey1: CryptoKey, publicKey2: CryptoKey, publicKey3: CryptoKey
 
       beforeEach(async () => {
-        const [, publicKeyPem1] = await keyGenerator()
+        const { publicKey: publicKeyPem1 } = await keyGenerator()
         publicKey1 = await pemToPublicKey(await cryptoKeyToPem(publicKeyPem1), algorithm)
         publicKey2 = publicKey1 // The same key to ensure a match
-        const [, publicKeyPem3] = await keyGenerator()
+        const { publicKey: publicKeyPem3 } = await keyGenerator()
         publicKey3 = await pemToPublicKey(await cryptoKeyToPem(publicKeyPem3), algorithm)
       })
 

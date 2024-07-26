@@ -6,13 +6,16 @@ import {
 } from '@peculiar/asn1-x509'
 import { Crypto } from '@peculiar/webcrypto'
 import { X509Certificate } from '@peculiar/x509'
-import { ApiPromise, SubmittableResult } from '@polkadot/api'
-import { KeyringPair } from '@polkadot/keyring/types'
+import { ApiPromise } from '@polkadot/api'
 import { bnToU8a, hexToU8a, u8aConcat } from '@polkadot/util'
 import * as fs from 'fs'
-import { CertificateManager } from './certificateManager'
-import { AutoIdX509Certificate, CertificateActionType } from './index'
-import { WebCryptoAlgorithmIdentifier, pemToCryptoKeyForSigning } from './keyManagement'
+import {
+  AutoIdX509Certificate,
+  CertificateActionType,
+  WebCryptoAlgorithmIdentifier,
+  getSubjectCommonName,
+  pemToCryptoKeyForSigning,
+} from './index'
 
 /**
  * Encodes a given string representation of an OID into its DER format,
@@ -104,7 +107,7 @@ export const identifierFromX509Cert = (
   issuerId: string | null | undefined,
   certificate: X509Certificate,
 ): string => {
-  const subjectCommonName = CertificateManager.getSubjectCommonName(certificate.subjectName)
+  const subjectCommonName = getSubjectCommonName(certificate.subjectName)
   if (!subjectCommonName) {
     throw new Error('Subject Common Name not found')
   }

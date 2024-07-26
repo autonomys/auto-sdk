@@ -13,7 +13,7 @@ const crypto = new Crypto()
  * The generated keys are suitable for signing and verification operations.
  *
  * @param {number} [keySize=2048] - The size of the key in bits. Can be 1024, 2048, or 4096. Default is 2048.
- * @returns {Promise<[CryptoKey, CryptoKey]>} A promise that resolves to an array containing the privateKey and publicKey as CryptoKey objects.
+ * @returns {Promise<CryptoKeyPair>} A promise that resolves to an array containing the privateKey and publicKey as CryptoKey objects.
  *
  * @example
  * // Generate an RSA key pair with the default key size (2048 bits)
@@ -22,7 +22,7 @@ const crypto = new Crypto()
  * // Generate an RSA key pair with a custom key size (4096 bits)
  * const [privateKey, publicKey] = await generateRsaKeyPair(4096);
  */
-export async function generateRsaKeyPair(keySize: number = 2048): Promise<[CryptoKey, CryptoKey]> {
+export async function generateRsaKeyPair(keySize: number = 2048): Promise<CryptoKeyPair> {
   const keyPair = await crypto.subtle.generateKey(
     {
       name: 'RSASSA-PKCS1-v1_5',
@@ -34,7 +34,7 @@ export async function generateRsaKeyPair(keySize: number = 2048): Promise<[Crypt
     ['sign', 'verify'], // key usages
   )
 
-  return [keyPair.privateKey, keyPair.publicKey]
+  return keyPair
 }
 
 /**
@@ -43,13 +43,13 @@ export async function generateRsaKeyPair(keySize: number = 2048): Promise<[Crypt
  * This function uses the Web Crypto API to generate an Ed25519 key pair.
  * The generated keys are suitable for signing and verification operations.
  *
- * @returns {Promise<[CryptoKey, CryptoKey]>} A promise that resolves to an array containing the privateKey and publicKey as CryptoKey objects.
+ * @returns {Promise<CryptoKeyPair>} A promise that resolves to an array containing the privateKey and publicKey as CryptoKey objects.
  *
  * @example
  * // Generate an Ed25519 key pair
  * const [privateKey, publicKey] = await generateEd25519KeyPair();
  */
-export async function generateEd25519KeyPair(): Promise<[CryptoKey, CryptoKey]> {
+export async function generateEd25519KeyPair(): Promise<CryptoKeyPair> {
   const keyPair = await crypto.subtle.generateKey(
     {
       name: 'Ed25519',
@@ -59,7 +59,7 @@ export async function generateEd25519KeyPair(): Promise<[CryptoKey, CryptoKey]> 
     ['sign', 'verify'], // key usages
   )
 
-  return [keyPair.privateKey, keyPair.publicKey]
+  return keyPair
 }
 
 /**
