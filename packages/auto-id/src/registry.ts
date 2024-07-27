@@ -2,11 +2,10 @@ import { ISubmittableResult, SubmittableExtrinsic } from '@autonomys/auto-utils'
 import { AsnParser, AsnSerializer } from '@peculiar/asn1-schema'
 import { Certificate } from '@peculiar/asn1-x509'
 import { X509Certificate } from '@peculiar/x509'
-import { ApiPromise, SubmittableResult, WsProvider } from '@polkadot/api'
+import { ApiPromise, SubmittableResult } from '@polkadot/api'
 import { compactAddLength } from '@polkadot/util'
 import {
   derEncodeSignatureAlgorithmOID,
-  identifierFromX509Cert,
   prepareSigningData,
   publicKeyAlgorithmToSignatureAlgorithm,
   signData,
@@ -31,11 +30,6 @@ export enum CertificateActionType {
   DeactivateAutoId,
 }
 
-interface RegistrationResult {
-  receipt: SubmittableResult | null
-  identifier: string | null
-}
-
 export const convertX509CertToDerEncodedComponents = (
   certificate: X509Certificate,
 ): [Uint8Array, Uint8Array] => {
@@ -51,10 +45,8 @@ export const convertX509CertToDerEncodedComponents = (
 export const registerAutoId = (
   api: ApiPromise,
   certificate: X509Certificate,
-  issuerId?: string | null | undefined,
+  issuerId?: string,
 ): SubmittableExtrinsic<'promise', ISubmittableResult> => {
-  const certIdentifier = identifierFromX509Cert(issuerId, certificate)
-
   const [derEncodedOID, tbsCertificateDerVec] = convertX509CertToDerEncodedComponents(certificate)
 
   const baseCertificate = {
