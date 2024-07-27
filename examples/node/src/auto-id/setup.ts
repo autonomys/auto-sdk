@@ -24,5 +24,9 @@ export const setup = async () => {
     'RSASSA-PKCS1-v1_5',
   )
 
-  return { api, signer, issuerKeys }
+  const leafPrivateFilePath = './res/leaf.rsa.private.pem'
+  const leafPublicFilePath = './res/leaf.rsa.private.pem'
+  const leafKeys = await pemToKeyPair(leafPrivateFilePath, leafPublicFilePath, 'RSASSA-PKCS1-v1_5')
+
+  return { api, signer, issuerKeys, leafKeys }
 }

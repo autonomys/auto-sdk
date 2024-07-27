@@ -1,9 +1,9 @@
-import { registerIssuerAutoId } from './auto-id-extrinsics'
+import { registerIssuerAutoId, registerLeafAutoId } from './auto-id-extrinsics'
 import { setup } from './setup'
 import { generateRandomString } from './utils'
 
 const main = async () => {
-  const { api, signer, issuerKeys } = await setup()
+  const { api, signer, issuerKeys, leafKeys } = await setup()
 
   const issuerSubjectCommonName = generateRandomString(10)
   const [issuerAutoIdIdentifier, issuerCert] = await registerIssuerAutoId(
@@ -11,6 +11,17 @@ const main = async () => {
     signer,
     issuerKeys,
     issuerSubjectCommonName,
+  )
+
+  const leafSubjectCommonName = generateRandomString(10)
+  const [leafAutoIdIdentifier, leafCert] = await registerLeafAutoId(
+    api,
+    signer,
+    issuerCert,
+    issuerKeys,
+    issuerAutoIdIdentifier!,
+    leafKeys,
+    leafSubjectCommonName,
   )
 }
 

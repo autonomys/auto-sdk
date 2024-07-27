@@ -1,15 +1,9 @@
 import {
   createAndSignCSR,
-  generateEd25519KeyPair,
-  generateRsaKeyPair,
-  getCertificate,
   getCertificateAutoId,
   issueCertificate,
-  loadPrivateKey,
-  mapErrorCodeToEnum,
   prettyPrintCertificate,
   registerAutoId,
-  saveKey,
   selfIssueCertificate,
 } from '@autonomys/auto-id'
 import { createConnection, KeyringPair, signAndSendTx } from '@autonomys/auto-utils'
@@ -23,6 +17,8 @@ export const registerIssuerAutoId = async (
   subjectCommonName: string,
 ): Promise<[string | null | undefined, X509Certificate]> => {
   const selfIssuedCert = await selfIssueCertificate(subjectCommonName, issuerKeyPair)
+  prettyPrintCertificate(selfIssuedCert)
+
   const registerIssuer = registerAutoId(api, selfIssuedCert)
   const { receipt, identifier } = await signAndSendTx(signer, registerIssuer, {}, [], false)
 
@@ -33,30 +29,28 @@ export const registerIssuerAutoId = async (
   return [identifier, selfIssuedCert]
 }
 
-// const registerLeafAutoId = async (
-//   api: ApiPromise,
-//   signer: KeyringPair,
-//   filePath: string,
-//   issuerCert: X509Certificate,
-//   issuerKeys: CryptoKeyPair,
-//   issuerAutoIdIdentifier: string,
-//   subjectCommonName: string,
-// ): Promise<string> => {
-//   const userKeys = await generateRsaKeyPair()
-//   await saveKey(userKeys.privateKey, filePath)
+export const registerLeafAutoId = async (
+  api: ApiPromise,
+  signer: KeyringPair,
+  issuerCert: X509Certificate,
+  issuerKeys: CryptoKeyPair,
+  issuerAutoIdIdentifier: string,
+  leafKeys: CryptoKeyPair,
+  subjectCommonName: string,
+): Promise<[string | null | undefined, X509Certificate]> => {
+  const leafCsr = await createAndSignCSR(subjectCommonName, leafKeys)
+  const leafCert = await issueCertificate(leafCsr, {
+    certificate: issuerCert,
+    keyPair: issuerKeys,
+  })
+  prettyPrintCertificate(leafCert)
 
-//   const userCsr = await createAndSignCSR(subjectCommonName, userKeys)
-//   const userCert = await issueCertificate(userCsr, {
-//     certificate: issuerCert,
-//     keyPair: issuerKeys,
-//   })
-//   prettyPrintCertificate(userCert)
+  const registerLeaf = registerAutoId(api, leafCert, issuerAutoIdIdentifier)
+  const { receipt, identifier } = await signAndSendTx(signer, registerLeaf, {}, [], false)
 
-//   const registerUser = await registerAutoId(api, signer, userCert, issuerAutoIdIdentifier)
-//   const userAutoIdIdentifier = registerUser.identifier!
-//   console.log(
-//     `Registered auto id from user cert: ${getCertificateAutoId(userCert)} with identifier: ${userAutoIdIdentifier} in block #${registerUser.receipt?.blockNumber?.toString()}`,
-//   )
+  console.log(
+    `Registered auto id from leaf cert: ${getCertificateAutoId(leafCert)} with identifier: ${identifier} in block #${receipt?.blockNumber?.toString()}`,
+  )
 
-//   return userAutoIdIdentifier
-// }
+  return [identifier, leafCert]
+}
