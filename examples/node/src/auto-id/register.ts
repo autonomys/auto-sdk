@@ -1,45 +1,16 @@
-/**
- * Register auto id for issuer and user
- */
+import { registerIssuerAutoId } from './auto-id-extrinsics'
+import { setup } from './setup'
+import { generateRandomString } from './utils'
 
-import { Registry } from '@autonomys/auto-id'
-import { Keyring } from '@polkadot/api'
-import { cryptoWaitReady } from '@polkadot/util-crypto'
-import { loadEnv, registerIssuerAutoId, registerLeafAutoId } from './utils'
+const main = async () => {
+  const { api, signer, issuerKeys } = await setup()
 
-async function main() {
-  await cryptoWaitReady()
-
-  const { RPC_URL, KEYPAIR_URI } = loadEnv()
-
-  // Initialize the signer keypair
-  const keyring = new Keyring({ type: 'sr25519' })
-  const issuer = keyring.addFromUri(KEYPAIR_URI)
-
-  // Initialize the Registry instance
-  const registry = new Registry(RPC_URL!, issuer)
-
-  /* Register Auto ID for issuer */
-  console.log('\n===================== ISSUER =====================')
-  const issuerFilePath = './res/private.issuer.pem'
-  const issuerSubjectCommonName = 'test101'
-  const [issuerAutoIdIdentifier, issuerCm] = await registerIssuerAutoId(
-    registry,
-    issuerFilePath,
+  const issuerSubjectCommonName = generateRandomString(10)
+  const [issuerAutoIdIdentifier, issuerCert] = await registerIssuerAutoId(
+    api,
+    signer,
+    issuerKeys,
     issuerSubjectCommonName,
-  )
-
-  /* Register Auto ID for user */
-  console.log('\n\n===================== USER =====================')
-
-  const userFilePath = './res/private.leaf.pem'
-  const userSubjectCommonName = 'user101'
-  const _userAutoIdIdentifier = await registerLeafAutoId(
-    registry,
-    userFilePath,
-    issuerCm,
-    issuerAutoIdIdentifier,
-    userSubjectCommonName,
   )
 }
 
