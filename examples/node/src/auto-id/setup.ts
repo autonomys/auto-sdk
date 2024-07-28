@@ -1,5 +1,4 @@
-import { createConnection, cryptoWaitReady } from '@autonomys/auto-utils'
-import { Keyring } from '@polkadot/api'
+import { createConnection, cryptoWaitReady, Keyring } from '@autonomys/auto-utils'
 import { pemToKeyPair } from './crypto-utils'
 import { loadEnv } from './utils'
 
