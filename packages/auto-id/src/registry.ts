@@ -4,21 +4,21 @@ import { Certificate } from '@peculiar/asn1-x509'
 import { X509Certificate } from '@peculiar/x509'
 import { ApiPromise } from '@polkadot/api'
 import { compactAddLength } from '@polkadot/util'
-import { AutoIdX509Certificate, CertificateActionType } from './types'
 import {
   derEncodeSignatureAlgorithmOID,
   prepareSigningData,
   publicKeyAlgorithmToSignatureAlgorithm,
   signData,
-} from './utils'
+} from './misc-utils'
+import { AutoIdX509Certificate, CertificateActionType } from './types'
 
 export const getCertificate = async (
   api: ApiPromise,
   autoIdIdentifier: string,
-): Promise<AutoIdX509Certificate | null> => {
+): Promise<AutoIdX509Certificate | undefined> => {
   const certificate = await api.query.autoId.autoIds(autoIdIdentifier)
   if (certificate.isEmpty) {
-    return null
+    return undefined
   }
 
   const autoIdCertificateJson: AutoIdX509Certificate = JSON.parse(

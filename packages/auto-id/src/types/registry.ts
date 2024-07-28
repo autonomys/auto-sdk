@@ -16,3 +16,8 @@ export enum CertificateActionType {
   RevokeCertificate,
   DeactivateAutoId,
 }
+
+export interface Signature {
+  signature_algorithm: Uint8Array
+  value: Uint8Array
+}

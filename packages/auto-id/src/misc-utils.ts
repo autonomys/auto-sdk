@@ -131,7 +131,7 @@ export const identifierFromX509Cert = (
 export const prepareSigningData = async (
   api: ApiPromise,
   autoIdIdentifier: string,
-  getCertificate: (id: string) => Promise<AutoIdX509Certificate | null>,
+  getCertificate: (id: string) => Promise<AutoIdX509Certificate | undefined>,
   actionType: CertificateActionType,
 ): Promise<{
   serializedData: Uint8Array
@@ -155,7 +155,12 @@ export const prepareSigningData = async (
     nonceU8a = bnToU8a(BigInt(issuerCertificate.nonce), { bitLength: 256, isLe: false })
   }
   const actionTypeU8a = new Uint8Array([actionType])
+
   const serializedData = u8aConcat(idU8a, nonceU8a, actionTypeU8a)
+  console.log('idU8a:', idU8a)
+  console.log('nonceu8a:', nonceU8a)
+  console.log('actionTypeU8a:', actionTypeU8a)
+  console.log('serializedData:', serializedData)
 
   return { serializedData, algorithmIdentifier: publicKeyAlgorithmIdentifier }
 }
@@ -164,7 +169,7 @@ export const prepareSigningData = async (
 export const checkCertificateAndRevocationList = async (
   api: ApiPromise,
   autoIdIdentifier: string,
-  getCertificate: (id: string) => Promise<AutoIdX509Certificate | null>,
+  getCertificate: (id: string) => Promise<AutoIdX509Certificate | undefined>,
 ): Promise<AutoIdX509Certificate> => {
   const certificate = await getCertificate(autoIdIdentifier)
   if (!certificate) {
@@ -263,7 +268,8 @@ export const signData = async (
   const privateKeyPEM = fs.readFileSync(filePath, 'utf8').replace(/\\n/gm, '\n')
   const webCryptoAlgorithm = convertToWebCryptoAlgorithm(certSigAlgorithmId)
   const privateKey: CryptoKey = await pemToCryptoKeyForSigning(privateKeyPEM, webCryptoAlgorithm)
-  const signature = await crypto.subtle.sign(webCryptoAlgorithm, privateKey, data)
+  const signature = await crypto.subtle.sign(privateKey.algorithm, privateKey, data)
+
   const derEncodedOID = derEncodeSignatureAlgorithmOID(certSigAlgorithmId.algorithm)
 
   return {
