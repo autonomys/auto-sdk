@@ -10,6 +10,15 @@ import { hexStringToU8a } from '../misc-utils'
 
 const crypto = new Crypto()
 
+const getAutoIdNonce = async (api: ApiPromise, autoIdentifier: string): Promise<number> => {
+  const autoIdCertificate = await getCertificate(api, autoIdentifier)
+  if (!autoIdCertificate) {
+    throw new Error('AutoId certificate not found')
+  }
+
+  return autoIdCertificate.nonce
+}
+
 export const createCertificateAction = async (
   api: ApiPromise,
   autoIdentifier: string,
@@ -19,9 +28,12 @@ export const createCertificateAction = async (
   if (!autoIdCertificate) {
     return undefined
   }
+  const nonce = autoIdCertificate.issuerId
+    ? await getAutoIdNonce(api, autoIdCertificate.issuerId)
+    : autoIdCertificate.nonce
 
   const autoIdU8a = hexStringToU8a(autoIdentifier)
-  const nonceU8a = bnToU8a(BigInt(autoIdCertificate.nonce), { bitLength: 256, isLe: false })
+  const nonceU8a = bnToU8a(BigInt(nonce), { bitLength: 256, isLe: false })
   const actionTypeU8a = new Uint8Array([actionType])
   const encodedAction = u8aConcat(autoIdU8a, nonceU8a, actionTypeU8a)
 
