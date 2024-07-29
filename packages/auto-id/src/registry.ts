@@ -9,7 +9,7 @@ import {
   publicKeyAlgorithmToSignatureAlgorithm,
   signData,
 } from './misc-utils'
-import { AutoIdX509Certificate, CertificateActionType } from './types'
+import { AutoIdX509Certificate, CertificateActionType, Signature } from './types'
 
 export const getCertificate = async (
   api: ApiPromise,
@@ -48,6 +48,7 @@ export const getCertificateRevocationList = async (
 
   return Array.from(revokedCertificates)
 }
+
 export const convertX509CertToDerEncodedComponents = (
   certificate: X509Certificate,
 ): [Uint8Array, Uint8Array] => {
@@ -85,27 +86,9 @@ export const registerAutoId = (
 export const revokeCertificate = async (
   api: ApiPromise,
   autoIdIdentifier: string,
-  filePath: string,
+  signature: Signature,
 ): Promise<SubmittableExtrinsic<'promise', ISubmittableResult>> => {
-  const { serializedData, algorithmIdentifier } = await prepareSigningData(
-    api,
-    autoIdIdentifier,
-    getCertificate.bind(null, api),
-    CertificateActionType.RevokeCertificate,
-  )
-
-  const signatureAlgorithmIdentifier = publicKeyAlgorithmToSignatureAlgorithm(
-    algorithmIdentifier.algorithm,
-  )
-
-  const signature = await signData(serializedData, signatureAlgorithmIdentifier, filePath)
-  console.log('signature old', signature)
-  const signatureEncoded = {
-    signature_algorithm: compactAddLength(signature.signature_algorithm),
-    value: compactAddLength(signature.value),
-  }
-
-  return api.tx.autoId.revokeCertificate(autoIdIdentifier, signatureEncoded)
+  return api.tx.autoId.revokeCertificate(autoIdIdentifier, signature)
 }
 
 export const deactivateAutoId = async (
