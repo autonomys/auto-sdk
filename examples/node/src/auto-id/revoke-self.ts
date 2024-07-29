@@ -2,39 +2,41 @@
  * Revoke self/issuer certificate
  */
 
-import { Registry } from '@autonomys/auto-id'
-import { Keyring } from '@polkadot/api'
-import { cryptoWaitReady } from '@polkadot/util-crypto'
-import { loadEnv, registerIssuerAutoId } from './utils'
+import {
+  CertificateActionType,
+  createCertificateAction,
+  signCertificateAction,
+} from '@autonomys/auto-id'
+import { registerIssuerAutoId, revokeAutoID } from './auto-id-extrinsics'
+import { setup } from './setup'
+import { generateRandomString } from './utils'
 
 async function main() {
-  await cryptoWaitReady()
+  const { api, signer, issuerKeys } = await setup()
 
-  const { RPC_URL, KEYPAIR_URI } = loadEnv()
-
-  // Initialize the signer keypair
-  const keyring = new Keyring({ type: 'sr25519' })
-  const issuer = keyring.addFromUri(KEYPAIR_URI)
-
-  // Initialize the Registry instance
-  const registry = new Registry(RPC_URL!, issuer)
-
-  /* Register Auto ID */
-  const filePath = './res/private.issuer.pem'
-  const issuerSubjectCommonName = 'test200'
-  const [issuerAutoIdIdentifier, _issuerCm] = await registerIssuerAutoId(
-    registry,
-    filePath,
+  const issuerSubjectCommonName = generateRandomString(10)
+  const [issuerAutoIdIdentifier, issuerCert] = await registerIssuerAutoId(
+    api,
+    signer,
+    issuerKeys,
     issuerSubjectCommonName,
   )
 
-  /* Revoke self Certificate */
-  const revoked = await registry.revokeCertificate(issuerAutoIdIdentifier, filePath)
-  if (revoked) {
-    console.log(
-      `Revoked registered issuer certificate with identifier: ${issuerAutoIdIdentifier} in block #${revoked.blockNumber?.toString()}`,
-    )
+  if (!issuerAutoIdIdentifier) {
+    throw new Error('Issuer auto id failed')
   }
+
+  const revocationAction = await createCertificateAction(
+    api,
+    issuerAutoIdIdentifier,
+    CertificateActionType.RevokeCertificate,
+  )
+  if (!revocationAction) {
+    throw new Error('Revocation action failed')
+  }
+
+  const signature = await signCertificateAction(revocationAction, issuerKeys.privateKey)
+  const revoked = await revokeAutoID(api, signer, issuerAutoIdIdentifier, signature)
 }
 
 main()

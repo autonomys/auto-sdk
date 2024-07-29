@@ -2,11 +2,12 @@ import {
   createAndSignCSR,
   getCertificateAutoId,
   issueCertificate,
-  prettyPrintCertificate,
   registerAutoId,
+  revokeCertificate,
   selfIssueCertificate,
+  Signature,
 } from '@autonomys/auto-id'
-import { ApiPromise, KeyringPair, signAndSendTx } from '@autonomys/auto-utils'
+import { ApiPromise, ISubmittableResult, KeyringPair, signAndSendTx } from '@autonomys/auto-utils'
 import { X509Certificate } from '@peculiar/x509'
 
 export const registerIssuerAutoId = async (
@@ -16,7 +17,6 @@ export const registerIssuerAutoId = async (
   subjectCommonName: string,
 ): Promise<[string | null | undefined, X509Certificate]> => {
   const selfIssuedCert = await selfIssueCertificate(subjectCommonName, issuerKeyPair)
-  prettyPrintCertificate(selfIssuedCert)
 
   const registerIssuer = registerAutoId(api, selfIssuedCert)
   const { receipt, identifier } = await signAndSendTx(signer, registerIssuer, {}, [], false)
@@ -42,7 +42,6 @@ export const registerLeafAutoId = async (
     certificate: issuerCert,
     keyPair: issuerKeys,
   })
-  prettyPrintCertificate(leafCert)
 
   const registerLeaf = registerAutoId(api, leafCert, issuerAutoIdIdentifier)
   const { receipt, identifier } = await signAndSendTx(signer, registerLeaf, {}, [], false)
@@ -52,4 +51,20 @@ export const registerLeafAutoId = async (
   )
 
   return [identifier, leafCert]
+}
+
+export const revokeAutoID = async (
+  api: ApiPromise,
+  signer: KeyringPair,
+  autoIdentifier: string,
+  signature: Signature,
+): Promise<ISubmittableResult> => {
+  const revoke = await revokeCertificate(api, autoIdentifier, signature)
+  const revoked = await signAndSendTx(signer, revoke, {}, [], false)
+
+  console.log(
+    `Revoked auto id ${autoIdentifier} in block #${revoked.receipt?.blockNumber?.toString()}`,
+  )
+
+  return revoked.receipt
 }
