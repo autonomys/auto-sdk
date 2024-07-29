@@ -2,6 +2,7 @@ import {
   createAndSignCSR,
   getCertificateAutoId,
   issueCertificate,
+  mapErrorCodeToEnum,
   registerAutoId,
   revokeCertificate,
   selfIssueCertificate,
@@ -19,7 +20,14 @@ export const registerIssuerAutoId = async (
   const selfIssuedCert = await selfIssueCertificate(subjectCommonName, issuerKeyPair)
 
   const registerIssuer = registerAutoId(api, selfIssuedCert)
-  const { receipt, identifier } = await signAndSendTx(signer, registerIssuer, {}, [], false)
+  const { receipt, identifier } = await signAndSendTx(
+    signer,
+    registerIssuer,
+    {},
+    [],
+    false,
+    mapErrorCodeToEnum,
+  )
 
   console.log(
     `===\nRegistered auto id from issuer cert: ${getCertificateAutoId(selfIssuedCert)} with identifier: ${identifier} in block #${receipt?.blockNumber?.toString()}`,
@@ -44,7 +52,14 @@ export const registerLeafAutoId = async (
   })
 
   const registerLeaf = registerAutoId(api, leafCert, issuerAutoIdIdentifier)
-  const { receipt, identifier } = await signAndSendTx(signer, registerLeaf, {}, [], false)
+  const { receipt, identifier } = await signAndSendTx(
+    signer,
+    registerLeaf,
+    {},
+    [],
+    false,
+    mapErrorCodeToEnum,
+  )
 
   console.log(
     `Registered auto id from leaf cert: ${getCertificateAutoId(leafCert)} with identifier: ${identifier} in block #${receipt?.blockNumber?.toString()}`,
@@ -60,7 +75,7 @@ export const revokeAutoID = async (
   signature: Signature,
 ): Promise<ISubmittableResult> => {
   const revoke = await revokeCertificate(api, autoIdentifier, signature)
-  const revoked = await signAndSendTx(signer, revoke, {}, [], false)
+  const revoked = await signAndSendTx(signer, revoke, {}, [], false, mapErrorCodeToEnum)
 
   console.log(
     `Revoked auto id ${autoIdentifier} in block #${revoked.receipt?.blockNumber?.toString()}`,

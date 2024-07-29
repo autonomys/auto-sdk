@@ -1,7 +1,3 @@
-/**
- * Revoke self/issuer certificate
- */
-
 import {
   CertificateActionType,
   createCertificateAction,
