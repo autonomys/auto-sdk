@@ -1,20 +1,15 @@
-import { signAndSendTx } from '@autonomys/auto-utils'
+import { ApiPromise, ISubmittableResult, SubmittableExtrinsic } from '@autonomys/auto-utils'
 import { AsnParser, AsnSerializer } from '@peculiar/asn1-schema'
 import { Certificate } from '@peculiar/asn1-x509'
 import { X509Certificate } from '@peculiar/x509'
-import { ApiPromise, SubmittableResult, WsProvider } from '@polkadot/api'
-import { KeyringPair } from '@polkadot/keyring/types'
 import { compactAddLength } from '@polkadot/util'
 import {
   derEncodeSignatureAlgorithmOID,
-  identifierFromX509Cert,
-  mapErrorCodeToEnum,
   prepareSigningData,
   publicKeyAlgorithmToSignatureAlgorithm,
   signData,
 } from './utils'
 
-// taken from auto-id pallet
 export interface AutoIdX509Certificate {
   issuerId: string | null
   serial: string
@@ -34,250 +29,151 @@ export enum CertificateActionType {
   DeactivateAutoId,
 }
 
-interface RegistrationResult {
-  receipt: SubmittableResult | null
-  identifier: string | null
-}
-
-// x509 Certificate to DER format & tbsCertificate.
-// Returns a tuple of two Uint8Array.
 export const convertX509CertToDerEncodedComponents = (
   certificate: X509Certificate,
 ): [Uint8Array, Uint8Array] => {
   const certificateBuffer = Buffer.from(certificate.rawData)
-
-  // Load and parse the certificate
   const cert = AsnParser.parse(certificateBuffer, Certificate)
-  // Extract the OID of the signature algorithm
   const signatureAlgorithmOID = cert.signatureAlgorithm.algorithm
-
   const derEncodedOID = derEncodeSignatureAlgorithmOID(signatureAlgorithmOID)
-
   const tbsCertificate = cert.tbsCertificate
-
-  // Serialize the TBS Certificate back to DER format
   const tbsCertificateDerVec = new Uint8Array(AsnSerializer.serialize(tbsCertificate))
-
   return [derEncodedOID, tbsCertificateDerVec]
 }
 
-export class Registry {
-  private api: ApiPromise
-  private signer: KeyringPair | null
+export const registerAutoId = (
+  api: ApiPromise,
+  certificate: X509Certificate,
+  issuerId?: string,
+): SubmittableExtrinsic<'promise', ISubmittableResult> => {
+  const [derEncodedOID, tbsCertificateDerVec] = convertX509CertToDerEncodedComponents(certificate)
 
-  constructor(rpcUrl: string = 'ws://127.0.0.1:9944', signer: KeyringPair | null = null) {
-    this.api = new ApiPromise({ provider: new WsProvider(rpcUrl) })
-    this.signer = signer
+  const baseCertificate = {
+    certificate: compactAddLength(tbsCertificateDerVec),
+    signature_algorithm: compactAddLength(derEncodedOID),
+    signature: compactAddLength(new Uint8Array(certificate.signature)),
   }
 
-  // ============================
-  // Setters
-  // ============================
+  const certificateParam = issuerId
+    ? { Leaf: { issuer_id: issuerId, ...baseCertificate } }
+    : { Root: baseCertificate }
 
-  // register auto id
-  async registerAutoId(
-    certificate: X509Certificate,
-    issuerId?: string | null | undefined,
-  ): Promise<RegistrationResult> {
-    await this.api.isReady
+  const req = { X509: certificateParam }
 
-    if (!this.signer) {
-      throw new Error('No signer provided')
-    }
+  return api.tx.autoId.registerAutoId(req)
+}
 
-    // Add check for certificate if it's already registered so as to avoid paying fees for invalid auto id registration.
-    const certIdentifier = identifierFromX509Cert(issuerId, certificate)
-    const registeredCert = await this.getCertificate(certIdentifier)
-    if (registeredCert) {
-      throw new Error('Certificate already registered')
-    }
+export const revokeCertificate = async (
+  api: ApiPromise,
+  autoIdIdentifier: string,
+  filePath: string,
+): Promise<SubmittableExtrinsic<'promise', ISubmittableResult>> => {
+  const { serializedData, algorithmIdentifier } = await prepareSigningData(
+    api,
+    autoIdIdentifier,
+    getCertificate.bind(null, api),
+    CertificateActionType.RevokeCertificate,
+  )
 
-    const [derEncodedOID, tbsCertificateDerVec] = convertX509CertToDerEncodedComponents(certificate)
+  const signatureAlgorithmIdentifier = publicKeyAlgorithmToSignatureAlgorithm(
+    algorithmIdentifier.algorithm,
+  )
 
-    const baseCertificate = {
-      certificate: compactAddLength(tbsCertificateDerVec),
-      signature_algorithm: compactAddLength(derEncodedOID),
-      signature: compactAddLength(new Uint8Array(certificate.signature)),
-    }
-
-    const certificateParam = issuerId
-      ? { Leaf: { issuer_id: issuerId, ...baseCertificate } }
-      : { Root: baseCertificate }
-
-    const req = { X509: certificateParam }
-
-    const { receipt, identifier } = await signAndSendTx(
-      this.signer,
-      this.api.tx.autoId.registerAutoId(req),
-      {},
-      [],
-      false,
-      mapErrorCodeToEnum,
-    )
-
-    return { receipt, identifier: identifier ?? null }
+  const signature = await signData(serializedData, signatureAlgorithmIdentifier, filePath)
+  const signatureEncoded = {
+    signature_algorithm: compactAddLength(signature.signature_algorithm),
+    value: compactAddLength(signature.value),
   }
 
-  // revoke certificate
-  async revokeCertificate(autoIdIdentifier: string, filePath: string): Promise<SubmittableResult> {
-    await this.api.isReady
+  return api.tx.autoId.revokeCertificate(autoIdIdentifier, signatureEncoded)
+}
 
-    if (!this.signer) {
-      throw new Error('No signer provided')
-    }
+export const deactivateAutoId = async (
+  api: ApiPromise,
+  autoIdIdentifier: string,
+  filePath: string,
+): Promise<SubmittableExtrinsic<'promise', ISubmittableResult>> => {
+  const { serializedData, algorithmIdentifier } = await prepareSigningData(
+    api,
+    autoIdIdentifier,
+    getCertificate.bind(null, api),
+    CertificateActionType.DeactivateAutoId,
+  )
 
-    const { serializedData, algorithmIdentifier } = await prepareSigningData(
-      this.api,
-      autoIdIdentifier,
-      this.getCertificate.bind(this),
-      CertificateActionType.RevokeCertificate,
-    )
+  const signatureAlgorithmIdentifier = publicKeyAlgorithmToSignatureAlgorithm(
+    algorithmIdentifier.algorithm,
+  )
 
-    const signatureAlgorithmIdentifier = publicKeyAlgorithmToSignatureAlgorithm(
-      algorithmIdentifier.algorithm,
-    )
-
-    const signature = await signData(serializedData, signatureAlgorithmIdentifier, filePath)
-    const signatureEncoded = {
-      signature_algorithm: compactAddLength(signature.signature_algorithm),
-      value: compactAddLength(signature.value),
-    }
-
-    const { receipt } = await signAndSendTx(
-      this.signer,
-      this.api.tx.autoId.revokeCertificate(autoIdIdentifier, signatureEncoded),
-      {},
-      [],
-      false,
-      mapErrorCodeToEnum,
-    )
-
-    return receipt
+  const signature = await signData(serializedData, signatureAlgorithmIdentifier, filePath)
+  const signatureEncoded = {
+    signature_algorithm: compactAddLength(signature.signature_algorithm),
+    value: compactAddLength(signature.value),
   }
 
-  // deactivate auto id
-  // NOTE: Deactivation not possible for auto id whose certificate is already revoked.
-  async deactivateAutoId(autoIdIdentifier: string, filePath: string): Promise<SubmittableResult> {
-    await this.api.isReady
+  return api.tx.autoId.deactivateAutoId(autoIdIdentifier, signatureEncoded)
+}
 
-    if (!this.signer) {
-      throw new Error('No signer provided')
-    }
-
-    const { serializedData, algorithmIdentifier } = await prepareSigningData(
-      this.api,
-      autoIdIdentifier,
-      this.getCertificate.bind(this),
-      CertificateActionType.DeactivateAutoId,
-    )
-
-    const signatureAlgorithmIdentifier = publicKeyAlgorithmToSignatureAlgorithm(
-      algorithmIdentifier.algorithm,
-    )
-
-    const signature = await signData(serializedData, signatureAlgorithmIdentifier, filePath)
-    const signatureEncoded = {
-      signature_algorithm: compactAddLength(signature.signature_algorithm),
-      value: compactAddLength(signature.value),
-    }
-
-    const { receipt } = await signAndSendTx(
-      this.signer,
-      this.api.tx.autoId.deactivateAutoId(autoIdIdentifier, signatureEncoded),
-      {},
-      [],
-      false,
-      mapErrorCodeToEnum,
-    )
-
-    return receipt
+export const renewAutoId = async (
+  api: ApiPromise,
+  autoIdIdentifier: string,
+  newCertificate: X509Certificate,
+): Promise<SubmittableExtrinsic<'promise', ISubmittableResult>> => {
+  const oldCertificate = await getCertificate(api, autoIdIdentifier)
+  if (!oldCertificate) {
+    throw new Error('Certificate not found or already deactivated')
   }
 
-  // renew auto id
-  async renewAutoId(
-    autoIdIdentifier: string,
-    newCertificate: X509Certificate,
-  ): Promise<RegistrationResult> {
-    await this.api.isReady
+  const issuerId = oldCertificate.issuerId
 
-    if (!this.signer) {
-      throw new Error('No signer provided')
-    }
+  const [derEncodedOID, tbsCertificateDerVec] =
+    convertX509CertToDerEncodedComponents(newCertificate)
 
-    const oldCertificate = await this.getCertificate(autoIdIdentifier)
-    if (!oldCertificate) {
-      throw new Error('Certificate not found or already deactivated')
-    }
-
-    const issuerId = oldCertificate.issuerId
-
-    const [derEncodedOID, tbsCertificateDerVec] =
-      convertX509CertToDerEncodedComponents(newCertificate)
-
-    const renewCertificate = {
-      issuer_id: issuerId,
-      certificate: compactAddLength(tbsCertificateDerVec),
-      signature_algorithm: compactAddLength(derEncodedOID),
-      signature: compactAddLength(new Uint8Array(newCertificate.signature)),
-    }
-
-    const req = { X509: renewCertificate }
-
-    const { receipt, identifier } = await signAndSendTx(
-      this.signer,
-      this.api.tx.autoId.renewAutoId(autoIdIdentifier, req),
-      {},
-      [],
-      false,
-      mapErrorCodeToEnum,
-    )
-
-    return { receipt, identifier: identifier ?? null }
+  const renewCertificate = {
+    issuer_id: issuerId,
+    certificate: compactAddLength(tbsCertificateDerVec),
+    signature_algorithm: compactAddLength(derEncodedOID),
+    signature: compactAddLength(new Uint8Array(newCertificate.signature)),
   }
 
-  // ============================
-  // Getters
-  // ============================
+  const req = { X509: renewCertificate }
 
-  // Get certificate from auto id identifier.
-  async getCertificate(autoIdIdentifier: string): Promise<AutoIdX509Certificate | null> {
-    await this.api.isReady
+  return api.tx.autoId.renewAutoId(autoIdIdentifier, req)
+}
 
-    const certificate = await this.api.query.autoId.autoIds(autoIdIdentifier)
-    if (certificate.isEmpty) {
-      return null
-    }
-
-    const autoIdCertificateJson: AutoIdX509Certificate = JSON.parse(
-      JSON.stringify(certificate.toHuman(), null, 2),
-    ).certificate.X509
-
-    return autoIdCertificateJson
+export const getCertificate = async (
+  api: ApiPromise,
+  autoIdIdentifier: string,
+): Promise<AutoIdX509Certificate | null> => {
+  const certificate = await api.query.autoId.autoIds(autoIdIdentifier)
+  if (certificate.isEmpty) {
+    return null
   }
 
-  // Get revocation list from auto id identifier.
-  async getCertificateRevocationList(autoIdIdentifier: string): Promise<string[]> {
-    await this.api.isReady
+  const autoIdCertificateJson: AutoIdX509Certificate = JSON.parse(
+    JSON.stringify(certificate.toHuman(), null, 2),
+  ).certificate.X509
 
-    const certificate = await this.getCertificate(autoIdIdentifier)
-    if (!certificate) {
-      throw new Error('Certificate not found or already deactivated')
-    }
+  return autoIdCertificateJson
+}
 
-    // Fetch the revocation list for the given identifier
-    const revokedCertificatesCodec =
-      certificate.issuerId == null
-        ? await this.api.query.autoId.certificateRevocationList(autoIdIdentifier)
-        : await this.api.query.autoId.certificateRevocationList(certificate.issuerId)
-    // Decode the Codec to get the actual BTreeSet
-    const revokedCertificates = revokedCertificatesCodec.toJSON() as string[]
-    // Check if revokedCertificates is iterable
-    if (!revokedCertificates || typeof revokedCertificates[Symbol.iterator] !== 'function') {
-      throw new Error('No revoked certificates found for this identifier.')
-    }
-
-    // Convert the BTreeSet to an array
-    const revokedCertificatesArray = Array.from(revokedCertificates)
-    return revokedCertificatesArray
+export const getCertificateRevocationList = async (
+  api: ApiPromise,
+  autoIdIdentifier: string,
+): Promise<string[]> => {
+  const certificate = await getCertificate(api, autoIdIdentifier)
+  if (!certificate) {
+    throw new Error('Certificate not found or already deactivated')
   }
+
+  const revokedCertificatesCodec =
+    certificate.issuerId == null
+      ? await api.query.autoId.certificateRevocationList(autoIdIdentifier)
+      : await api.query.autoId.certificateRevocationList(certificate.issuerId)
+
+  const revokedCertificates = revokedCertificatesCodec.toJSON() as string[]
+  if (!revokedCertificates || typeof revokedCertificates[Symbol.iterator] !== 'function') {
+    throw new Error('No revoked certificates found for this identifier.')
+  }
+
+  return Array.from(revokedCertificates)
 }
