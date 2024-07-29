@@ -1,7 +1,7 @@
 import { AsnParser } from '@peculiar/asn1-schema' // A library to parse ASN.1
 import { Certificate } from '@peculiar/asn1-x509' // Assuming X.509 certificate handling
 import fs from 'fs'
-import { derEncodeSignatureAlgorithmOID } from '../src/utils'
+import { derEncodeSignatureAlgorithmOID } from '../src/misc-utils'
 
 describe('Verify crypto functions', () => {
   test('DER encode signature algorithm OID from a certificate', () => {
