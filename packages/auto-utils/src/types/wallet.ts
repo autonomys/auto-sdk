@@ -51,7 +51,6 @@ export type {
   ApiDecoration,
   ApiPromise,
   InjectedAccountWithMeta,
-  Keyring,
   KeyringPair,
   Signer,
   SignerResult,
