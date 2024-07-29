@@ -5,6 +5,7 @@ import {
   issueCertificate,
   mapErrorCodeToEnum,
   registerAutoId,
+  renewAutoId,
   revokeCertificate,
   selfIssueCertificate,
   Signature,
@@ -99,4 +100,20 @@ export const deactivateRegisteredAutoId = async (
   )
 
   return deactivated.receipt
+}
+
+export const renewRegisteredAutoId = async (
+  api: ApiPromise,
+  signer: KeyringPair,
+  autoIdentifier: string,
+  newCertificate: X509Certificate,
+): Promise<ISubmittableResult> => {
+  const renew = await renewAutoId(api, autoIdentifier, newCertificate)
+  const renewed = await signAndSendTx(signer, renew, {}, [], false, mapErrorCodeToEnum)
+
+  console.log(
+    `Renewed auto id ${autoIdentifier} in block #${renewed.receipt?.blockNumber?.toString()}`,
+  )
+
+  return renewed.receipt
 }
