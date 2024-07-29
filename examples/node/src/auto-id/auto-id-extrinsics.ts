@@ -6,9 +6,8 @@ import {
   registerAutoId,
   selfIssueCertificate,
 } from '@autonomys/auto-id'
-import { createConnection, KeyringPair, signAndSendTx } from '@autonomys/auto-utils'
+import { ApiPromise, KeyringPair, signAndSendTx } from '@autonomys/auto-utils'
 import { X509Certificate } from '@peculiar/x509'
-import { ApiPromise, Keyring } from '@polkadot/api'
 
 export const registerIssuerAutoId = async (
   api: ApiPromise,

@@ -1,4 +1,4 @@
-import { blake2b_256 } from '@autonomys/auto-utils'
+import { ApiPromise, blake2b_256 } from '@autonomys/auto-utils'
 import { AsnConvert, AsnParser, OctetString } from '@peculiar/asn1-schema'
 import {
   AlgorithmIdentifier as AsnAlgorithmIdentifier,
@@ -6,7 +6,6 @@ import {
 } from '@peculiar/asn1-x509'
 import { Crypto } from '@peculiar/webcrypto'
 import { X509Certificate } from '@peculiar/x509'
-import { ApiPromise } from '@polkadot/api'
 import { bnToU8a, hexToU8a, u8aConcat } from '@polkadot/util'
 import * as fs from 'fs'
 import {

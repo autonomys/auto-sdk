@@ -1,8 +1,7 @@
-import { ISubmittableResult, SubmittableExtrinsic } from '@autonomys/auto-utils'
+import { ApiPromise, ISubmittableResult, SubmittableExtrinsic } from '@autonomys/auto-utils'
 import { AsnParser, AsnSerializer } from '@peculiar/asn1-schema'
 import { Certificate } from '@peculiar/asn1-x509'
 import { X509Certificate } from '@peculiar/x509'
-import { ApiPromise } from '@polkadot/api'
 import { compactAddLength } from '@polkadot/util'
 import {
   derEncodeSignatureAlgorithmOID,
