@@ -1,10 +1,9 @@
-import { AlgorithmIdentifier } from '@peculiar/asn1-x509'
 import { Crypto } from '@peculiar/webcrypto'
 import { createPrivateKey, createPublicKey } from 'crypto'
 import fs from 'fs'
 const crypto = new Crypto()
 
-type SupportedAlgorithm = 'RSASSA-PKCS1-v1_5' | 'Ed25519'
+export type SupportedAlgorithm = 'RSASSA-PKCS1-v1_5' | 'Ed25519'
 
 function getAlgorithm(algorithm: SupportedAlgorithm): RsaHashedImportParams | Algorithm {
   switch (algorithm) {
