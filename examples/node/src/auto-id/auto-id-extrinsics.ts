@@ -1,5 +1,6 @@
 import {
   createAndSignCSR,
+  deactivateAutoId,
   getCertificateAutoId,
   issueCertificate,
   mapErrorCodeToEnum,
@@ -82,4 +83,20 @@ export const revokeAutoID = async (
   )
 
   return revoked.receipt
+}
+
+export const deactivateRegisteredAutoId = async (
+  api: ApiPromise,
+  signer: KeyringPair,
+  autoIdentifier: string,
+  signature: Signature,
+): Promise<ISubmittableResult> => {
+  const deactivate = await deactivateAutoId(api, autoIdentifier, signature)
+  const deactivated = await signAndSendTx(signer, deactivate, {}, [], false, mapErrorCodeToEnum)
+
+  console.log(
+    `Deactivated auto id ${autoIdentifier} in block #${deactivated.receipt?.blockNumber?.toString()}`,
+  )
+
+  return deactivated.receipt
 }
