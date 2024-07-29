@@ -3,13 +3,8 @@ import { AsnParser, AsnSerializer } from '@peculiar/asn1-schema'
 import { Certificate } from '@peculiar/asn1-x509'
 import { X509Certificate } from '@peculiar/x509'
 import { compactAddLength } from '@polkadot/util'
-import {
-  derEncodeSignatureAlgorithmOID,
-  prepareSigningData,
-  publicKeyAlgorithmToSignatureAlgorithm,
-  signData,
-} from './misc-utils'
-import { AutoIdX509Certificate, CertificateActionType, Signature } from './types'
+import { derEncodeSignatureAlgorithmOID } from './misc-utils'
+import { AutoIdX509Certificate, Signature } from './types'
 
 export const getCertificate = async (
   api: ApiPromise,
