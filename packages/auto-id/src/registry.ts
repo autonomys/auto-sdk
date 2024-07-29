@@ -94,27 +94,9 @@ export const revokeCertificate = async (
 export const deactivateAutoId = async (
   api: ApiPromise,
   autoIdIdentifier: string,
-  filePath: string,
+  signature: Signature,
 ): Promise<SubmittableExtrinsic<'promise', ISubmittableResult>> => {
-  const { serializedData, algorithmIdentifier } = await prepareSigningData(
-    api,
-    autoIdIdentifier,
-    getCertificate.bind(null, api),
-    CertificateActionType.DeactivateAutoId,
-  )
-
-  const signatureAlgorithmIdentifier = publicKeyAlgorithmToSignatureAlgorithm(
-    algorithmIdentifier.algorithm,
-  )
-
-  const signature = await signData(serializedData, signatureAlgorithmIdentifier, filePath)
-
-  const signatureEncoded = {
-    signature_algorithm: compactAddLength(signature.signature_algorithm),
-    value: compactAddLength(signature.value),
-  }
-
-  return api.tx.autoId.deactivateAutoId(autoIdIdentifier, signatureEncoded)
+  return api.tx.autoId.deactivateAutoId(autoIdIdentifier, signature)
 }
 
 export const renewAutoId = async (

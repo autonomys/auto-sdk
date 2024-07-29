@@ -28,9 +28,10 @@ export const createCertificateAction = async (
   if (!autoIdCertificate) {
     return undefined
   }
-  const nonce = autoIdCertificate.issuerId
-    ? await getAutoIdNonce(api, autoIdCertificate.issuerId)
-    : autoIdCertificate.nonce
+  const nonce =
+    autoIdCertificate.issuerId && actionType === CertificateActionType.RevokeCertificate
+      ? await getAutoIdNonce(api, autoIdCertificate.issuerId)
+      : autoIdCertificate.nonce
 
   const autoIdU8a = hexStringToU8a(autoIdentifier)
   const nonceU8a = bnToU8a(BigInt(nonce), { bitLength: 256, isLe: false })
