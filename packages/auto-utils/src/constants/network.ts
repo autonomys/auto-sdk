@@ -36,12 +36,12 @@ export const networks: Network[] = [
     domains: [
       {
         id: DomainId.AUTO_ID,
-        name: 'Autonomys - Auto-ID',
+        name: 'Auto-ID',
         rpcUrls: ['https://autoid-0.gemini-3h.subspace.network/ws'],
       },
       {
         id: DomainId.NOVA,
-        name: 'Autonomys - Nova (EVM)',
+        name: 'Nova (EVM)',
         rpcUrls: ['https://nova-0.gemini-3h.subspace.network/ws'],
       },
     ],
@@ -60,12 +60,12 @@ export const networks: Network[] = [
     domains: [
       {
         id: DomainId.AUTO_ID,
-        name: 'Autonomys - Auto-ID',
+        name: 'Auto-ID',
         rpcUrls: ['https://autoid.devnet.subspace.network/ws'],
       },
       {
         id: DomainId.NOVA,
-        name: 'Autonomys - Nova (EVM)',
+        name: 'Nova (EVM)',
         rpcUrls: ['https:///nova.devnet.subspace.network/ws'],
       },
     ],
@@ -85,12 +85,12 @@ export const networks: Network[] = [
     domains: [
       {
         id: DomainId.AUTO_ID,
-        name: 'Autonomys - Auto-ID',
+        name: 'Auto-ID',
         rpcUrls: ['ws://127.0.0.1:9945/ws'],
       },
       {
         id: DomainId.NOVA,
-        name: 'Autonomys - Nova (EVM)',
+        name: 'Nova (EVM)',
         rpcUrls: ['https:///127.0.0.1:9946/ws'],
       },
     ],
