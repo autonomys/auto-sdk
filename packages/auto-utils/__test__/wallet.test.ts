@@ -17,7 +17,7 @@ describe('Verify wallet functions', () => {
   // Define the test network and its details
   const TEST_NETWORK: NetworkParams = !isLocalhost
     ? { networkId: networks[0].id }
-    : { networkId: 'autonomys-localhost' }
+    : { networkId: 'localhost' }
   const TEST_NETWORK_DETAIL = networks.find((network) => network.id === TEST_NETWORK.networkId)
   if (!TEST_NETWORK_DETAIL) throw new Error(`Network with id ${TEST_NETWORK.networkId} not found`)
 
