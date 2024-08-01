@@ -1,6 +1,6 @@
 {
   "name": "@autonomys/auto-utils",
-  "version": "0.1.8",
+  "version": "0.2.0",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
@@ -37,5 +37,5 @@
   "browser": {
     "fs": false
   },
-  "gitHead": "cbac87bb6f8c2722f04faa512df20997d0d1f2c4"
+  "gitHead": "6bd84f90326d63a2981367d3cb7c15aecd7dd732"
 }

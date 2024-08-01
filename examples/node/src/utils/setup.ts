@@ -4,9 +4,7 @@ import 'dotenv/config'
 
 export const setup = async () => {
   const config =
-    process.env.LOCALHOST !== 'true'
-      ? { networkId: networks[0].id }
-      : { networkId: 'autonomys-localhost' }
+    process.env.LOCALHOST !== 'true' ? { networkId: networks[0].id } : { networkId: 'localhost' }
 
   console.log('\x1b[32m%s\x1b[0m', 'Network:', config.networkId, '\n')
 

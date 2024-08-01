@@ -9,7 +9,7 @@ export const useNetwork = () => {
   const [config, setConfig] = useState(
     !networkName || Array.isArray(networkName)
       ? process.env.LOCALHOST === 'true' || process.env.NEXT_PUBLIC_LOCALHOST === 'true'
-        ? { networkId: 'autonomys-localhost' }
+        ? { networkId: 'localhost' }
         : { networkId: networks[0].id }
       : { networkId: networkName },
   )

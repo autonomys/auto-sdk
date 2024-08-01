@@ -7,7 +7,7 @@ export const setup = () => {
   // Define the test network and its details
   const TEST_NETWORK: NetworkParams = !isLocalhost
     ? { networkId: networks[0].id }
-    : { networkId: 'autonomys-localhost' }
+    : { networkId: 'localhost' }
   const TEST_INVALID_NETWORK = { networkId: 'invalid-network' }
 
   const TEST_MNEMONIC = 'test test test test test test test test test test test junk'

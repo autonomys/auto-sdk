@@ -3,9 +3,9 @@
 import type { Network } from '../types/network'
 
 export enum NetworkId {
-  AUTONOMYS_GEMINI_3H = 'autonomys-gemini-3h',
-  AUTONOMYS_DEVNET = 'autonomys-devnet',
-  AUTONOMYS_LOCALHOST = 'autonomys-localhost',
+  GEMINI_3H = 'gemini-3h',
+  DEVNET = 'devnet',
+  LOCALHOST = 'localhost',
 }
 
 export enum DomainId {
@@ -13,12 +13,12 @@ export enum DomainId {
   NOVA = 'nova',
 }
 
-export const ASTRAL_EXPLORER = 'https://explorer.subspace.network/'
+export const ASTRAL_EXPLORER = 'https://explorer.autonomys.xyz/'
 
 export const networks: Network[] = [
   {
-    id: NetworkId.AUTONOMYS_GEMINI_3H,
-    name: 'Autonomys Testnet - Gemini 3H',
+    id: NetworkId.GEMINI_3H,
+    name: 'Testnet - Gemini 3H',
     rpcUrls: [
       'wss://rpc-0.gemini-3h.subspace.network/ws',
       'wss://rpc-1.gemini-3h.subspace.network/ws',
@@ -36,20 +36,20 @@ export const networks: Network[] = [
     domains: [
       {
         id: DomainId.AUTO_ID,
-        name: 'Autonomys - Auto-ID',
-        rpcUrls: ['wss://autoid-0.gemini-3h.subspace.network/ws'],
+        name: 'Auto-ID',
+        rpcUrls: ['https://autoid-0.gemini-3h.subspace.network/ws'],
       },
       {
         id: DomainId.NOVA,
-        name: 'Autonomys - Nova (EVM)',
+        name: 'Nova (EVM)',
         rpcUrls: ['https://nova-0.gemini-3h.subspace.network/ws'],
       },
     ],
     isTestnet: true,
   },
   {
-    id: NetworkId.AUTONOMYS_DEVNET,
-    name: 'Autonomys - Devnet',
+    id: NetworkId.DEVNET,
+    name: 'Devnet',
     rpcUrls: ['ws://rpc.devnet.subspace.network/ws'],
     explorer: [
       {
@@ -60,12 +60,12 @@ export const networks: Network[] = [
     domains: [
       {
         id: DomainId.AUTO_ID,
-        name: 'Autonomys - Auto-ID',
-        rpcUrls: ['ws://autoid.devnet.subspace.network/ws'],
+        name: 'Auto-ID',
+        rpcUrls: ['https://autoid.devnet.subspace.network/ws'],
       },
       {
         id: DomainId.NOVA,
-        name: 'Autonomys - Nova (EVM)',
+        name: 'Nova (EVM)',
         rpcUrls: ['https:///nova.devnet.subspace.network/ws'],
       },
     ],
@@ -73,8 +73,8 @@ export const networks: Network[] = [
     isLocalhost: false,
   },
   {
-    id: NetworkId.AUTONOMYS_LOCALHOST,
-    name: 'Autonomys - Localhost',
+    id: NetworkId.LOCALHOST,
+    name: 'Localhost',
     rpcUrls: ['ws://127.0.0.1:9944/ws'],
     explorer: [
       {
@@ -85,12 +85,12 @@ export const networks: Network[] = [
     domains: [
       {
         id: DomainId.AUTO_ID,
-        name: 'Autonomys - Auto-ID',
+        name: 'Auto-ID',
         rpcUrls: ['ws://127.0.0.1:9945/ws'],
       },
       {
         id: DomainId.NOVA,
-        name: 'Autonomys - Nova (EVM)',
+        name: 'Nova (EVM)',
         rpcUrls: ['https:///127.0.0.1:9946/ws'],
       },
     ],

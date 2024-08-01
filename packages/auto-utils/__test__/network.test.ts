@@ -9,9 +9,7 @@ describe('Verify network functions', () => {
   const isLocalhost = process.env.LOCALHOST === 'true'
 
   // Define the test network and its details
-  const TEST_NETWORK = !isLocalhost
-    ? { networkId: networks[0].id }
-    : { networkId: 'autonomys-localhost' }
+  const TEST_NETWORK = !isLocalhost ? { networkId: networks[0].id } : { networkId: 'ocalhost' }
   const TEST_NETWORK_DETAIL = networks.find((network) => network.id === TEST_NETWORK.networkId)
   if (!TEST_NETWORK_DETAIL) throw new Error(`Network with id ${TEST_NETWORK.networkId} not found`)
 
