@@ -1,5 +1,6 @@
 // file: src/types/network.ts
 import type { ApiOptions } from '@polkadot/api/types'
+import { Token } from './token'
 
 export type Explorer = {
   name: string
@@ -18,6 +19,7 @@ export type Network = {
   rpcUrls: string[]
   explorer: Explorer[]
   domains: Domain[]
+  token: Token
   isTestnet?: boolean
   isLocalhost?: boolean
 }
