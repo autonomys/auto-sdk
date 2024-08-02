@@ -1,16 +1,12 @@
 // file: src/constants/network.ts
 
 import type { Network } from '../types/network'
+import { domains } from './domain'
 
 export enum NetworkId {
   GEMINI_3H = 'gemini-3h',
   DEVNET = 'devnet',
   LOCALHOST = 'localhost',
-}
-
-export enum DomainId {
-  AUTO_ID = 'auto-id',
-  NOVA = 'nova',
 }
 
 export const ASTRAL_EXPLORER = 'https://explorer.autonomys.xyz/'
@@ -35,13 +31,11 @@ export const networks: Network[] = [
     ],
     domains: [
       {
-        id: DomainId.AUTO_ID,
-        name: 'Auto-ID',
+        ...domains.autoId,
         rpcUrls: ['https://autoid-0.gemini-3h.subspace.network/ws'],
       },
       {
-        id: DomainId.NOVA,
-        name: 'Nova (EVM)',
+        ...domains.nova,
         rpcUrls: ['https://nova-0.gemini-3h.subspace.network/ws'],
       },
     ],
@@ -59,13 +53,11 @@ export const networks: Network[] = [
     ],
     domains: [
       {
-        id: DomainId.AUTO_ID,
-        name: 'Auto-ID',
+        ...domains.autoId,
         rpcUrls: ['https://autoid.devnet.subspace.network/ws'],
       },
       {
-        id: DomainId.NOVA,
-        name: 'Nova (EVM)',
+        ...domains.nova,
         rpcUrls: ['https:///nova.devnet.subspace.network/ws'],
       },
     ],
@@ -84,13 +76,11 @@ export const networks: Network[] = [
     ],
     domains: [
       {
-        id: DomainId.AUTO_ID,
-        name: 'Auto-ID',
+        ...domains.autoId,
         rpcUrls: ['ws://127.0.0.1:9945/ws'],
       },
       {
-        id: DomainId.NOVA,
-        name: 'Nova (EVM)',
+        ...domains.nova,
         rpcUrls: ['https:///127.0.0.1:9946/ws'],
       },
     ],
