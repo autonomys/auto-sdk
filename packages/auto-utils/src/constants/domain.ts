@@ -1,19 +1,19 @@
 // file: src/constants/domain.ts
 
-export enum DomainId {
+import { Domains } from '../types/domain'
+
+export enum DomainRuntime {
   AUTO_ID = 'auto-id',
   NOVA = 'nova',
 }
 
-export const domains = {
-  nova: {
-    id: DomainId.NOVA,
+export const domains: Domains = {
+  [DomainRuntime.AUTO_ID]: {
+    runtime: DomainRuntime.NOVA,
     name: 'Nova (EVM)',
-    domainId: 0,
   },
-  autoId: {
-    id: DomainId.AUTO_ID,
+  [DomainRuntime.NOVA]: {
+    runtime: DomainRuntime.AUTO_ID,
     name: 'Auto-ID',
-    domainId: 1,
   },
 }

@@ -1,7 +1,7 @@
 // file: src/constants/network.ts
 
 import type { Network } from '../types/network'
-import { domains } from './domain'
+import { DomainRuntime, domains } from './domain'
 import { TESTNET_TOKEN } from './token'
 
 export enum NetworkId {
@@ -32,12 +32,14 @@ export const networks: Network[] = [
     ],
     domains: [
       {
-        ...domains.autoId,
-        rpcUrls: ['https://autoid-0.gemini-3h.subspace.network/ws'],
+        domainId: '0',
+        ...domains[DomainRuntime.NOVA],
+        rpcUrls: ['wss://nova-0.gemini-3h.subspace.network/ws'],
       },
       {
-        ...domains.nova,
-        rpcUrls: ['https://nova-0.gemini-3h.subspace.network/ws'],
+        domainId: '1',
+        ...domains[DomainRuntime.AUTO_ID],
+        rpcUrls: ['wss://autoid-0.gemini-3h.subspace.network/ws'],
       },
     ],
     token: TESTNET_TOKEN,
@@ -55,12 +57,14 @@ export const networks: Network[] = [
     ],
     domains: [
       {
-        ...domains.autoId,
-        rpcUrls: ['https://autoid.devnet.subspace.network/ws'],
+        domainId: '0',
+        ...domains[DomainRuntime.NOVA],
+        rpcUrls: ['wss:///nova.devnet.subspace.network/ws'],
       },
       {
-        ...domains.nova,
-        rpcUrls: ['https:///nova.devnet.subspace.network/ws'],
+        domainId: '1',
+        ...domains[DomainRuntime.AUTO_ID],
+        rpcUrls: ['wss://autoid.devnet.subspace.network/ws'],
       },
     ],
     token: TESTNET_TOKEN,
@@ -79,12 +83,14 @@ export const networks: Network[] = [
     ],
     domains: [
       {
-        ...domains.autoId,
-        rpcUrls: ['ws://127.0.0.1:9945/ws'],
+        domainId: '0',
+        ...domains[DomainRuntime.NOVA],
+        rpcUrls: ['ws:///127.0.0.1:9946/ws'],
       },
       {
-        ...domains.nova,
-        rpcUrls: ['https:///127.0.0.1:9946/ws'],
+        domainId: '1',
+        ...domains[DomainRuntime.AUTO_ID],
+        rpcUrls: ['ws://127.0.0.1:9945/ws'],
       },
     ],
     token: TESTNET_TOKEN,
