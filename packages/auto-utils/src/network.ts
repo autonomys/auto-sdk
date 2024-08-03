@@ -33,7 +33,7 @@ export const getNetworkDomainDetails = (params: DomainParams) => {
   if (!network) throw new Error(`Network with id ${networkId} not found`)
 
   // Find the domain with the provided id
-  const domain = network.domains.find((domain) => domain.id === domainId)
+  const domain = network.domains.find((domain) => domain.domainId === domainId)
   if (!domain) throw new Error(`Domain with id ${domainId} not found`)
 
   return domain

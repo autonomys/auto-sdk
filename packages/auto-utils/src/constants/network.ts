@@ -1,17 +1,13 @@
 // file: src/constants/network.ts
 
 import type { Network } from '../types/network'
+import { DomainRuntime, domains } from './domain'
 import { TESTNET_TOKEN } from './token'
 
 export enum NetworkId {
   GEMINI_3H = 'gemini-3h',
   DEVNET = 'devnet',
   LOCALHOST = 'localhost',
-}
-
-export enum DomainId {
-  AUTO_ID = 'auto-id',
-  NOVA = 'nova',
 }
 
 export const ASTRAL_EXPLORER = 'https://explorer.autonomys.xyz/'
@@ -36,14 +32,14 @@ export const networks: Network[] = [
     ],
     domains: [
       {
-        id: DomainId.AUTO_ID,
-        name: 'Auto-ID',
-        rpcUrls: ['https://autoid-0.gemini-3h.subspace.network/ws'],
+        domainId: '0',
+        ...domains[DomainRuntime.NOVA],
+        rpcUrls: ['wss://nova-0.gemini-3h.subspace.network/ws'],
       },
       {
-        id: DomainId.NOVA,
-        name: 'Nova (EVM)',
-        rpcUrls: ['https://nova-0.gemini-3h.subspace.network/ws'],
+        domainId: '1',
+        ...domains[DomainRuntime.AUTO_ID],
+        rpcUrls: ['wss://autoid-0.gemini-3h.subspace.network/ws'],
       },
     ],
     token: TESTNET_TOKEN,
@@ -61,14 +57,14 @@ export const networks: Network[] = [
     ],
     domains: [
       {
-        id: DomainId.AUTO_ID,
-        name: 'Auto-ID',
-        rpcUrls: ['https://autoid.devnet.subspace.network/ws'],
+        domainId: '0',
+        ...domains[DomainRuntime.NOVA],
+        rpcUrls: ['wss:///nova.devnet.subspace.network/ws'],
       },
       {
-        id: DomainId.NOVA,
-        name: 'Nova (EVM)',
-        rpcUrls: ['https:///nova.devnet.subspace.network/ws'],
+        domainId: '1',
+        ...domains[DomainRuntime.AUTO_ID],
+        rpcUrls: ['wss://autoid.devnet.subspace.network/ws'],
       },
     ],
     token: TESTNET_TOKEN,
@@ -87,14 +83,14 @@ export const networks: Network[] = [
     ],
     domains: [
       {
-        id: DomainId.AUTO_ID,
-        name: 'Auto-ID',
-        rpcUrls: ['ws://127.0.0.1:9945/ws'],
+        domainId: '0',
+        ...domains[DomainRuntime.NOVA],
+        rpcUrls: ['ws:///127.0.0.1:9946/ws'],
       },
       {
-        id: DomainId.NOVA,
-        name: 'Nova (EVM)',
-        rpcUrls: ['https:///127.0.0.1:9946/ws'],
+        domainId: '1',
+        ...domains[DomainRuntime.AUTO_ID],
+        rpcUrls: ['ws://127.0.0.1:9945/ws'],
       },
     ],
     token: TESTNET_TOKEN,
