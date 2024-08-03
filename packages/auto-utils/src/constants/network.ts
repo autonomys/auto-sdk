@@ -2,6 +2,7 @@
 
 import type { Network } from '../types/network'
 import { domains } from './domain'
+import { TESTNET_TOKEN } from './token'
 
 export enum NetworkId {
   GEMINI_3H = 'gemini-3h',
@@ -39,6 +40,7 @@ export const networks: Network[] = [
         rpcUrls: ['https://nova-0.gemini-3h.subspace.network/ws'],
       },
     ],
+    token: TESTNET_TOKEN,
     isTestnet: true,
   },
   {
@@ -61,6 +63,7 @@ export const networks: Network[] = [
         rpcUrls: ['https:///nova.devnet.subspace.network/ws'],
       },
     ],
+    token: TESTNET_TOKEN,
     isTestnet: true,
     isLocalhost: false,
   },
@@ -84,6 +87,7 @@ export const networks: Network[] = [
         rpcUrls: ['https:///127.0.0.1:9946/ws'],
       },
     ],
+    token: TESTNET_TOKEN,
     isTestnet: true,
     isLocalhost: true,
   },
