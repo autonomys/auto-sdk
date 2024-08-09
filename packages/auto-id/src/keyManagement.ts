@@ -484,8 +484,8 @@ export function decryptPem(pem: string, password: string): string {
 // Converts a PCKS8 formatted PEM key (private or public key) to a ASN-1.
 export function pemToASN1(pem: string): asn1.Asn1 {
   const base64 = pem
-    .replace('-----BEGIN PRIVATE KEY-----', '')
-    .replace('-----END PRIVATE KEY-----', '')
+    .replace(/-----BEGIN .*?-----/, '')
+    .replace(/-----END .*?-----/, '')
     .replace(/\s+/g, '')
 
   return asn1.fromDer(util.decode64(base64))
