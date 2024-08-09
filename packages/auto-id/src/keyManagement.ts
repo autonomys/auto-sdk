@@ -1,9 +1,8 @@
 import { read, save } from '@autonomys/auto-utils'
-import { Crypto } from '@peculiar/webcrypto'
 import * as x509 from '@peculiar/x509'
-import { createPrivateKey, createPublicKey } from 'crypto'
+import { asn1, pki, util } from 'node-forge'
 
-const crypto = new Crypto()
+const crypto = global.crypto
 
 /**
  * NOTE: 'RSA-OAEP', primarily for encryption/decryption. And 'RSASSA-PKCS1-v1_5' for signing and verification.
@@ -100,17 +99,7 @@ export async function cryptoKeyToPem(key: CryptoKey, password?: string): Promise
   let pem = `-----BEGIN ${type}-----\n${base64.match(/.{1,64}/g)?.join('\n')}\n-----END ${type}-----`
 
   if (password && key.type === 'private') {
-    const privateKeyObject = createPrivateKey({
-      key: pem,
-      format: 'pem',
-      type: 'pkcs8',
-    })
-    pem = privateKeyObject.export({
-      type: 'pkcs8',
-      format: 'pem',
-      cipher: 'aes-256-cbc',
-      passphrase: password,
-    }) as string
+    return encryptPem(pem, password)
   }
 
   return pem
@@ -156,14 +145,13 @@ export async function pemToPrivateKey(
   algorithm: AlgorithmIdentifier | RsaHashedImportParams | EcKeyImportParams,
   password?: string,
 ): Promise<CryptoKey> {
-  const keyObject = createPrivateKey({
-    key: pemData,
-    format: 'pem',
-    passphrase: password,
-  })
-
-  const keyBuffer = keyObject.export({ type: 'pkcs8', format: 'der' })
-  return crypto.subtle.importKey('pkcs8', keyBuffer, algorithm, true, ['sign'])
+  let arrayBuffer
+  if (password) {
+    arrayBuffer = plainPemToArrayBuffer(decryptPem(pemData, password))
+  } else {
+    arrayBuffer = plainPemToArrayBuffer(pemData)
+  }
+  return crypto.subtle.importKey('pkcs8', arrayBuffer, algorithm, true, ['sign'])
 }
 
 /**
@@ -181,12 +169,7 @@ export async function pemToPublicKey(
   pemData: string,
   algorithm: AlgorithmIdentifier | RsaHashedImportParams | EcKeyImportParams,
 ): Promise<CryptoKey> {
-  const keyObject = createPublicKey({
-    key: pemData,
-    format: 'pem',
-  })
-
-  const keyBuffer = keyObject.export({ type: 'spki', format: 'der' })
+  const keyBuffer = Buffer.from(base64ToArrayBuffer(stripPemHeaders(pemData)))
   return crypto.subtle.importKey('spki', keyBuffer, algorithm, true, ['verify'])
 }
 
@@ -420,16 +403,10 @@ export function pemToHex(pem: string): string {
 
   if (pem.includes('BEGIN PRIVATE KEY')) {
     // Standard PKCS#8 format
-    const privateKey = createPrivateKey({ key: buffer, format: 'der', type: 'pkcs8' })
-    keyData = privateKey.export({ type: 'pkcs8', format: 'der' })
+    keyData = Buffer.from(asn1.toDer(pemToASN1(pem)).toHex(), 'hex')
   } else if (pem.includes('BEGIN PUBLIC KEY')) {
     // Standard SPKI format
-    const publicKey = createPublicKey({ key: buffer, format: 'der', type: 'spki' })
-    keyData = publicKey.export({ type: 'spki', format: 'der' })
-  } else if (pem.includes('BEGIN RSA PRIVATE KEY')) {
-    // PKCS#1 format for RSA private keys
-    const privateKey = createPrivateKey({ key: buffer, format: 'der', type: 'pkcs1' })
-    keyData = privateKey.export({ type: 'pkcs1', format: 'der' })
+    keyData = buffer
   } else {
     throw new Error('Unsupported key format')
   }
@@ -493,21 +470,38 @@ export async function pemToCryptoKeyForSigning(
 /**
  * Decrypts a PEM-encoded private key using the provided password.
  */
-export async function decryptPem(pem: string, password: string): Promise<string> {
+export function decryptPem(pem: string, password: string): string {
   try {
-    const keyObject = createPrivateKey({
-      key: pem,
-      format: 'pem',
-      type: 'pkcs8',
-      passphrase: password,
-    })
-    const pemDecrypted = keyObject.export({
-      type: 'pkcs8',
-      format: 'pem',
-    }) as string
-    return pemDecrypted
+    const privateKeyInfo = pki.decryptPrivateKeyInfo(pemToASN1(pem), password)
+
+    return pki.privateKeyInfoToPem(privateKeyInfo)
   } catch (error: any) {
     console.error('Failed to decrypt PEM:', error)
     throw new Error(`Failed to decrypt PEM: ${error.message}`)
   }
+}
+
+// Converts a PCKS8 formatted PEM key (private or public key) to a ASN-1.
+export function pemToASN1(pem: string): asn1.Asn1 {
+  const base64 = pem
+    .replace('-----BEGIN PRIVATE KEY-----', '')
+    .replace('-----END PRIVATE KEY-----', '')
+    .replace(/\s+/g, '')
+
+  return asn1.fromDer(util.decode64(base64))
+}
+
+// Converts a PCKS8 formatted PEM key (private or public key) to a byte-like array buffer.
+export function plainPemToArrayBuffer(pem: string) {
+  const base64 = pem
+    .replace(/-----BEGIN .*?-----/, '')
+    .replace(/-----END .*?-----/, '')
+    .replace(/\s/g, '')
+
+  return base64ToArrayBuffer(base64)
+}
+
+// Encrypts a PCKS8 formatted PEM key (private key) using the provided password.
+export function encryptPem(pem: string, password: string): string {
+  return pki.privateKeyInfoToPem(pki.encryptPrivateKeyInfo(pemToASN1(pem), password))
 }
