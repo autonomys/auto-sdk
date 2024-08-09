@@ -503,5 +503,5 @@ export function plainPemToArrayBuffer(pem: string) {
 
 // Encrypts a PCKS8 formatted PEM key (private key) using the provided password.
 export function encryptPem(pem: string, password: string): string {
-  return pki.privateKeyInfoToPem(pki.encryptPrivateKeyInfo(pemToASN1(pem), password))
+  return pki.encryptedPrivateKeyToPem(pki.encryptPrivateKeyInfo(pemToASN1(pem), password))
 }
