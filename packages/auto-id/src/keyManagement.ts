@@ -2,7 +2,7 @@ import { read, save } from '@autonomys/auto-utils'
 import * as x509 from '@peculiar/x509'
 import { asn1, pki, util } from 'node-forge'
 
-const crypto = global.crypto
+const crypto = globalThis.crypto
 
 /**
  * NOTE: 'RSA-OAEP', primarily for encryption/decryption. And 'RSASSA-PKCS1-v1_5' for signing and verification.
