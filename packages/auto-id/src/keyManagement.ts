@@ -1,8 +1,9 @@
 import { read, save } from '@autonomys/auto-utils'
 import * as x509 from '@peculiar/x509'
+import { Crypto } from '@peculiar/webcrypto'
 import { asn1, pki, util } from 'node-forge'
 
-const crypto = globalThis.crypto
+const crypto = typeof window === 'undefined' ? new Crypto() : window.crypto
 
 /**
  * NOTE: 'RSA-OAEP', primarily for encryption/decryption. And 'RSASSA-PKCS1-v1_5' for signing and verification.
