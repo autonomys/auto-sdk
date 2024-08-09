@@ -360,7 +360,7 @@ function base64ToArrayBuffer(base64: string) {
 }
 
 // get the key type & base64 final string from the PEM string (private or public key)
-function stripPemHeaders(pem: string): string {
+export function stripPemHeaders(pem: string): string {
   return pem
     .replace(/-----BEGIN .*? KEY-----/g, '')
     .replace(/-----END .*? KEY-----/g, '')

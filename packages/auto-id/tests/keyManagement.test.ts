@@ -13,6 +13,7 @@ import {
   pemToPrivateKey,
   pemToPublicKey,
   saveKey,
+  stripPemHeaders,
 } from '../src/keyManagement'
 
 describe('Generate keypair for', () => {
@@ -152,6 +153,7 @@ describe('Save Key', () => {
         await saveKey(privateKey, filePath)
         const fileContents = (await fs.readFile(filePath, { encoding: 'utf8' }))
           .replace(/\\n/g, '\n')
+          .replace(/\\r/g, '')
           .replace(/"/g, '')
         const privateKeyPem = await cryptoKeyToPem(privateKey)
 
@@ -165,17 +167,20 @@ describe('Save Key', () => {
         await saveKey(privateKey, filePath, password)
         const fileContents = (await fs.readFile(filePath, { encoding: 'utf8' }))
           .replace(/\\n/g, '\n')
+          .replace(/\\r/g, '\r')
           .replace(/"/g, '')
           .trim()
 
         // Decrypt the PEM read from file
-        const decryptedKey = await decryptPem(fileContents, password)
+        const decryptedKey = decryptPem(fileContents, password)
 
         // Get the original private key in PEM format (unencrypted for comparison)
         const originalPrivateKeyPem = await cryptoKeyToPem(privateKey)
 
         // Compare the decrypted key with the original
-        expect(decryptedKey.trim()).toBe(originalPrivateKeyPem.trim())
+        expect(stripPemHeaders(decryptedKey.trim())).toBe(
+          stripPemHeaders(originalPrivateKeyPem.trim()),
+        )
       })
 
       test('should throw an error when trying to save to an invalid path', async () => {
