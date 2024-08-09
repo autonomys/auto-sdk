@@ -146,7 +146,7 @@ export async function pemToPrivateKey(
   password?: string,
 ): Promise<CryptoKey> {
   let arrayBuffer
-  if (password) {
+  if (pemData.includes('ENCRYPTED') && password) {
     arrayBuffer = plainPemToArrayBuffer(decryptPem(pemData, password))
   } else {
     arrayBuffer = plainPemToArrayBuffer(pemData)
