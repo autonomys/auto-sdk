@@ -4312,9 +4312,9 @@ __metadata:
   linkType: hard
 
 "electron-to-chromium@npm:^1.5.4":
-  version: 1.5.5
-  resolution: "electron-to-chromium@npm:1.5.5"
-  checksum: 10c0/6e5e12f729a74a78d9a7386ea32039262cb8a2f4611ab346da1f162c270d0569194c72169042080a1017220835ed30ee2d77ca5ba13c1acaa5fa0d373fbc0ad5
+  version: 1.5.6
+  resolution: "electron-to-chromium@npm:1.5.6"
+  checksum: 10c0/1dfef4feaa9f4e5231b8b0697f1f55623eb2ffd263b50e6d4ff995a0927653997ba116640ae06786661f8d24c7b99fa6727c0796e9c60d748f473674d78ab31e
   languageName: node
   linkType: hard
 
@@ -10447,11 +10447,11 @@ __metadata:
   linkType: hard
 
 "uglify-js@npm:^3.1.4":
-  version: 3.19.1
-  resolution: "uglify-js@npm:3.19.1"
+  version: 3.19.2
+  resolution: "uglify-js@npm:3.19.2"
   bin:
     uglifyjs: bin/uglifyjs
-  checksum: 10c0/7609ab3f10d54de5ef014770f845c747266a969e9092d2284ca0ba18f10a4488208c1491bd8b52bd4c40cf6687b47a77c495f08e4a625babcdd57f58e34a3976
+  checksum: 10c0/51dbe1304a91cac5daa01f6a2d4ecd545fab7b7d0625e11590b923e95a6d2263b3481dcea974abfc0282b33d2c76f74f1196a992df07eae0847175bc39ea45bb
   languageName: node
   linkType: hard
 
