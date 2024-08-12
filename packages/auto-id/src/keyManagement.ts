@@ -512,7 +512,6 @@ export function decryptPem(pem: string, password: string): string {
 
     return pki.privateKeyInfoToPem(privateKeyInfo)
   } catch (error: any) {
-    console.error('Failed to decrypt PEM:', error)
     throw new Error(`Failed to decrypt PEM: ${error.message}`)
   }
 }
