@@ -2,6 +2,7 @@ import { expect, test } from '@jest/globals'
 import { promises as fs } from 'fs'
 import * as path from 'path'
 import {
+  cryptoKeyPairFromPrivateKey,
   cryptoKeyToPem,
   decryptPem,
   doPublicKeysMatch,
@@ -13,6 +14,7 @@ import {
   pemToPrivateKey,
   pemToPublicKey,
   saveKey,
+  stripPemHeaders,
 } from '../src/keyManagement'
 
 describe('Generate keypair for', () => {
@@ -152,6 +154,7 @@ describe('Save Key', () => {
         await saveKey(privateKey, filePath)
         const fileContents = (await fs.readFile(filePath, { encoding: 'utf8' }))
           .replace(/\\n/g, '\n')
+          .replace(/\\r/g, '')
           .replace(/"/g, '')
         const privateKeyPem = await cryptoKeyToPem(privateKey)
 
@@ -165,17 +168,20 @@ describe('Save Key', () => {
         await saveKey(privateKey, filePath, password)
         const fileContents = (await fs.readFile(filePath, { encoding: 'utf8' }))
           .replace(/\\n/g, '\n')
+          .replace(/\\r/g, '\r')
           .replace(/"/g, '')
           .trim()
 
         // Decrypt the PEM read from file
-        const decryptedKey = await decryptPem(fileContents, password)
+        const decryptedKey = decryptPem(fileContents, password)
 
         // Get the original private key in PEM format (unencrypted for comparison)
         const originalPrivateKeyPem = await cryptoKeyToPem(privateKey)
 
         // Compare the decrypted key with the original
-        expect(decryptedKey.trim()).toBe(originalPrivateKeyPem.trim())
+        expect(stripPemHeaders(decryptedKey.trim())).toBe(
+          stripPemHeaders(originalPrivateKeyPem.trim()),
+        )
       })
 
       test('should throw an error when trying to save to an invalid path', async () => {
@@ -288,6 +294,43 @@ describe('Private/Public key to hex for', () => {
   afterEach(async () => {
     expect(await keyToHex(privateKey)).toStrictEqual(expect.any(String))
     expect(await keyToHex(publicKey)).toStrictEqual(expect.any(String))
+  })
+})
+
+describe('Private key to public key matches generated keypair', () => {
+  const keyTypes = [
+    {
+      label: 'RSA',
+      keyGenerator: generateRsaKeyPair,
+      algorithm: { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+    },
+    { label: 'Ed25519', keyGenerator: generateEd25519KeyPair, algorithm: { name: 'Ed25519' } },
+  ]
+
+  keyTypes.forEach(({ label, keyGenerator, algorithm }) => {
+    describe(`${label}`, () => {
+      let privateKey: CryptoKey, publicKey: CryptoKey
+
+      beforeEach(async () => {
+        const keyPair = await keyGenerator()
+        privateKey = keyPair.privateKey
+        publicKey = keyPair.publicKey
+      })
+
+      test('Derived public key & actual public key should match', async () => {
+        const derivedKeyPair = await cryptoKeyPairFromPrivateKey(privateKey, algorithm)
+
+        const derivedPrivateKeyPem = await cryptoKeyToPem(derivedKeyPair.privateKey)
+        const actualPrivateKeyPem = await cryptoKeyToPem(privateKey)
+
+        expect(derivedPrivateKeyPem).toBe(actualPrivateKeyPem)
+
+        const derivedPublicKeyPem = await cryptoKeyToPem(derivedKeyPair.publicKey)
+        const actualPublicKeyPem = await cryptoKeyToPem(publicKey)
+
+        expect(derivedPublicKeyPem).toBe(actualPublicKeyPem)
+      })
+    })
   })
 })
 
