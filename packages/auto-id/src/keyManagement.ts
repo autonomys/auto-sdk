@@ -96,14 +96,49 @@ export async function generateEd25519KeyPair(): Promise<CryptoKeyPair> {
 export async function cryptoKeyToPem(key: CryptoKey, password?: string): Promise<string> {
   const exported = await crypto.subtle.exportKey(key.type === 'private' ? 'pkcs8' : 'spki', key)
   const base64 = arrayBufferToBase64(exported)
-  const type = key.type === 'private' ? 'PRIVATE KEY' : 'PUBLIC KEY'
-  let pem = `-----BEGIN ${type}-----\n${base64.match(/.{1,64}/g)?.join('\n')}\n-----END ${type}-----`
+
+  let pem = base64ToPem(base64, key.type)
 
   if (password && key.type === 'private') {
     return encryptPem(pem, password)
   }
 
   return pem
+}
+
+function base64ToPem(base64: string, type: CryptoKey['type']): string {
+  const typeText = type === 'private' ? 'PRIVATE KEY' : 'PUBLIC KEY'
+  return `-----BEGIN ${typeText}-----\n${base64.match(/.{1,64}/g)?.join('\n')}\n-----END ${typeText}-----`
+}
+
+export async function cryptoKeyPairFromPrivateKey(
+  privateKey: CryptoKey,
+  algorithm: AlgorithmIdentifier | RsaHashedImportParams | EcKeyImportParams,
+  password?: string,
+): Promise<CryptoKeyPair> {
+  const pem = await cryptoKeyToPem(privateKey, password)
+
+  let publicKey: CryptoKey
+  const name = privateKey.algorithm.name
+
+  if (name === 'RSASSA-PKCS1-v1_5') {
+    const asn1PrivateKey = pemToASN1(pem)
+    const privateKeyInfo = pki.privateKeyFromAsn1(asn1PrivateKey)
+    publicKey = await pemToPublicKey(
+      pki.publicKeyToPem(pki.setRsaPublicKey(privateKeyInfo.n, privateKeyInfo.e)),
+      algorithm,
+    )
+  } else if (name === 'Ed25519') {
+    const keypair = pki.ed25519.generateKeyPair({
+      seed: pki.ed25519.privateKeyFromAsn1(pemToASN1(pem)).privateKeyBytes,
+    })
+
+    publicKey = await crypto.subtle.importKey('raw', keypair.publicKey, algorithm, true, ['verify'])
+  } else {
+    throw new Error('Unsupported algorithm type')
+  }
+
+  return { privateKey, publicKey }
 }
 
 /**
