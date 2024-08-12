@@ -10,7 +10,7 @@ import { Crypto } from '@peculiar/webcrypto'
 import * as x509 from '@peculiar/x509'
 import { validateCertificatePublicKey } from './keyManagement'
 
-const crypto = new Crypto()
+const crypto = typeof window === 'undefined' ? new Crypto() : window.crypto
 x509.cryptoProvider.set(crypto)
 
 export const OID_COMMON_NAME = '2.5.4.3'
