@@ -55,7 +55,6 @@ describe('Certificate Management Functions', () => {
     const commonNameField = csr.subjectName.getField(OID_COMMON_NAME)[0]
     expect(commonNameField).toEqual(subjectName)
 
-    console.log(certificate.publicKey, subjectKeyPair.publicKey)
     expect(
       await validateCertificatePublicKey(certificate.publicKey, subjectKeyPair.publicKey),
     ).toBe(true)
