@@ -10,7 +10,7 @@ import { Crypto } from '@peculiar/webcrypto'
 import * as x509 from '@peculiar/x509'
 import { validateCertificatePublicKey } from './keyManagement'
 
-const crypto = new Crypto()
+const crypto = typeof window === 'undefined' ? new Crypto() : window.crypto
 x509.cryptoProvider.set(crypto)
 
 export const OID_COMMON_NAME = '2.5.4.3'
@@ -101,11 +101,14 @@ export const createCSR = async (
     throw new Error('Unsupported key type for signing')
   }
 
-  return await x509.Pkcs10CertificateRequestGenerator.create({
-    name: `CN=${subjectName}`,
-    keys: keyPair,
-    signingAlgorithm,
-  })
+  return await x509.Pkcs10CertificateRequestGenerator.create(
+    {
+      name: `CN=${subjectName}`,
+      keys: keyPair,
+      signingAlgorithm,
+    },
+    crypto,
+  )
 }
 
 export const signCSR = async (
