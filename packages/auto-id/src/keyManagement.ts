@@ -2,6 +2,7 @@ import { read, save } from '@autonomys/auto-utils'
 import * as x509 from '@peculiar/x509'
 import { Crypto } from '@peculiar/webcrypto'
 import { asn1, pki, util } from 'node-forge'
+import { stripPemHeaders } from './utils'
 
 const crypto = typeof window === 'undefined' ? new Crypto() : window.crypto
 
@@ -393,14 +394,6 @@ function base64ToArrayBuffer(base64: string) {
   // Node.js Buffer provides a more robust handling of base64.
   const buffer = Buffer.from(base64, 'base64')
   return new Uint8Array(buffer)
-}
-
-// get the key type & base64 final string from the PEM string (private or public key)
-export function stripPemHeaders(pem: string): string {
-  return pem
-    .replace(/-----BEGIN .*? KEY-----/g, '')
-    .replace(/-----END .*? KEY-----/g, '')
-    .replace(/\s+/g, '') // Remove all whitespace, including newlines and spaces
 }
 
 function pemToArrayBuffer(pem: string): [KeyType, Uint8Array] {

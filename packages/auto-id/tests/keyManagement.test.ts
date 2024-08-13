@@ -14,8 +14,8 @@ import {
   pemToPrivateKey,
   pemToPublicKey,
   saveKey,
-  stripPemHeaders,
 } from '../src/keyManagement'
+import { stripPemHeaders } from '../src/utils'
 
 describe('Generate keypair for', () => {
   test('RSA', async () => {
