@@ -47,5 +47,5 @@ jobs:
             echo "Publishing $package"
             cd $package
             npm publish --access public
-            cd ../..
+            cd -
           done
