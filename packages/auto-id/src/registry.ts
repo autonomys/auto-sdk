@@ -18,7 +18,7 @@ export const getCertificate = async (
   api: ApiPromise,
   autoIdIdentifier: string,
 ): Promise<AutoIdX509Certificate | undefined> => {
-  const certificate = await api.query.autoId.autoIds(autoIdIdentifier)
+  const certificate = await api.query.autoId.autoIds(Buffer.from(autoIdIdentifier, 'hex'))
   if (certificate.isEmpty) {
     return undefined
   }
@@ -45,7 +45,7 @@ export const getCertificateSubjectPublicKey = async (
   if (!certificate) {
     throw new Error('Certificate not found or already deactivated')
   }
-  const publicKey = Buffer.from(certificate.subjectPublicKeyInfo, 'hex')
+  const publicKey = Buffer.from(certificate.subjectPublicKeyInfo.slice(2), 'hex')
 
   return rawToPublicKey(publicKey, {
     name: 'RSASSA-PKCS1-v1_5',
