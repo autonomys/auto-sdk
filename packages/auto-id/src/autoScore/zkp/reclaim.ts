@@ -17,10 +17,16 @@ export class ReclaimZKPClaim extends ZkpClaim {
     return Reclaim.verifySignedProof(this.proof)
   }
 
-  private get claimHash(): string {
+  public get claimHash(): SupportedClaimHashes {
     try {
       const context = JSON.parse(this.proof.claimData.context)
       const { claimHash } = JSON.parse(context.contextMessage)
+
+      const isSupported = Object.values(SupportedClaimHashes).includes(claimHash)
+      if (!isSupported) {
+        throw new Error(`Unsupported claim hash: ${claimHash}`)
+      }
+
       return claimHash
     } catch (e) {
       throw new Error(`An error occurred while retrieving the claim hash: ${e}`)
@@ -61,4 +67,29 @@ export class ReclaimZKPClaim extends ZkpClaim {
 
 export const constructReclaimZkpClaim = (serviceId: string, proof: Proof): ReclaimZKPClaim => {
   return new ReclaimZKPClaim(serviceId, proof)
+}
+
+export const claimHashToProviderIdMap: Record<SupportedClaimHashes, string | null> = {
+  [SupportedClaimHashes.UberUUID]: '81dd6dc5-b50d-4276-b4cb-dc67bdcf919f',
+  [SupportedClaimHashes.GithubUsername]: '6d3f6753-7ee6-49ee-a545-62f1b1822ae5',
+}
+
+export const reclaimSupportsClaimHash = (claimHash: SupportedClaimHashes) => {
+  return claimHashToProviderIdMap[claimHash] !== null
+}
+
+export const buildReclaimRequest = async (appId: string, claimHash: SupportedClaimHashes) => {
+  const providerId = claimHashToProviderIdMap[claimHash]
+  if (!providerId) {
+    throw new Error(`Provider ID not found for claim hash: ${claimHash}`)
+  }
+
+  const request = new Reclaim.ProofRequest(appId)
+
+  // Address context is not used
+  request.addContext('', JSON.stringify({ claimHash }))
+
+  await request.buildProofRequest(providerId)
+
+  return request
 }

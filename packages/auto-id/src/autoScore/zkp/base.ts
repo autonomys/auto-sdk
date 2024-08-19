@@ -1,5 +1,6 @@
 import { ApiPromise, blake2b_256 } from '@autonomys/auto-utils'
 import { Proof } from '@reclaimprotocol/js-sdk'
+import { SupportedClaimHashes } from '../claims'
 
 interface ZkpClaimJSONBase {
   serviceId: string
@@ -27,6 +28,8 @@ export abstract class ZkpClaim {
     return blake2b_256(new TextEncoder().encode(digest))
   }
 
+  public abstract get claimHash(): SupportedClaimHashes
+
   public async verify(_: ApiPromise): Promise<boolean> {
     const isValid = await this.validateProofValidity()
     if (!isValid) {
@@ -34,7 +37,7 @@ export abstract class ZkpClaim {
     }
 
     const zkpUID = this.getUID()
-    /// @to-do check getZKP(uid) === null
+    /// @to-do check uid is not already in the registry
 
     return true
   }
