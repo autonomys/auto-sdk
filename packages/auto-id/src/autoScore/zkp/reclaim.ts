@@ -44,6 +44,8 @@ export class ReclaimZKPClaim extends ZkpClaim {
           return this.getParameter('uid')
         case SupportedClaimHashes.GithubUsername:
           return this.getParameter('username')
+        case SupportedClaimHashes.GoogleEmail:
+          return this.getParameter('email')
         default:
           throw new Error(`Unsupported claim hash: ${this.claimHash}`)
       }
@@ -78,6 +80,7 @@ export const constructReclaimZkpClaim = (serviceId: string, proof: Proof): Recla
 export const claimHashToProviderIdMap: Record<SupportedClaimHashes, string | null> = {
   [SupportedClaimHashes.UberUUID]: '81dd6dc5-b50d-4276-b4cb-dc67bdcf919f',
   [SupportedClaimHashes.GithubUsername]: '6d3f6753-7ee6-49ee-a545-62f1b1822ae5',
+  [SupportedClaimHashes.GoogleEmail]: 'f9f383fd-32d9-4c54-942f-5e9fda349762',
 }
 
 // This function checks if the claim hash is supported by the Reclaim Protocol
