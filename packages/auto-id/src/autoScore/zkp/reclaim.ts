@@ -37,7 +37,7 @@ export class ReclaimZKPClaim extends ZkpClaim {
     try {
       switch (this.claimHash) {
         case SupportedClaimHashes.UberUUID:
-          return this.getParameter('uuid')
+          return this.getParameter('uid')
         case SupportedClaimHashes.GithubUsername:
           return this.getParameter('username')
         default:
