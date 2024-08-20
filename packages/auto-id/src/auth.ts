@@ -1,9 +1,8 @@
 import { ApiPromise } from '@autonomys/auto-utils'
 import { getCertificateSubjectPublicKey } from './registry'
-import { Crypto } from '@peculiar/webcrypto'
 
-const crypto = typeof window === 'undefined' ? new Crypto() : window.crypto
-
+//// This function is used to authenticate an Auto-ID user.
+/// It verifies the signature of the challenge using the public key of the Auto-ID user.
 export const authenticateAutoIdUser = async (
   api: ApiPromise,
   autoId: string,

@@ -1,6 +1,7 @@
 import { ZkpClaim, ZkpClaimJSON, ZkpClaimType } from './base'
 import { ReclaimZKPClaim } from './reclaim'
 
+// This function constructs a ZkpClaim from a ZkpClaimJSON
 export const constructZkpClaim = ({ type, serviceId, proof }: ZkpClaimJSON): ZkpClaim => {
   if (type === ZkpClaimType.Reclaim) {
     return new ReclaimZKPClaim(serviceId, proof)
@@ -9,6 +10,7 @@ export const constructZkpClaim = ({ type, serviceId, proof }: ZkpClaimJSON): Zkp
   }
 }
 
+// This function converts a ZkpClaim to a ZkpClaimJSON
 export const zkpClaimToJSON = (claim: ZkpClaim): ZkpClaimJSON => {
   return {
     type: claim.type,

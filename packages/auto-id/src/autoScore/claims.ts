@@ -1,3 +1,6 @@
+/// This type is used to store the supported claim hashes
+// The hex strings are generated using the blake2b_256 hash function
+// over the key of the enum.
 export enum SupportedClaimHashes {
   // blake2b_256('UberUUID')
   UberUUID = '0x4dc236d6a12027cdf9724e486a4b4083893a159b85238ffe746c86b8554b6006',

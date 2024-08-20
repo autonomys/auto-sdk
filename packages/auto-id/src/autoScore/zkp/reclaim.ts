@@ -13,10 +13,13 @@ export class ReclaimZKPClaim extends ZkpClaim {
     super(serviceId)
   }
 
+  /// This function validates the proof using the Reclaim SDK
   protected validateProofValidity(): Promise<boolean> {
     return Reclaim.verifySignedProof(this.proof)
   }
 
+  /// This function generates a unique identifier for the claim.
+  // It is used to prove the uniqueness of the claim in the ZKP registry.
   public get claimHash(): SupportedClaimHashes {
     try {
       const context = JSON.parse(this.proof.claimData.context)
@@ -33,6 +36,7 @@ export class ReclaimZKPClaim extends ZkpClaim {
     }
   }
 
+  // Depending on the claim hash, the UID is extracted from the proof
   public getClaimSubUID(): string {
     try {
       switch (this.claimHash) {
@@ -48,6 +52,7 @@ export class ReclaimZKPClaim extends ZkpClaim {
     }
   }
 
+  /// This function retrieves the parameter from the parameters's field
   private getParameter(key: string): string {
     const value = JSON.parse(this.proof.claimData.parameters).paramValues
     if (!(key in value)) {
@@ -69,15 +74,18 @@ export const constructReclaimZkpClaim = (serviceId: string, proof: Proof): Recla
   return new ReclaimZKPClaim(serviceId, proof)
 }
 
+/// This function maps the claim hash to the Reclaim Protocol's provider ID
 export const claimHashToProviderIdMap: Record<SupportedClaimHashes, string | null> = {
   [SupportedClaimHashes.UberUUID]: '81dd6dc5-b50d-4276-b4cb-dc67bdcf919f',
   [SupportedClaimHashes.GithubUsername]: '6d3f6753-7ee6-49ee-a545-62f1b1822ae5',
 }
 
+// This function checks if the claim hash is supported by the Reclaim Protocol
 export const reclaimSupportsClaimHash = (claimHash: SupportedClaimHashes) => {
   return claimHashToProviderIdMap[claimHash] !== null
 }
 
+/// This function builds a Reclaim Protocol proof request
 export const buildReclaimRequest = async (appId: string, claimHash: SupportedClaimHashes) => {
   const providerId = claimHashToProviderIdMap[claimHash]
   if (!providerId) {
