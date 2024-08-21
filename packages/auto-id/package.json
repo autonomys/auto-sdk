@@ -1,6 +1,6 @@
 {
   "name": "@autonomys/auto-id",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
@@ -9,7 +9,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@autonomys/auto-utils": "^0.3.0",
+    "@autonomys/auto-utils": "^0.4.0",
     "@peculiar/asn1-schema": "^2.3.8",
     "@peculiar/asn1-x509": "^2.3.8",
     "@peculiar/webcrypto": "^1.5.0",
@@ -35,5 +35,5 @@
     "name": "Autonomys",
     "url": "https://www.autonomys.net"
   },
-  "gitHead": "6bd84f90326d63a2981367d3cb7c15aecd7dd732"
+  "gitHead": "60e178a2c02aff3693007a1620e2067856a389f8"
 }
