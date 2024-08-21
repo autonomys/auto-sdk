@@ -6,11 +6,10 @@ import {
 } from '@autonomys/auto-utils'
 import { AsnConvert } from '@peculiar/asn1-schema'
 import { AttributeTypeAndValue, GeneralNames } from '@peculiar/asn1-x509'
-import { Crypto } from '@peculiar/webcrypto'
 import * as x509 from '@peculiar/x509'
 import { validateCertificatePublicKey } from './keyManagement'
+import { crypto } from './utils'
 
-const crypto = typeof window === 'undefined' ? new Crypto() : window.crypto
 x509.cryptoProvider.set(crypto)
 
 export const OID_COMMON_NAME = '2.5.4.3'

@@ -1,14 +1,11 @@
 import { ApiPromise } from '@autonomys/auto-utils'
 import { getCertificate } from '../registry'
 import { CertificateActionType, Signature } from '../types'
-
 import { AsnConvert } from '@peculiar/asn1-schema'
 import { AlgorithmIdentifier } from '@peculiar/asn1-x509'
-import { Crypto } from '@peculiar/webcrypto'
 import { bnToU8a, compactAddLength, u8aConcat } from '@polkadot/util'
 import { hexStringToU8a } from '../misc-utils'
-
-const crypto = new Crypto()
+import { crypto } from './crypto'
 
 const getAutoIdNonce = async (api: ApiPromise, autoIdentifier: string): Promise<number> => {
   const autoIdCertificate = await getCertificate(api, autoIdentifier)

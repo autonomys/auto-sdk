@@ -5,12 +5,20 @@ import { X509Certificate } from '@peculiar/x509'
 import { compactAddLength } from '@polkadot/util'
 import { derEncodeSignatureAlgorithmOID } from './misc-utils'
 import { AutoIdX509Certificate, Signature } from './types'
+import { rawToPublicKey } from '.'
 
+/*
+  This function is used to get the certificate from the blockchain.
+
+  @param api - The Auto-ID (@polkadot/api) API
+  @param autoIdIdentifier - The Auto-ID identifier
+  @returns The certificate as an AutoIdX509Certificate object
+*/
 export const getCertificate = async (
   api: ApiPromise,
   autoIdIdentifier: string,
 ): Promise<AutoIdX509Certificate | undefined> => {
-  const certificate = await api.query.autoId.autoIds(autoIdIdentifier)
+  const certificate = await api.query.autoId.autoIds(Buffer.from(autoIdIdentifier, 'hex'))
   if (certificate.isEmpty) {
     return undefined
   }
@@ -22,6 +30,36 @@ export const getCertificate = async (
   return autoIdCertificateJson
 }
 
+/*
+  This function is used to get the public key from the certificate.
+
+  @param api - The Auto-ID (@polkadot/api) API
+  @param autoIdIdentifier - The Auto-ID identifier
+  @returns The public key as a CryptoKey object
+*/
+export const getCertificateSubjectPublicKey = async (
+  api: ApiPromise,
+  autoIdIdentifier: string,
+): Promise<CryptoKey> => {
+  const certificate = await getCertificate(api, autoIdIdentifier)
+  if (!certificate) {
+    throw new Error('Certificate not found or already deactivated')
+  }
+  const publicKey = Buffer.from(certificate.subjectPublicKeyInfo.slice(2), 'hex')
+
+  return rawToPublicKey(publicKey, {
+    name: 'RSASSA-PKCS1-v1_5',
+    hash: { name: 'SHA-256' },
+  })
+}
+
+/*
+  This function is used to get the certificate revocation list from the blockchain.
+
+  @param api - The Auto-ID (@polkadot/api) API
+  @param autoIdIdentifier - The Auto-ID identifier
+  @returns The certificate revocation list as a string array
+*/
 export const getCertificateRevocationList = async (
   api: ApiPromise,
   autoIdIdentifier: string,
@@ -44,6 +82,12 @@ export const getCertificateRevocationList = async (
   return Array.from(revokedCertificates)
 }
 
+/*
+  This function is used to convert the X.509 certificate to DER encoded components.
+
+  @param certificate - The X.509 certificate
+  @returns The DER encoded OID and the DER encoded TBS certificate
+*/
 export const convertX509CertToDerEncodedComponents = (
   certificate: X509Certificate,
 ): [Uint8Array, Uint8Array] => {
@@ -56,6 +100,14 @@ export const convertX509CertToDerEncodedComponents = (
   return [derEncodedOID, tbsCertificateDerVec]
 }
 
+/*
+  This function is used to register the Auto-ID with the X.509 certificate.
+
+  @param api - The Auto-ID (@polkadot/api) API
+  @param certificate - The X.509 certificate
+  @param issuerId - The issuer ID
+  @returns The SubmittableExtrinsic object
+*/
 export const registerAutoId = (
   api: ApiPromise,
   certificate: X509Certificate,
@@ -78,6 +130,14 @@ export const registerAutoId = (
   return api.tx.autoId.registerAutoId(req)
 }
 
+/*
+  This function is used to revoke the certificate.
+
+  @param api - The Auto-ID (@polkadot/api) API
+  @param autoIdIdentifier - The Auto-ID identifier
+  @param signature - The signature
+  @returns The SubmittableExtrinsic object
+*/
 export const revokeCertificate = async (
   api: ApiPromise,
   autoIdIdentifier: string,
@@ -86,6 +146,14 @@ export const revokeCertificate = async (
   return api.tx.autoId.revokeCertificate(autoIdIdentifier, signature)
 }
 
+/*
+  This function is used to deactivate the Auto-ID.
+
+  @param api - The Auto-ID (@polkadot/api) API
+  @param autoIdIdentifier - The Auto-ID identifier
+  @param signature - The signature
+  @returns The SubmittableExtrinsic object
+*/
 export const deactivateAutoId = async (
   api: ApiPromise,
   autoIdIdentifier: string,
@@ -94,6 +162,14 @@ export const deactivateAutoId = async (
   return api.tx.autoId.deactivateAutoId(autoIdIdentifier, signature)
 }
 
+/*
+  This function is used to renew the Auto-ID with the X.509 certificate.
+
+  @param api - The Auto-ID (@polkadot/api) API
+  @param autoIdIdentifier - The Auto-ID identifier
+  @param newCertificate - The new X.509 certificate
+  @returns The SubmittableExtrinsic object
+*/
 export const renewAutoId = async (
   api: ApiPromise,
   autoIdIdentifier: string,

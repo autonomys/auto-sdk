@@ -1,10 +1,8 @@
 import { read, save } from '@autonomys/auto-utils'
 import * as x509 from '@peculiar/x509'
-import { Crypto } from '@peculiar/webcrypto'
 import { asn1, pki, util } from 'node-forge'
 import { stripPemHeaders } from './utils'
-
-const crypto = typeof window === 'undefined' ? new Crypto() : window.crypto
+import { crypto } from './utils'
 
 /**
  * NOTE: 'RSA-OAEP', primarily for encryption/decryption. And 'RSASSA-PKCS1-v1_5' for signing and verification.
@@ -188,6 +186,24 @@ export async function pemToPrivateKey(
   } else {
     arrayBuffer = plainPemToArrayBuffer(pemData)
   }
+  return rawToPrivateKey(arrayBuffer, algorithm)
+}
+
+/**
+ * Converts a raw private key to a CryptoKey object.
+ *
+ * This function imports a private key from a raw binary format and converts it to a CryptoKey object.
+ *
+ * @param {Uint8Array} arrayBuffer - The raw binary private key data.
+ * @param {AlgorithmIdentifier | RsaHashedImportParams | EcKeyImportParams} algorithm - The algorithm identifier for the key.
+ * @returns {Promise<CryptoKey>} A promise that resolves to the private key as a CryptoKey object.
+ *
+ * @throws Will throw an error if the key cannot be imported.
+ */
+export async function rawToPrivateKey(
+  arrayBuffer: Uint8Array,
+  algorithm: AlgorithmIdentifier | RsaHashedImportParams | EcKeyImportParams,
+): Promise<CryptoKey> {
   return crypto.subtle.importKey('pkcs8', arrayBuffer, algorithm, true, ['sign'])
 }
 
@@ -207,7 +223,25 @@ export async function pemToPublicKey(
   algorithm: AlgorithmIdentifier | RsaHashedImportParams | EcKeyImportParams,
 ): Promise<CryptoKey> {
   const keyBuffer = Buffer.from(base64ToArrayBuffer(stripPemHeaders(pemData)))
-  return crypto.subtle.importKey('spki', keyBuffer, algorithm, true, ['verify'])
+  return rawToPublicKey(keyBuffer, algorithm)
+}
+
+/**
+ * Converts a raw public key to a CryptoKey object.
+ *
+ * This function imports a public key from a raw binary format and converts it to a CryptoKey object.
+ *
+ * @param {Uint8Array} rawKey - The raw binary public key data.
+ * @param {AlgorithmIdentifier | RsaHashedImportParams | EcKeyImportParams} algorithm - The algorithm identifier for the key.
+ * @returns {Promise<CryptoKey>} A promise that resolves to the public key as a CryptoKey object.
+ *
+ * @throws Will throw an error if the key cannot be imported.
+ */
+export async function rawToPublicKey(
+  rawKey: Uint8Array,
+  algorithm: AlgorithmIdentifier | RsaHashedImportParams | EcKeyImportParams,
+): Promise<CryptoKey> {
+  return crypto.subtle.importKey('spki', rawKey, algorithm, true, ['verify'])
 }
 
 /**
