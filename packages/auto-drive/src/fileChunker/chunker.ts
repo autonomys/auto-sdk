@@ -6,10 +6,6 @@ import { chunkBuffer } from './utils.js'
 
 const MAX_CHUNK_SIZE = 1024 * 64
 
-const singleChunkToIpldPbDag = (chunk: Buffer) => {
-  return createNode(chunk, [])
-}
-
 export interface IPLDDag {
   headCID: CID
   nodes: Map<CID, PBNode>
