@@ -10,7 +10,7 @@ import type { Uint8ArrayList } from 'uint8arraylist'
 export interface IPLDNodeData {
   type: MetadataType
   linkDepth: number
-  size?: bigint
+  size?: number
   name?: string
   data?: Uint8Array
 }
@@ -37,7 +37,7 @@ export namespace IPLDNodeData {
 
         if (obj.size != null) {
           w.uint32(24)
-          w.int64(obj.size)
+          w.int32(obj.size)
         }
 
         if (obj.name != null) {
@@ -74,7 +74,7 @@ export namespace IPLDNodeData {
               break
             }
             case 3: {
-              obj.size = reader.int64()
+              obj.size = reader.int32()
               break
             }
             case 4: {
@@ -119,11 +119,11 @@ export enum MetadataType {
 
 enum __MetadataTypeValues {
   File = 0,
-  FileInlink = 2,
-  FileChunk = 3,
-  Folder = 4,
-  FolderInlink = 5,
-  Metadata = 6
+  FileInlink = 1,
+  FileChunk = 2,
+  Folder = 3,
+  FolderInlink = 4,
+  Metadata = 5
 }
 
 export namespace MetadataType {

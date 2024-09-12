@@ -5,30 +5,53 @@ import { encodeIPLDNodeData, IPLDNodeData, MetadataType } from '../metadata/onch
 import { ensureNodeMaxSize } from './chunker.js'
 
 /// Creates a chunk ipld node
-export const createChunkIpldNode = (data: Buffer, size: bigint): PBNode =>
-  ensureNodeMaxSize(
-    createNode(
-      encodeIPLDNodeData({
-        type: MetadataType.FileChunk,
-        size,
-        linkDepth: 0,
-        data,
-      }),
-      [],
-    ),
+export const createChunkIpldNode = (data: Buffer, size: number): PBNode =>
+  createNode(
+    encodeIPLDNodeData({
+      type: MetadataType.FileChunk,
+      size,
+      linkDepth: 0,
+      data,
+    }),
+    [],
   )
 
 // Creates a file ipld node
 // links: the CIDs of the file's contents
 // @todo: add the file's metadata
-export const createChunkedFileIpldNode = (links: CID[], size: bigint, name?: string): PBNode =>
+export const createChunkedFileIpldNode = (
+  links: CID[],
+  size: number,
+  linkDepth: number,
+  name?: string,
+): PBNode =>
   ensureNodeMaxSize(
     createNode(
       encodeIPLDNodeData({
         type: MetadataType.File,
         name,
         size,
-        linkDepth: 1,
+        linkDepth,
+      }),
+      links.map((cid) => ({ Hash: cid })),
+    ),
+  )
+// Creates a file ipld node
+// links: the CIDs of the file's contents
+// @todo: add the file's metadata
+export const createFileInlinkIpldNode = (
+  links: CID[],
+  size: number,
+  linkDepth: number,
+  name?: string,
+): PBNode =>
+  ensureNodeMaxSize(
+    createNode(
+      encodeIPLDNodeData({
+        type: MetadataType.FileInlink,
+        name,
+        size,
+        linkDepth,
       }),
       links.map((cid) => ({ Hash: cid })),
     ),
@@ -39,7 +62,7 @@ export const createChunkedFileIpldNode = (links: CID[], size: bigint, name?: str
 // @todo: add the file's metadata
 export const createSingleFileIpldNode = (
   data: Buffer,
-  size: bigint,
+  size: number,
   name?: string,
   // fileMetadata: Omit<OffchainFileMetadata, 'size'>,
 ): PBNode =>
@@ -59,14 +82,37 @@ export const createSingleFileIpldNode = (
 // Creates a folder ipld node
 // links: the CIDs of the folder's contents
 // @todo: add the folder's metadata
-export const createFolderIpldNode = (links: CID[], name: string, size: bigint): PBNode =>
+export const createFolderIpldNode = (
+  links: CID[],
+  name: string,
+  linkDepth: number,
+  size: number,
+): PBNode =>
   ensureNodeMaxSize(
     createNode(
       encodeIPLDNodeData({
         type: MetadataType.Folder,
         name,
         size,
-        linkDepth: 0,
+        linkDepth,
+      }),
+      links.map((cid) => ({ Hash: cid })),
+    ),
+  )
+
+export const createFolderInlinkIpldNode = (
+  links: CID[],
+  name: string,
+  linkDepth: number,
+  size: number,
+): PBNode =>
+  ensureNodeMaxSize(
+    createNode(
+      encodeIPLDNodeData({
+        type: MetadataType.Folder,
+        name,
+        size,
+        linkDepth,
       }),
       links.map((cid) => ({ Hash: cid })),
     ),

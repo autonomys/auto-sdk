@@ -1,4 +1,4 @@
-import { encode, PBNode } from '@ipld/dag-pb'
+import { decode, encode, PBNode } from '@ipld/dag-pb'
 
 export const chunkBuffer = (buffer: Buffer, chunkSize: number) => {
   const chunks: Buffer[] = []
@@ -11,3 +11,5 @@ export const chunkBuffer = (buffer: Buffer, chunkSize: number) => {
 }
 
 export const encodeNode = (node: PBNode): Buffer => Buffer.from(encode(node))
+
+export const decodeNode = (data: Uint8Array): PBNode => decode(data)
