@@ -4,7 +4,11 @@
     "outDir": "./dist",
     "rootDir": "./src/",
     "moduleResolution": "NodeNext",
-    "module": "NodeNext"
+    "module": "NodeNext",
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "stripInternal": true,
+    "resolveJsonModule": true
   },
-  "include": ["src/*", "**/*.test.ts"]
+  "include": ["src"]
 }
