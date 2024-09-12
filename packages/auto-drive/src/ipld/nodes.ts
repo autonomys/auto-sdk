@@ -100,18 +100,11 @@ export const createFolderIpldNode = (
     ),
   )
 
-export const createFolderInlinkIpldNode = (
-  links: CID[],
-  name: string,
-  linkDepth: number,
-  size: number,
-): PBNode =>
+export const createFolderInlinkIpldNode = (links: CID[], linkDepth: number): PBNode =>
   ensureNodeMaxSize(
     createNode(
       encodeIPLDNodeData({
-        type: MetadataType.Folder,
-        name,
-        size,
+        type: MetadataType.FolderInlink,
         linkDepth,
       }),
       links.map((cid) => ({ Hash: cid })),
