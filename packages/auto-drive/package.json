@@ -9,10 +9,13 @@
     "pb": "BASE_DIR='./src/metadata/onchain/protobuf/' && npx pbjs -t static-module -w es6 -o $BASE_DIR/compiled.js $BASE_DIR/onchainMetadata.proto && npx pbts -o $BASE_DIR/compiled.d.ts $BASE_DIR/compiled.js",
     "clean": "rm -rf dist",
     "format": "prettier --write \"src/**/*.ts\"",
-    "test": "jest"
+    "test": "yarn node --experimental-vm-modules $(yarn bin jest)"
   },
   "devDependencies": {
+    "@types/jest": "^29.5.13",
+    "jest": "^29.7.0",
     "protobufjs": "^7.4.0",
+    "ts-jest": "^29.2.5",
     "typescript": "^5.6.2"
   },
   "dependencies": {
