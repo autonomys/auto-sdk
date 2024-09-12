@@ -4,9 +4,6 @@
   "version": "0.4.0",
   "main": "dist/index.js",
   "type": "module",
-  "installConfig": {
-    "hoistingLimits": "dependencies"
-  },
   "scripts": {
     "build": "tsc",
     "pb": "BASE_DIR='./src/metadata/onchain/protobuf/' && npx pbjs -t static-module -w es6 -o $BASE_DIR/compiled.js $BASE_DIR/onchainMetadata.proto && npx pbts -o $BASE_DIR/compiled.d.ts $BASE_DIR/compiled.js",
