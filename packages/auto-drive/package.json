@@ -11,6 +11,10 @@
     "format": "prettier --write \"src/**/*.ts\"",
     "test": "yarn node --experimental-vm-modules $(yarn bin jest)"
   },
+  "exports": {
+    ".": "./dist/index.js",
+    "./protobuf": "./dist/metadata/onchain/protobuf/onchainMetadata.js"
+  },
   "devDependencies": {
     "@types/jest": "^29.5.13",
     "jest": "^29.7.0",

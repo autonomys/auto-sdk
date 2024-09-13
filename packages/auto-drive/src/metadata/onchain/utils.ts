@@ -1,5 +1,5 @@
 import { decode } from '@ipld/dag-pb'
-import { IPLDNodeData } from './protobuf/onchainMetadata.js'
+import { IPLDNodeData } from '@autonomys/auto-drive'
 
 export const encodeIPLDNodeData = (metadata: IPLDNodeData): Uint8Array => {
   return IPLDNodeData.encode(metadata)
