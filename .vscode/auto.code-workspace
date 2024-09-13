@@ -21,6 +21,10 @@
       "path": "../packages/auto-xdm",
     },
     {
+      "name": "Auto-Key-Store",
+      "path": "../packages/auto-key-store",
+    },
+    {
       "name": "Example - NextJS",
       "path": "../examples/next",
     },
