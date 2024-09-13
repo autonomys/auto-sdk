@@ -14,7 +14,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "pb": "BASE_DIR='./src/metadata/onchain/protobuf/' && npx pbjs -t static-module -w es6 -o $BASE_DIR/compiled.js $BASE_DIR/onchainMetadata.proto && npx pbts -o $BASE_DIR/compiled.d.ts $BASE_DIR/compiled.js",
+    "pb": "yarn protons src/metadata/onchain/protobuf/OnchainMetadata.proto -o src/metadata/onchain/protobuf",
     "clean": "rm -rf dist",
     "format": "prettier --write \"src/**/*.ts\"",
     "test": "yarn node --experimental-vm-modules $(yarn bin jest)"
