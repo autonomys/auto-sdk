@@ -5,11 +5,11 @@ import { encodeIPLDNodeData, MetadataType } from '../metadata/onchain/index.js'
 import { DEFAULT_MAX_CHUNK_SIZE, ensureNodeMaxSize } from './chunker.js'
 
 /// Creates a chunk ipld node
-export const createChunkIpldNode = (data: Buffer, size: number): PBNode =>
+export const createChunkIpldNode = (data: Buffer): PBNode =>
   createNode(
     encodeIPLDNodeData({
       type: MetadataType.FileChunk,
-      size,
+      size: data.length,
       linkDepth: 0,
       data,
     }),

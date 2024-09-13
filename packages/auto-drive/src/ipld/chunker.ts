@@ -41,7 +41,7 @@ export const createFileIPLDDag = (
   const nodes = new Map<CID, PBNode>()
 
   let CIDs: CID[] = bufferChunks.map((chunk) => {
-    const node = createChunkIpldNode(chunk, chunk.length)
+    const node = createChunkIpldNode(chunk)
     const cid = cidOfNode(node)
     nodes.set(cid, node)
 
