@@ -62,12 +62,12 @@ export const createFileInlinkIpldNode = (
 // Creates a file ipld node
 // links: the CIDs of the file's contents
 // @todo: add the file's metadata
-export const createSingleFileIpldNode = (data: Buffer, size: number, name?: string): PBNode =>
+export const createSingleFileIpldNode = (data: Buffer, name?: string): PBNode =>
   createNode(
     encodeIPLDNodeData({
       type: MetadataType.File,
       name,
-      size,
+      size: data.length,
       linkDepth: 0,
       data,
     }),

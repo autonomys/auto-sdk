@@ -28,7 +28,7 @@ export const createFileIPLDDag = (
   },
 ): IPLDDag => {
   if (file.length <= chunkSize) {
-    const head = createSingleFileIpldNode(file, file.length, filename)
+    const head = createSingleFileIpldNode(file, filename)
     const headCID = cidOfNode(head)
     return {
       headCID,
