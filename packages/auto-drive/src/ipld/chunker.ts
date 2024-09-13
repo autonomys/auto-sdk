@@ -11,8 +11,8 @@ import {
 } from './nodes.js'
 import { chunkBuffer, encodeNode } from './utils.js'
 
-const MAX_CHUNK_SIZE = 1024 * 64
-const MAX_LINK_PER_NODE = 4
+export const DEFAULT_MAX_CHUNK_SIZE = 1024 * 64
+export const DEFAULT_MAX_LINK_PER_NODE = DEFAULT_MAX_CHUNK_SIZE / 64
 
 export interface IPLDDag {
   headCID: CID
@@ -22,7 +22,10 @@ export interface IPLDDag {
 export const createFileIPLDDag = (
   file: Buffer,
   filename?: string,
-  chunkSize: number = MAX_CHUNK_SIZE,
+  { chunkSize, maxLinkPerNode }: { chunkSize: number; maxLinkPerNode: number } = {
+    chunkSize: DEFAULT_MAX_CHUNK_SIZE,
+    maxLinkPerNode: DEFAULT_MAX_LINK_PER_NODE,
+  },
 ): IPLDDag => {
   if (file.length <= chunkSize) {
     const head = createSingleFileIpldNode(file, file.length, filename)
@@ -46,12 +49,12 @@ export const createFileIPLDDag = (
   })
 
   let depth = 1
-  while (CIDs.length > MAX_LINK_PER_NODE) {
+  while (CIDs.length > maxLinkPerNode) {
     const newCIDs: CID[] = []
-    for (let i = 0; i < CIDs.length; i += MAX_LINK_PER_NODE) {
-      const chunk = CIDs.slice(i, i + MAX_LINK_PER_NODE)
+    for (let i = 0; i < CIDs.length; i += maxLinkPerNode) {
+      const chunk = CIDs.slice(i, i + maxLinkPerNode)
 
-      const node = createFileInlinkIpldNode(chunk, chunk.length, depth)
+      const node = createFileInlinkIpldNode(chunk, chunk.length, depth, chunkSize)
       const cid = cidOfNode(node)
       nodes.set(cid, node)
       newCIDs.push(cid)
@@ -59,7 +62,7 @@ export const createFileIPLDDag = (
     depth++
     CIDs = newCIDs
   }
-  const head = createChunkedFileIpldNode(CIDs, file.length, depth, filename)
+  const head = createChunkedFileIpldNode(CIDs, file.length, depth, filename, chunkSize)
   const headCID = cidOfNode(head)
   nodes.set(headCID, head)
 
@@ -69,14 +72,19 @@ export const createFileIPLDDag = (
   }
 }
 
-export const createFolderIPLDDag = (children: CID[], name: string, size: number): IPLDDag => {
+export const createFolderIPLDDag = (
+  children: CID[],
+  name: string,
+  size: number,
+  { maxLinkPerNode }: { maxLinkPerNode: number } = { maxLinkPerNode: DEFAULT_MAX_LINK_PER_NODE },
+): IPLDDag => {
   const nodes = new Map<CID, PBNode>()
   let cids = children
   let depth = 0
-  while (cids.length > MAX_LINK_PER_NODE) {
+  while (cids.length > maxLinkPerNode) {
     const newCIDs: CID[] = []
-    for (let i = 0; i < cids.length; i += MAX_LINK_PER_NODE) {
-      const chunk = cids.slice(i, i + MAX_LINK_PER_NODE)
+    for (let i = 0; i < cids.length; i += maxLinkPerNode) {
+      const chunk = cids.slice(i, i + maxLinkPerNode)
       const node = createFolderInlinkIpldNode(chunk, depth)
       const cid = cidOfNode(node)
       nodes.set(cid, node)
@@ -96,7 +104,10 @@ export const createFolderIPLDDag = (children: CID[], name: string, size: number)
   }
 }
 
-export const ensureNodeMaxSize = (node: PBNode, maxSize: number = MAX_CHUNK_SIZE): PBNode => {
+export const ensureNodeMaxSize = (
+  node: PBNode,
+  maxSize: number = DEFAULT_MAX_CHUNK_SIZE,
+): PBNode => {
   const nodeSize = encodeNode(node).byteLength
   if (nodeSize > maxSize) {
     throw new Error(`Node is too large to fit in a single chunk: ${nodeSize} > ${maxSize}`)
