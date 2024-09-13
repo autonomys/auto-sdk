@@ -1,7 +1,7 @@
 import { createNode } from '@ipld/dag-pb'
 import { cidOfNode, createChunkedFileIpldNode, createSingleFileIpldNode } from '../src/index.js'
 import { createChunkIpldNode } from '../src/ipld/nodes.js'
-import { IPLDNodeData, MetadataType } from '../src/metadata/onchain/protobuf/OnchainMetadat.js'
+import { IPLDNodeData, MetadataType } from '../src/metadata/onchain/protobuf/OnchainMetadata.js'
 
 describe('node creation', () => {
   describe('files nodes', () => {
