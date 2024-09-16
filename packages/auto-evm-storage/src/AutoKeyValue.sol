@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
 
-contract AutoKeyStore is AccessControl {
+contract AutoKeyValue is AccessControl {
     bytes32 public constant WRITER_ROLE = keccak256("WRITER_ROLE");
     bytes32 public constant EDITOR_ROLE = keccak256("EDITOR_ROLE");
 

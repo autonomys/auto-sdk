@@ -1,5 +1,5 @@
 {
-  "name": "@autonomys/auto-key-store",
+  "name": "@autonomys/auto-emv-storage",
   "version": "0.1.0",
   "main": "dist/index.js",
   "scripts": {
@@ -22,7 +22,7 @@
     "tsup": "^5.0.0",
     "typescript": "^4.0.0"
   },
-  "description": "A compact npm package for deploying and interacting with a key-value store smart contract on Autonomy's Nova network.",
+  "description": "A compact npm package for deploying and interacting with different types of storage smart contracts on Autonomy's Nova network.",
   "directories": {
     "test": "test"
   },

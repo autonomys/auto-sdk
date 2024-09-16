@@ -21,8 +21,8 @@
       "path": "../packages/auto-xdm",
     },
     {
-      "name": "Auto-Key-Store",
-      "path": "../packages/auto-key-store",
+      "name": "Auto-EVM-Storage",
+      "path": "../packages/auto-evm-storage",
     },
     {
       "name": "Example - NextJS",
