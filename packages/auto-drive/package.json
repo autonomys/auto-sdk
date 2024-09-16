@@ -1,0 +1,41 @@
+{
+  "name": "@autonomys/auto-drive",
+  "packageManager": "yarn@4.1.1",
+  "version": "0.4.0",
+  "main": "dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/autonomys/auto-sdk"
+  },
+  "author": {
+    "name": "Autonomys",
+    "url": "https://www.autonomys.net"
+  },
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "pb": "yarn protons src/metadata/onchain/protobuf/OnchainMetadata.proto -o src/metadata/onchain/protobuf",
+    "clean": "rm -rf dist",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "test": "yarn node --experimental-vm-modules $(yarn bin jest)"
+  },
+  "exports": {
+    ".": "./dist/index.js",
+    "./protobuf": "./dist/metadata/onchain/protobuf/onchainMetadata.js"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.13",
+    "jest": "^29.7.0",
+    "protobufjs": "^7.4.0",
+    "ts-jest": "^29.2.5",
+    "typescript": "^5.6.2"
+  },
+  "dependencies": {
+    "@ipld/dag-pb": "^4.1.2",
+    "blake3": "1.1.0",
+    "multiformats": "^13.2.2",
+    "protobufjs": "^7.4.0",
+    "protons": "^7.6.0",
+    "protons-runtime": "^5.5.0"
+  }
+}
