@@ -1,6 +1,6 @@
 {
   "name": "@autonomys/auto-utils",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
