@@ -11,6 +11,11 @@
     "declaration": true,
     "declarationMap": true
   },
+  "paths": {
+    "@autonomys/auto-drive/protobuf": [
+      "node_modules/@autonomys/auto-drive/dist/metadata/onchain/protobuf/onchainMetadata.js"
+    ]
+  },
   "include": ["packages/**/*"],
   "exclude": ["node_modules", "**/*.test.ts"]
 }
