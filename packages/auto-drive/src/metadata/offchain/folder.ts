@@ -17,6 +17,7 @@ export type OffchainFolderMetadata = {
 export const folderMetadata = (
   cid: string,
   children: ChildrenMetadata[],
+  name?: string,
 ): OffchainFolderMetadata => {
   return {
     dataCid: cid,
@@ -24,5 +25,6 @@ export const folderMetadata = (
     totalFiles: children.length,
     children,
     type: 'folder',
+    name,
   }
 }
