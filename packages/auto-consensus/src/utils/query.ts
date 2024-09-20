@@ -1,13 +1,11 @@
-import { activate, disconnect } from '@autonomys/auto-utils'
+import { Api } from '@autonomys/auto-utils'
 
-export const queryMethodPath = async (
+export const queryMethodPath = async <T>(
+  api: Api,
   methodPath: string,
   params: any[] = [],
-  networkId?: string,
-) => {
+): Promise<T> => {
   try {
-    const api = await activate({ networkId })
-
     // Split the method path to traverse the api object
     const methodParts = methodPath.split('.')
     let method: any = api
@@ -17,11 +15,7 @@ export const queryMethodPath = async (
 
     if (typeof method !== 'function') throw new Error(`Invalid method path: ${methodPath}`)
 
-    const result = await method(...params)
-
-    await disconnect(api)
-
-    return result
+    return (await method(...params)) as Promise<T>
   } catch (error) {
     console.error(error)
     throw new Error(`Error querying method path: ${methodPath}`)

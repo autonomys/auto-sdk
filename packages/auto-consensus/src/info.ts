@@ -1,28 +1,49 @@
 // file: src/info.ts
 
+import { Api, Codec } from '@autonomys/auto-utils'
+import { Block, RawBlock } from './types/block'
 import { queryMethodPath } from './utils/query'
 
-export const rpc = async (methodPath: string, params: any[] = [], networkId?: string) =>
-  await queryMethodPath(`rpc.${methodPath}`, params, networkId)
+export const rpc = async <T>(api: Api, methodPath: string, params: any[] = []): Promise<T> =>
+  await queryMethodPath<T>(api, `rpc.${methodPath}`, params)
 
-export const query = async (methodPath: string, params: any[] = [], networkId?: string) =>
-  await queryMethodPath(`query.${methodPath}`, params, networkId)
+export const query = async <T>(api: Api, methodPath: string, params: any[] = []): Promise<T> =>
+  await queryMethodPath<T>(api, `query.${methodPath}`, params)
 
-export const block = async (networkId?: string) => await rpc('chain.getBlock', [], networkId)
+export const block = async <RawBlock>(api: Api) => await rpc<RawBlock>(api, 'chain.getBlock', [])
 
-export const blockNumber = async (networkId?: string): Promise<number> => {
+export const blockNumber = async (api: Api): Promise<number> => {
   // Get the block
-  const _block = await block(networkId)
+  const _block = await block<RawBlock>(api)
 
   return _block.block.header.number.toNumber()
 }
 
-export const blockHash = async (networkId?: string) => {
-  // Get the block
-  const _block = await block(networkId)
-
-  return _block.block.header.hash.toString()
+export const blockHash = async (api: Api) => {
+  const _blockHash = await rpc<Codec>(api, 'chain.getBlockHash', [])
+  return _blockHash.toString()
 }
 
-export const networkTimestamp = async (networkId?: string) =>
-  await query('timestamp.now', [], networkId)
+export const networkTimestamp = async (api: Api) => await query<Codec>(api, 'timestamp.now', [])
+
+export const solutionRanges = async (api: Api) => {
+  const _solutionRanges = await query<Codec>(api, 'subspace.solutionRanges', [])
+  const solution = _solutionRanges.toPrimitive() as {
+    current: string
+    next: string
+    votingCurrent: string
+    votingNext: string
+  }
+  return {
+    current: solution.current ? BigInt(solution.current) : null,
+    next: solution.next ? BigInt(solution.next) : null,
+    votingCurrent: solution.votingCurrent ? BigInt(solution.votingCurrent) : null,
+    votingNext: solution.votingNext ? BigInt(solution.votingNext) : null,
+  }
+}
+
+export const shouldAdjustSolutionRange = async (api: Api) =>
+  await query<boolean>(api, 'subspace.shouldAdjustSolutionRange', [])
+
+export const segmentCommitment = async (api: Api) =>
+  await query<Codec>(api, 'subspace.segmentCommitment', [])
