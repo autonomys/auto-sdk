@@ -28,4 +28,15 @@ export type DomainParams = {
 
 export type ActivateParams<T> = T & ApiOptions
 
+export const CHAIN_TYPES = {
+  Solution: {
+    public_key: 'AccountId32',
+    reward_address: 'AccountId32',
+  },
+  SubPreDigest: {
+    slot: 'u64',
+    solution: 'Solution',
+  },
+}
+
 export type { ApiOptions }
