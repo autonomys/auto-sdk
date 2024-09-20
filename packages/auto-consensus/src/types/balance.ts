@@ -11,4 +11,5 @@ export type BalanceData = {
   free: bigint
   reserved: bigint
   frozen: bigint
+  flags: bigint
 }

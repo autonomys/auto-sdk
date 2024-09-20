@@ -21,6 +21,7 @@ export const parseBalance = (data: RawBalanceData): BalanceData => {
       free: BigInt(data.free.toString()),
       reserved: BigInt(data.reserved.toString()),
       frozen: BigInt(data.frozen.toString()),
+      flags: BigInt(data.flags.toString()),
     }
   } catch (error) {
     console.error('Error parsing balance:', error)
