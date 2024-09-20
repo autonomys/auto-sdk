@@ -3,8 +3,7 @@
 import type { Api, BN } from '@autonomys/auto-utils'
 import { activate } from '@autonomys/auto-utils'
 import { account } from './account'
-import type { BalanceData, RawBalanceData } from './types/balance'
-import { parseBalance } from './utils'
+import type { BalanceData } from './types/balance'
 
 export const totalIssuance = async (networkId?: string) => {
   // Get the api instance for the network
@@ -21,9 +20,9 @@ export const balance = async (api: Api, address: string): Promise<BalanceData> =
   try {
     const rawAccount = await account(api, address)
 
-    const { data } = rawAccount as { data: RawBalanceData }
+    const { data } = rawAccount as { data: BalanceData }
 
-    return parseBalance(data)
+    return data
   } catch (error) {
     console.log('error', error)
     throw new Error('Error getting balance' + error)
