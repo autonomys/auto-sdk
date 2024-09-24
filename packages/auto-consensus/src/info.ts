@@ -1,8 +1,10 @@
 // file: src/info.ts
 
-import { Api, Codec } from '@autonomys/auto-utils'
-import { Block, RawBlock } from './types/block'
+import { AnyTuple, Api, Codec, StorageKey } from '@autonomys/auto-utils'
+import { RawBlock } from './types/block'
 import { queryMethodPath } from './utils/query'
+
+const PIECE_SIZE = BigInt(1048576)
 
 export const rpc = async <T>(api: Api, methodPath: string, params: any[] = []): Promise<T> =>
   await queryMethodPath<T>(api, `rpc.${methodPath}`, params)
@@ -46,4 +48,51 @@ export const shouldAdjustSolutionRange = async (api: Api) =>
   await query<boolean>(api, 'subspace.shouldAdjustSolutionRange', [])
 
 export const segmentCommitment = async (api: Api) =>
-  await query<Codec>(api, 'subspace.segmentCommitment', [])
+  await query<[StorageKey<AnyTuple>, Codec][]>(api, 'subspace.segmentCommitment', [])
+
+export const slotProbability = (api: Api): [number, number] =>
+  api.consts.subspace.slotProbability.toPrimitive() as [number, number]
+
+export const maxPiecesInSector = (api: Api) =>
+  BigInt(api.consts.subspace.maxPiecesInSector.toPrimitive() as number)
+
+export function solutionRangeToSectors(
+  solutionRange: bigint,
+  slotProbability: [bigint, bigint],
+  piecesInSector: bigint,
+): bigint {
+  const MAX_U64 = BigInt(2 ** 64 - 1)
+  const RECORD_NUM_CHUNKS = BigInt(32768)
+  const RECORD_NUM_S_BUCKETS = BigInt(65536)
+
+  const sectors =
+    ((MAX_U64 / slotProbability[1]) * slotProbability[0]) /
+    ((piecesInSector * RECORD_NUM_CHUNKS) / RECORD_NUM_S_BUCKETS)
+
+  return sectors / solutionRange
+}
+
+export const spacePledge = async (api: Api) => {
+  const _solutionRanges = await solutionRanges(api)
+  const _slotProbability = slotProbability(api)
+  const _maxPiecesInSector = maxPiecesInSector(api)
+
+  if (!_solutionRanges.current || !_slotProbability || !_maxPiecesInSector) return 0
+
+  const sectors = solutionRangeToSectors(
+    _solutionRanges.current,
+    [BigInt(_slotProbability[0]), BigInt(_slotProbability[1])],
+    _maxPiecesInSector,
+  )
+  const totalSpacePledged = sectors * _maxPiecesInSector * PIECE_SIZE
+
+  return totalSpacePledged
+}
+
+export const blockchainSize = async (api: Api) => {
+  const _segmentCommitment = await segmentCommitment(api)
+  const segmentsCount = BigInt(_segmentCommitment.length)
+
+  const blockchainSize = PIECE_SIZE * BigInt(256) * segmentsCount
+  return blockchainSize
+}
