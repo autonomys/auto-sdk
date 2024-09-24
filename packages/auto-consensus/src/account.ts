@@ -5,7 +5,6 @@ import type { AccountData, RawAccountData } from './types/account'
 import { parseBalance } from './utils'
 
 export const account = async (api: Api, address: string): Promise<AccountData> => {
-  // Query the balance of the address and parse the data
   try {
     const rawAccount = await api.query.system.account(address)
 
