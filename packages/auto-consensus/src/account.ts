@@ -1,4 +1,4 @@
-// file: src/balances.ts
+// file: src/account.ts
 
 import type { Api } from '@autonomys/auto-utils'
 import type { AccountData, RawAccountData } from './types/account'
