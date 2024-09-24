@@ -2,18 +2,8 @@
 
 import type { Api, BN } from '@autonomys/auto-utils'
 import { activate } from '@autonomys/auto-utils'
-
-type RawBalanceData = {
-  free: BN
-  reserved: BN
-  frozen: BN
-  flags: BN
-}
-type BalanceData = {
-  free: bigint
-  reserved: bigint
-  frozen: bigint
-}
+import { account } from './account'
+import type { BalanceData } from './types/balance'
 
 export const totalIssuance = async (networkId?: string) => {
   // Get the api instance for the network
@@ -28,15 +18,11 @@ export const totalIssuance = async (networkId?: string) => {
 export const balance = async (api: Api, address: string): Promise<BalanceData> => {
   // Query the balance of the address and parse the data
   try {
-    const rawBalance = await api.query.system.account(address)
+    const rawAccount = await account(api, address)
 
-    const { data } = rawBalance as unknown as { data: RawBalanceData }
+    const { data } = rawAccount as { data: BalanceData }
 
-    return {
-      free: BigInt(data.free.toString()),
-      reserved: BigInt(data.reserved.toString()),
-      frozen: BigInt(data.frozen.toString()),
-    }
+    return data
   } catch (error) {
     console.log('error', error)
     throw new Error('Error getting balance' + error)

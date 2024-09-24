@@ -1,4 +1,5 @@
 import type { AnyTuple, Codec, StorageKey } from '@autonomys/auto-utils'
+import type { BalanceData, RawBalanceData } from '../types/balance'
 import { DomainRegistry } from '../types/domain'
 import {
   Deposit,
@@ -13,6 +14,20 @@ import {
   StringNumberOrBigInt,
   Withdrawal,
 } from '../types/staking'
+
+export const parseBalance = (data: RawBalanceData): BalanceData => {
+  try {
+    return {
+      free: BigInt(data.free.toString()),
+      reserved: BigInt(data.reserved.toString()),
+      frozen: BigInt(data.frozen.toString()),
+      flags: BigInt(data.flags.toString()),
+    }
+  } catch (error) {
+    console.error('Error parsing balance:', error)
+    throw new Error('Failed to parse balance')
+  }
+}
 
 export const parseDomain = (domain: [StorageKey<AnyTuple>, Codec]): DomainRegistry => {
   const header = domain[0].toHuman() as [string]

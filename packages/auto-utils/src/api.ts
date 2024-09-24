@@ -1,6 +1,7 @@
 import { ApiPromise, WsProvider } from '@polkadot/api'
 import { getNetworkDomainRpcUrls, getNetworkRpcUrls } from './network'
 import type { ActivateParams, ApiOptions, DomainParams, NetworkParams } from './types/network'
+import { CHAIN_TYPES } from './types/network'
 
 export const createConnection = async (
   endpoint: string,
@@ -11,6 +12,7 @@ export const createConnection = async (
   // Create the API instance
   const api = await ApiPromise.create({
     ...options,
+    types: { ...CHAIN_TYPES, ...options?.types },
     noInitWarn: options?.noInitWarn ?? true,
     provider,
   })

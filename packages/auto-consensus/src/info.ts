@@ -1,28 +1,98 @@
 // file: src/info.ts
 
+import { AnyTuple, Api, Codec, StorageKey } from '@autonomys/auto-utils'
+import { RawBlock } from './types/block'
 import { queryMethodPath } from './utils/query'
 
-export const rpc = async (methodPath: string, params: any[] = [], networkId?: string) =>
-  await queryMethodPath(`rpc.${methodPath}`, params, networkId)
+const PIECE_SIZE = BigInt(1048576)
 
-export const query = async (methodPath: string, params: any[] = [], networkId?: string) =>
-  await queryMethodPath(`query.${methodPath}`, params, networkId)
+export const rpc = async <T>(api: Api, methodPath: string, params: any[] = []): Promise<T> =>
+  await queryMethodPath<T>(api, `rpc.${methodPath}`, params)
 
-export const block = async (networkId?: string) => await rpc('chain.getBlock', [], networkId)
+export const query = async <T>(api: Api, methodPath: string, params: any[] = []): Promise<T> =>
+  await queryMethodPath<T>(api, `query.${methodPath}`, params)
 
-export const blockNumber = async (networkId?: string): Promise<number> => {
+export const block = async <RawBlock>(api: Api) => await rpc<RawBlock>(api, 'chain.getBlock', [])
+
+export const blockNumber = async (api: Api): Promise<number> => {
   // Get the block
-  const _block = await block(networkId)
+  const _block = await block<RawBlock>(api)
 
   return _block.block.header.number.toNumber()
 }
 
-export const blockHash = async (networkId?: string) => {
-  // Get the block
-  const _block = await block(networkId)
-
-  return _block.block.header.hash.toString()
+export const blockHash = async (api: Api) => {
+  const _blockHash = await rpc<Codec>(api, 'chain.getBlockHash', [])
+  return _blockHash.toString()
 }
 
-export const networkTimestamp = async (networkId?: string) =>
-  await query('timestamp.now', [], networkId)
+export const networkTimestamp = async (api: Api) => await query<Codec>(api, 'timestamp.now', [])
+
+export const solutionRanges = async (api: Api) => {
+  const _solutionRanges = await query<Codec>(api, 'subspace.solutionRanges', [])
+  const solution = _solutionRanges.toPrimitive() as {
+    current: string
+    next: string
+    votingCurrent: string
+    votingNext: string
+  }
+  return {
+    current: solution.current ? BigInt(solution.current) : null,
+    next: solution.next ? BigInt(solution.next) : null,
+    votingCurrent: solution.votingCurrent ? BigInt(solution.votingCurrent) : null,
+    votingNext: solution.votingNext ? BigInt(solution.votingNext) : null,
+  }
+}
+
+export const shouldAdjustSolutionRange = async (api: Api) =>
+  await query<boolean>(api, 'subspace.shouldAdjustSolutionRange', [])
+
+export const segmentCommitment = async (api: Api) =>
+  await query<[StorageKey<AnyTuple>, Codec][]>(api, 'subspace.segmentCommitment', [])
+
+export const slotProbability = (api: Api): [number, number] =>
+  api.consts.subspace.slotProbability.toPrimitive() as [number, number]
+
+export const maxPiecesInSector = (api: Api) =>
+  BigInt(api.consts.subspace.maxPiecesInSector.toPrimitive() as number)
+
+export function solutionRangeToSectors(
+  solutionRange: bigint,
+  slotProbability: [bigint, bigint],
+  piecesInSector: bigint,
+): bigint {
+  const MAX_U64 = BigInt(2 ** 64 - 1)
+  const RECORD_NUM_CHUNKS = BigInt(32768)
+  const RECORD_NUM_S_BUCKETS = BigInt(65536)
+
+  const sectors =
+    ((MAX_U64 / slotProbability[1]) * slotProbability[0]) /
+    ((piecesInSector * RECORD_NUM_CHUNKS) / RECORD_NUM_S_BUCKETS)
+
+  return sectors / solutionRange
+}
+
+export const spacePledge = async (api: Api) => {
+  const _solutionRanges = await solutionRanges(api)
+  const _slotProbability = slotProbability(api)
+  const _maxPiecesInSector = maxPiecesInSector(api)
+
+  if (!_solutionRanges.current || !_slotProbability || !_maxPiecesInSector) return 0
+
+  const sectors = solutionRangeToSectors(
+    _solutionRanges.current,
+    [BigInt(_slotProbability[0]), BigInt(_slotProbability[1])],
+    _maxPiecesInSector,
+  )
+  const totalSpacePledged = sectors * _maxPiecesInSector * PIECE_SIZE
+
+  return totalSpacePledged
+}
+
+export const blockchainSize = async (api: Api) => {
+  const _segmentCommitment = await segmentCommitment(api)
+  const segmentsCount = BigInt(_segmentCommitment.length)
+
+  const blockchainSize = PIECE_SIZE * BigInt(256) * segmentsCount
+  return blockchainSize
+}
