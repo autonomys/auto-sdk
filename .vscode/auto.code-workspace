@@ -13,6 +13,10 @@
       "path": "../packages/auto-consensus",
     },
     {
+      "name": "Auto-Drive",
+      "path": "../packages/auto-drive",
+    },
+    {
       "name": "Auto-ID",
       "path": "../packages/auto-id",
     },
