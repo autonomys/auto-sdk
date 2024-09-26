@@ -1,6 +1,6 @@
 {
   "name": "node",
-  "version": "0.5.3",
+  "version": "0.6.0",
   "private": true,
   "license": "MIT",
   "packageManager": "yarn@4.2.2",

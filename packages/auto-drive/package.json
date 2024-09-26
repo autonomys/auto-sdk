@@ -1,7 +1,8 @@
 {
   "name": "@autonomys/auto-drive",
   "packageManager": "yarn@4.1.1",
-  "version": "0.5.3",
+  "version": "0.6.1",
+  "license": "MIT",
   "main": "dist/index.js",
   "repository": {
     "type": "git",
@@ -38,5 +39,5 @@
     "protons": "^7.6.0",
     "protons-runtime": "^5.5.0"
   },
-  "gitHead": "6562d96024a64cb8c9cf9c15ec7ee795fdb52318"
+  "gitHead": "95bcddae352dc40801bbcea12c6489bd78014f32"
 }
