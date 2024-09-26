@@ -1,6 +1,7 @@
 {
   "name": "@autonomys/auto-xdm",
   "version": "0.6.0",
+  "license": "MIT",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
@@ -32,5 +33,5 @@
     "ts-jest": "^29.1.4",
     "typescript": "^5.4.5"
   },
-  "gitHead": "6562d96024a64cb8c9cf9c15ec7ee795fdb52318"
+  "gitHead": "34e98604436c13a8f389886b8bd12d40dac81c52"
 }
