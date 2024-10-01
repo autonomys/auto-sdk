@@ -1,4 +1,4 @@
-import { cidOfNode, cidToString, IPLDDag } from '../../index.js'
+import { cidOfNode, cidToString, IPLDDag, IPLDNodeData, MetadataType } from '../../index.js'
 
 export type OffchainFileMetadata = {
   type: 'file'
@@ -21,14 +21,18 @@ export const fileMetadata = (
   name?: string,
   mimeType?: string,
 ): OffchainFileMetadata => {
+  const chunks = Array.from(dag.nodes.values()).filter(
+    (n) => n.Data && IPLDNodeData.decode(n.Data).data,
+  )
+
   return {
     type: 'file',
     dataCid: cidToString(dag.headCID),
     name,
     mimeType,
     totalSize,
-    totalChunks: dag.nodes.size,
-    chunks: Array.from(dag.nodes.values()).map((chunk) => ({
+    totalChunks: chunks.length,
+    chunks: chunks.map((chunk) => ({
       cid: cidToString(cidOfNode(chunk)),
       size: chunk.Data?.length ?? 0,
     })),
