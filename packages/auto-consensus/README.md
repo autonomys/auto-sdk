@@ -1,5 +1,7 @@
 # Autonomys Auto Consensus SDK
 
+[![Latest Github release](https://img.shields.io/github/v/tag/autonomys/auto-sdk.svg)](https://github.com/autonomys/auto-sdk/tags)
+
 ## Overview
 
 The **Autonomys Auto Consensus SDK** (`@autonomys/auto-consensus`) offers a suite of functions for interacting with the **Autonomys Network's consensus layer**. It enables developers to:

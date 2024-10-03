@@ -1,5 +1,7 @@
 # Autonomys Auto SDK Utility
 
+[![Latest Github release](https://img.shields.io/github/v/tag/autonomys/auto-sdk.svg)](https://github.com/autonomys/auto-sdk/tags)
+
 ## Overview
 
 The **Autonomys Auto SDK Utility** (`@autonomys/auto-utils`) provides core utility functions for interacting with the Autonomys Network. It offers functionalities for:

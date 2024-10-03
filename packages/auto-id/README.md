@@ -1,5 +1,7 @@
 # Autonomys Auto ID SDK
 
+[![Latest Github release](https://img.shields.io/github/v/tag/autonomys/auto-sdk.svg)](https://github.com/autonomys/auto-sdk/tags)
+
 ## Overview
 
 The **Autonomys Auto ID SDK** (`@autonomys/auto-id`) provides a suite of functions for managing Decentralized Identities (Auto IDs) on the Autonomys Network. It enables developers to:
