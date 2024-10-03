@@ -4,23 +4,21 @@
 
 [![Latest Github release](https://img.shields.io/github/v/tag/autonomys/auto-sdk.svg)](https://github.com/autonomys/auto-sdk/tags)
 [![Build status of the main branch on Linux/OSX](https://img.shields.io/github/actions/workflow/status/autonomys/auto-sdk/build.yaml?branch=main&label=Linux%2FOSX%20build)](https://github.com/autonomys/auto-sdk/actions/workflows/build.yaml)
-[![npm version](https://badge.fury.io/js/@autonomys%2Fauto-id.svg)](https://badge.fury.io/js/@autonomys%2Fauto-id)
+[![npm version](https://badge.fury.io/js/@autonomys%2Fauto-id.svg)](https://badge.fury.io/js/@autonomys/auto-id)
 
 ## Overview
 
-The **Autonomys Auto ID SDK** (`@autonomys/auto-id`) provides a suite of functions for managing Decentralized Identities (Auto IDs) on the Autonomys Network. It enables developers to:
+The **Autonomys Auto ID SDK** (`@autonomys/auto-id`) provides functionalities for managing certificates, authenticating users, and integrating Zero-Knowledge Proofs (ZKPs) on the Autonomys Network. It enables developers to:
 
-- **Generate Auto IDs**: Create new decentralized identities for users.
 - **Authenticate Users**: Verify user identities using their Auto IDs.
-- **Revoke Auto IDs**: Remove Auto IDs when they are no longer needed or compromised.
-- **Manage Certificates**: Handle x509 certificates associated with Auto IDs.
-- **Integrate Zero-Knowledge Proofs (ZKPs)**: Utilize ZKP claims for enhanced privacy.
+- **Manage Certificates**: Create, issue, and handle x509 certificates associated with Auto IDs.
+- **Integrate Zero-Knowledge Proofs (ZKPs)**: Utilize ZKP claims for enhanced privacy and authentication.
 
 ## Features
 
-- **Auto ID Management**: Generate, authenticate, and revoke Auto IDs.
-- **Certificate Handling**: Create and manage x509 certificates linked to Auto IDs.
+- **Certificate Management**: Create and manage x509 certificates linked to Auto IDs.
 - **Zero-Knowledge Proof Integration**: Implement privacy-preserving claims using ZKPs.
+- **User Authentication**: Authenticate users through their Auto IDs and certificates.
 - **TypeScript Support**: Fully typed for enhanced developer experience.
 - **Blockchain Interaction**: Interact with the Autonomys Network without dealing with low-level blockchain complexities.
 
@@ -48,7 +46,6 @@ yarn add @autonomys/auto-id
 - **TypeScript** (recommended for development)
 - Familiarity with async/await and promise handling in JavaScript/TypeScript.
 - **@autonomys/auto-utils** package installed (for utility functions and API activation).
-- **@autonomys/auto-consensus** package if interacting with the consensus layer.
 
 ### Importing the SDK
 
@@ -56,11 +53,12 @@ You can import specific functions from the package as needed:
 
 ```typescript
 import {
-  generateAutoID,
   authenticateAutoIdUser,
-  revokeAutoID,
-  createCertificate,
-  verifyCertificate,
+  selfIssueCertificate,
+  issueCertificate,
+  createAndSignCSR,
+  ReclaimZKPClaim,
+  buildReclaimRequest,
 } from '@autonomys/auto-id'
 ```
 
@@ -72,82 +70,50 @@ Below are examples demonstrating how to use the functions provided by `@autonomy
 
 ---
 
-### 1. Auto ID Management
+### 1. User Authentication
 
-#### **Generating a New Auto ID**
+#### **Authenticate a User with Auto ID**
 
-Create a new Auto ID for a user.
-
-```typescript
-import { generateAutoID } from '@autonomys/auto-id'
-import { activateWallet } from '@autonomys/auto-utils'
-;(async () => {
-  // Activate a wallet using a mnemonic phrase
-  const { api, accounts } = await activateWallet({
-    mnemonic: 'your mnemonic phrase here', // Replace with your mnemonic
-  })
-  const account = accounts[0]
-
-  // Generate a new Auto ID
-  const autoID = await generateAutoID(api, account)
-  console.log(`Generated Auto ID: ${autoID}`)
-
-  // Disconnect when done
-  await api.disconnect()
-})()
-```
-
-**Parameters:**
-
-- `api` (ApiPromise): Connected API instance.
-- `account` (KeyringPair): The account generating the Auto ID.
-
-**Returns:**
-
-- A `Promise` that resolves to the new Auto ID (`string`).
-
----
-
-#### **Authenticating a User with Auto ID**
-
-Verify a user's identity using their Auto ID.
+Verify a user's identity using their Auto ID, challenge message, and signature.
 
 ```typescript
-import { authenticateAutoIdUser } from '@autonomys/auto-id'
-import { activate } from '@autonomys/auto-utils'
+import { authenticateAutoIdUser } from '@autonomys/auto-id';
+import { activate } from '@autonomys/auto-utils';
 
-;(async () => {
+(async () => {
   // Activate the network API
-  const api = await activate()
+  const api = await activate();
+
+  // User's Auto ID
+  const autoId = 'user-auto-id'; // Replace with the user's Auto ID
 
   // Challenge message that the user needs to sign
-  const challengeMessage = 'Please sign this message to authenticate.'
-  const challenge = new TextEncoder().encode(challengeMessage)
+  const challengeMessage = 'Please sign this message to authenticate.';
+  const challenge = new TextEncoder().encode(challengeMessage);
 
-  // Assume the user provides the signature and their Auto ID
-  const signature = new Uint8Array([...]) // User's signature as Uint8Array
-  const autoId = 'user-auto-id' // The user's Auto ID
+  // Assume the user provides the signature
+  const signature = new Uint8Array([...]); // User's signature as Uint8Array
 
   // Authenticate the user
-  const isAuthenticated = await authenticateAutoIdUser(api, autoId, challenge, signature)
+  const isAuthenticated = await authenticateAutoIdUser(api, autoId, challenge, signature);
 
   if (isAuthenticated) {
-    console.log('User authenticated successfully.')
+    console.log('User authenticated successfully.');
   } else {
-    console.log('Authentication failed.')
+    console.log('Authentication failed.');
   }
 
   // Disconnect when done
-  await api.disconnect()
-})()
+  await api.disconnect();
+})();
 ```
 
 **Parameters:**
 
-- `api` (ApiPromise): Connected API instance.
-- `autoId` (string): User's Auto ID.
-- `challenge` (BufferSource): The challenge message.
-- `signature` (BufferSource): User's signature over the challenge.
+- `api` (`ApiPromise`): Connected API instance.
+- `autoId` (`string`): User's Auto ID.
+- `challenge` (`BufferSource`): The challenge message.
+- `signature` (`BufferSource`): User's signature over the challenge.
 
 **Returns:**
 
@@ -155,62 +121,26 @@ import { activate } from '@autonomys/auto-utils'
 
 ---
 
-#### **Revoking an Auto ID**
-
-Remove an Auto ID when it's no longer needed.
-
-```typescript
-import { revokeAutoID } from '@autonomys/auto-id'
-import { activateWallet } from '@autonomys/auto-utils'
-;(async () => {
-  // Activate a wallet using a mnemonic phrase
-  const { api, accounts } = await activateWallet({
-    mnemonic: 'your mnemonic phrase here', // Replace with your mnemonic
-  })
-  const account = accounts[0]
-
-  // The Auto ID to revoke
-  const autoID = 'autoid_to_revoke' // Replace with the Auto ID to revoke
-
-  // Revoke the Auto ID
-  await revokeAutoID(api, account, autoID)
-  console.log(`Revoked Auto ID: ${autoID}`)
-
-  // Disconnect when done
-  await api.disconnect()
-})()
-```
-
-**Parameters:**
-
-- `api` (ApiPromise): Connected API instance.
-- `account` (KeyringPair): The account that owns the Auto ID.
-- `autoID` (string): The Auto ID to revoke.
-
-**Returns:**
-
-- A `Promise` that resolves when the Auto ID has been revoked.
-
----
-
 ### 2. Certificate Management
 
-#### **Creating a Self-Signed Certificate**
+#### **Self-Issuing a Certificate**
 
-Generate a self-signed x509 certificate associated with an Auto ID.
+Generate a self-signed x509 certificate for an Auto ID.
 
 ```typescript
-import { createCertificate } from '@autonomys/auto-id'
-import { activateWallet } from '@autonomys/auto-utils'
+import { selfIssueCertificate } from '@autonomys/auto-id'
+import { generateKeyPair } from '@autonomys/auto-utils'
+
 ;(async () => {
-  // Activate a wallet
-  const { accounts } = await activateWallet({
-    mnemonic: 'your mnemonic phrase here', // Replace with your mnemonic
-  })
-  const account = accounts[0]
+  // Generate a key pair
+  const keyPair = await generateKeyPair()
+
+  // Subject name for the certificate
+  const subjectName = 'CN=User Name' // Replace with appropriate subject
 
   // Generate a self-signed certificate
-  const certificate = await createCertificate(account, 'CN=User Name')
+  const certificate = await selfIssueCertificate(subjectName, keyPair)
+
   console.log('Certificate created:', certificate)
 
   // Optionally, save the certificate to a file or store it securely
@@ -219,44 +149,55 @@ import { activateWallet } from '@autonomys/auto-utils'
 
 **Parameters:**
 
-- `account` (KeyringPair): The account for which to create the certificate.
-- `subjectName` (string): The subject name for the certificate (e.g., 'CN=User Name').
+- `subjectName` (`string`): The subject name for the certificate (e.g., 'CN=User Name').
+- `keyPair` (`CryptoKeyPair`): The key pair for the certificate.
 
 **Returns:**
 
-- A `Promise` that resolves to the generated certificate.
+- A `Promise` that resolves to the generated `X509Certificate`.
 
----
+#### **Issuing a Certificate**
 
-#### **Verifying a Certificate**
-
-Verify that a certificate is valid and trusted.
+Issue a certificate based on a Certificate Signing Request (CSR).
 
 ```typescript
-import { verifyCertificate } from '@autonomys/auto-id'
+import { createAndSignCSR, issueCertificate, selfIssueCertificate } from '@autonomys/auto-id'
+import { generateKeyPair } from '@autonomys/auto-utils'
+
 ;(async () => {
-  // Assume you have the certificate and a trusted root certificate
-  const certificate = '-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----'
-  const trustedRootCertificate = '-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----'
+  // Generate key pairs for the subject and issuer
+  const subjectKeyPair = await generateKeyPair()
+  const issuerKeyPair = await generateKeyPair()
 
-  const isValid = await verifyCertificate(certificate, [trustedRootCertificate])
+  // Subject and issuer names
+  const subjectName = 'CN=Subject Name'
+  const issuerName = 'CN=Issuer Name'
 
-  if (isValid) {
-    console.log('Certificate is valid and trusted.')
-  } else {
-    console.log('Certificate verification failed.')
-  }
+  // Create issuer's self-signed certificate
+  const issuerCertificate = await selfIssueCertificate(issuerName, issuerKeyPair)
+
+  // Create and sign CSR for the subject
+  const csr = await createAndSignCSR(subjectName, subjectKeyPair)
+
+  // Issue certificate for the subject using issuer's certificate and key pair
+  const issuedCertificate = await issueCertificate(csr, {
+    certificate: issuerCertificate,
+    keyPair: issuerKeyPair,
+  })
+
+  console.log('Issued Certificate:', issuedCertificate)
 })()
 ```
 
-**Parameters:**
+**Parameters for `issueCertificate`:**
 
-- `certificate` (string): The PEM-encoded certificate to verify.
-- `trustedRoots` (string[]): An array of PEM-encoded trusted root certificates.
+- `csr` (`Pkcs10CertificateRequest`): The CSR from the subject.
+- `issuerCertificateData` (`CertificateData`): Contains the issuer's certificate and key pair.
+- `validityPeriodDays` (`number`, optional): Certificate validity period in days.
 
 **Returns:**
 
-- A `Promise` that resolves to `true` if the certificate is valid, or `false` otherwise.
+- A `Promise` that resolves to the issued `X509Certificate`.
 
 ---
 
@@ -267,70 +208,78 @@ import { verifyCertificate } from '@autonomys/auto-id'
 Generate a Zero-Knowledge Proof claim using the Reclaim protocol.
 
 ```typescript
-import { createZkpClaim } from '@autonomys/auto-id'
-import { activateWallet } from '@autonomys/auto-utils'
+import { ReclaimZKPClaim, buildReclaimRequest } from '@autonomys/auto-id'
 import { Proof } from '@reclaimprotocol/js-sdk'
 
 ;(async () => {
-  const { api, accounts } = await activateWallet({
-    mnemonic: 'your mnemonic phrase here',
+  // Application ID from Reclaim Protocol
+  const appId = 'your-app-id' // Replace with your actual app ID
+
+  // Supported claim hash (e.g., 'GoogleEmail')
+  const claimType = 'GoogleEmail'
+
+  // Build a Reclaim proof request
+  const reclaimRequest = await buildReclaimRequest(appId, claimType)
+
+  // Start the Reclaim session and get the proof (this may involve user interaction)
+  const proofs = await reclaimRequest.startSession({
+    onSuccessCallback: (proofs) => {
+      // Handle the proofs
+      const proof = proofs[0]
+
+      // Create a ZKP claim
+      const zkpClaim = new ReclaimZKPClaim('your-service-id', proof)
+
+      // Verify the proof validity
+      zkpClaim.verify().then((isValid) => {
+        if (isValid) {
+          console.log('ZKP Claim is valid:', zkpClaim)
+        } else {
+          console.log('ZKP Claim verification failed.')
+        }
+      })
+    },
+    onFailureCallback: (error) => {
+      console.error('Reclaim session failed:', error)
+    },
   })
-  const account = accounts[0]
-
-  // Assume you have a Reclaim proof (obtained from the Reclaim protocol)
-  const proof: Proof = /* ... */
-
-  // Create a ZKP claim
-  const zkpClaim = await createZkpClaim(api, account, proof)
-  console.log('ZKP Claim created:', zkpClaim)
-
-  await api.disconnect()
 })()
 ```
 
 **Parameters:**
 
-- `api` (ApiPromise): Connected API instance.
-- `account` (KeyringPair): The account creating the claim.
-- `proof` (Proof): The proof object from the Reclaim protocol.
+- `serviceId` (`string`): An identifier for your service.
+- `proof` (`Proof`): The proof object obtained from the Reclaim protocol.
 
 **Returns:**
 
-- A `Promise` that resolves to the created ZKP claim.
+- A `Promise` that resolves when the ZKP claim has been processed.
 
 ---
 
 ## API Reference
 
-### Auto ID Functions
-
-#### **`generateAutoID(api: ApiPromise, account: KeyringPair): Promise<string>`**
-
-Generate a new Auto ID.
+### Functions
 
 #### **`authenticateAutoIdUser(api: ApiPromise, autoId: string, challenge: BufferSource, signature: BufferSource): Promise<boolean>`**
 
 Authenticate a user using their Auto ID.
 
-#### **`revokeAutoID(api: ApiPromise, account: KeyringPair, autoID: string): Promise<void>`**
+#### **`selfIssueCertificate(subjectName: string, keyPair: CryptoKeyPair, validityPeriodDays?: number): Promise<X509Certificate>`**
 
-Revoke an existing Auto ID.
+Create a self-signed x509 certificate.
 
-### Certificate Functions
+#### **`issueCertificate(csr: Pkcs10CertificateRequest, issuerCertificateData: CertificateData, validityPeriodDays?: number): Promise<X509Certificate>`**
 
-#### **`createCertificate(account: KeyringPair, subjectName: string): Promise<string>`**
+Issue a certificate based on a CSR.
 
-Create a self-signed x509 certificate for an account.
+#### **`createAndSignCSR(subjectName: string, keyPair: CryptoKeyPair): Promise<Pkcs10CertificateRequest>`**
 
-#### **`verifyCertificate(certificate: string, trustedRoots: string[]): Promise<boolean>`**
+Create and sign a Certificate Signing Request.
 
-Verify the validity of a certificate against trusted roots.
+#### **`buildReclaimRequest(appId: string, claimType: SupportedClaimHashes): Promise<ProofRequest>`**
 
-### Zero-Knowledge Proof Functions
-
-#### **`createZkpClaim(api: ApiPromise, account: KeyringPair, proof: Proof): Promise<ZkpClaim>`**
-
-Create a ZKP claim using a proof.
+Build a Reclaim proof request for a specific claim type.
 
 ---
 
@@ -341,21 +290,18 @@ Ensure to handle errors appropriately, especially when dealing with network oper
 **Example:**
 
 ```typescript
-import { generateAutoID } from '@autonomys/auto-id'
-import { activateWallet } from '@autonomys/auto-utils'
+import { selfIssueCertificate } from '@autonomys/auto-id'
+import { generateKeyPair } from '@autonomys/auto-utils'
+
 ;(async () => {
   try {
-    const { api, accounts } = await activateWallet({
-      mnemonic: 'your mnemonic phrase here',
-    })
-    const account = accounts[0]
+    const keyPair = await generateKeyPair()
+    const subjectName = 'CN=User Name'
 
-    const autoID = await generateAutoID(api, account)
-    console.log(`Generated Auto ID: ${autoID}`)
-
-    await api.disconnect()
+    const certificate = await selfIssueCertificate(subjectName, keyPair)
+    console.log('Certificate created:', certificate)
   } catch (error) {
-    console.error('Error generating Auto ID:', error)
+    console.error('Error creating certificate:', error)
   }
 })()
 ```
