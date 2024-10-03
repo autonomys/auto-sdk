@@ -111,99 +111,85 @@ import { transfer } from '@autonomys/auto-consensus'
 
 ### 2. Using `@autonomys/auto-drive`
 
-The `@autonomys/auto-drive` package provides tools to prepare and manage data for on-chain storage.
+The `@autonomys/auto-drive` package provides utilities for creating and managing IPLD DAGs (InterPlanetary Linked Data Directed Acyclic Graphs) for files and folders.
 
-#### **Prepare and Upload Data to the Autonomys Network**
-
-```typescript
-// Import necessary functions
-import { activate } from '@autonomys/auto-utils'
-import { prepareDataForUpload, uploadData } from '@autonomys/auto-drive'
-;(async () => {
-  // Activate the network API
-  const api = await activate({
-    networkId: 'gemini-3h', // Optional: specify the network ID
-  })
-
-  // Data you want to upload
-  const data = Buffer.from('Example data to store on-chain')
-
-  // Prepare data for upload
-  const preparedData = prepareDataForUpload(data)
-
-  // Upload data to the blockchain
-  const txHash = await uploadData(api, preparedData)
-
-  console.log(`Data uploaded with transaction hash: ${txHash}`)
-
-  // Disconnect when done
-  await api.disconnect()
-})()
-```
-
-#### **Create and Store IPLD DAG**
+#### **Creating an IPLD DAG from a File**
 
 ```typescript
 // Import necessary functions
 import { createFileIPLDDag } from '@autonomys/auto-drive'
-import { cidToString } from '@autonomys/auto-drive'
+import fs from 'fs'
 
-const data = Buffer.from('File content goes here')
-const filename = 'example.txt'
+const fileBuffer = fs.readFileSync('path/to/your/file.txt')
 
-// Create IPLD DAG from file data
-const ipldDag = createFileIPLDDag(data, filename)
+// Create an IPLD DAG from the file data
+const dag = createFileIPLDDag(fileBuffer, 'file.txt')
 
-// Get the CID (Content Identifier) of the file
-const fileCID = cidToString(ipldDag.headCID)
-console.log(`File CID: ${fileCID}`)
+console.log(`Created DAG with head CID: ${dag.headCID}`)
 
 // The 'nodes' map contains all nodes in the DAG
-console.log(`Total nodes in DAG: ${ipldDag.nodes.size}`)
+console.log(`Total nodes in DAG: ${dag.nodes.size}`)
+```
+
+#### **Creating an IPLD DAG from a Folder**
+
+```typescript
+// Import necessary functions
+import { createFolderIPLDDag } from '@autonomys/auto-drive'
+import { CID } from 'multiformats'
+import fs from 'fs'
+import path from 'path'
+
+// Function to read files from a directory and create CIDs
+function getFilesCIDs(directoryPath: string): CID[] {
+  const fileNames = fs.readdirSync(directoryPath)
+  const cids: CID[] = []
+
+  fileNames.forEach((fileName) => {
+    const filePath = path.join(directoryPath, fileName)
+    const fileBuffer = fs.readFileSync(filePath)
+    const fileDag = createFileIPLDDag(fileBuffer, fileName)
+    cids.push(fileDag.headCID)
+  })
+
+  return cids
+}
+
+const directoryPath = 'path/to/your/folder'
+const childCIDs = getFilesCIDs(directoryPath)
+const folderName = 'my-folder'
+const folderSize = childCIDs.length
+
+// Create an IPLD DAG for the folder
+const folderDag = createFolderIPLDDag(childCIDs, folderName, folderSize)
+
+console.log(`Created folder DAG with head CID: ${folderDag.headCID}`)
 ```
 
 ### 3. Using `@autonomys/auto-id`
 
-The `@autonomys/auto-id` package allows you to manage Decentralized Identities (Auto IDs).
+The `@autonomys/auto-id` package provides functionalities for managing certificates, authenticating users, and integrating Zero-Knowledge Proofs (ZKPs) on the Autonomys Network.
 
-#### **Generate a New Auto ID**
-
-```typescript
-// Import necessary functions
-import { generateAutoID } from '@autonomys/auto-id'
-import { activateWallet } from '@autonomys/auto-utils'
-;(async () => {
-  // Activate a wallet
-  const { api, accounts } = await activateWallet({
-    mnemonic: 'your mnemonic phrase here', // Replace with your mnemonic
-  })
-  const account = accounts[0]
-
-  // Generate a new Auto ID
-  const autoID = await generateAutoID(api, account)
-  console.log(`Generated Auto ID: ${autoID}`)
-
-  // Disconnect when done
-  await api.disconnect()
-})()
-```
-
-#### **Authenticate Using Auto ID**
+#### **Authenticate a User with Auto ID**
 
 ```typescript
 // Import necessary functions
 import { authenticateAutoIdUser } from '@autonomys/auto-id'
 import { activate } from '@autonomys/auto-utils'
 
-const challengeMessage = 'challenge message'
-const challenge = new TextEncoder().encode(challengeMessage)
-// Assume the user provides the signature and their Auto ID
-const signature = new Uint8Array([...]) // User's signature as Uint8Array
-const autoId = 'user-auto-id' // The user's Auto ID
-
 ;(async () => {
   // Activate the network API
   const api = await activate()
+
+  // User's Auto ID
+  const autoId = 'user-auto-id' // Replace with the user's Auto ID
+
+  // Challenge message that the user needs to sign
+  const challengeMessage = 'Please sign this message to authenticate.'
+  const challenge = new TextEncoder().encode(challengeMessage)
+
+  // Assume the user provides the signature
+  const signature = new Uint8Array([...]) // User's signature as Uint8Array
 
   // Authenticate the user
   const isAuthenticated = await authenticateAutoIdUser(api, autoId, challenge, signature)
@@ -216,6 +202,26 @@ const autoId = 'user-auto-id' // The user's Auto ID
 
   // Disconnect when done
   await api.disconnect()
+})()
+```
+
+#### **Self-Issuing a Certificate**
+
+```typescript
+// Import necessary functions
+import { selfIssueCertificate } from '@autonomys/auto-id'
+import { generateKeyPair } from '@autonomys/auto-utils'
+;(async () => {
+  // Generate a key pair
+  const keyPair = await generateKeyPair()
+
+  // Subject name for the certificate
+  const subjectName = 'CN=User Name' // Replace with appropriate subject
+
+  // Generate a self-signed certificate
+  const certificate = await selfIssueCertificate(subjectName, keyPair)
+
+  console.log('Certificate created:', certificate)
 })()
 ```
 
