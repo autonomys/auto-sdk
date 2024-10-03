@@ -4,7 +4,7 @@
 
 [![Latest Github release](https://img.shields.io/github/v/tag/autonomys/auto-sdk.svg)](https://github.com/autonomys/auto-sdk/tags)
 [![Build status of the main branch on Linux/OSX](https://img.shields.io/github/actions/workflow/status/autonomys/auto-sdk/build.yaml?branch=main&label=Linux%2FOSX%20build)](https://github.com/autonomys/auto-sdk/actions/workflows/build.yaml)
-[![npm version](https://badge.fury.io/js/@autonomys%2Fauto-drive.svg)](https://badge.fury.io/js/@autonomys%2Fauto-drive)
+[![npm version](https://badge.fury.io/js/@autonomys%2Fauto-drive.svg)](https://badge.fury.io/js/@autonomys/auto-drive)
 
 ## Overview
 
@@ -12,9 +12,10 @@ The **Autonomys Auto Drive SDK** (`@autonomys/auto-drive`) provides utilities fo
 
 ## Features
 
-- **File Chunking**: Efficiently split large files into smaller chunks.
-- **Metadata Handling**: Add and manage metadata for files and folders.
+- **File Chunking and DAG Creation**: Efficiently split large files into smaller chunks and create IPLD DAGs.
 - **Folder Structure Creation**: Generate IPLD DAGs for directory structures.
+- **Metadata Handling**: Add and manage metadata for files and folders.
+- **CID Management**: Utilities for working with Content Identifiers (CIDs).
 - **TypeScript Support**: Fully typed for enhanced developer experience.
 
 ## Installation
@@ -33,69 +34,98 @@ yarn add @autonomys/auto-drive
 
 ## Usage
 
-### Creating a DAG from a File
+### Creating an IPLD DAG from a File
 
-To create a DAG from a file, you can use the `createDAGFromFile` function:
+To create an IPLD DAG from a file, you can use the `createFileIPLDDag` function:
 
 ```typescript
-import { createDAGFromFile } from '@autonomys/auto-drive'
+import { createFileIPLDDag } from '@autonomys/auto-drive'
+import fs from 'fs'
 
-const dag = await createDAGFromFile('path/to/your/file.txt')
+const fileBuffer = fs.readFileSync('path/to/your/file.txt')
+
+const dag = createFileIPLDDag(fileBuffer, 'file.txt')
 ```
 
-### Creating a DAG from a Folder
+### Creating an IPLD DAG from a Folder
 
-To create a DAG from a folder, you can use the `createDAGFromFolder` function:
+To create an IPLD DAG from a folder, you can use the `createFolderIPLDDag` function:
 
 ```typescript
-import { createDAGFromFolder } from '@autonomys/auto-drive'
+import { createFolderIPLDDag } from '@autonomys/auto-drive'
+import { CID } from 'multiformats'
 
-const dag = await createDAGFromFolder('path/to/your/folder')
+// Example child CIDs and folder information
+const childCIDs: CID[] = [
+  /* array of CIDs */
+]
+const folderName = 'my-folder'
+const folderSize = 1024 // size in bytes
+
+const folderDag = createFolderIPLDDag(childCIDs, folderName, folderSize)
 ```
 
-### Chunking a File
+### Working with CIDs
 
-To chunk a file into smaller pieces, you can use the `chunkFile` function:
+You can use functions from the `cid` module to work with CIDs:
 
 ```typescript
-import { chunkFile } from '@autonomys/auto-drive'
+import { cidOfNode, cidToString, stringToCid } from '@autonomys/auto-drive'
 
-const chunks = await chunkFile('path/to/your/file.txt')
+// Create a CID from a node
+const cid = cidOfNode(dag.head)
+
+// Convert the CID to a string
+const cidString = cidToString(cid)
+
+// Parse a string back into a CID
+const parsedCID = stringToCid(cidString)
+```
+
+### Encoding and Decoding Nodes
+
+You can encode and decode IPLD nodes:
+
+```typescript
+import { encodeNode, decodeNode } from '@autonomys/auto-drive'
+
+// Encode a node
+const encodedNode = encodeNode(dag.head)
+
+// Decode a node
+const decodedNode = decodeNode(encodedNode)
 ```
 
 ### Handling Metadata
 
-To add metadata to a DAG, you can use the `addMetadata` function:
+To add metadata to a node, you can create a metadata node:
 
 ```typescript
-import { addMetadata } from '@autonomys/auto-drive'
+import { createMetadataNode } from '@autonomys/auto-drive'
 
-const dagWithMetadata = await addMetadata(dag, {
+const metadata = {
   name: 'My File',
   description: 'This is a sample file',
-})
+  // ... other metadata fields
+}
+
+const metadataNode = createMetadataNode(metadata)
 ```
 
-### Creating a Folder Structure
-
-To create a folder structure, you can use the `createFolderStructure` function:
+### Example: Creating a File DAG and Converting to CID
 
 ```typescript
-import { createFolderStructure } from '@autonomys/auto-drive'
+import { createFileIPLDDag, cidOfNode, cidToString } from '@autonomys/auto-drive'
+import fs from 'fs'
 
-const folderStructure = await createFolderStructure('path/to/your/folder')
-```
+const fileBuffer = fs.readFileSync('path/to/your/file.txt')
 
-### Example: Creating a DAG from a File and Adding Metadata
+const dag = createFileIPLDDag(fileBuffer, 'file.txt')
 
-```typescript
-import { createDAGFromFile, addMetadata } from '@autonomys/auto-drive'
+const cid = cidOfNode(dag.headCID)
+const cidString = cidToString(cid)
 
-const dag = await createDAGFromFile('path/to/your/file.txt')
-const dagWithMetadata = await addMetadata(dag, {
-  name: 'My File',
-  description: 'This is a sample file',
-})
+console.log(`CID of the file DAG: ${cidString}`)
 ```
 
 ## License
