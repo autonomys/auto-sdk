@@ -1,10 +1,8 @@
 # Autonomys Auto SDK Monorepo
 
-The **Autonomys Auto SDK** is a powerful toolkit designed to empower developers to seamlessly integrate with the Autonomys Network. It enables interaction through familiar programming languages like TypeScript, without needing to delve into the complexities of blockchain or smart contracts. The SDK provides simple APIs for issuing and verifying Auto IDs, interacting with the consensus layer, handling data uploads, and managing payments using Auto Coin.
-
 ## Overview
 
-The goal of the Auto SDK is to drive adoption by making it effortless for developers to build applications within the Auto ecosystem. By focusing on simplicity and transparency, the SDK ensures that user interactions with Auto ID, the consensus layer, and data management are seamless, removing barriers and ambiguity.
+The **Autonomys Auto SDK** is a powerful toolkit designed to empower developers to seamlessly integrate with the Autonomys Network. It enables interaction through familiar programming languages like TypeScript, without needing to delve into the complexities of blockchain or smart contracts. The SDK provides simple APIs for issuing and verifying Auto IDs, interacting with the consensus layer, handling data uploads, and managing payments using Auto Coin.
 
 ## Packages
 
@@ -15,7 +13,7 @@ This monorepo contains multiple packages, each serving a specific purpose. All p
 - **[`@autonomys/auto-drive`](https://www.npmjs.com/package/@autonomys/auto-drive)**: Tools for preparing and managing data for on-chain storage.
 - **[`@autonomys/auto-id`](https://www.npmjs.com/package/@autonomys/auto-id)**: Functions for generating, renewing, and revoking Decentralized Identities (Auto IDs).
 
-## Getting Started
+## Installation
 
 ### Requirements
 
@@ -364,3 +362,11 @@ If you need assistance, feel free to reach out by opening an issue or joining ou
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+## Contact
+
+If you have any questions or need support, feel free to reach out:
+
+- **GitHub Issues**: [GitHub Issues Page](https://github.com/autonomys/auto-sdk/issues)
+
+We appreciate your feedback and contributions!

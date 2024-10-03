@@ -8,7 +8,7 @@ The **Autonomys Auto SDK Utility** (`@autonomys/auto-utils`) provides core utili
 - **Network Configuration**: Access and manage network and domain settings.
 - **Data Storage**: Save and read data to and from local storage or the file system.
 - **Cryptographic Operations**: Perform hashing and data manipulation using cryptographic functions.
-- **API Activation**: Activate and manage connections to the Autonomys network APIs.
+- **API Activation**: Activate and manage connections to the Autonomys Network APIs.
 - **Address Utilities**: Convert and decode addresses to and from standardized formats.
 
 This package serves as the foundational layer for building applications within the Autonomys ecosystem.

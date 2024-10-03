@@ -2,6 +2,17 @@
 
 Auto-Drive is a Node.js package that provides utilities for creating and managing IPLD DAGs (InterPlanetary Linked Data Directed Acyclic Graphs) for files and folders. It facilitates chunking large files, handling metadata, and creating folder structures suitable for distributed storage systems like IPFS.
 
+## Overview
+
+The **Autonomys Auto Drive SDK** (`@autonomys/auto-drive`) provides utilities for creating and managing IPLD DAGs (InterPlanetary Linked Data Directed Acyclic Graphs) for files and folders. It facilitates chunking large files, handling metadata, and creating folder structures suitable for distributed storage systems like IPFS.
+
+## Features
+
+- **File Chunking**: Efficiently split large files into smaller chunks.
+- **Metadata Handling**: Add and manage metadata for files and folders.
+- **Folder Structure Creation**: Generate IPLD DAGs for directory structures.
+- **TypeScript Support**: Fully typed for enhanced developer experience.
+
 ## Installation
 
 You can install Auto-Drive using npm or yarn:

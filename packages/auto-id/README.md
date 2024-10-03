@@ -1,4 +1,4 @@
-# @autonomys/auto-id
+# Autonomys Auto ID SDK
 
 ## Overview
 
@@ -9,10 +9,6 @@ The **Autonomys Auto ID SDK** (`@autonomys/auto-id`) provides a suite of functio
 - **Revoke Auto IDs**: Remove Auto IDs when they are no longer needed or compromised.
 - **Manage Certificates**: Handle x509 certificates associated with Auto IDs.
 - **Integrate Zero-Knowledge Proofs (ZKPs)**: Utilize ZKP claims for enhanced privacy.
-
-This package simplifies integrating decentralized identity management into your applications, ensuring secure and seamless user interactions within the Autonomys ecosystem.
-
----
 
 ## Features
 

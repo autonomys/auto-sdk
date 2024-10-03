@@ -11,10 +11,6 @@ The **Autonomys Auto Consensus SDK** (`@autonomys/auto-consensus`) offers a suit
 - **Access Blockchain Information**: Fetch block numbers, hashes, and network timestamps.
 - **Interact with Domains**: Retrieve domain-related data.
 
-This package serves as a bridge to the consensus mechanisms of the Autonomys Network, allowing developers to build applications that interact directly with the core blockchain.
-
----
-
 ## Features
 
 - **Account Management**: Access detailed account information, including nonce and balance data.
@@ -24,8 +20,6 @@ This package serves as a bridge to the consensus mechanisms of the Autonomys Net
 - **Blockchain Information Access**: Fetch current block numbers, block hashes, and network timestamps.
 - **Domain Interactions**: Access domain registry information and staking summaries.
 - **TypeScript Support**: Fully typed for enhanced developer experience.
-
----
 
 ## Installation
 
@@ -38,8 +32,6 @@ npm install @autonomys/auto-consensus
 # Using yarn
 yarn add @autonomys/auto-consensus
 ```
-
----
 
 ## Getting Started
 
@@ -71,13 +63,9 @@ import {
 } from '@autonomys/auto-consensus'
 ```
 
----
-
 ## Usage Examples
 
 Below are examples demonstrating how to use the functions provided by `@autonomys/auto-consensus`.
-
----
 
 ### 1. Account Management
 
@@ -110,8 +98,6 @@ import { activate } from '@autonomys/auto-utils'
 - An object containing:
   - `nonce`: The account's transaction nonce.
   - `data`: An object with balance details (`free`, `reserved`, `miscFrozen`, `feeFrozen`).
-
----
 
 ### 2. Balance Operations
 
@@ -153,8 +139,6 @@ import { totalIssuance } from '@autonomys/auto-consensus'
 
 - A Codec representing the total issuance value.
 
----
-
 ### 3. Transfers
 
 #### **Transfer Tokens**
@@ -195,8 +179,6 @@ import { activate, activateWallet, signAndSendTx, disconnect } from '@autonomys/
 **Returns:**
 
 - A SubmittableExtrinsic transaction object.
-
----
 
 ### 4. Staking Operations
 
@@ -296,8 +278,6 @@ import { activate, activateWallet, signAndSendTx } from '@autonomys/auto-utils'
 
 - A SubmittableExtrinsic transaction object.
 
----
-
 ### 5. Blockchain Information
 
 #### **Get Block and Network Information**
@@ -322,8 +302,6 @@ import { blockNumber, blockHash, networkTimestamp } from '@autonomys/auto-consen
 - `blockNumber()`: Returns the current block number as a `BigInt`.
 - `blockHash()`: Returns the current block hash as a hex string.
 - `networkTimestamp()`: Returns the network timestamp as a `BigInt`.
-
----
 
 ### 6. Domain Interactions
 
@@ -392,8 +370,6 @@ import { activate } from '@autonomys/auto-utils'
 })()
 ```
 
----
-
 ## API Reference
 
 ### Account Functions
@@ -416,8 +392,6 @@ Get the balance data of an account.
   - `address` (`string`): The account address.
 - **Returns:** `Promise<BalanceData>` with balance details.
 
----
-
 ### Balance Functions
 
 #### **`totalIssuance(networkId?: string): Promise<Codec>`**
@@ -427,8 +401,6 @@ Retrieve the total token issuance in the network.
 - **Parameters:**
   - `networkId` (`string`, optional): The network ID.
 - **Returns:** `Promise<Codec>` representing the total issuance.
-
----
 
 ### Transfer Functions
 
@@ -441,8 +413,6 @@ Create a transfer transaction.
   - `recipient` (`string`): Recipient's address.
   - `amount` (`BN | string | number`): Amount to transfer.
 - **Returns:** `SubmittableExtrinsic` transaction object.
-
----
 
 ### Staking Functions
 
@@ -461,8 +431,6 @@ Nominate an existing operator.
 - **Parameters:**
   - `params` (`NominateOperatorParams`): Parameters for nominating an operator.
 - **Returns:** `Promise<SubmittableExtrinsic>`
-
----
 
 ### Blockchain Information Functions
 
@@ -483,8 +451,6 @@ Get the current block hash.
 Get the network timestamp.
 
 - **Returns:** `Promise<bigint>`
-
----
 
 ### Domain Functions
 
@@ -512,8 +478,6 @@ Fetch the latest confirmed domain blocks.
   - `api` (`Api`): Connected API instance.
 - **Returns:** `Promise<ConfirmedDomainBlock[]>`
 
----
-
 ## Error Handling
 
 When using `@autonomys/auto-consensus`, make sure to handle errors, especially when interacting with network operations.
@@ -536,8 +500,6 @@ import { activate } from '@autonomys/auto-utils'
   }
 })()
 ```
-
----
 
 ## Contributing
 
@@ -579,20 +541,14 @@ We welcome contributions to `@autonomys/auto-consensus`! Please follow these gui
 - Add tests for any new features or bug fixes.
 - Ensure all existing tests pass.
 
----
-
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](../LICENSE) file for details.
-
----
 
 ## Additional Resources
 
 - **Autonomys Academy**: Learn more at [Autonomys Academy](https://academy.autonomys.xyz).
 - **Auto-Utils Package**: Utility functions used alongside `auto-consensus` can be found in [`@autonomys/auto-utils`](../Auto-Utils/README.md).
-
----
 
 ## Contact
 
