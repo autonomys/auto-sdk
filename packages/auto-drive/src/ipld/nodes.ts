@@ -4,8 +4,8 @@ import { OffchainMetadata } from '../metadata/index.js'
 import { encodeIPLDNodeData, MetadataType } from '../metadata/onchain/index.js'
 import { DEFAULT_MAX_CHUNK_SIZE, ensureNodeMaxSize } from './chunker.js'
 
-/// Creates a chunk ipld node
-export const createChunkIpldNode = (data: Buffer): PBNode =>
+/// Creates a file chunk ipld node
+export const createFileChunkIpldNode = (data: Buffer): PBNode =>
   createNode(
     encodeIPLDNodeData({
       type: MetadataType.FileChunk,
@@ -40,7 +40,6 @@ export const createChunkedFileIpldNode = (
   )
 // Creates a file ipld node
 // links: the CIDs of the file's contents
-// @todo: add the file's metadata
 export const createFileInlinkIpldNode = (
   links: CID[],
   size: number,
@@ -72,6 +71,72 @@ export const createSingleFileIpldNode = (data: Buffer, name?: string): PBNode =>
       data,
     }),
     [],
+  )
+
+// Creates a file ipld node
+// links: the CIDs of the file's contents
+// @todo: add the file's metadata
+export const createMetadataInlinkIpldNode = (
+  links: CID[],
+  size: number,
+  linkDepth: number,
+  maxNodeSize: number = DEFAULT_MAX_CHUNK_SIZE,
+): PBNode =>
+  ensureNodeMaxSize(
+    createNode(
+      encodeIPLDNodeData({
+        type: MetadataType.FileInlink,
+        size,
+        linkDepth,
+      }),
+      links.map((cid) => ({ Hash: cid })),
+    ),
+    maxNodeSize,
+  )
+
+// Creates a file ipld node
+// links: the CIDs of the file's contents
+// @todo: add the file's metadata
+export const createSingleMetadataIpldNode = (data: Buffer, name?: string): PBNode =>
+  createNode(
+    encodeIPLDNodeData({
+      type: MetadataType.Metadata,
+      name,
+      size: data.length,
+      linkDepth: 0,
+      data,
+    }),
+    [],
+  )
+
+export const createMetadataChunkIpldNode = (data: Buffer): PBNode =>
+  createNode(
+    encodeIPLDNodeData({
+      type: MetadataType.MetadataChunk,
+      size: data.length,
+      linkDepth: 0,
+      data,
+    }),
+  )
+
+export const createChunkedMetadataIpldNode = (
+  links: CID[],
+  size: number,
+  linkDepth: number,
+  name?: string,
+  maxNodeSize: number = DEFAULT_MAX_CHUNK_SIZE,
+): PBNode =>
+  ensureNodeMaxSize(
+    createNode(
+      encodeIPLDNodeData({
+        type: MetadataType.Metadata,
+        name,
+        size,
+        linkDepth,
+      }),
+      links.map((cid) => ({ Hash: cid })),
+    ),
+    maxNodeSize,
   )
 
 // Creates a folder ipld node
