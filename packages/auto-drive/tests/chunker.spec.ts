@@ -1,7 +1,7 @@
 import { createNode } from '@ipld/dag-pb'
 import { cidOfNode } from '../src'
-import { createFileIPLDDag, createFolderIPLDDag } from '../src/ipld/chunker'
-import { IPLDNodeData, MetadataType } from '../src/metadata'
+import { createFileIPLDDag, createFolderIPLDDag, createMetadataIPLDDag } from '../src/ipld/chunker'
+import { IPLDNodeData, MetadataType, OffchainMetadata } from '../src/metadata'
 
 describe('chunker', () => {
   describe('file creation', () => {
@@ -152,6 +152,41 @@ describe('chunker', () => {
 
       expect(rootCount).toBe(1)
       expect(inlinkCount).toBe(3)
+    })
+  })
+
+  describe('metadata creation', () => {
+    it('create a metadata dag from a small buffer', () => {
+      const metadata: OffchainMetadata = {
+        type: 'file',
+        dataCid: 'test',
+        name: 'test',
+        mimeType: 'text/plain',
+        totalSize: 1000,
+        totalChunks: 10,
+        chunks: [],
+      }
+
+      const dag = createMetadataIPLDDag(metadata)
+      expect(dag.nodes.size).toBe(1)
+    })
+
+    it('large metadata dag represented into multiple nodes', () => {
+      const metadata: OffchainMetadata = {
+        type: 'file',
+        dataCid: 'test',
+        name: 'test',
+        mimeType: 'text/plain'.repeat(100),
+        totalSize: 1000,
+        totalChunks: 10,
+        chunks: [],
+      }
+
+      const dag = createMetadataIPLDDag(metadata, {
+        chunkSize: 200,
+        maxLinkPerNode: 2,
+      })
+      expect(dag.nodes.size).toBeGreaterThan(1)
     })
   })
 })
