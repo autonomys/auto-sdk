@@ -128,6 +128,27 @@ const cidString = cidToString(cid)
 console.log(`CID of the file DAG: ${cidString}`)
 ```
 
+### Example: Converting Metadata To DAG
+
+```typescript
+import {
+  createMetadataIPLDDag,
+  cidOfNode,
+  cidToString,
+  type OffchainMetadata,
+} from '@autonomys/auto-drive'
+import fs from 'fs'
+
+const metadata: OffchainMetadata = fs.readFileSync('path/to/your/metadata.json')
+
+const dag = createMetadataIPLDDag(metadata)
+
+const cid = cidOfNode(dag.headCID)
+const cidString = cidToString(cid)
+
+console.log(`CID of the metadata DAG: ${cidString}`)
+```
+
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.

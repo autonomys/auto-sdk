@@ -114,7 +114,9 @@ export enum MetadataType {
   FileChunk = 'FileChunk',
   Folder = 'Folder',
   FolderInlink = 'FolderInlink',
-  Metadata = 'Metadata'
+  Metadata = 'Metadata',
+  MetadataInlink = 'MetadataInlink',
+  MetadataChunk = 'MetadataChunk'
 }
 
 enum __MetadataTypeValues {
@@ -123,7 +125,9 @@ enum __MetadataTypeValues {
   FileChunk = 2,
   Folder = 3,
   FolderInlink = 4,
-  Metadata = 5
+  Metadata = 5,
+  MetadataInlink = 6,
+  MetadataChunk = 7
 }
 
 export namespace MetadataType {

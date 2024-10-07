@@ -1,6 +1,10 @@
 import { createNode } from '@ipld/dag-pb'
-import { cidOfNode, createChunkedFileIpldNode, createSingleFileIpldNode } from '../src/index.js'
-import { createChunkIpldNode } from '../src/ipld/nodes.js'
+import {
+  cidOfNode,
+  createChunkedFileIpldNode,
+  createFileChunkIpldNode,
+  createSingleFileIpldNode,
+} from '../src/index.js'
 import { IPLDNodeData, MetadataType } from '../src/metadata/onchain/protobuf/OnchainMetadata.js'
 
 describe('node creation', () => {
@@ -58,7 +62,7 @@ describe('node creation', () => {
 
     it('file chunk node | correctly params setup', () => {
       const buffer = Buffer.from('hello world')
-      const node = createChunkIpldNode(buffer)
+      const node = createFileChunkIpldNode(buffer)
 
       const decoded = IPLDNodeData.decode(node.Data ?? new Uint8Array())
       expect(decoded.type).toBe(MetadataType.FileChunk)

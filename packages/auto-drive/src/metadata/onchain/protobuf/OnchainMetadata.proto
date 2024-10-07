@@ -16,4 +16,6 @@ enum MetadataType {
   Folder = 3;
   FolderInlink = 4;
   Metadata = 5;
+  MetadataInlink = 6;
+  MetadataChunk = 7;
 }
