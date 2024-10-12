@@ -44,7 +44,7 @@ export const solutionRanges = async (api: Api) => {
   }
 }
 
-export const shouldAdjustSolutionRange = async (api: Api) =>
+export const shouldAdjustSolutionRange = async (api: Api): Promise<boolean> =>
   await query<boolean>(api, 'subspace.shouldAdjustSolutionRange', [])
 
 export const segmentCommitment = async (api: Api) =>
@@ -53,7 +53,7 @@ export const segmentCommitment = async (api: Api) =>
 export const slotProbability = (api: Api): [number, number] =>
   api.consts.subspace.slotProbability.toPrimitive() as [number, number]
 
-export const maxPiecesInSector = (api: Api) =>
+export const maxPiecesInSector = (api: Api): bigint =>
   BigInt(api.consts.subspace.maxPiecesInSector.toPrimitive() as number)
 
 export function solutionRangeToSectors(
@@ -72,12 +72,12 @@ export function solutionRangeToSectors(
   return sectors / solutionRange
 }
 
-export const spacePledge = async (api: Api) => {
+export const spacePledge = async (api: Api): Promise<bigint> => {
   const _solutionRanges = await solutionRanges(api)
   const _slotProbability = slotProbability(api)
   const _maxPiecesInSector = maxPiecesInSector(api)
 
-  if (!_solutionRanges.current || !_slotProbability || !_maxPiecesInSector) return 0
+  if (!_solutionRanges.current || !_slotProbability || !_maxPiecesInSector) return BigInt(0)
 
   const sectors = solutionRangeToSectors(
     _solutionRanges.current,
@@ -89,7 +89,7 @@ export const spacePledge = async (api: Api) => {
   return totalSpacePledged
 }
 
-export const blockchainSize = async (api: Api) => {
+export const blockchainSize = async (api: Api): Promise<bigint> => {
   const _segmentCommitment = await segmentCommitment(api)
   const segmentsCount = BigInt(_segmentCommitment.length)
 
