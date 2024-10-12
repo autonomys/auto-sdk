@@ -2,7 +2,7 @@
 
 import type { Api } from '@autonomys/auto-utils'
 import type { AccountData, RawAccountData } from './types/account'
-import { parseBalance } from './utils'
+import { parseBalance, parseBN } from './utils'
 
 export const account = async (api: Api, address: string): Promise<AccountData> => {
   try {
@@ -11,7 +11,7 @@ export const account = async (api: Api, address: string): Promise<AccountData> =
     const { nonce, data } = rawAccount.toPrimitive() as unknown as RawAccountData
 
     return {
-      nonce,
+      nonce: parseBN(nonce),
       data: parseBalance(data),
     }
   } catch (error) {

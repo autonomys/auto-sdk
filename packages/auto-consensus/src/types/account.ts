@@ -7,6 +7,6 @@ export type RawAccountData = {
 }
 
 export type AccountData = {
-  nonce: BN
+  nonce: bigint
   data: BalanceData
 }
