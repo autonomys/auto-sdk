@@ -1,7 +1,7 @@
 // file: src/info.ts
 
 import { AnyTuple, Api, Codec, StorageKey } from '@autonomys/auto-utils'
-import { RawBlock } from './types/block'
+import { RawBlock, RawBlockHeader } from './types/block'
 import { queryMethodPath } from './utils/query'
 
 const PIECE_SIZE = BigInt(1048576)
@@ -12,11 +12,13 @@ export const rpc = async <T>(api: Api, methodPath: string, params: any[] = []): 
 export const query = async <T>(api: Api, methodPath: string, params: any[] = []): Promise<T> =>
   await queryMethodPath<T>(api, `query.${methodPath}`, params)
 
-export const block = async <RawBlock>(api: Api) => await rpc<RawBlock>(api, 'chain.getBlock', [])
+export const block = async (api: Api) => await rpc<RawBlock>(api, 'chain.getBlock', [])
+
+export const header = async (api: Api) => await rpc<RawBlockHeader>(api, 'chain.getHeader', [])
 
 export const blockNumber = async (api: Api): Promise<number> => {
   // Get the block
-  const _block = await block<RawBlock>(api)
+  const _block = await block(api)
 
   return _block.block.header.number.toNumber()
 }

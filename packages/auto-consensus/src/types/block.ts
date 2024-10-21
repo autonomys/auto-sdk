@@ -14,6 +14,23 @@ export type RawBlock = {
   }
 }
 
+type DigestLog = {
+  preRuntime?: string[]
+  consensus?: string[]
+  other?: string
+  seal?: string[]
+}
+
+export type RawBlockHeader = {
+  parentHash: string
+  number: number
+  stateRoot: string
+  extrinsicsRoot: string
+  digest: {
+    logs: DigestLog[]
+  }
+}
+
 export type Block = {
   block: {
     header: {
