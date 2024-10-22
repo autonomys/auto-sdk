@@ -1,7 +1,8 @@
-import { decode, PBNode } from '@ipld/dag-pb'
+import { PBNode } from '@ipld/dag-pb'
+import { BaseBlockstore } from 'blockstore-core'
 import { CID } from 'multiformats'
 import { cidOfNode } from '../cid/index.js'
-import { IPLDNodeData, OffchainMetadata } from '../metadata/index.js'
+import { decodeIPLDNodeData, OffchainMetadata } from '../metadata/index.js'
 import { Builders, fileBuilders, metadataBuilders } from './builders.js'
 import { createFolderInlinkIpldNode, createFolderIpldNode } from './nodes.js'
 import { chunkBuffer, encodeNode } from './utils.js'
@@ -9,32 +10,33 @@ import { chunkBuffer, encodeNode } from './utils.js'
 export const DEFAULT_MAX_CHUNK_SIZE = 1024 * 64
 export const DEFAULT_MAX_LINK_PER_NODE = DEFAULT_MAX_CHUNK_SIZE / 64
 
-export interface IPLDDag {
-  headCID: CID
-  nodes: Map<CID, PBNode>
-}
-
 export const createFileIPLDDag = (
+  blockstore: BaseBlockstore,
   file: AsyncIterable<Buffer>,
   filename?: string,
   { chunkSize, maxLinkPerNode }: { chunkSize: number; maxLinkPerNode: number } = {
     chunkSize: DEFAULT_MAX_CHUNK_SIZE,
     maxLinkPerNode: DEFAULT_MAX_LINK_PER_NODE,
   },
-): Promise<IPLDDag> => {
-  return createBufferIPLDDag(file, filename, fileBuilders, { chunkSize, maxLinkPerNode })
+): Promise<CID> => {
+  return createBufferIPLDDag(blockstore, file, filename, fileBuilders, {
+    chunkSize,
+    maxLinkPerNode,
+  })
 }
 
 export const createMetadataIPLDDag = async (
+  blockstore: BaseBlockstore,
   metadata: OffchainMetadata,
   limits: { chunkSize: number; maxLinkPerNode: number } = {
     chunkSize: DEFAULT_MAX_CHUNK_SIZE,
     maxLinkPerNode: DEFAULT_MAX_LINK_PER_NODE,
   },
-): Promise<IPLDDag> => {
+): Promise<CID> => {
   const buffer = Buffer.from(JSON.stringify(metadata))
   const name = `${metadata.name}.metadata.json`
   return createBufferIPLDDag(
+    blockstore,
     (async function* () {
       yield buffer
     })(),
@@ -45,6 +47,7 @@ export const createMetadataIPLDDag = async (
 }
 
 const createBufferIPLDDag = async (
+  blockstore: BaseBlockstore,
   buffer: AsyncIterable<Buffer>,
   filename: string | undefined,
   builders: Builders,
@@ -52,31 +55,28 @@ const createBufferIPLDDag = async (
     chunkSize: DEFAULT_MAX_CHUNK_SIZE,
     maxLinkPerNode: DEFAULT_MAX_LINK_PER_NODE,
   },
-): Promise<IPLDDag> => {
+): Promise<CID> => {
   const bufferChunks = chunkBuffer(buffer, chunkSize)
   let totalSize = 0
-
-  const nodes = new Map<CID, PBNode>()
 
   let CIDs: CID[] = []
   for await (const chunk of bufferChunks) {
     const node = builders.chunk(chunk)
     const cid = cidOfNode(node)
-    nodes.set(cid, node)
+    await blockstore.put(cid, encodeNode(node))
     totalSize += chunk.byteLength
     CIDs.push(cid)
   }
 
   if (CIDs.length === 1) {
-    const node = nodes.get(CIDs[0])!
-    const data = IPLDNodeData.decode(Buffer.from(node.Data!))
+    const nodeBytes = await blockstore.get(CIDs[0])
+    await blockstore.delete(CIDs[0])
+    const data = decodeIPLDNodeData(nodeBytes)
     const singleNode = builders.single(Buffer.from(data.data!), filename)
+    await blockstore.put(CIDs[0], encodeNode(singleNode))
     const headCID = cidOfNode(singleNode)
 
-    return {
-      headCID,
-      nodes: new Map([[headCID, singleNode]]),
-    }
+    return headCID
   }
 
   let depth = 1
@@ -87,7 +87,7 @@ const createBufferIPLDDag = async (
 
       const node = builders.inlink(chunk, chunk.length, depth, chunkSize)
       const cid = cidOfNode(node)
-      nodes.set(cid, node)
+      await blockstore.put(cid, encodeNode(node))
       newCIDs.push(cid)
     }
     depth++
@@ -95,21 +95,18 @@ const createBufferIPLDDag = async (
   }
   const head = builders.root(CIDs, totalSize, depth, filename, chunkSize)
   const headCID = cidOfNode(head)
-  nodes.set(headCID, head)
+  await blockstore.put(headCID, encodeNode(head))
 
-  return {
-    headCID,
-    nodes,
-  }
+  return headCID
 }
 
-export const createFolderIPLDDag = (
+export const createFolderIPLDDag = async (
+  blockstore: BaseBlockstore,
   children: CID[],
   name: string,
   size: number,
   { maxLinkPerNode }: { maxLinkPerNode: number } = { maxLinkPerNode: DEFAULT_MAX_LINK_PER_NODE },
-): IPLDDag => {
-  const nodes = new Map<CID, PBNode>()
+): Promise<CID> => {
   let cids = children
   let depth = 0
   while (cids.length > maxLinkPerNode) {
@@ -118,7 +115,7 @@ export const createFolderIPLDDag = (
       const chunk = cids.slice(i, i + maxLinkPerNode)
       const node = createFolderInlinkIpldNode(chunk, depth)
       const cid = cidOfNode(node)
-      nodes.set(cid, node)
+      await blockstore.put(cid, encodeNode(node))
       newCIDs.push(cid)
     }
     cids = newCIDs
@@ -127,12 +124,9 @@ export const createFolderIPLDDag = (
 
   const node = createFolderIpldNode(cids, name, depth, size)
   const cid = cidOfNode(node)
-  nodes.set(cid, node)
+  await blockstore.put(cid, encodeNode(node))
 
-  return {
-    headCID: cid,
-    nodes,
-  }
+  return cid
 }
 
 export const ensureNodeMaxSize = (

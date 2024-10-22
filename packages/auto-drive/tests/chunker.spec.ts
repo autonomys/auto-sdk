@@ -1,7 +1,8 @@
-import { createNode } from '@ipld/dag-pb'
-import { cidOfNode } from '../src'
+import { createNode, decode, encode, PBNode } from '@ipld/dag-pb'
+import { BaseBlockstore, MemoryBlockstore } from 'blockstore-core'
+import { randomBytes } from 'crypto'
+import { cidOfNode, cidToString } from '../src'
 import { createFileIPLDDag, createFolderIPLDDag, createMetadataIPLDDag } from '../src/ipld/chunker'
-import { chunkBuffer } from '../src/ipld/utils'
 import { IPLDNodeData, MetadataType, OffchainMetadata } from '../src/metadata'
 
 describe('chunker', () => {
@@ -9,10 +10,13 @@ describe('chunker', () => {
     it('create a file dag from a small buffer', async () => {
       const text = 'hello world'
       const name = 'test.txt'
-      const dag = await createFileIPLDDag(bufferToIterable(Buffer.from(text)), name)
-      expect(dag.nodes.size).toBe(1)
+      const blockstore = new MemoryBlockstore()
 
-      const node = dag.nodes.get(dag.headCID)
+      await createFileIPLDDag(blockstore, bufferToIterable(Buffer.from(text)), name)
+      const nodes = await nodesFromBlockstore(blockstore)
+      expect(nodes.length).toBe(1)
+
+      const node = nodes[0]
       expect(node).toBeDefined()
       expect(node?.Data).toBeDefined()
       const decoded = IPLDNodeData.decode(node?.Data ?? new Uint8Array())
@@ -36,15 +40,24 @@ describe('chunker', () => {
       const text = chunk.repeat(chunkNum)
 
       const name = 'test.txt'
+      /// 1 chunk + root
+      const EXPECTED_NODE_COUNT = 2
 
-      const dag = await createFileIPLDDag(bufferToIterable(Buffer.from(text)), name, {
-        chunkSize,
-        maxLinkPerNode: chunkSize / 64,
-      })
+      const blockstore = new MemoryBlockstore()
+      const headCID = await createFileIPLDDag(
+        blockstore,
+        bufferToIterable(Buffer.from(text)),
+        name,
+        {
+          chunkSize,
+          maxLinkPerNode: chunkSize / 64,
+        },
+      )
 
-      expect(dag.nodes.size).toBe(chunkNum + 1)
+      const nodes = await nodesFromBlockstore(blockstore)
+      expect(nodes.length).toBe(EXPECTED_NODE_COUNT)
 
-      const head = dag.nodes.get(dag.headCID)
+      const head = decode(await blockstore.get(headCID))
       expect(head?.Data).toBeDefined()
       expect(head).toBeDefined()
       expect(head?.Links.length).toBe(chunkNum)
@@ -55,8 +68,8 @@ describe('chunker', () => {
       expect(decoded.linkDepth).toBe(1)
       expect(decoded.size).toBe(text.length)
 
-      Array.from(dag.nodes.entries()).forEach(([cid, node]) => {
-        if (cid !== dag.headCID) {
+      nodes.forEach((node) => {
+        if (cidToString(cidOfNode(node)) !== cidToString(headCID)) {
           expect(node?.Links.length).toBe(0)
         }
       })
@@ -69,19 +82,26 @@ describe('chunker', () => {
       const name = 'test.txt'
       const text = chunk.repeat(chunkNum)
 
-      /// 10 chunks + 3 inlinks + root
-      const EXPECTED_NODE_COUNT = 14
+      /// 1 chunks + 2 inlinks + root
+      const EXPECTED_NODE_COUNT = 4
 
-      const dag = await createFileIPLDDag(bufferToIterable(Buffer.from(text)), name, {
-        chunkSize,
-        maxLinkPerNode: 4,
-      })
+      const blockstore = new MemoryBlockstore()
+      const headCID = await createFileIPLDDag(
+        blockstore,
+        bufferToIterable(Buffer.from(text)),
+        name,
+        {
+          chunkSize,
+          maxLinkPerNode: 4,
+        },
+      )
 
-      expect(dag.nodes.size).toBe(EXPECTED_NODE_COUNT)
+      const nodes = await nodesFromBlockstore(blockstore)
+      expect(nodes.length).toBe(EXPECTED_NODE_COUNT)
 
       let [rootCount, inlinkCount, chunkCount] = [0, 0, 0]
 
-      Array.from(dag.nodes.values()).forEach((node) => {
+      nodes.forEach((node) => {
         const decoded = IPLDNodeData.decode(node?.Data ?? new Uint8Array())
         if (decoded.type === MetadataType.File) {
           rootCount++
@@ -95,24 +115,26 @@ describe('chunker', () => {
       })
 
       expect(rootCount).toBe(1)
-      expect(inlinkCount).toBe(3)
-      expect(chunkCount).toBe(10)
+      expect(inlinkCount).toBe(2)
+      expect(chunkCount).toBe(1)
     })
   })
 
   describe('folder creation', () => {
-    it('create a folder dag from a small buffer', () => {
+    it('create a folder dag from a small buffer', async () => {
       const links = Array.from({ length: 1 }, () =>
         cidOfNode(createNode(Buffer.from(Math.random().toString()))),
       )
       const name = 'folder'
       const size = 1000
-      const dag = createFolderIPLDDag(links, name, size, {
+      const blockstore = new MemoryBlockstore()
+      const headCID = createFolderIPLDDag(blockstore, links, name, size, {
         maxLinkPerNode: 4,
       })
 
-      expect(dag.nodes.size).toBe(1)
-      const node = dag.nodes.get(dag.headCID)
+      const nodes = await nodesFromBlockstore(blockstore)
+      expect(nodes.length).toBe(1)
+      const node = nodes[0]
       expect(node).toBeDefined()
       expect(node?.Data).toBeDefined()
       const decoded = IPLDNodeData.decode(node?.Data ?? new Uint8Array())
@@ -122,7 +144,7 @@ describe('chunker', () => {
       expect(decoded.size).toBe(size)
     })
 
-    it('create a folder dag with inlinks', () => {
+    it('create a folder dag with inlinks', async () => {
       const links = Array.from({ length: 10 }, () =>
         cidOfNode(createNode(Buffer.from(Math.random().toString()))),
       )
@@ -132,15 +154,17 @@ describe('chunker', () => {
       /// 3 inlinks + root
       const EXPECTED_NODE_COUNT = 4
 
-      const dag = createFolderIPLDDag(links, name, size, {
+      const blockstore = new MemoryBlockstore()
+      const headCID = createFolderIPLDDag(blockstore, links, name, size, {
         maxLinkPerNode: 4,
       })
 
-      expect(dag.nodes.size).toBe(EXPECTED_NODE_COUNT)
+      const nodes = await nodesFromBlockstore(blockstore)
+      expect(nodes.length).toBe(EXPECTED_NODE_COUNT)
 
       let [rootCount, inlinkCount] = [0, 0, 0]
 
-      Array.from(dag.nodes.values()).forEach((node) => {
+      nodes.forEach((node) => {
         const decoded = IPLDNodeData.decode(node?.Data ?? new Uint8Array())
         if (decoded.type === MetadataType.Folder) {
           rootCount++
@@ -168,8 +192,10 @@ describe('chunker', () => {
         chunks: [],
       }
 
-      const dag = await createMetadataIPLDDag(metadata)
-      expect(dag.nodes.size).toBe(1)
+      const blockstore = new MemoryBlockstore()
+      const headCID = await createMetadataIPLDDag(blockstore, metadata)
+      const nodes = await nodesFromBlockstore(blockstore)
+      expect(nodes.length).toBe(1)
     })
 
     it('large metadata dag represented into multiple nodes', async () => {
@@ -183,46 +209,74 @@ describe('chunker', () => {
         chunks: [],
       }
 
-      const dag = await createMetadataIPLDDag(metadata, {
+      const blockstore = new MemoryBlockstore()
+      const headCID = await createMetadataIPLDDag(blockstore, metadata, {
         chunkSize: 200,
         maxLinkPerNode: 2,
       })
-      expect(dag.nodes.size).toBeGreaterThan(1)
+      const nodes = await nodesFromBlockstore(blockstore)
+      expect(nodes.length).toBeGreaterThan(1)
     })
   })
-
-  const bufferToIterable = (buffer: Buffer): AsyncIterable<Buffer> => {
-    return (async function* () {
-      yield buffer
-    })()
-  }
-
-  const separateBufferToIterable = (buffer: Buffer, chunkSize: number): AsyncIterable<Buffer> => {
-    return (async function* () {
-      while (buffer.length > 0) {
-        yield buffer.subarray(0, chunkSize)
-        buffer = buffer.subarray(chunkSize)
-      }
-    })()
-  }
 
   describe('asyncronous chunking equivalence', () => {
     it('chunk a small file buffer', async () => {
       const buffer = Buffer.from('hello world')
-      const dag = await createFileIPLDDag(bufferToIterable(buffer), 'test.txt')
-      const chunked = await createFileIPLDDag(separateBufferToIterable(buffer, 5), 'test.txt')
+      const blockstore = new MemoryBlockstore()
+      const chunkedBlockstore = new MemoryBlockstore()
+      const singleBufferCID = await createFileIPLDDag(
+        blockstore,
+        bufferToIterable(buffer),
+        'test.txt',
+      )
+      const chunkedBufferCID = await createFileIPLDDag(
+        chunkedBlockstore,
+        separateBufferToIterable(buffer, 5),
+        'test.txt',
+      )
 
-      expect(dag.nodes.size).toBe(chunked.nodes.size)
-      expect(dag.headCID).toEqual(chunked.headCID)
+      expect(singleBufferCID).toEqual(chunkedBufferCID)
     })
 
     it('chunk a large file buffer', async () => {
       const buffer = Buffer.from('hello world')
-      const dag = await createFileIPLDDag(bufferToIterable(buffer), 'test.txt')
-      const chunked = await createFileIPLDDag(separateBufferToIterable(buffer, 5), 'test.txt')
+      const blockstore = new MemoryBlockstore()
+      const chunkedBlockstore = new MemoryBlockstore()
+      const singleBufferCID = await createFileIPLDDag(
+        blockstore,
+        bufferToIterable(buffer),
+        'test.txt',
+      )
+      const chunkedBufferCID = await createFileIPLDDag(
+        chunkedBlockstore,
+        separateBufferToIterable(buffer, 5),
+        'test.txt',
+      )
 
-      expect(dag.nodes.size).toBe(chunked.nodes.size)
-      expect(dag.headCID).toEqual(chunked.headCID)
+      expect(singleBufferCID).toEqual(chunkedBufferCID)
     })
   })
 })
+
+const bufferToIterable = (buffer: Buffer): AsyncIterable<Buffer> => {
+  return (async function* () {
+    yield buffer
+  })()
+}
+
+const separateBufferToIterable = (buffer: Buffer, chunkSize: number): AsyncIterable<Buffer> => {
+  return (async function* () {
+    while (buffer.length > 0) {
+      yield buffer.subarray(0, chunkSize)
+      buffer = buffer.subarray(chunkSize)
+    }
+  })()
+}
+
+const nodesFromBlockstore = async (blockstore: BaseBlockstore): Promise<PBNode[]> => {
+  const nodes: PBNode[] = []
+  for await (const pair of blockstore.getAll()) {
+    nodes.push(decode(pair.block))
+  }
+  return nodes
+}

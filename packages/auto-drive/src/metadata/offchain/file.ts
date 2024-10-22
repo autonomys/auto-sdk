@@ -1,4 +1,7 @@
-import { cidOfNode, cidToString, IPLDDag, IPLDNodeData, MetadataType } from '../../index.js'
+import { PBNode } from '@ipld/dag-pb'
+import { BaseBlockstore } from 'blockstore-core'
+import { CID } from 'multiformats'
+import { cidOfNode, cidToString, IPLDNodeData, MetadataType } from '../../index.js'
 
 export type OffchainFileMetadata = {
   type: 'file'
@@ -15,26 +18,20 @@ export interface ChunkInfo {
   cid: string
 }
 
-export const fileMetadata = (
-  dag: IPLDDag,
+export const fileMetadata = async (
+  headCID: CID,
+  chunks: ChunkInfo[],
   totalSize: number,
   name?: string,
   mimeType?: string,
-): OffchainFileMetadata => {
-  const chunks = Array.from(dag.nodes.values()).filter(
-    (n) => n.Data && IPLDNodeData.decode(n.Data).data,
-  )
-
+): Promise<OffchainFileMetadata> => {
   return {
     type: 'file',
-    dataCid: cidToString(dag.headCID),
+    dataCid: cidToString(headCID),
     name,
     mimeType,
     totalSize,
     totalChunks: chunks.length,
-    chunks: chunks.map((chunk) => ({
-      cid: cidToString(cidOfNode(chunk)),
-      size: chunk.Data?.length ?? 0,
-    })),
+    chunks,
   }
 }
