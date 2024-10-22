@@ -1,7 +1,7 @@
-import { PBNode } from '@ipld/dag-pb'
+import { decode, PBNode } from '@ipld/dag-pb'
 import { CID } from 'multiformats'
 import { cidOfNode } from '../cid/index.js'
-import { OffchainMetadata } from '../metadata/index.js'
+import { IPLDNodeData, OffchainMetadata } from '../metadata/index.js'
 import { Builders, fileBuilders, metadataBuilders } from './builders.js'
 import { createFolderInlinkIpldNode, createFolderIpldNode } from './nodes.js'
 import { chunkBuffer, encodeNode } from './utils.js'
@@ -15,57 +15,69 @@ export interface IPLDDag {
 }
 
 export const createFileIPLDDag = (
-  file: Buffer,
+  file: AsyncIterable<Buffer>,
   filename?: string,
   { chunkSize, maxLinkPerNode }: { chunkSize: number; maxLinkPerNode: number } = {
     chunkSize: DEFAULT_MAX_CHUNK_SIZE,
     maxLinkPerNode: DEFAULT_MAX_LINK_PER_NODE,
   },
-): IPLDDag => {
+): Promise<IPLDDag> => {
   return createBufferIPLDDag(file, filename, fileBuilders, { chunkSize, maxLinkPerNode })
 }
 
-export const createMetadataIPLDDag = (
+export const createMetadataIPLDDag = async (
   metadata: OffchainMetadata,
   limits: { chunkSize: number; maxLinkPerNode: number } = {
     chunkSize: DEFAULT_MAX_CHUNK_SIZE,
     maxLinkPerNode: DEFAULT_MAX_LINK_PER_NODE,
   },
-): IPLDDag => {
+): Promise<IPLDDag> => {
   const buffer = Buffer.from(JSON.stringify(metadata))
   const name = `${metadata.name}.metadata.json`
-  return createBufferIPLDDag(buffer, name, metadataBuilders, limits)
+  return createBufferIPLDDag(
+    (async function* () {
+      yield buffer
+    })(),
+    name,
+    metadataBuilders,
+    limits,
+  )
 }
 
-const createBufferIPLDDag = (
-  buffer: Buffer,
+const createBufferIPLDDag = async (
+  buffer: AsyncIterable<Buffer>,
   filename: string | undefined,
   builders: Builders,
   { chunkSize, maxLinkPerNode }: { chunkSize: number; maxLinkPerNode: number } = {
     chunkSize: DEFAULT_MAX_CHUNK_SIZE,
     maxLinkPerNode: DEFAULT_MAX_LINK_PER_NODE,
   },
-): IPLDDag => {
-  if (buffer.length <= chunkSize) {
-    const head = builders.single(buffer, filename)
-    const headCID = cidOfNode(head)
-    return {
-      headCID,
-      nodes: new Map([[headCID, head]]),
-    }
-  }
-
+): Promise<IPLDDag> => {
   const bufferChunks = chunkBuffer(buffer, chunkSize)
+  let totalSize = 0
 
   const nodes = new Map<CID, PBNode>()
 
-  let CIDs: CID[] = bufferChunks.map((chunk) => {
+  let CIDs: CID[] = []
+  for await (const chunk of bufferChunks) {
     const node = builders.chunk(chunk)
     const cid = cidOfNode(node)
     nodes.set(cid, node)
+    totalSize += chunk.byteLength
+    CIDs.push(cid)
+  }
 
-    return cid
-  })
+  if (CIDs.length === 1) {
+    const node = nodes.get(CIDs[0])!
+    const data = IPLDNodeData.decode(Buffer.from(node.Data!))
+    const singleNode = builders.single(Buffer.from(data.data!), filename)
+    const headCID = cidOfNode(singleNode)
+
+    return {
+      headCID,
+      nodes: new Map([[headCID, singleNode]]),
+    }
+  }
 
   let depth = 1
   while (CIDs.length > maxLinkPerNode) {
@@ -81,7 +93,7 @@ const createBufferIPLDDag = (
     depth++
     CIDs = newCIDs
   }
-  const head = builders.root(CIDs, buffer.length, depth, filename, chunkSize)
+  const head = builders.root(CIDs, totalSize, depth, filename, chunkSize)
   const headCID = cidOfNode(head)
   nodes.set(headCID, head)
 

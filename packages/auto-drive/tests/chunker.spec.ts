@@ -1,14 +1,15 @@
 import { createNode } from '@ipld/dag-pb'
 import { cidOfNode } from '../src'
 import { createFileIPLDDag, createFolderIPLDDag, createMetadataIPLDDag } from '../src/ipld/chunker'
+import { chunkBuffer } from '../src/ipld/utils'
 import { IPLDNodeData, MetadataType, OffchainMetadata } from '../src/metadata'
 
 describe('chunker', () => {
   describe('file creation', () => {
-    it('create a file dag from a small buffer', () => {
+    it('create a file dag from a small buffer', async () => {
       const text = 'hello world'
       const name = 'test.txt'
-      const dag = createFileIPLDDag(Buffer.from(text), name)
+      const dag = await createFileIPLDDag(bufferToIterable(Buffer.from(text)), name)
       expect(dag.nodes.size).toBe(1)
 
       const node = dag.nodes.get(dag.headCID)
@@ -28,7 +29,7 @@ describe('chunker', () => {
       expect(node?.Links.length).toBe(0)
     })
 
-    it('create a file dag from a large buffer', () => {
+    it('create a file dag from a large buffer', async () => {
       const chunkSize = 1000
       const chunkNum = 10
       const chunk = 'h'.repeat(chunkSize)
@@ -36,7 +37,7 @@ describe('chunker', () => {
 
       const name = 'test.txt'
 
-      const dag = createFileIPLDDag(Buffer.from(text), name, {
+      const dag = await createFileIPLDDag(bufferToIterable(Buffer.from(text)), name, {
         chunkSize,
         maxLinkPerNode: chunkSize / 64,
       })
@@ -61,7 +62,7 @@ describe('chunker', () => {
       })
     })
 
-    it('create a file dag with inlinks', () => {
+    it('create a file dag with inlinks', async () => {
       const chunkSize = 1000
       const chunkNum = 10
       const chunk = 'h'.repeat(chunkSize)
@@ -71,7 +72,7 @@ describe('chunker', () => {
       /// 10 chunks + 3 inlinks + root
       const EXPECTED_NODE_COUNT = 14
 
-      const dag = createFileIPLDDag(Buffer.from(text), name, {
+      const dag = await createFileIPLDDag(bufferToIterable(Buffer.from(text)), name, {
         chunkSize,
         maxLinkPerNode: 4,
       })
@@ -156,7 +157,7 @@ describe('chunker', () => {
   })
 
   describe('metadata creation', () => {
-    it('create a metadata dag from a small buffer', () => {
+    it('create a metadata dag from a small buffer', async () => {
       const metadata: OffchainMetadata = {
         type: 'file',
         dataCid: 'test',
@@ -167,11 +168,11 @@ describe('chunker', () => {
         chunks: [],
       }
 
-      const dag = createMetadataIPLDDag(metadata)
+      const dag = await createMetadataIPLDDag(metadata)
       expect(dag.nodes.size).toBe(1)
     })
 
-    it('large metadata dag represented into multiple nodes', () => {
+    it('large metadata dag represented into multiple nodes', async () => {
       const metadata: OffchainMetadata = {
         type: 'file',
         dataCid: 'test',
@@ -182,11 +183,46 @@ describe('chunker', () => {
         chunks: [],
       }
 
-      const dag = createMetadataIPLDDag(metadata, {
+      const dag = await createMetadataIPLDDag(metadata, {
         chunkSize: 200,
         maxLinkPerNode: 2,
       })
       expect(dag.nodes.size).toBeGreaterThan(1)
+    })
+  })
+
+  const bufferToIterable = (buffer: Buffer): AsyncIterable<Buffer> => {
+    return (async function* () {
+      yield buffer
+    })()
+  }
+
+  const separateBufferToIterable = (buffer: Buffer, chunkSize: number): AsyncIterable<Buffer> => {
+    return (async function* () {
+      while (buffer.length > 0) {
+        yield buffer.subarray(0, chunkSize)
+        buffer = buffer.subarray(chunkSize)
+      }
+    })()
+  }
+
+  describe('asyncronous chunking equivalence', () => {
+    it('chunk a small file buffer', async () => {
+      const buffer = Buffer.from('hello world')
+      const dag = await createFileIPLDDag(bufferToIterable(buffer), 'test.txt')
+      const chunked = await createFileIPLDDag(separateBufferToIterable(buffer, 5), 'test.txt')
+
+      expect(dag.nodes.size).toBe(chunked.nodes.size)
+      expect(dag.headCID).toEqual(chunked.headCID)
+    })
+
+    it('chunk a large file buffer', async () => {
+      const buffer = Buffer.from('hello world')
+      const dag = await createFileIPLDDag(bufferToIterable(buffer), 'test.txt')
+      const chunked = await createFileIPLDDag(separateBufferToIterable(buffer, 5), 'test.txt')
+
+      expect(dag.nodes.size).toBe(chunked.nodes.size)
+      expect(dag.headCID).toEqual(chunked.headCID)
     })
   })
 })
