@@ -1,7 +1,7 @@
 // file: src/info.ts
 
-import { AnyTuple, Api, Codec, StorageKey } from '@autonomys/auto-utils'
-import { RawBlock } from './types/block'
+import type { AnyTuple, Api, ApiPromise, Codec, StorageKey } from '@autonomys/auto-utils'
+import type { RawBlock, RawBlockHeader } from './types/block'
 import { queryMethodPath } from './utils/query'
 
 const PIECE_SIZE = BigInt(1048576)
@@ -12,11 +12,13 @@ export const rpc = async <T>(api: Api, methodPath: string, params: any[] = []): 
 export const query = async <T>(api: Api, methodPath: string, params: any[] = []): Promise<T> =>
   await queryMethodPath<T>(api, `query.${methodPath}`, params)
 
-export const block = async <RawBlock>(api: Api) => await rpc<RawBlock>(api, 'chain.getBlock', [])
+export const block = async (api: Api) => await rpc<RawBlock>(api, 'chain.getBlock', [])
+
+export const header = async (api: Api) => await rpc<RawBlockHeader>(api, 'chain.getHeader', [])
 
 export const blockNumber = async (api: Api): Promise<number> => {
   // Get the block
-  const _block = await block<RawBlock>(api)
+  const _block = await block(api)
 
   return _block.block.header.number.toNumber()
 }
@@ -47,8 +49,13 @@ export const solutionRanges = async (api: Api) => {
 export const shouldAdjustSolutionRange = async (api: Api): Promise<boolean> =>
   await query<boolean>(api, 'subspace.shouldAdjustSolutionRange', [])
 
-export const segmentCommitment = async (api: Api) =>
-  await query<[StorageKey<AnyTuple>, Codec][]>(api, 'subspace.segmentCommitment', [])
+export const segmentCommitment = async (api: Api) => {
+  if ((api as ApiPromise).at) {
+    const { parentHash } = await header(api)
+    api = await (api as ApiPromise).at(parentHash)
+  }
+  return await query<[StorageKey<AnyTuple>, Codec][]>(api, 'subspace.segmentCommitment.entries', [])
+}
 
 export const slotProbability = (api: Api): [number, number] =>
   api.consts.subspace.slotProbability.toPrimitive() as [number, number]
