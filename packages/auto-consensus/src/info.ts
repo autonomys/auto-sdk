@@ -78,7 +78,7 @@ export function solutionRangeToPieces(
   return pieces / solutionRange
 }
 
-export const spacePledge = async (api: Api): Promise<bigint> => {
+export const spacePledged = async (api: Api): Promise<bigint> => {
   const _solutionRanges = await solutionRanges(api)
   const _slotProbability = slotProbability(api)
 
@@ -91,6 +91,14 @@ export const spacePledge = async (api: Api): Promise<bigint> => {
   const totalSpacePledged = pieces * PIECE_SIZE
 
   return totalSpacePledged
+}
+
+// This function is deprecated (use spacePledged instead) and will be removed in a future major release
+export const spacePledge = async (api: Api): Promise<bigint> => {
+  console.warn(
+    'spacePledge is deprecated (use spacePledged instead) and will be removed in a future major release',
+  )
+  return spacePledged(api)
 }
 
 export const blockchainSize = async (api: Api): Promise<bigint> => {
