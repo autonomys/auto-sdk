@@ -94,7 +94,12 @@ export const spacePledged = async (api: Api): Promise<bigint> => {
 }
 
 // This function is deprecated (use spacePledged instead) and will be removed in a future major release
-export const spacePledge = async (api: Api): Promise<bigint> => spacePledged(api)
+export const spacePledge = async (api: Api): Promise<bigint> => {
+  console.warn(
+    'spacePledge is deprecated (use spacePledged instead) and will be removed in a future major release',
+  )
+  return spacePledged(api)
+}
 
 export const blockchainSize = async (api: Api): Promise<bigint> => {
   const _segmentCommitment = await segmentCommitment(api)
