@@ -5,6 +5,7 @@ import { DomainRuntime, domains } from './domain'
 import { TESTNET_TOKEN } from './token'
 
 export enum NetworkId {
+  TAURUS = 'taurus',
   GEMINI_3H = 'gemini-3h',
   DEVNET = 'devnet',
   LOCALHOST = 'localhost',
@@ -13,6 +14,28 @@ export enum NetworkId {
 export const ASTRAL_EXPLORER = 'https://explorer.autonomys.xyz/'
 
 export const networks: Network[] = [
+  {
+    id: NetworkId.TAURUS,
+    name: 'Testnet - Taurus',
+    rpcUrls: [
+      'wss://rpc.taurus.subspace.network/ws',
+      'wss://rpc-0.taurus.subspace.network/ws',
+      'wss://rpc-1.taurus.subspace.network/ws',
+    ],
+    explorer: [
+      {
+        name: 'Astral',
+        url: ASTRAL_EXPLORER + 'taurus/consensus/',
+      },
+      {
+        name: 'Subscan',
+        url: 'https://subspace.subscan.io/',
+      },
+    ],
+    domains: [],
+    token: TESTNET_TOKEN,
+    isTestnet: true,
+  },
   {
     id: NetworkId.GEMINI_3H,
     name: 'Testnet - Gemini 3H',
