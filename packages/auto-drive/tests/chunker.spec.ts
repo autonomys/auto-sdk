@@ -1,7 +1,7 @@
-import { createNode, decode, encode, PBNode } from '@ipld/dag-pb'
+import { createNode, decode, PBNode } from '@ipld/dag-pb'
 import { BaseBlockstore, MemoryBlockstore } from 'blockstore-core'
-import { randomBytes } from 'crypto'
 import { cidOfNode, cidToString } from '../src'
+import { MemoryIPLDBlockstore } from '../src/ipld/blockstore/index.js'
 import { createFileIPLDDag, createFolderIPLDDag, createMetadataIPLDDag } from '../src/ipld/chunker'
 import { IPLDNodeData, MetadataType, OffchainMetadata } from '../src/metadata'
 
@@ -85,7 +85,7 @@ describe('chunker', () => {
       /// 1 chunks + 2 inlinks + root
       const EXPECTED_NODE_COUNT = 4
 
-      const blockstore = new MemoryBlockstore()
+      const blockstore = new MemoryIPLDBlockstore()
       const headCID = await createFileIPLDDag(
         blockstore,
         bufferToIterable(Buffer.from(text)),
