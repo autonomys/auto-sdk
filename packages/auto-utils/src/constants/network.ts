@@ -11,12 +11,25 @@ export enum NetworkId {
   LOCALHOST = 'localhost',
 }
 
+export enum NetworkName {
+  TAURUS = 'Testnet - Taurus',
+  GEMINI_3H = 'Testnet - Gemini 3H',
+  DEVNET = 'Devnet',
+  LOCALHOST = 'Localhost',
+}
+
+export enum NetworkExplorerName {
+  ASTRAL = 'Astral',
+  SUBSCAN = 'Subscan',
+}
+
 export const ASTRAL_EXPLORER = 'https://explorer.autonomys.xyz/'
+export const SUBSCAN_EXPLORER = 'https://subspace.subscan.io/'
 
 export const networks: Network[] = [
   {
     id: NetworkId.TAURUS,
-    name: 'Testnet - Taurus',
+    name: NetworkName.TAURUS,
     rpcUrls: [
       'wss://rpc.taurus.subspace.network/ws',
       'wss://rpc-0.taurus.subspace.network/ws',
@@ -24,12 +37,8 @@ export const networks: Network[] = [
     ],
     explorer: [
       {
-        name: 'Astral',
+        name: NetworkExplorerName.ASTRAL,
         url: ASTRAL_EXPLORER + 'taurus/consensus/',
-      },
-      {
-        name: 'Subscan',
-        url: 'https://subspace.subscan.io/',
       },
     ],
     domains: [],
@@ -38,19 +47,19 @@ export const networks: Network[] = [
   },
   {
     id: NetworkId.GEMINI_3H,
-    name: 'Testnet - Gemini 3H',
+    name: NetworkName.GEMINI_3H,
     rpcUrls: [
       'wss://rpc-0.gemini-3h.subspace.network/ws',
       'wss://rpc-1.gemini-3h.subspace.network/ws',
     ],
     explorer: [
       {
-        name: 'Astral',
+        name: NetworkExplorerName.ASTRAL,
         url: ASTRAL_EXPLORER + 'gemini-3h/consensus/',
       },
       {
-        name: 'Subscan',
-        url: 'https://subspace.subscan.io/',
+        name: NetworkExplorerName.SUBSCAN,
+        url: SUBSCAN_EXPLORER,
       },
     ],
     domains: [
@@ -70,11 +79,11 @@ export const networks: Network[] = [
   },
   {
     id: NetworkId.DEVNET,
-    name: 'Devnet',
+    name: NetworkName.DEVNET,
     rpcUrls: ['ws://rpc.devnet.subspace.network/ws'],
     explorer: [
       {
-        name: 'Astral',
+        name: NetworkExplorerName.ASTRAL,
         url: ASTRAL_EXPLORER + '/devnet/consensus/',
       },
     ],
@@ -96,11 +105,11 @@ export const networks: Network[] = [
   },
   {
     id: NetworkId.LOCALHOST,
-    name: 'Localhost',
+    name: NetworkName.LOCALHOST,
     rpcUrls: ['ws://127.0.0.1:9944/ws'],
     explorer: [
       {
-        name: 'Astral',
+        name: NetworkExplorerName.ASTRAL,
         url: ASTRAL_EXPLORER + 'localhost/consensus/',
       },
     ],
