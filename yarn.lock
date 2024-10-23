@@ -51,6 +51,8 @@ __metadata:
     "@types/jest": "npm:^29.5.13"
     blake3: "npm:1.1.0"
     blockstore-core: "npm:^5.0.2"
+    interface-blockstore: "npm:^5.3.1"
+    interface-store: "npm:^6.0.2"
     jest: "npm:^29.7.0"
     multiformats: "npm:^13.2.2"
     protobufjs: "npm:^7.4.0"
@@ -6621,7 +6623,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"interface-blockstore@npm:^5.0.0":
+"interface-blockstore@npm:^5.0.0, interface-blockstore@npm:^5.3.1":
   version: 5.3.1
   resolution: "interface-blockstore@npm:5.3.1"
   dependencies:
@@ -6641,7 +6643,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"interface-store@npm:^6.0.0":
+"interface-store@npm:^6.0.0, interface-store@npm:^6.0.2":
   version: 6.0.2
   resolution: "interface-store@npm:6.0.2"
   checksum: 10c0/26650c98c411fcf5dfeec76d4433f9ca594c2d27cc7afb285b618132d512b62d684471054b2fb4e687b477ab36f1ca21fd81caad404925502a4a54160a7158c4

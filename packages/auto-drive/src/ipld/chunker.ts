@@ -10,7 +10,7 @@ import { chunkBuffer, encodeNode } from './utils.js'
 export const DEFAULT_MAX_CHUNK_SIZE = 1024 * 64
 export const DEFAULT_MAX_LINK_PER_NODE = DEFAULT_MAX_CHUNK_SIZE / 64
 
-export const createFileIPLDDag = (
+export const processFileToIPLDFormat = (
   blockstore: BaseBlockstore,
   file: AsyncIterable<Buffer>,
   filename?: string,
@@ -19,13 +19,13 @@ export const createFileIPLDDag = (
     maxLinkPerNode: DEFAULT_MAX_LINK_PER_NODE,
   },
 ): Promise<CID> => {
-  return createBufferIPLDDag(blockstore, file, filename, fileBuilders, {
+  return processBufferToIPLDFormat(blockstore, file, filename, fileBuilders, {
     chunkSize,
     maxLinkPerNode,
   })
 }
 
-export const createMetadataIPLDDag = async (
+export const processMetadataToIPLDFormat = async (
   blockstore: BaseBlockstore,
   metadata: OffchainMetadata,
   limits: { chunkSize: number; maxLinkPerNode: number } = {
@@ -35,7 +35,7 @@ export const createMetadataIPLDDag = async (
 ): Promise<CID> => {
   const buffer = Buffer.from(JSON.stringify(metadata))
   const name = `${metadata.name}.metadata.json`
-  return createBufferIPLDDag(
+  return processBufferToIPLDFormat(
     blockstore,
     (async function* () {
       yield buffer
@@ -46,7 +46,7 @@ export const createMetadataIPLDDag = async (
   )
 }
 
-const createBufferIPLDDag = async (
+const processBufferToIPLDFormat = async (
   blockstore: BaseBlockstore,
   buffer: AsyncIterable<Buffer>,
   filename: string | undefined,
@@ -100,7 +100,7 @@ const createBufferIPLDDag = async (
   return headCID
 }
 
-export const createFolderIPLDDag = async (
+export const processFolderToIPLDFormat = async (
   blockstore: BaseBlockstore,
   children: CID[],
   name: string,

@@ -2,7 +2,11 @@ import { createNode, decode, PBNode } from '@ipld/dag-pb'
 import { BaseBlockstore, MemoryBlockstore } from 'blockstore-core'
 import { cidOfNode, cidToString } from '../src'
 import { MemoryIPLDBlockstore } from '../src/ipld/blockstore/index.js'
-import { createFileIPLDDag, createFolderIPLDDag, createMetadataIPLDDag } from '../src/ipld/chunker'
+import {
+  processFileToIPLDFormat,
+  processFolderToIPLDFormat,
+  processMetadataToIPLDFormat,
+} from '../src/ipld/chunker'
 import { IPLDNodeData, MetadataType, OffchainMetadata } from '../src/metadata'
 
 describe('chunker', () => {
@@ -12,7 +16,7 @@ describe('chunker', () => {
       const name = 'test.txt'
       const blockstore = new MemoryBlockstore()
 
-      await createFileIPLDDag(blockstore, bufferToIterable(Buffer.from(text)), name)
+      await processFileToIPLDFormat(blockstore, bufferToIterable(Buffer.from(text)), name)
       const nodes = await nodesFromBlockstore(blockstore)
       expect(nodes.length).toBe(1)
 
@@ -44,7 +48,7 @@ describe('chunker', () => {
       const EXPECTED_NODE_COUNT = 2
 
       const blockstore = new MemoryBlockstore()
-      const headCID = await createFileIPLDDag(
+      const headCID = await processFileToIPLDFormat(
         blockstore,
         bufferToIterable(Buffer.from(text)),
         name,
@@ -86,7 +90,7 @@ describe('chunker', () => {
       const EXPECTED_NODE_COUNT = 4
 
       const blockstore = new MemoryIPLDBlockstore()
-      const headCID = await createFileIPLDDag(
+      const headCID = await processFileToIPLDFormat(
         blockstore,
         bufferToIterable(Buffer.from(text)),
         name,
@@ -128,7 +132,7 @@ describe('chunker', () => {
       const name = 'folder'
       const size = 1000
       const blockstore = new MemoryBlockstore()
-      const headCID = createFolderIPLDDag(blockstore, links, name, size, {
+      const headCID = processFolderToIPLDFormat(blockstore, links, name, size, {
         maxLinkPerNode: 4,
       })
 
@@ -155,7 +159,7 @@ describe('chunker', () => {
       const EXPECTED_NODE_COUNT = 4
 
       const blockstore = new MemoryBlockstore()
-      const headCID = createFolderIPLDDag(blockstore, links, name, size, {
+      const headCID = processFolderToIPLDFormat(blockstore, links, name, size, {
         maxLinkPerNode: 4,
       })
 
@@ -193,7 +197,7 @@ describe('chunker', () => {
       }
 
       const blockstore = new MemoryBlockstore()
-      const headCID = await createMetadataIPLDDag(blockstore, metadata)
+      const headCID = await processMetadataToIPLDFormat(blockstore, metadata)
       const nodes = await nodesFromBlockstore(blockstore)
       expect(nodes.length).toBe(1)
     })
@@ -210,7 +214,7 @@ describe('chunker', () => {
       }
 
       const blockstore = new MemoryBlockstore()
-      const headCID = await createMetadataIPLDDag(blockstore, metadata, {
+      const headCID = await processMetadataToIPLDFormat(blockstore, metadata, {
         chunkSize: 200,
         maxLinkPerNode: 2,
       })
@@ -224,12 +228,12 @@ describe('chunker', () => {
       const buffer = Buffer.from('hello world')
       const blockstore = new MemoryBlockstore()
       const chunkedBlockstore = new MemoryBlockstore()
-      const singleBufferCID = await createFileIPLDDag(
+      const singleBufferCID = await processFileToIPLDFormat(
         blockstore,
         bufferToIterable(buffer),
         'test.txt',
       )
-      const chunkedBufferCID = await createFileIPLDDag(
+      const chunkedBufferCID = await processFileToIPLDFormat(
         chunkedBlockstore,
         separateBufferToIterable(buffer, 5),
         'test.txt',
@@ -242,12 +246,12 @@ describe('chunker', () => {
       const buffer = Buffer.from('hello world')
       const blockstore = new MemoryBlockstore()
       const chunkedBlockstore = new MemoryBlockstore()
-      const singleBufferCID = await createFileIPLDDag(
+      const singleBufferCID = await processFileToIPLDFormat(
         blockstore,
         bufferToIterable(buffer),
         'test.txt',
       )
-      const chunkedBufferCID = await createFileIPLDDag(
+      const chunkedBufferCID = await processFileToIPLDFormat(
         chunkedBlockstore,
         separateBufferToIterable(buffer, 5),
         'test.txt',
