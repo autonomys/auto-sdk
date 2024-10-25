@@ -1,8 +1,7 @@
 import { PBNode } from '@ipld/dag-pb'
 import { CID } from 'multiformats'
-import { cidOfNode, cidToString, stringToCid } from '../../cid/index.js'
-import { decodeNode } from '../../ipld/utils.js'
-import { decodeIPLDNodeData, IPLDNodeData, MetadataType } from '../onchain/index.js'
+import { cidOfNode, cidToString } from '../../cid/index.js'
+import { IPLDNodeData, MetadataType } from '../onchain/index.js'
 
 interface ChildrenMetadata {
   type: 'folder' | 'file'
