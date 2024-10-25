@@ -1,8 +1,10 @@
 import { PBNode } from '@ipld/dag-pb'
 import { BaseBlockstore } from 'blockstore-core'
+import { AwaitIterable } from 'interface-store'
 import { CID } from 'multiformats'
-import { cidOfNode } from '../cid/index.js'
-import { decodeIPLDNodeData, OffchainMetadata } from '../metadata/index.js'
+import { cidOfNode, cidToString } from '../cid/index.js'
+import { decodeIPLDNodeData, IPLDNodeData, OffchainMetadata } from '../metadata/index.js'
+import { IPLDBlockstore } from './blockstore/base.js'
 import { Builders, fileBuilders, metadataBuilders } from './builders.js'
 import { createFolderInlinkIpldNode, createFolderIpldNode } from './nodes.js'
 import { chunkBuffer, encodeNode } from './utils.js'
@@ -11,25 +13,25 @@ export const DEFAULT_MAX_CHUNK_SIZE = 1024 * 64
 export const DEFAULT_MAX_LINK_PER_NODE = DEFAULT_MAX_CHUNK_SIZE / 64
 
 export const processFileToIPLDFormat = (
-  blockstore: BaseBlockstore,
-  file: AsyncIterable<Buffer>,
+  blockstore: IPLDBlockstore,
+  file: AwaitIterable<Buffer>,
   filename?: string,
-  { chunkSize, maxLinkPerNode }: { chunkSize: number; maxLinkPerNode: number } = {
-    chunkSize: DEFAULT_MAX_CHUNK_SIZE,
+  { maxChunkSize, maxLinkPerNode }: { maxChunkSize: number; maxLinkPerNode: number } = {
+    maxChunkSize: DEFAULT_MAX_CHUNK_SIZE,
     maxLinkPerNode: DEFAULT_MAX_LINK_PER_NODE,
   },
 ): Promise<CID> => {
   return processBufferToIPLDFormat(blockstore, file, filename, fileBuilders, {
-    chunkSize,
+    maxChunkSize,
     maxLinkPerNode,
   })
 }
 
 export const processMetadataToIPLDFormat = async (
-  blockstore: BaseBlockstore,
+  blockstore: IPLDBlockstore,
   metadata: OffchainMetadata,
-  limits: { chunkSize: number; maxLinkPerNode: number } = {
-    chunkSize: DEFAULT_MAX_CHUNK_SIZE,
+  limits: { maxChunkSize: number; maxLinkPerNode: number } = {
+    maxChunkSize: DEFAULT_MAX_CHUNK_SIZE,
     maxLinkPerNode: DEFAULT_MAX_LINK_PER_NODE,
   },
 ): Promise<CID> => {
@@ -47,16 +49,16 @@ export const processMetadataToIPLDFormat = async (
 }
 
 const processBufferToIPLDFormat = async (
-  blockstore: BaseBlockstore,
-  buffer: AsyncIterable<Buffer>,
+  blockstore: IPLDBlockstore,
+  buffer: AwaitIterable<Buffer>,
   filename: string | undefined,
   builders: Builders,
-  { chunkSize, maxLinkPerNode }: { chunkSize: number; maxLinkPerNode: number } = {
-    chunkSize: DEFAULT_MAX_CHUNK_SIZE,
+  { maxChunkSize, maxLinkPerNode }: { maxChunkSize: number; maxLinkPerNode: number } = {
+    maxChunkSize: DEFAULT_MAX_CHUNK_SIZE,
     maxLinkPerNode: DEFAULT_MAX_LINK_PER_NODE,
   },
 ): Promise<CID> => {
-  const bufferChunks = chunkBuffer(buffer, chunkSize)
+  const bufferChunks = chunkBuffer(buffer, { maxChunkSize })
   let totalSize = 0
 
   let CIDs: CID[] = []
@@ -68,12 +70,38 @@ const processBufferToIPLDFormat = async (
     CIDs.push(cid)
   }
 
+  return processBufferToIPLDFormatFromChunks(blockstore, CIDs, filename, builders, {
+    maxLinkPerNode,
+    maxChunkSize,
+  })
+}
+
+export const processBufferToIPLDFormatFromChunks = async (
+  blockstore: IPLDBlockstore,
+  chunks: AwaitIterable<CID>,
+  filename: string | undefined,
+  builders: Builders,
+  { maxLinkPerNode, maxChunkSize }: { maxLinkPerNode: number; maxChunkSize: number } = {
+    maxLinkPerNode: DEFAULT_MAX_LINK_PER_NODE,
+    maxChunkSize: DEFAULT_MAX_CHUNK_SIZE,
+  },
+): Promise<CID> => {
+  let totalSize = 0
+  let chunkCount = 0
+  let CIDs: CID[] = []
+  for await (const chunk of chunks) {
+    totalSize += await blockstore.getSize(chunk)
+
+    CIDs.push(chunk)
+    chunkCount++
+  }
+
   if (CIDs.length === 1) {
     const nodeBytes = await blockstore.get(CIDs[0])
     await blockstore.delete(CIDs[0])
     const data = decodeIPLDNodeData(nodeBytes)
     const singleNode = builders.single(Buffer.from(data.data!), filename)
-    await blockstore.put(CIDs[0], encodeNode(singleNode))
+    await blockstore.put(cidOfNode(singleNode), encodeNode(singleNode))
     const headCID = cidOfNode(singleNode)
 
     return headCID
@@ -85,7 +113,7 @@ const processBufferToIPLDFormat = async (
     for (let i = 0; i < CIDs.length; i += maxLinkPerNode) {
       const chunk = CIDs.slice(i, i + maxLinkPerNode)
 
-      const node = builders.inlink(chunk, chunk.length, depth, chunkSize)
+      const node = builders.inlink(chunk, chunk.length, depth, maxChunkSize)
       const cid = cidOfNode(node)
       await blockstore.put(cid, encodeNode(node))
       newCIDs.push(cid)
@@ -93,7 +121,7 @@ const processBufferToIPLDFormat = async (
     depth++
     CIDs = newCIDs
   }
-  const head = builders.root(CIDs, totalSize, depth, filename, chunkSize)
+  const head = builders.root(CIDs, totalSize, depth, filename, maxChunkSize)
   const headCID = cidOfNode(head)
   await blockstore.put(headCID, encodeNode(head))
 
@@ -127,6 +155,31 @@ export const processFolderToIPLDFormat = async (
   await blockstore.put(cid, encodeNode(node))
 
   return cid
+}
+
+/**
+ * Process chunks to IPLD format, return the last chunk if it's not full
+ * @returns the last chunk if it's not full, otherwise an empty buffer
+ */
+export const processChunksToIPLDFormat = async (
+  blockstore: IPLDBlockstore,
+  chunks: AwaitIterable<Buffer>,
+  builders: Builders,
+  { maxChunkSize = DEFAULT_MAX_CHUNK_SIZE }: { maxChunkSize?: number },
+): Promise<Buffer> => {
+  const bufferChunks = chunkBuffer(chunks, { maxChunkSize, ignoreLastChunk: false })
+
+  for await (const chunk of bufferChunks) {
+    if (chunk.byteLength < maxChunkSize) {
+      return chunk
+    }
+
+    const node = builders.chunk(chunk)
+    const cid = cidOfNode(node)
+    await blockstore.put(cid, encodeNode(node))
+  }
+
+  return Buffer.alloc(0)
 }
 
 export const ensureNodeMaxSize = (

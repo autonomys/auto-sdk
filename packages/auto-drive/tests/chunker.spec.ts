@@ -14,7 +14,7 @@ describe('chunker', () => {
     it('create a file dag from a small buffer', async () => {
       const text = 'hello world'
       const name = 'test.txt'
-      const blockstore = new MemoryBlockstore()
+      const blockstore = new MemoryIPLDBlockstore()
 
       await processFileToIPLDFormat(blockstore, bufferToIterable(Buffer.from(text)), name)
       const nodes = await nodesFromBlockstore(blockstore)
@@ -38,23 +38,23 @@ describe('chunker', () => {
     })
 
     it('create a file dag from a large buffer', async () => {
-      const chunkSize = 1000
+      const maxChunkSize = 1000
       const chunkNum = 10
-      const chunk = 'h'.repeat(chunkSize)
+      const chunk = 'h'.repeat(maxChunkSize)
       const text = chunk.repeat(chunkNum)
 
       const name = 'test.txt'
       /// 1 chunk + root
       const EXPECTED_NODE_COUNT = 2
 
-      const blockstore = new MemoryBlockstore()
+      const blockstore = new MemoryIPLDBlockstore()
       const headCID = await processFileToIPLDFormat(
         blockstore,
         bufferToIterable(Buffer.from(text)),
         name,
         {
-          chunkSize,
-          maxLinkPerNode: chunkSize / 64,
+          maxChunkSize,
+          maxLinkPerNode: maxChunkSize / 64,
         },
       )
 
@@ -80,9 +80,9 @@ describe('chunker', () => {
     })
 
     it('create a file dag with inlinks', async () => {
-      const chunkSize = 1000
+      const maxChunkSize = 1000
       const chunkNum = 10
-      const chunk = 'h'.repeat(chunkSize)
+      const chunk = 'h'.repeat(maxChunkSize)
       const name = 'test.txt'
       const text = chunk.repeat(chunkNum)
 
@@ -95,7 +95,7 @@ describe('chunker', () => {
         bufferToIterable(Buffer.from(text)),
         name,
         {
-          chunkSize,
+          maxChunkSize,
           maxLinkPerNode: 4,
         },
       )
@@ -196,7 +196,7 @@ describe('chunker', () => {
         chunks: [],
       }
 
-      const blockstore = new MemoryBlockstore()
+      const blockstore = new MemoryIPLDBlockstore()
       const headCID = await processMetadataToIPLDFormat(blockstore, metadata)
       const nodes = await nodesFromBlockstore(blockstore)
       expect(nodes.length).toBe(1)
@@ -213,9 +213,9 @@ describe('chunker', () => {
         chunks: [],
       }
 
-      const blockstore = new MemoryBlockstore()
+      const blockstore = new MemoryIPLDBlockstore()
       const headCID = await processMetadataToIPLDFormat(blockstore, metadata, {
-        chunkSize: 200,
+        maxChunkSize: 200,
         maxLinkPerNode: 2,
       })
       const nodes = await nodesFromBlockstore(blockstore)
@@ -226,8 +226,8 @@ describe('chunker', () => {
   describe('asyncronous chunking equivalence', () => {
     it('chunk a small file buffer', async () => {
       const buffer = Buffer.from('hello world')
-      const blockstore = new MemoryBlockstore()
-      const chunkedBlockstore = new MemoryBlockstore()
+      const blockstore = new MemoryIPLDBlockstore()
+      const chunkedBlockstore = new MemoryIPLDBlockstore()
       const singleBufferCID = await processFileToIPLDFormat(
         blockstore,
         bufferToIterable(buffer),
@@ -244,8 +244,8 @@ describe('chunker', () => {
 
     it('chunk a large file buffer', async () => {
       const buffer = Buffer.from('hello world')
-      const blockstore = new MemoryBlockstore()
-      const chunkedBlockstore = new MemoryBlockstore()
+      const blockstore = new MemoryIPLDBlockstore()
+      const chunkedBlockstore = new MemoryIPLDBlockstore()
       const singleBufferCID = await processFileToIPLDFormat(
         blockstore,
         bufferToIterable(buffer),

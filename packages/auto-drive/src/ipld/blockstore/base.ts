@@ -4,5 +4,6 @@ import { AbortOptions, AwaitIterable } from 'interface-store'
 import { MetadataType } from '../../metadata/index.js'
 
 export interface IPLDBlockstore extends BaseBlockstore {
-  getFilteredMany(nodeType: MetadataType, options?: AbortOptions): AwaitIterable<Pair>
+  getFilteredMany(nodeType: MetadataType, options?: AbortOptions): AwaitIterable<Pair['cid']>
+  getSize(cid: Pair['cid']): Promise<number>
 }

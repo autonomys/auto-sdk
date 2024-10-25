@@ -1,3 +1,5 @@
+export * from './blockstore/index.js'
+export * from './builders.js'
 export * from './chunker.js'
 export * from './nodes.js'
-export { encodeNode } from './utils.js'
+export { chunkBuffer, encodeNode } from './utils.js'
