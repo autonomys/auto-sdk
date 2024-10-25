@@ -1,4 +1,3 @@
-export * from './blockstore/index.js'
 export * from './builders.js'
 export * from './chunker.js'
 export * from './nodes.js'
