@@ -7,8 +7,10 @@ import { Builders, fileBuilders, metadataBuilders } from './builders.js'
 import { createFolderInlinkIpldNode, createFolderIpldNode } from './nodes.js'
 import { chunkBuffer, encodeNode, PBNode } from './utils.js'
 
-export const DEFAULT_MAX_CHUNK_SIZE = 1024 * 64
-export const DEFAULT_MAX_LINK_PER_NODE = DEFAULT_MAX_CHUNK_SIZE / 64
+export const DEFAULT_MAX_CHUNK_SIZE = 64 * 1024
+
+const ESTIMATED_LINK_SIZE_IN_BYTES = 64
+export const DEFAULT_MAX_LINK_PER_NODE = DEFAULT_MAX_CHUNK_SIZE / ESTIMATED_LINK_SIZE_IN_BYTES
 
 export const processFileToIPLDFormat = (
   blockstore: BaseBlockstore,
