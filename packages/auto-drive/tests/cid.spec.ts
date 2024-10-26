@@ -1,6 +1,6 @@
-import { createNode } from '@ipld/dag-pb'
 import { CID } from 'multiformats'
 import { cidOfNode, cidToString, stringToCid } from '../src/cid/index.js'
+import { createNode } from '../src/ipld/index.js'
 
 const randomCIDString = cidOfNode(createNode(new Uint8Array([]), [])).toString()
 

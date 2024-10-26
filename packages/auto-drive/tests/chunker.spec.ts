@@ -1,4 +1,3 @@
-import { createNode, decode, PBNode } from '@ipld/dag-pb'
 import { BaseBlockstore, MemoryBlockstore } from 'blockstore-core'
 import { cidOfNode, cidToString } from '../src'
 import {
@@ -6,6 +5,7 @@ import {
   processFolderToIPLDFormat,
   processMetadataToIPLDFormat,
 } from '../src/ipld/chunker'
+import { createNode, decodeNode, PBNode } from '../src/ipld/utils'
 import { IPLDNodeData, MetadataType, OffchainMetadata } from '../src/metadata'
 
 describe('chunker', () => {
@@ -63,7 +63,7 @@ describe('chunker', () => {
       const nodes = await nodesFromBlockstore(blockstore)
       expect(nodes.length).toBe(EXPECTED_NODE_COUNT)
 
-      const head = decode(await blockstore.get(headCID))
+      const head = decodeNode(await blockstore.get(headCID))
       expect(head?.Data).toBeDefined()
       expect(head).toBeDefined()
       expect(head?.Links.length).toBe(chunkNum)
@@ -288,7 +288,7 @@ const separateBufferToIterable = (buffer: Buffer, chunkSize: number): AsyncItera
 const nodesFromBlockstore = async (blockstore: BaseBlockstore): Promise<PBNode[]> => {
   const nodes: PBNode[] = []
   for await (const pair of blockstore.getAll()) {
-    nodes.push(decode(pair.block))
+    nodes.push(decodeNode(pair.block))
   }
   return nodes
 }

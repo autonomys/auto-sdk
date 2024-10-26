@@ -1,4 +1,4 @@
-import { decode, encode, PBNode } from '@ipld/dag-pb'
+import { createNode, decode, encode, PBNode } from '@ipld/dag-pb'
 import { AwaitIterable } from 'interface-store'
 
 export const chunkBuffer = async function* (
@@ -18,4 +18,4 @@ export const chunkBuffer = async function* (
   }
 }
 
-export { decode as decodeNode, encode as encodeNode, PBNode }
+export { createNode, decode as decodeNode, encode as encodeNode, PBNode }

@@ -1,5 +1,5 @@
-import { createNode, PBNode } from '@ipld/dag-pb'
 import { CID } from 'multiformats/cid'
+import { createNode, PBNode } from '../ipld/index.js'
 import { OffchainMetadata } from '../metadata/index.js'
 import { encodeIPLDNodeData, MetadataType } from '../metadata/onchain/index.js'
 import { DEFAULT_MAX_CHUNK_SIZE, ensureNodeMaxSize } from './chunker.js'

@@ -1,5 +1,5 @@
-import { PBNode } from '@ipld/dag-pb'
 import { CID } from 'multiformats/cid'
+import { PBNode } from '../ipld/index.js'
 import {
   createChunkedFileIpldNode,
   createChunkedMetadataIpldNode,
