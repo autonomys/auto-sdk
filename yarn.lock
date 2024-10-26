@@ -50,7 +50,6 @@ __metadata:
     "@ipld/dag-pb": "npm:^4.1.2"
     "@types/jest": "npm:^29.5.13"
     blake3: "npm:1.1.0"
-    interface-blockstore: "npm:^5.3.1"
     interface-store: "npm:^6.0.2"
     jest: "npm:^29.7.0"
     multiformats: "npm:^13.2.2"
@@ -6502,17 +6501,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"interface-blockstore@npm:^5.3.1":
-  version: 5.3.1
-  resolution: "interface-blockstore@npm:5.3.1"
-  dependencies:
-    interface-store: "npm:^6.0.0"
-    multiformats: "npm:^13.2.3"
-  checksum: 10c0/520dc6584643ebcae21ca6ac5ace075a6898eba85842f74701584ed3c5251c1c374097489b05f4525e65d29d047b938750d94cdd8a611ff48928037a8abd8ffd
-  languageName: node
-  linkType: hard
-
-"interface-store@npm:^6.0.0, interface-store@npm:^6.0.2":
+"interface-store@npm:^6.0.2":
   version: 6.0.2
   resolution: "interface-store@npm:6.0.2"
   checksum: 10c0/26650c98c411fcf5dfeec76d4433f9ca594c2d27cc7afb285b618132d512b62d684471054b2fb4e687b477ab36f1ca21fd81caad404925502a4a54160a7158c4
@@ -8490,13 +8479,6 @@ __metadata:
   version: 13.2.2
   resolution: "multiformats@npm:13.2.2"
   checksum: 10c0/d2925d3a68c8ff14cc88af5073261dc49798fc26108c8a3d481c7479a9b3ddc0131139b5d1b7dfc220ea3fe40c8d9b4ce91c4a7143d8c88e9f47f4cfd8dd21bb
-  languageName: node
-  linkType: hard
-
-"multiformats@npm:^13.2.3":
-  version: 13.3.0
-  resolution: "multiformats@npm:13.3.0"
-  checksum: 10c0/4ef4d591e36ab610b8592a975f3f7fec0d678450290cf668e093a561942bbcc03181f513422cdf996e73f014efa849207d00ddd252a4e640068c767dd0071312
   languageName: node
   linkType: hard
 
@@ -11494,7 +11476,7 @@ __metadata:
 
 "typescript@patch:typescript@npm%3A>=3 < 6#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A^5#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A^5.4.5#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A^5.5.4#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A^5.6.2#optional!builtin<compat/typescript>":
   version: 5.6.2
-  resolution: "typescript@patch:typescript@npm%3A5.6.2#optional!builtin<compat/typescript>::version=5.6.2&hash=5adc0c"
+  resolution: "typescript@patch:typescript@npm%3A5.6.2#optional!builtin<compat/typescript>::version=5.6.2&hash=b45daf"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
