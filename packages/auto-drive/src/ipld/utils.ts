@@ -18,6 +18,4 @@ export const chunkBuffer = async function* (
   }
 }
 
-export const encodeNode = (node: PBNode): Buffer => Buffer.from(encode(node))
-
-export const decodeNode = (data: Uint8Array): PBNode => decode(data)
+export { decode as decodeNode, encode as encodeNode, PBNode }

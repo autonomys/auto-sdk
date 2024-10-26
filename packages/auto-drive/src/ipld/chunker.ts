@@ -1,12 +1,11 @@
-import { PBNode } from '@ipld/dag-pb'
-import { BaseBlockstore } from 'blockstore-core'
-import { AwaitIterable } from 'interface-store'
+import type { BaseBlockstore } from 'blockstore-core'
+import type { AwaitIterable } from 'interface-store'
 import { CID } from 'multiformats'
-import { cidOfNode, cidToString } from '../cid/index.js'
-import { decodeIPLDNodeData, IPLDNodeData, OffchainMetadata } from '../metadata/index.js'
+import { cidOfNode } from '../cid/index.js'
+import { decodeIPLDNodeData, OffchainMetadata } from '../metadata/index.js'
 import { Builders, fileBuilders, metadataBuilders } from './builders.js'
 import { createFolderInlinkIpldNode, createFolderIpldNode } from './nodes.js'
-import { chunkBuffer, encodeNode } from './utils.js'
+import { chunkBuffer, encodeNode, PBNode } from './utils.js'
 
 export const DEFAULT_MAX_CHUNK_SIZE = 1024 * 64
 export const DEFAULT_MAX_LINK_PER_NODE = DEFAULT_MAX_CHUNK_SIZE / 64
