@@ -39,12 +39,15 @@ yarn add @autonomys/auto-drive
 To create an IPLD DAG from a file, you can use the `createFileIPLDDag` function:
 
 ```typescript
-import { createFileIPLDDag } from '@autonomys/auto-drive'
+import { processFileToIPLDFormat } from '@autonomys/auto-drive'
+import { MemoryBlockstore } from 'blockstore-core/memory'
 import fs from 'fs'
 
-const fileBuffer = fs.readFileSync('path/to/your/file.txt')
+const fileStream = fs.createReadStream('path/to/your/file.txt')
+const fileSize = fs.statSync('path/to/your/file.txt').size
 
-const dag = createFileIPLDDag(fileBuffer, 'file.txt')
+const blockstore = new MemoryBlockstore()
+const fileCID = processFileToIPLDFormat(blockstore, fileStream, totalSize, 'file.txt')
 ```
 
 ### Creating an IPLD DAG from a Folder
@@ -52,7 +55,8 @@ const dag = createFileIPLDDag(fileBuffer, 'file.txt')
 To create an IPLD DAG from a folder, you can use the `createFolderIPLDDag` function:
 
 ```typescript
-import { createFolderIPLDDag } from '@autonomys/auto-drive'
+import { processFolderToIPLDFormat, decodeNode } from '@autonomys/auto-drive'
+import { MemoryBlockstore } from 'blockstore-core/memory'
 import { CID } from 'multiformats'
 
 // Example child CIDs and folder information
@@ -62,7 +66,10 @@ const childCIDs: CID[] = [
 const folderName = 'my-folder'
 const folderSize = 1024 // size in bytes
 
-const folderDag = createFolderIPLDDag(childCIDs, folderName, folderSize)
+const blockstore = new MemoryBlockstore()
+const folderCID = processFolderToIPLDFormat(blockstore, childCIDs, folderName, folderSize)
+
+const node = decodeNode(blockstore.get(folderCID))
 ```
 
 ### Working with CIDs
@@ -115,14 +122,16 @@ const metadataNode = createMetadataNode(metadata)
 ### Example: Creating a File DAG and Converting to CID
 
 ```typescript
-import { createFileIPLDDag, cidOfNode, cidToString } from '@autonomys/auto-drive'
+import { processFileToIPLDFormat } from '@autonomys/auto-drive'
+import { MemoryBlockstore } from 'blockstore-core/memory'
 import fs from 'fs'
 
-const fileBuffer = fs.readFileSync('path/to/your/file.txt')
+const fileStream = fs.createReadStream('path/to/your/file.txt')
+const fileSize = fs.statSync('path/to/your/file.txt').size
 
-const dag = createFileIPLDDag(fileBuffer, 'file.txt')
+const blockstore = new MemoryBlockstore()
+const cid = processFileToIPLDFormat(blockstore, fileStream, totalSize, 'file.txt')
 
-const cid = cidOfNode(dag.headCID)
 const cidString = cidToString(cid)
 
 console.log(`CID of the file DAG: ${cidString}`)
@@ -137,13 +146,14 @@ import {
   cidToString,
   type OffchainMetadata,
 } from '@autonomys/auto-drive'
+import { MemoryBlockstore } from 'blockstore-core/memory'
 import fs from 'fs'
 
 const metadata: OffchainMetadata = fs.readFileSync('path/to/your/metadata.json')
 
-const dag = createMetadataIPLDDag(metadata)
+const blockstore = new MemoryBlockstore()
+const cid = processMetadataToIPLDFormat(blockstore, metadata)
 
-const cid = cidOfNode(dag.headCID)
 const cidString = cidToString(cid)
 
 console.log(`CID of the metadata DAG: ${cidString}`)
