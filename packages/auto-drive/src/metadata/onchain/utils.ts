@@ -1,4 +1,4 @@
-import { decode } from '@ipld/dag-pb'
+import { decodeNode } from '../../ipld/index.js'
 import { IPLDNodeData } from '../onchain/index.js'
 
 export const encodeIPLDNodeData = (metadata: IPLDNodeData): Uint8Array => {
@@ -6,7 +6,7 @@ export const encodeIPLDNodeData = (metadata: IPLDNodeData): Uint8Array => {
 }
 
 export const decodeIPLDNodeData = (data: Uint8Array): IPLDNodeData => {
-  const decoded = decode(data)
+  const decoded = decodeNode(data)
   if (!decoded.Data) {
     throw new Error('Invalid data')
   }

@@ -1,14 +1,14 @@
-import { encode, PBNode } from '@ipld/dag-pb'
 import { hash } from 'blake3'
-import { CID } from 'multiformats/cid'
 import * as base32 from 'multiformats/bases/base32'
+import { CID } from 'multiformats/cid'
 import * as raw from 'multiformats/codecs/raw'
 import { create } from 'multiformats/hashes/digest'
+import { encodeNode, PBNode } from '../ipld/utils.js'
 
 export const BLAKE3_CODE = 0x1f
 
 export const cidOfNode = (node: PBNode) => {
-  return cidFromBlakeHash(hash(encode(node)))
+  return cidFromBlakeHash(hash(encodeNode(node)))
 }
 
 export const cidToString = (cid: CID) => {
