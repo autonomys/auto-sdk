@@ -1,6 +1,6 @@
 {
   "name": "@autonomys/auto-consensus",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "license": "MIT",
   "main": "dist/index.js",
   "scripts": {
@@ -22,7 +22,7 @@
     "url": "https://www.autonomys.net"
   },
   "dependencies": {
-    "@autonomys/auto-utils": "^0.7.1"
+    "@autonomys/auto-utils": "^0.7.2"
   },
   "devDependencies": {
     "@types/jest": "^29.5.12",
@@ -32,5 +32,5 @@
     "ts-jest": "^29.1.4",
     "typescript": "^5.4.5"
   },
-  "gitHead": "509bb6d337ca6c0f4da389cd342f1b58be57cb7e"
+  "gitHead": "2c7b1be8b6c2f8fbbfc5bcc6aa6cb9b1f363ce83"
 }
