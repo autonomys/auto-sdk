@@ -30,7 +30,11 @@ export const networks: Network[] = [
   {
     id: NetworkId.TAURUS,
     name: NetworkName.TAURUS,
-    rpcUrls: ['wss://rpc.taurus.subspace.foundation/ws'],
+    rpcUrls: [
+      'wss://rpc.taurus.subspace.network/ws',
+      'wss://rpc-0.taurus.subspace.network/ws',
+      'wss://rpc-1.taurus.subspace.network/ws',
+    ],
     explorer: [
       {
         name: NetworkExplorerName.ASTRAL,
