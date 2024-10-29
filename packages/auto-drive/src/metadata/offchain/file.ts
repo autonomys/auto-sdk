@@ -1,5 +1,5 @@
 import { CID } from 'multiformats'
-import { cidToString } from '../../index.js'
+import { cidToString, FileUploadOptions } from '../../index.js'
 
 export type OffchainFileMetadata = {
   type: 'file'
@@ -9,6 +9,7 @@ export type OffchainFileMetadata = {
   totalSize: number
   totalChunks: number
   chunks: ChunkInfo[]
+  uploadOptions?: FileUploadOptions
 }
 
 export interface ChunkInfo {
@@ -22,6 +23,10 @@ export const fileMetadata = (
   totalSize: number,
   name?: string | null,
   mimeType?: string | null,
+  uploadOptions: FileUploadOptions = {
+    compression: undefined,
+    encryption: undefined,
+  },
 ): OffchainFileMetadata => {
   return {
     type: 'file',
@@ -31,5 +36,6 @@ export const fileMetadata = (
     totalSize,
     totalChunks: chunks.length,
     chunks,
+    uploadOptions,
   }
 }

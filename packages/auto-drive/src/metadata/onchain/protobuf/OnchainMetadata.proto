@@ -6,6 +6,7 @@ message IPLDNodeData {
   optional int32 size = 3;
   optional string name = 4;
   optional bytes data = 5;
+  optional FileUploadOptions uploadOptions = 6;
 }
 
 // MetadataType defines the possible types of metadata.
@@ -18,4 +19,26 @@ enum MetadataType {
   Metadata = 5;
   MetadataInlink = 6;
   MetadataChunk = 7;
+}
+
+message FileUploadOptions {
+  optional CompressionOptions compression = 1;
+  optional EncryptionOptions encryption = 2;
+}
+
+message CompressionOptions {
+  CompressionAlgorithm algorithm = 1;
+  optional int32 level = 2;
+}
+
+message EncryptionOptions {
+  EncryptionAlgorithm algorithm = 1;
+}
+
+enum CompressionAlgorithm {
+  ZLIB = 0;
+}
+
+enum EncryptionAlgorithm {
+  AES_256_GCM = 0;
 }
