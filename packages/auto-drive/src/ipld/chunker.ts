@@ -172,10 +172,12 @@ export const processFolderToIPLDFormat = async (
   size: number,
   {
     maxLinkPerNode = DEFAULT_MAX_LINK_PER_NODE,
+    maxChunkSize = DEFAULT_MAX_CHUNK_SIZE,
     compression = undefined,
     encryption = undefined,
   }: Partial<ChunkerOptions> = {
     maxLinkPerNode: DEFAULT_MAX_LINK_PER_NODE,
+    maxChunkSize: DEFAULT_MAX_CHUNK_SIZE,
     compression: undefined,
     encryption: undefined,
   },
@@ -195,7 +197,7 @@ export const processFolderToIPLDFormat = async (
     depth++
   }
 
-  const node = createFolderIpldNode(cids, name, depth, size, maxLinkPerNode, {
+  const node = createFolderIpldNode(cids, name, depth, size, maxChunkSize, {
     compression,
     encryption,
   })
