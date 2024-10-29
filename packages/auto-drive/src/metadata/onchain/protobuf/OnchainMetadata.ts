@@ -222,6 +222,7 @@ export namespace FileUploadOptions {
 export interface CompressionOptions {
   algorithm: CompressionAlgorithm
   level?: number
+  chunkSize?: number
 }
 
 export namespace CompressionOptions {
@@ -244,6 +245,11 @@ export namespace CompressionOptions {
           w.int32(obj.level)
         }
 
+        if (obj.chunkSize != null) {
+          w.uint32(24)
+          w.int32(obj.chunkSize)
+        }
+
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
@@ -264,6 +270,10 @@ export namespace CompressionOptions {
             }
             case 2: {
               obj.level = reader.int32()
+              break
+            }
+            case 3: {
+              obj.chunkSize = reader.int32()
               break
             }
             default: {
@@ -291,6 +301,7 @@ export namespace CompressionOptions {
 
 export interface EncryptionOptions {
   algorithm: EncryptionAlgorithm
+  chunkSize?: number
 }
 
 export namespace EncryptionOptions {
@@ -306,6 +317,11 @@ export namespace EncryptionOptions {
         if (obj.algorithm != null && __EncryptionAlgorithmValues[obj.algorithm] !== 0) {
           w.uint32(8)
           EncryptionAlgorithm.codec().encode(obj.algorithm, w)
+        }
+
+        if (obj.chunkSize != null) {
+          w.uint32(16)
+          w.int32(obj.chunkSize)
         }
 
         if (opts.lengthDelimited !== false) {
@@ -324,6 +340,10 @@ export namespace EncryptionOptions {
           switch (tag >>> 3) {
             case 1: {
               obj.algorithm = EncryptionAlgorithm.codec().decode(reader)
+              break
+            }
+            case 2: {
+              obj.chunkSize = reader.int32()
               break
             }
             default: {

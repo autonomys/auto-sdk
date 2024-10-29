@@ -29,10 +29,12 @@ message FileUploadOptions {
 message CompressionOptions {
   CompressionAlgorithm algorithm = 1;
   optional int32 level = 2;
+  optional int32 chunkSize = 3;
 }
 
 message EncryptionOptions {
   EncryptionAlgorithm algorithm = 1;
+  optional int32 chunkSize = 2;
 }
 
 enum CompressionAlgorithm {
