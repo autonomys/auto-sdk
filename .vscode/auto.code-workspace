@@ -13,8 +13,8 @@
       "path": "../packages/auto-consensus",
     },
     {
-      "name": "Auto-Drive",
-      "path": "../packages/auto-drive",
+      "name": "Auto-IPLD",
+      "path": "../packages/auto-ipld",
     },
     {
       "name": "Auto-ID",

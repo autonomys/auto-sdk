@@ -43,25 +43,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@autonomys/auto-drive@workspace:packages/auto-drive":
-  version: 0.0.0-use.local
-  resolution: "@autonomys/auto-drive@workspace:packages/auto-drive"
-  dependencies:
-    "@ipld/dag-pb": "npm:^4.1.2"
-    "@types/jest": "npm:^29.5.13"
-    blake3: "npm:1.1.0"
-    blockstore-core: "npm:^5.0.2"
-    interface-store: "npm:^6.0.2"
-    jest: "npm:^29.7.0"
-    multiformats: "npm:^13.2.2"
-    protobufjs: "npm:^7.4.0"
-    protons: "npm:^7.6.0"
-    protons-runtime: "npm:^5.5.0"
-    ts-jest: "npm:^29.2.5"
-    typescript: "npm:^5.6.2"
-  languageName: unknown
-  linkType: soft
-
 "@autonomys/auto-id@workspace:*, @autonomys/auto-id@workspace:packages/auto-id":
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-id@workspace:packages/auto-id"
@@ -81,6 +62,25 @@ __metadata:
     ts-jest: "npm:^29.1.4"
     ts-node: "npm:^10.9.2"
     typescript: "npm:^5.5.4"
+  languageName: unknown
+  linkType: soft
+
+"@autonomys/auto-ipld@workspace:packages/auto-ipld":
+  version: 0.0.0-use.local
+  resolution: "@autonomys/auto-ipld@workspace:packages/auto-ipld"
+  dependencies:
+    "@ipld/dag-pb": "npm:^4.1.2"
+    "@types/jest": "npm:^29.5.13"
+    blake3: "npm:1.1.0"
+    blockstore-core: "npm:^5.0.2"
+    interface-store: "npm:^6.0.2"
+    jest: "npm:^29.7.0"
+    multiformats: "npm:^13.2.2"
+    protobufjs: "npm:^7.4.0"
+    protons: "npm:^7.6.0"
+    protons-runtime: "npm:^5.5.0"
+    ts-jest: "npm:^29.2.5"
+    typescript: "npm:^5.6.2"
   languageName: unknown
   linkType: soft
 
@@ -11717,7 +11717,7 @@ __metadata:
 
 "typescript@patch:typescript@npm%3A>=3 < 6#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A^5#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A^5.4.5#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A^5.5.4#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A^5.6.2#optional!builtin<compat/typescript>":
   version: 5.6.2
-  resolution: "typescript@patch:typescript@npm%3A5.6.2#optional!builtin<compat/typescript>::version=5.6.2&hash=b45daf"
+  resolution: "typescript@patch:typescript@npm%3A5.6.2#optional!builtin<compat/typescript>::version=5.6.2&hash=5adc0c"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
