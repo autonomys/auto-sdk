@@ -1,5 +1,6 @@
 import { CID } from 'multiformats/cid'
 import { PBNode } from '../ipld/index.js'
+import { FileUploadOptions } from '../metadata/index.js'
 import {
   createChunkedFileIpldNode,
   createChunkedMetadataIpldNode,
@@ -20,8 +21,9 @@ export interface Builders {
     linkDepth: number,
     name?: string,
     maxNodeSize?: number,
+    fileUploadOptions?: FileUploadOptions,
   ) => PBNode
-  single: (data: Buffer, filename?: string) => PBNode
+  single: (data: Buffer, filename?: string, fileUploadOptions?: FileUploadOptions) => PBNode
 }
 export const metadataBuilders: Builders = {
   inlink: createMetadataInlinkIpldNode,

@@ -1,6 +1,6 @@
 import { CID } from 'multiformats/cid'
 import { createNode, PBNode } from '../ipld/index.js'
-import { OffchainMetadata } from '../metadata/index.js'
+import { FileUploadOptions, OffchainMetadata } from '../metadata/index.js'
 import { encodeIPLDNodeData, MetadataType } from '../metadata/onchain/index.js'
 import { DEFAULT_MAX_CHUNK_SIZE, ensureNodeMaxSize } from './chunker.js'
 
@@ -25,6 +25,7 @@ export const createChunkedFileIpldNode = (
   linkDepth: number,
   name?: string,
   maxNodeSize: number = DEFAULT_MAX_CHUNK_SIZE,
+  uploadOptions?: FileUploadOptions,
 ): PBNode =>
   ensureNodeMaxSize(
     createNode(
@@ -33,6 +34,7 @@ export const createChunkedFileIpldNode = (
         name,
         size,
         linkDepth,
+        uploadOptions,
       }),
       links.map((cid) => ({ Hash: cid })),
     ),
@@ -61,7 +63,11 @@ export const createFileInlinkIpldNode = (
 // Creates a file ipld node
 // links: the CIDs of the file's contents
 // @todo: add the file's metadata
-export const createSingleFileIpldNode = (data: Buffer, name?: string): PBNode =>
+export const createSingleFileIpldNode = (
+  data: Buffer,
+  name?: string,
+  uploadOptions?: FileUploadOptions,
+): PBNode =>
   createNode(
     encodeIPLDNodeData({
       type: MetadataType.File,
@@ -69,6 +75,7 @@ export const createSingleFileIpldNode = (data: Buffer, name?: string): PBNode =>
       size: data.length,
       linkDepth: 0,
       data,
+      uploadOptions,
     }),
     [],
   )
@@ -148,6 +155,7 @@ export const createFolderIpldNode = (
   linkDepth: number,
   size: number,
   maxNodeSize: number = DEFAULT_MAX_CHUNK_SIZE,
+  uploadOptions?: FileUploadOptions,
 ): PBNode =>
   ensureNodeMaxSize(
     createNode(
@@ -156,6 +164,7 @@ export const createFolderIpldNode = (
         name,
         size,
         linkDepth,
+        uploadOptions,
       }),
       links.map((cid) => ({ Hash: cid })),
     ),

@@ -1,7 +1,7 @@
 import { CID } from 'multiformats'
 import { cidOfNode, cidToString } from '../../cid/index.js'
 import { PBNode } from '../../ipld/index.js'
-import { IPLDNodeData, MetadataType } from '../onchain/index.js'
+import { FileUploadOptions, IPLDNodeData, MetadataType } from '../onchain/index.js'
 
 interface ChildrenMetadata {
   type: 'folder' | 'file'
@@ -17,6 +17,7 @@ export type OffchainFolderMetadata = {
   totalSize: number
   totalFiles: number
   children: ChildrenMetadata[]
+  uploadOptions: FileUploadOptions
 }
 
 export const childrenMetadataFromNode = (node: PBNode): ChildrenMetadata => {
@@ -37,6 +38,7 @@ export const folderMetadata = (
   cid: CID | string,
   children: ChildrenMetadata[],
   name?: string | null,
+  uploadOptions: FileUploadOptions = {},
 ): OffchainFolderMetadata => {
   cid = typeof cid === 'string' ? cid : cidToString(cid)
 
@@ -47,5 +49,6 @@ export const folderMetadata = (
     children,
     type: 'folder',
     name: name ?? undefined,
+    uploadOptions,
   }
 }
