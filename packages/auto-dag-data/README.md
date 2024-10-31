@@ -1,4 +1,4 @@
-# Auto Dag Data
+# Auto DAG Data
 
 ![Autonomys Banner](https://github.com/autonomys/auto-sdk/blob/main/.github/images/autonomys-banner.webp)
 
