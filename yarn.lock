@@ -65,9 +65,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@autonomys/auto-ipld@workspace:packages/auto-ipld":
+"@autonomys/auto-dag-data@workspace:packages/auto-dag-data":
   version: 0.0.0-use.local
-  resolution: "@autonomys/auto-ipld@workspace:packages/auto-ipld"
+  resolution: "@autonomys/auto-dag-data@workspace:packages/auto-dag-data"
   dependencies:
     "@ipld/dag-pb": "npm:^4.1.2"
     "@types/jest": "npm:^29.5.13"

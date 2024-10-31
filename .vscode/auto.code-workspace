@@ -13,8 +13,8 @@
       "path": "../packages/auto-consensus",
     },
     {
-      "name": "Auto-IPLD",
-      "path": "../packages/auto-ipld",
+      "name": "auto-dag-data",
+      "path": "../packages/auto-dag-data",
     },
     {
       "name": "Auto-ID",

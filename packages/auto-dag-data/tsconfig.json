@@ -1,8 +1,8 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "outDir": "../auto-dag-data/dist",
-    "rootDir": "../auto-dag-data/src",
+    "outDir": "./dist",
+    "rootDir": "./src/",
     "moduleResolution": "NodeNext",
     "module": "NodeNext",
     "forceConsistentCasingInFileNames": true,
@@ -10,5 +10,5 @@
     "stripInternal": true,
     "resolveJsonModule": true
   },
-  "include": ["../auto-dag-data/src"]
+  "include": ["src"]
 }

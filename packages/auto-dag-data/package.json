@@ -1,5 +1,5 @@
 {
-  "name": "@autonomys/auto-ipld",
+  "name": "@autonomys/auto-dag-data",
   "packageManager": "yarn@4.1.1",
   "version": "0.7.4",
   "license": "MIT",
