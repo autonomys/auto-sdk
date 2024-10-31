@@ -1,25 +1,21 @@
 import { Crypto } from '@peculiar/webcrypto'
 import { asyncByChunk } from '../utils/async.js'
+import { EncryptorAlgorithm, EncryptorOptions, PasswordGenerationOptions } from './types.js'
 
 const crypto = new Crypto()
-
-export enum EncryptionAlgorithm {
-  AES_GCM = 'AES-GCM',
-}
-
-export interface EncryptionOptions {
-  chunkSize?: number
-  algorithm?: EncryptionAlgorithm
-}
 
 export const ENCRYPTING_CHUNK_SIZE = 1024 * 1024
 const IV_SIZE = 16
 const TAG_SIZE = 16
 const ENCRYPTED_CHUNK_SIZE = ENCRYPTING_CHUNK_SIZE + IV_SIZE + TAG_SIZE
 
-const getKeyFromPassword = async (password: string) => {
+export const getKeyFromPassword = async ({ password, salt }: PasswordGenerationOptions) => {
   const encoder = new TextEncoder()
-  const passwordHash = await crypto.subtle.digest('SHA-256', encoder.encode(password))
+  const saltHash =
+    typeof salt === 'string' ? await crypto.subtle.digest('SHA-256', encoder.encode(salt)) : salt
+
+  const passwordPlusSalt = Buffer.concat([Buffer.from(saltHash), encoder.encode(password)])
+  const passwordHash = await crypto.subtle.digest('SHA-256', passwordPlusSalt)
 
   return await crypto.subtle.importKey('raw', passwordHash, { name: 'AES-GCM' }, false, [
     'encrypt',
@@ -29,14 +25,14 @@ const getKeyFromPassword = async (password: string) => {
 
 export const encryptFile = async function* (
   file: AsyncIterable<Buffer>,
-  password: string,
-  { chunkSize = ENCRYPTING_CHUNK_SIZE, algorithm = EncryptionAlgorithm.AES_GCM }: EncryptionOptions,
+  passwordGenerationOptions: PasswordGenerationOptions,
+  { chunkSize = ENCRYPTING_CHUNK_SIZE, algorithm = EncryptorAlgorithm.AES_GCM }: EncryptorOptions,
 ): AsyncIterable<Buffer> {
-  if (algorithm !== EncryptionAlgorithm.AES_GCM) {
+  if (algorithm !== EncryptorAlgorithm.AES_GCM) {
     throw new Error('Unsupported encryption algorithm')
   }
 
-  const key = await getKeyFromPassword(password)
+  const key = await getKeyFromPassword(passwordGenerationOptions)
 
   for await (const chunk of asyncByChunk(file, chunkSize)) {
     const iv = crypto.getRandomValues(new Uint8Array(IV_SIZE))
@@ -46,15 +42,15 @@ export const encryptFile = async function* (
 }
 
 export const decryptFile = async function* (
-  { chunkSize = ENCRYPTED_CHUNK_SIZE, algorithm = EncryptionAlgorithm.AES_GCM }: EncryptionOptions,
   file: AsyncIterable<Buffer>,
-  password: string,
+  passwordGenerationOptions: PasswordGenerationOptions,
+  { chunkSize = ENCRYPTED_CHUNK_SIZE, algorithm = EncryptorAlgorithm.AES_GCM }: EncryptorOptions,
 ): AsyncIterable<Buffer> {
-  if (algorithm !== EncryptionAlgorithm.AES_GCM) {
+  if (algorithm !== EncryptorAlgorithm.AES_GCM) {
     throw new Error('Unsupported encryption algorithm')
   }
 
-  const key = await getKeyFromPassword(password)
+  const key = await getKeyFromPassword(passwordGenerationOptions)
 
   for await (const chunk of asyncByChunk(file, chunkSize)) {
     const iv = chunk.subarray(0, IV_SIZE)
