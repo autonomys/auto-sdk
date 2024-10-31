@@ -1,5 +1,7 @@
+import type { AwaitIterable } from 'interface-store'
+
 export const asyncByChunk = async function* (
-  iterable: AsyncIterable<Buffer>,
+  iterable: AwaitIterable<Buffer>,
   chunkSize: number,
   ignoreLastChunk: boolean = false,
 ): AsyncIterable<Buffer> {

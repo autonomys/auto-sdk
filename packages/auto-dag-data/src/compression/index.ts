@@ -1,14 +1,24 @@
 import { Unzlib, Zlib } from 'fflate'
+import type { AwaitIterable } from 'interface-store'
 import { asyncByChunk } from '../utils/async.js'
+import { CompressionOptions } from './types.js'
 
 export const COMPRESSION_CHUNK_SIZE = 1024 * 1024
-type CompressionLevel = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
 
 export async function* compressFileByChunks(
-  file: AsyncIterable<Buffer>,
-  chunkSize = COMPRESSION_CHUNK_SIZE, // Default chunk size of 1 MB
-  level: CompressionLevel = 9,
+  file: AwaitIterable<Buffer>,
+  { level, chunkSize, algorithm = 'zlib' }: CompressionOptions,
 ): AsyncIterable<Buffer> {
+  if (algorithm !== 'zlib') {
+    throw new Error('Unsupported compression algorithm')
+  }
+  if (level < 0 || level > 9) {
+    throw new Error('Invalid compression level')
+  }
+  if (chunkSize <= 0) {
+    throw new Error('Invalid chunk size')
+  }
+
   const zlib = new Zlib({ level })
   const compressedChunks: Buffer[] = []
 
@@ -17,22 +27,32 @@ export async function* compressFileByChunks(
   }
 
   for await (const chunk of asyncByChunk(file, chunkSize)) {
-    zlib.push(chunk, false) // Push chunk data without marking as the end
+    zlib.push(chunk, false)
     while (compressedChunks.length > 0) {
-      yield compressedChunks.shift()! // Yield each compressed chunk
+      yield compressedChunks.shift()!
     }
   }
 
-  zlib.push(new Uint8Array(), true) // Signal end of input with an empty Uint8Array
+  zlib.push(new Uint8Array(), true)
   while (compressedChunks.length > 0) {
-    yield compressedChunks.shift()! // Yield remaining compressed chunks
+    yield compressedChunks.shift()!
   }
 }
 
 export async function* decompressFileByChunks(
-  compressedFile: AsyncIterable<Buffer>,
-  chunkSize = 1024 * 1024, // Default chunk size of 1 MB
+  compressedFile: AwaitIterable<Buffer>,
+  { chunkSize, algorithm = 'zlib', level = 9 }: CompressionOptions,
 ): AsyncIterable<Buffer> {
+  if (algorithm !== 'zlib') {
+    throw new Error('Unsupported compression algorithm')
+  }
+  if (chunkSize <= 0) {
+    throw new Error('Invalid chunk size')
+  }
+  if (level < 0 || level > 9) {
+    throw new Error('Invalid compression level')
+  }
+
   const unzlib = new Unzlib()
   const decompressedChunks: Buffer[] = []
 
@@ -41,14 +61,14 @@ export async function* decompressFileByChunks(
   }
 
   for await (const chunk of asyncByChunk(compressedFile, chunkSize)) {
-    unzlib.push(chunk, false) // Push each chunk for decompression
+    unzlib.push(chunk, false)
     while (decompressedChunks.length > 0) {
-      yield decompressedChunks.shift()! // Yield each decompressed chunk
+      yield decompressedChunks.shift()!
     }
   }
 
-  unzlib.push(new Uint8Array(), true) // Signal end of input with an empty Uint8Array
+  unzlib.push(new Uint8Array(), true)
   while (decompressedChunks.length > 0) {
-    yield decompressedChunks.shift()! // Yield remaining decompressed chunks
+    yield decompressedChunks.shift()!
   }
 }
