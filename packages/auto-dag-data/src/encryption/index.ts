@@ -1,5 +1,6 @@
 import { Crypto } from '@peculiar/webcrypto'
 import { asyncByChunk } from '../utils/async.js'
+import type { PickPartial } from '../utils/types.js'
 import { EncryptorAlgorithm, EncryptorOptions, PasswordGenerationOptions } from './types.js'
 
 const crypto = new Crypto()
@@ -14,19 +15,32 @@ export const getKeyFromPassword = async ({ password, salt }: PasswordGenerationO
   const saltHash =
     typeof salt === 'string' ? await crypto.subtle.digest('SHA-256', encoder.encode(salt)) : salt
 
-  const passwordPlusSalt = Buffer.concat([Buffer.from(saltHash), encoder.encode(password)])
-  const passwordHash = await crypto.subtle.digest('SHA-256', passwordPlusSalt)
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(password),
+    'PBKDF2',
+    false,
+    ['deriveBits', 'deriveKey'],
+  )
 
-  return await crypto.subtle.importKey('raw', passwordHash, { name: 'AES-GCM' }, false, [
-    'encrypt',
-    'decrypt',
-  ])
+  return crypto.subtle.deriveKey(
+    {
+      name: 'PBKDF2',
+      salt: saltHash,
+      iterations: 100000,
+      hash: 'SHA-256',
+    },
+    keyMaterial,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['encrypt', 'decrypt'],
+  )
 }
 
 export const encryptFile = async function* (
   file: AsyncIterable<Buffer>,
   passwordGenerationOptions: PasswordGenerationOptions,
-  { chunkSize = ENCRYPTING_CHUNK_SIZE, algorithm = EncryptorAlgorithm.AES_GCM }: EncryptorOptions,
+  { chunkSize = ENCRYPTING_CHUNK_SIZE, algorithm }: PickPartial<EncryptorOptions, 'algorithm'>,
 ): AsyncIterable<Buffer> {
   if (algorithm !== EncryptorAlgorithm.AES_GCM) {
     throw new Error('Unsupported encryption algorithm')
@@ -44,7 +58,7 @@ export const encryptFile = async function* (
 export const decryptFile = async function* (
   file: AsyncIterable<Buffer>,
   passwordGenerationOptions: PasswordGenerationOptions,
-  { chunkSize = ENCRYPTED_CHUNK_SIZE, algorithm = EncryptorAlgorithm.AES_GCM }: EncryptorOptions,
+  { chunkSize = ENCRYPTED_CHUNK_SIZE, algorithm }: PickPartial<EncryptorOptions, 'algorithm'>,
 ): AsyncIterable<Buffer> {
   if (algorithm !== EncryptorAlgorithm.AES_GCM) {
     throw new Error('Unsupported encryption algorithm')
