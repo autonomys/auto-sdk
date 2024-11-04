@@ -1,5 +1,4 @@
-import { decryptFile, encryptFile } from '../src'
-import { EncryptorAlgorithm } from '../src/encryption/types'
+import { decryptFile, encryptFile, EncryptionAlgorithm } from '../src'
 
 describe('encryption', () => {
   it('encrypts and decrypts a file with default chunk size', async () => {
@@ -14,12 +13,12 @@ describe('encryption', () => {
       })(),
       password,
       {
-        algorithm: EncryptorAlgorithm.AES_GCM,
+        algorithm: EncryptionAlgorithm.AES_256_GCM,
       },
     )
 
     const decrypted = decryptFile(encrypted, password, {
-      algorithm: EncryptorAlgorithm.AES_GCM,
+      algorithm: EncryptionAlgorithm.AES_256_GCM,
     })
 
     let decryptedBuffer = Buffer.alloc(0)
@@ -46,7 +45,7 @@ describe('encryption', () => {
       })(),
       password,
       {
-        algorithm: EncryptorAlgorithm.AES_GCM,
+        algorithm: EncryptionAlgorithm.AES_256_GCM,
         chunkSize: encryptingSize,
       },
     )
@@ -54,7 +53,7 @@ describe('encryption', () => {
     const decryptingSize = encryptingSize + IV_SIZE + TAG_SIZE
 
     const decrypted = decryptFile(encrypted, password, {
-      algorithm: EncryptorAlgorithm.AES_GCM,
+      algorithm: EncryptionAlgorithm.AES_256_GCM,
       chunkSize: decryptingSize,
     })
 

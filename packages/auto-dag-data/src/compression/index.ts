@@ -1,8 +1,9 @@
 import { Unzlib, Zlib } from 'fflate'
 import type { AwaitIterable } from 'interface-store'
+import { CompressionAlgorithm } from '../metadata/index.js'
 import { asyncByChunk } from '../utils/async.js'
 import type { PickPartial } from '../utils/types.js'
-import { CompressionOptions, CompressorAlgorithm } from './types.js'
+import { CompressionOptions } from './types.js'
 export { CompressorAlgorithm } from './types.js'
 
 export const COMPRESSION_CHUNK_SIZE = 1024 * 1024
@@ -15,7 +16,7 @@ export async function* compressFile(
     algorithm,
   }: PickPartial<CompressionOptions, 'algorithm'>,
 ): AsyncIterable<Buffer> {
-  if (algorithm !== CompressorAlgorithm.ZLIB) {
+  if (algorithm !== CompressionAlgorithm.ZLIB) {
     throw new Error('Unsupported compression algorithm')
   }
   if (level < 0 || level > 9) {
@@ -49,11 +50,11 @@ export async function* decompressFile(
   compressedFile: AwaitIterable<Buffer>,
   {
     chunkSize = COMPRESSION_CHUNK_SIZE,
-    algorithm = 'zlib',
+    algorithm = CompressionAlgorithm.ZLIB,
     level = 9,
   }: PickPartial<CompressionOptions, 'algorithm'>,
 ): AsyncIterable<Buffer> {
-  if (algorithm !== 'zlib') {
+  if (algorithm !== CompressionAlgorithm.ZLIB) {
     throw new Error('Unsupported compression algorithm')
   }
   if (chunkSize <= 0) {

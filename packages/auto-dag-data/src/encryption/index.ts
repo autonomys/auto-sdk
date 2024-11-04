@@ -1,8 +1,9 @@
 import { Crypto } from '@peculiar/webcrypto'
 import { randomBytes } from 'crypto'
+import { EncryptionAlgorithm, EncryptionOptions } from '../metadata/index.js'
 import { asyncByChunk } from '../utils/async.js'
 import type { PickPartial } from '../utils/types.js'
-import { EncryptorAlgorithm, EncryptorOptions, PasswordGenerationOptions } from './types.js'
+import { PasswordGenerationOptions } from './types.js'
 
 const crypto = new Crypto()
 
@@ -42,9 +43,9 @@ export const getKeyFromPassword = async ({ password, salt }: PasswordGenerationO
 export const encryptFile = async function* (
   file: AsyncIterable<Buffer>,
   password: string,
-  { chunkSize = ENCRYPTING_CHUNK_SIZE, algorithm }: PickPartial<EncryptorOptions, 'algorithm'>,
+  { chunkSize = ENCRYPTING_CHUNK_SIZE, algorithm }: PickPartial<EncryptionOptions, 'algorithm'>,
 ): AsyncIterable<Buffer> {
-  if (algorithm !== EncryptorAlgorithm.AES_GCM) {
+  if (algorithm !== EncryptionAlgorithm.AES_256_GCM) {
     throw new Error('Unsupported encryption algorithm')
   }
 
@@ -63,9 +64,9 @@ export const encryptFile = async function* (
 export const decryptFile = async function* (
   file: AsyncIterable<Buffer>,
   password: string,
-  { chunkSize = ENCRYPTED_CHUNK_SIZE, algorithm }: PickPartial<EncryptorOptions, 'algorithm'>,
+  { chunkSize = ENCRYPTED_CHUNK_SIZE, algorithm }: PickPartial<EncryptionOptions, 'algorithm'>,
 ): AsyncIterable<Buffer> {
-  if (algorithm !== EncryptorAlgorithm.AES_GCM) {
+  if (algorithm !== EncryptionAlgorithm.AES_256_GCM) {
     throw new Error('Unsupported encryption algorithm')
   }
 
