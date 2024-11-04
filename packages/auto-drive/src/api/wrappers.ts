@@ -61,16 +61,16 @@ export const uploadFile = async (
   let stat = fs.statSync(filePath)
   let asyncIterable: AsyncIterable<Buffer> = fs.createReadStream(filePath)
 
-  if (password) {
-    asyncIterable = encryptFile(asyncIterable, password, {
-      algorithm: EncryptorAlgorithm.AES_GCM,
-    })
-  }
-
   if (compression) {
     asyncIterable = compressFile(asyncIterable, {
       level: 9,
       algorithm: CompressorAlgorithm.ZLIB,
+    })
+  }
+
+  if (password) {
+    asyncIterable = encryptFile(asyncIterable, password, {
+      algorithm: EncryptorAlgorithm.AES_GCM,
     })
   }
 
