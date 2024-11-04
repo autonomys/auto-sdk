@@ -1,18 +1,22 @@
 import {
   compressFile,
   CompressionAlgorithm,
+  decompressFile,
+  decryptFile,
   encryptFile,
   EncryptionAlgorithm,
 } from '@autonomys/auto-dag-data'
 import fs from 'fs'
 import mime from 'mime-types'
-import { asyncByChunk } from '../utils/async.js'
+import { asyncByChunk, asyncFromStream } from '../utils/async.js'
 import { getFiles } from '../utils/folder.js'
 import {
   completeUpload,
   createFileUpload,
   createFileUploadWithinFolderUpload,
   createFolderUpload,
+  downloadObject,
+  getObjectMetadata,
   uploadFileChunk,
 } from './calls/index.js'
 import { AutoDriveApi } from './connection.js'
@@ -158,4 +162,61 @@ export const uploadFileWithinFolderUpload = async (
   await uploadFileChunks(api, fileUpload.id, fs.createReadStream(filepath))
 
   await completeUpload(api, { uploadId: fileUpload.id })
+}
+
+/**
+ * Downloads a file from the AutoDrive service.
+ *
+ * @param {AutoDriveApi} api - The API instance to interact with the AutoDrive service.
+ * @param {string} cid - The CID of the file to be downloaded.
+ * @returns {Promise<ReadableStream<Uint8Array>>} A promise that resolves to a ReadableStream of the downloaded file.
+ */
+export const downloadFile = async (
+  api: AutoDriveApi,
+  cid: string,
+  password?: string,
+): Promise<AsyncIterable<Buffer>> => {
+  const metadata = await getObjectMetadata(api, { cid })
+
+  let iterable = asyncFromStream(await downloadObject(api, { cid }))
+  if (metadata.uploadOptions?.encryption) {
+    if (!password) {
+      throw new Error('Password is required to decrypt the file')
+    }
+    iterable = decryptFile(iterable, password, {
+      algorithm: EncryptionAlgorithm.AES_256_GCM,
+    })
+  }
+
+  if (metadata.uploadOptions?.compression) {
+    iterable = decompressFile(iterable, {
+      algorithm: CompressionAlgorithm.ZLIB,
+    })
+  }
+
+  return iterable
+}
+
+/**
+ * Downloads a folder from the AutoDrive service without encryption.
+ *
+ * @param {AutoDriveApi} api - The API instance to interact with the AutoDrive service.
+ * @param {string} cid - The CID of the folder to be downloaded.
+ *
+ * @returns {Promise<ReadableStream<Uint8Array>>} A promise that resolves to a ReadableStream of the downloaded folder.
+ *
+ * @warning If the folder is encrypted, a warning will be logged, but the download will proceed without decryption.
+ */
+export const downloadFolderWithoutEncryption = async (
+  api: AutoDriveApi,
+  cid: string,
+): Promise<ReadableStream<Uint8Array>> => {
+  const metadata = await getObjectMetadata(api, { cid })
+  if (metadata.uploadOptions?.encryption) {
+    console.warn(
+      'Downloading encrypted folder. Folder support encryption but it is not recommended.',
+    )
+  }
+
+  return downloadObject(api, { cid })
 }

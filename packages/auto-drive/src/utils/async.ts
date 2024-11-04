@@ -16,3 +16,14 @@ export const asyncByChunk = async function* (
     yield buffer
   }
 }
+
+export const asyncFromStream = async function* (
+  stream: ReadableStream<Uint8Array>,
+): AsyncIterable<Buffer> {
+  const reader = stream.getReader()
+  let result = await reader.read()
+  while (!result.done) {
+    yield Buffer.from(result.value)
+    result = await reader.read()
+  }
+}

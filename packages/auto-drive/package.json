@@ -6,6 +6,9 @@
     "name": "Autonomys",
     "url": "https://autonomys.net"
   },
+  "scripts": {
+    "build": "tsc"
+  },
   "devDependencies": {
     "@types/mime-types": "^2",
     "typescript": "^5.6.3"
