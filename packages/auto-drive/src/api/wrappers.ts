@@ -58,7 +58,6 @@ export const uploadFile = async (
   filePath: string,
   { password, compression = true }: UploadFileOptions,
 ) => {
-  let stat = fs.statSync(filePath)
   let asyncIterable: AsyncIterable<Buffer> = fs.createReadStream(filePath)
 
   if (compression) {
