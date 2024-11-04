@@ -1,6 +1,6 @@
 import { CID } from 'multiformats/cid'
-import { PBNode } from '../ipld/index.js'
 import { FileUploadOptions } from '../metadata/index.js'
+import { PBNode } from './index.js'
 import {
   createChunkedFileIpldNode,
   createChunkedMetadataIpldNode,

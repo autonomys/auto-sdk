@@ -1,5 +1,5 @@
 {
-  "name": "@autonomys/auto-drive",
+  "name": "@autonomys/auto-dag-data",
   "packageManager": "yarn@4.1.1",
   "version": "0.7.4",
   "license": "MIT",
@@ -36,6 +36,7 @@
   "dependencies": {
     "@ipld/dag-pb": "^4.1.2",
     "blake3": "1.1.0",
+    "fflate": "^0.8.2",
     "multiformats": "^13.2.2",
     "protobufjs": "^7.4.0",
     "protons": "^7.6.0",

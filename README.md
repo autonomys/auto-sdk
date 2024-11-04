@@ -15,7 +15,7 @@ This monorepo contains multiple packages, each serving a specific purpose. All p
 
 - **[`@autonomys/auto-utils`](https://www.npmjs.com/package/@autonomys/auto-utils)**: Core utility functions for interacting with the Autonomys Network.
 - **[`@autonomys/auto-consensus`](https://www.npmjs.com/package/@autonomys/auto-consensus)**: Functions for interacting with the Consensus Layer.
-- **[`@autonomys/auto-drive`](https://www.npmjs.com/package/@autonomys/auto-drive)**: Tools for preparing and managing data for on-chain storage.
+- **[`@autonomys/auto-dag-data`](https://www.npmjs.com/package/@autonomys/auto-dag-data)**: Tools for preparing and managing data for on-chain storage.
 - **[`@autonomys/auto-id`](https://www.npmjs.com/package/@autonomys/auto-id)**: Functions for generating, renewing, and revoking Decentralized Identities (Auto IDs).
 
 ## Installation
@@ -109,15 +109,15 @@ import { transfer } from '@autonomys/auto-consensus'
 })()
 ```
 
-### 2. Using `@autonomys/auto-drive`
+### 2. Using `@autonomys/auto-dag-data`
 
-The `@autonomys/auto-drive` package provides utilities for creating and managing IPLD DAGs (InterPlanetary Linked Data Directed Acyclic Graphs) for files and folders.
+The `@autonomys/auto-dag-data` package provides utilities for creating and managing IPLD DAGs (InterPlanetary Linked Data Directed Acyclic Graphs) for files and folders.
 
 #### **Creating an IPLD DAG from a File**
 
 ```typescript
 // Import necessary functions
-import { createFileIPLDDag } from '@autonomys/auto-drive'
+import { createFileIPLDDag } from '@autonomys/auto-dag-data'
 import fs from 'fs'
 
 const fileBuffer = fs.readFileSync('path/to/your/file.txt')
@@ -135,7 +135,7 @@ console.log(`Total nodes in DAG: ${dag.nodes.size}`)
 
 ```typescript
 // Import necessary functions
-import { createFolderIPLDDag } from '@autonomys/auto-drive'
+import { createFolderIPLDDag } from '@autonomys/auto-dag-data'
 import { CID } from 'multiformats'
 import fs from 'fs'
 import path from 'path'

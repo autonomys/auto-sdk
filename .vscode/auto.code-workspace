@@ -13,8 +13,8 @@
       "path": "../packages/auto-consensus",
     },
     {
-      "name": "Auto-Drive",
-      "path": "../packages/auto-drive",
+      "name": "auto-dag-data",
+      "path": "../packages/auto-dag-data",
     },
     {
       "name": "Auto-ID",
