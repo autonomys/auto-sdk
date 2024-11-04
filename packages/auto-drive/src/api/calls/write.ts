@@ -1,5 +1,5 @@
-import { ArgsWithoutPagination } from '../../utils/types'
-import { AutoDriveApi } from '../connection'
+import { ArgsWithoutPagination } from '../../utils/types.js'
+import { AutoDriveApi } from '../connection.js'
 
 /**
  * Shares an object with a specified public ID.

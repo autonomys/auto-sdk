@@ -1,24 +1,22 @@
 import {
   compressFile,
   CompressionAlgorithm,
-  CompressorAlgorithm,
   encryptFile,
   EncryptionAlgorithm,
 } from '@autonomys/auto-dag-data'
-import { EncryptorAlgorithm } from '@autonomys/auto-dag-data/dist/encryption/types'
 import fs from 'fs'
 import mime from 'mime-types'
-import { asyncByChunk } from '../utils/async'
-import { getFiles } from '../utils/folder'
+import { asyncByChunk } from '../utils/async.js'
+import { getFiles } from '../utils/folder.js'
 import {
   completeUpload,
   createFileUpload,
   createFileUploadWithinFolderUpload,
   createFolderUpload,
   uploadFileChunk,
-} from './calls'
-import { AutoDriveApi } from './connection'
-import { constructFromFileSystemEntries } from './models/folderTree'
+} from './calls/index.js'
+import { AutoDriveApi } from './connection.js'
+import { constructFromFileSystemEntries } from './models/folderTree.js'
 
 type UploadFileOptions = {
   password?: string
@@ -63,13 +61,13 @@ export const uploadFile = async (
   if (compression) {
     asyncIterable = compressFile(asyncIterable, {
       level: 9,
-      algorithm: CompressorAlgorithm.ZLIB,
+      algorithm: CompressionAlgorithm.ZLIB,
     })
   }
 
   if (password) {
     asyncIterable = encryptFile(asyncIterable, password, {
-      algorithm: EncryptorAlgorithm.AES_GCM,
+      algorithm: EncryptionAlgorithm.AES_256_GCM,
     })
   }
 

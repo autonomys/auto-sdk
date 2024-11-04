@@ -1,6 +1,7 @@
 {
   "name": "auto-drive",
   "packageManager": "yarn@4.2.2",
+  "type": "module",
   "author": {
     "name": "Autonomys",
     "url": "https://autonomys.net"
