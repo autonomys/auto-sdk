@@ -12,19 +12,15 @@ describe('encryption', () => {
       (async function* () {
         yield file
       })(),
-      { password, salt },
+      password,
       {
         algorithm: EncryptorAlgorithm.AES_GCM,
       },
     )
 
-    const decrypted = decryptFile(
-      encrypted,
-      { password, salt },
-      {
-        algorithm: EncryptorAlgorithm.AES_GCM,
-      },
-    )
+    const decrypted = decryptFile(encrypted, password, {
+      algorithm: EncryptorAlgorithm.AES_GCM,
+    })
 
     let decryptedBuffer = Buffer.alloc(0)
     for await (const chunk of decrypted) {
@@ -48,7 +44,7 @@ describe('encryption', () => {
       (async function* () {
         yield file
       })(),
-      { password, salt },
+      password,
       {
         algorithm: EncryptorAlgorithm.AES_GCM,
         chunkSize: encryptingSize,
@@ -57,14 +53,10 @@ describe('encryption', () => {
 
     const decryptingSize = encryptingSize + IV_SIZE + TAG_SIZE
 
-    const decrypted = decryptFile(
-      encrypted,
-      { password, salt },
-      {
-        algorithm: EncryptorAlgorithm.AES_GCM,
-        chunkSize: decryptingSize,
-      },
-    )
+    const decrypted = decryptFile(encrypted, password, {
+      algorithm: EncryptorAlgorithm.AES_GCM,
+      chunkSize: decryptingSize,
+    })
 
     let decryptedBuffer = Buffer.alloc(0)
     for await (const chunk of decrypted) {
