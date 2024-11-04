@@ -1,4 +1,4 @@
-import { compressFile, COMPRESSION_CHUNK_SIZE, decompressFile } from '../src'
+import { compressFile, COMPRESSION_CHUNK_SIZE, CompressionAlgorithm, decompressFile } from '../src'
 
 describe('compression', () => {
   it('compresses and decompresses a file with default options', async () => {
@@ -9,13 +9,13 @@ describe('compression', () => {
         yield file
       })(),
       {
-        algorithm: 'zlib',
+        algorithm: CompressionAlgorithm.ZLIB,
         level: 9,
       },
     )
 
     const decompressed = decompressFile(compressed, {
-      algorithm: 'zlib',
+      algorithm: CompressionAlgorithm.ZLIB,
       level: 9,
     })
 
@@ -36,14 +36,14 @@ describe('compression', () => {
         yield file
       })(),
       {
-        algorithm: 'zlib',
+        algorithm: CompressionAlgorithm.ZLIB,
         level: 9,
         chunkSize,
       },
     )
 
     const decompressed = decompressFile(compressed, {
-      algorithm: 'zlib',
+      algorithm: CompressionAlgorithm.ZLIB,
       level: 9,
       chunkSize,
     })
