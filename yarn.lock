@@ -63,6 +63,18 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@autonomys/auto-drive@workspace:packages/auto-drive":
+  version: 0.0.0-use.local
+  resolution: "@autonomys/auto-drive@workspace:packages/auto-drive"
+  dependencies:
+    "@autonomys/auto-dag-data": "workspace:^"
+    "@types/mime-types": "npm:^2"
+    mime-types: "npm:^2.1.35"
+    typescript: "npm:^5.6.3"
+    zod: "npm:^3.23.8"
+  languageName: unknown
+  linkType: soft
+
 "@autonomys/auto-id@workspace:*, @autonomys/auto-id@workspace:packages/auto-id":
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-id@workspace:packages/auto-id"
@@ -3745,18 +3757,6 @@ __metadata:
   checksum: 10c0/e329a6665512736a9bbb073e1761b4ec102f7926cce35037753146a9db9c8104f5044c1662e4a863576ce544fb8be27cd2be6bc8c1a40147d03f31eb1cfb6e8a
   languageName: node
   linkType: hard
-
-"auto-drive@workspace:packages/auto-drive":
-  version: 0.0.0-use.local
-  resolution: "auto-drive@workspace:packages/auto-drive"
-  dependencies:
-    "@autonomys/auto-dag-data": "workspace:^"
-    "@types/mime-types": "npm:^2"
-    mime-types: "npm:^2.1.35"
-    typescript: "npm:^5.6.3"
-    zod: "npm:^3.23.8"
-  languageName: unknown
-  linkType: soft
 
 "auto-sdk-next-example@workspace:examples/next":
   version: 0.0.0-use.local
