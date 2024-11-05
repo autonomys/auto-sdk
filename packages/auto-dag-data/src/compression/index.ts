@@ -4,7 +4,6 @@ import { CompressionAlgorithm } from '../metadata/index.js'
 import { asyncByChunk } from '../utils/async.js'
 import type { PickPartial } from '../utils/types.js'
 import { CompressionOptions } from './types.js'
-export { CompressorAlgorithm } from './types.js'
 
 export const COMPRESSION_CHUNK_SIZE = 1024 * 1024
 
