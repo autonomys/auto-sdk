@@ -5,7 +5,7 @@ export const downloadObject = async (
   api: AutoDriveApi,
   query: ArgsWithoutPagination<{ cid: string }>,
 ): Promise<ReadableStream<Uint8Array>> => {
-  const response = await api.sendRequest(`objects/${query.cid}/download`, {
+  const response = await api.sendRequest(`/objects/${query.cid}/download`, {
     method: 'GET',
   })
 

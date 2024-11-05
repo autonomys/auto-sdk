@@ -28,7 +28,7 @@ export const createFileUpload = async (
   }>,
 ): Promise<FileUpload> => {
   const response = await api.sendRequest(
-    `/upload/file`,
+    `/uploads/file`,
     {
       method: 'POST',
       headers: new Headers({
@@ -63,7 +63,7 @@ export const createFolderUpload = async (
   }: ArgsWithoutPagination<{ fileTree: FolderTree; uploadOptions: FileUploadOptions }>,
 ): Promise<FolderUpload> => {
   const response = await api.sendRequest(
-    `/upload/folder`,
+    `/uploads/folder`,
     {
       method: 'POST',
       headers: new Headers({
@@ -110,7 +110,7 @@ export const createFileUploadWithinFolderUpload = async (
   }>,
 ): Promise<FileUpload> => {
   const response = await api.sendRequest(
-    `/upload/${uploadId}/file`,
+    `/uploads/folder/${uploadId}/file`,
     {
       method: 'POST',
       headers: new Headers({
@@ -156,7 +156,7 @@ export const uploadFileChunk = async (
   formData.append('index', index.toString())
 
   const response = await api.sendRequest(
-    `/upload/${uploadId}/chunk`,
+    `/uploads/file/${uploadId}/chunk`,
     {
       method: 'POST',
     },
@@ -186,7 +186,7 @@ export const completeUpload = async (
   api: AutoDriveApi,
   { uploadId }: ArgsWithoutPagination<{ uploadId: string }>,
 ) => {
-  const response = await api.sendRequest(`/upload/${uploadId}/complete`, {
+  const response = await api.sendRequest(`/uploads/${uploadId}/complete`, {
     method: 'POST',
   })
 
