@@ -11,7 +11,7 @@ export const createAutoDriveApi = ({
   url = 'https://demo.auto-drive.autonomys.xyz',
 }: {
   apiKey: string
-  url: string
+  url?: string
 }): AutoDriveApi => {
   return {
     sendRequest: async (relativeUrl: string, request: Partial<Request>, body?: BodyInit) => {
