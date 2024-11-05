@@ -27,13 +27,16 @@ type UploadFileOptions = {
   compression?: boolean
 }
 
+const UPLOAD_FILE_CHUNK_SIZE = 1024 * 1024
+
 const uploadFileChunks = async (
   api: AutoDriveApi,
   fileUploadId: string,
   asyncIterable: AsyncIterable<Buffer>,
+  uploadChunkSize: number = UPLOAD_FILE_CHUNK_SIZE,
 ) => {
   let index = 0
-  for await (const chunk of asyncByChunk(asyncIterable, 1024 * 1024)) {
+  for await (const chunk of asyncByChunk(asyncIterable, uploadChunkSize)) {
     await uploadFileChunk(api, { uploadId: fileUploadId, chunk, index })
     index++
   }
@@ -59,6 +62,7 @@ export const uploadFile = async (
   api: AutoDriveApi,
   filePath: string,
   { password, compression = true }: UploadFileOptions,
+  uploadChunkSize?: number,
 ) => {
   let asyncIterable: AsyncIterable<Buffer> = fs.createReadStream(filePath)
 
@@ -94,7 +98,7 @@ export const uploadFile = async (
     uploadOptions,
   })
 
-  await uploadFileChunks(api, fileUpload.id, asyncIterable)
+  await uploadFileChunks(api, fileUpload.id, asyncIterable, uploadChunkSize)
 
   await completeUpload(api, { uploadId: fileUpload.id })
 }
@@ -112,7 +116,11 @@ export const uploadFile = async (
  * @returns {Promise<void>} - A promise that resolves when the folder upload is complete.
  * @throws {Error} - Throws an error if the upload fails at any stage.
  */
-export const uploadFolder = async (api: AutoDriveApi, folderPath: string) => {
+export const uploadFolder = async (
+  api: AutoDriveApi,
+  folderPath: string,
+  uploadChunkSize?: number,
+) => {
   const files = await getFiles(folderPath)
 
   const fileTree = constructFromFileSystemEntries(files)
@@ -128,9 +136,7 @@ export const uploadFolder = async (api: AutoDriveApi, folderPath: string) => {
   })
 
   for (const file of files) {
-    await uploadFile(api, file, {
-      compression: true,
-    })
+    await uploadFileWithinFolderUpload(api, folderUpload.id, file, uploadChunkSize)
   }
 
   await completeUpload(api, { uploadId: folderUpload.id })
@@ -149,6 +155,7 @@ export const uploadFileWithinFolderUpload = async (
   api: AutoDriveApi,
   uploadId: string,
   filepath: string,
+  uploadChunkSize?: number,
 ) => {
   const name = filepath.split('/').pop()!
   const fileUpload = await createFileUploadWithinFolderUpload(api, {
@@ -159,7 +166,7 @@ export const uploadFileWithinFolderUpload = async (
     uploadOptions: {},
   })
 
-  await uploadFileChunks(api, fileUpload.id, fs.createReadStream(filepath))
+  await uploadFileChunks(api, fileUpload.id, fs.createReadStream(filepath), uploadChunkSize)
 
   await completeUpload(api, { uploadId: fileUpload.id })
 }
