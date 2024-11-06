@@ -43,7 +43,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@autonomys/auto-dag-data@workspace:^, @autonomys/auto-dag-data@workspace:packages/auto-dag-data":
+"@autonomys/auto-dag-data@npm:^0.8.2, @autonomys/auto-dag-data@workspace:packages/auto-dag-data":
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-dag-data@workspace:packages/auto-dag-data"
   dependencies:
@@ -67,7 +67,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-drive@workspace:packages/auto-drive"
   dependencies:
-    "@autonomys/auto-dag-data": "workspace:^"
+    "@autonomys/auto-dag-data": "npm:^0.8.2"
     "@types/mime-types": "npm:^2"
     mime-types: "npm:^2.1.35"
     typescript: "npm:^5.6.3"
