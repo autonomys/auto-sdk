@@ -1,7 +1,7 @@
 {
   "name": "@autonomys/auto-dag-data",
   "packageManager": "yarn@4.1.1",
-  "version": "0.7.4",
+  "version": "0.8.2",
   "license": "MIT",
   "main": "dist/index.js",
   "repository": {
@@ -42,5 +42,5 @@
     "protons": "^7.6.0",
     "protons-runtime": "^5.5.0"
   },
-  "gitHead": "67a6e877c7516104bc82807e91f5fc193372b671"
+  "gitHead": "027bc98a4e2191c6ce374b3db807a7ae67b7dd10"
 }
