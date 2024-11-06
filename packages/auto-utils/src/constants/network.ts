@@ -32,7 +32,12 @@ export const networks: Network[] = [
   {
     id: NetworkId.MAINNET,
     name: NetworkName.MAINNET,
-    rpcUrls: ['wss://rpc.mainnet.subspace.foundation/ws'],
+    rpcUrls: [
+      'wss://rpc-0.mainnet.subspace.network/ws',
+      'wss://rpc-1.mainnet.subspace.network/ws',
+      'wss://rpc-0.mainnet.autonomys.xyz/ws',
+      'wss://rpc-1.mainnet.autonomys.xyz/ws',
+    ],
     explorer: [
       {
         name: NetworkExplorerName.ASTRAL,
