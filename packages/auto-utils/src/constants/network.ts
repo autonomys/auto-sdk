@@ -37,6 +37,7 @@ export const networks: Network[] = [
       'wss://rpc-1.mainnet.subspace.network/ws',
       'wss://rpc-0.mainnet.autonomys.xyz/ws',
       'wss://rpc-1.mainnet.autonomys.xyz/ws',
+      'wss://rpc.mainnet.subspace.foundation/ws',
     ],
     explorer: [
       {
