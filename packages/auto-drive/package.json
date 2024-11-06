@@ -3,6 +3,7 @@
   "packageManager": "yarn@4.2.2",
   "type": "module",
   "main": "dist/index.js",
+  "version": "0.7.4",
   "author": {
     "name": "Autonomys",
     "url": "https://autonomys.net"
