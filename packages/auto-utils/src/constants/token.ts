@@ -12,6 +12,6 @@ export const DEFAULT_TOKEN = {
 
 export const TESTNET_TOKEN = {
   ...DEFAULT_TOKEN,
-  symbol: 't' + DEFAULT_TOKEN.symbol,
-  name: 'Testnet ' + DEFAULT_TOKEN,
+  symbol: 't' + DEFAULT_TOKEN_SYMBOL,
+  name: 'Testnet ' + DEFAULT_TOKEN_NAME,
 }
