@@ -1,6 +1,6 @@
 {
   "name": "@autonomys/auto-id",
-  "version": "0.8.2",
+  "version": "1.0.0",
   "license": "MIT",
   "main": "dist/index.js",
   "scripts": {
@@ -10,7 +10,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@autonomys/auto-utils": "^0.8.2",
+    "@autonomys/auto-utils": "^1.0.0",
     "@peculiar/asn1-schema": "^2.3.8",
     "@peculiar/asn1-x509": "^2.3.8",
     "@peculiar/webcrypto": "^1.5.0",
