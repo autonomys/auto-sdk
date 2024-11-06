@@ -1,2 +1,2 @@
-export * from './objects.js'
-export * from './uploads.js'
+export * from './objects.ts'
+export * from './uploads.ts'

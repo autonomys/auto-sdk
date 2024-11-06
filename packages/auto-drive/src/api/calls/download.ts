@@ -1,5 +1,5 @@
-import { ArgsWithoutPagination } from '../../utils/types.js'
-import { AutoDriveApi } from '../connection.js'
+import { ArgsWithoutPagination } from '../../utils/types.ts'
+import { AutoDriveApi } from '../connection.ts'
 
 export const downloadObject = async (
   api: AutoDriveApi,

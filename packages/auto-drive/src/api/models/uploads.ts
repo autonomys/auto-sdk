@@ -1,6 +1,6 @@
 import { FileUploadOptions } from '@autonomys/auto-dag-data'
 import { z } from 'zod'
-import { FolderTreeFolderSchema } from './folderTree.js'
+import { FolderTreeFolderSchema } from './folderTree.ts'
 
 export enum UploadType {
   FILE = 'file',
