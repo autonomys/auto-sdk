@@ -3,7 +3,7 @@
   "packageManager": "yarn@4.2.2",
   "type": "module",
   "main": "dist/index.js",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": {
     "name": "Autonomys",
     "url": "https://autonomys.net"
@@ -16,9 +16,9 @@
     "typescript": "^5.6.3"
   },
   "dependencies": {
-    "@autonomys/auto-dag-data": "^1.0.0",
+    "@autonomys/auto-dag-data": "^1.0.1",
     "mime-types": "^2.1.35",
     "zod": "^3.23.8"
   },
-  "gitHead": "86dd52aa5ff494a1dca8377bbd8a8c2d99ff1386"
+  "gitHead": "a237fe5fc88c6fa21b4a7b3c4225d3b3eaf9d07f"
 }
