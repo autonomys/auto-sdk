@@ -2,9 +2,10 @@
 
 import type { Network } from '../types/network'
 import { DomainRuntime, domains } from './domain'
-import { TESTNET_TOKEN } from './token'
+import { DEFAULT_TOKEN, TESTNET_TOKEN } from './token'
 
 export enum NetworkId {
+  MAINNET = 'mainnet',
   TAURUS = 'taurus',
   GEMINI_3H = 'gemini-3h',
   DEVNET = 'devnet',
@@ -12,6 +13,7 @@ export enum NetworkId {
 }
 
 export enum NetworkName {
+  MAINNET = 'Mainnet',
   TAURUS = 'Testnet - Taurus',
   GEMINI_3H = 'Testnet - Gemini 3H',
   DEVNET = 'Devnet',
@@ -27,6 +29,23 @@ export const ASTRAL_EXPLORER = 'https://explorer.autonomys.xyz/'
 export const SUBSCAN_EXPLORER = 'https://subspace.subscan.io/'
 
 export const networks: Network[] = [
+  {
+    id: NetworkId.MAINNET,
+    name: NetworkName.MAINNET,
+    rpcUrls: ['wss://rpc.mainnet.subspace.foundation/ws'],
+    explorer: [
+      {
+        name: NetworkExplorerName.ASTRAL,
+        url: ASTRAL_EXPLORER,
+      },
+      {
+        name: NetworkExplorerName.SUBSCAN,
+        url: SUBSCAN_EXPLORER,
+      },
+    ],
+    domains: [],
+    token: DEFAULT_TOKEN,
+  },
   {
     id: NetworkId.TAURUS,
     name: NetworkName.TAURUS,
@@ -56,10 +75,6 @@ export const networks: Network[] = [
       {
         name: NetworkExplorerName.ASTRAL,
         url: ASTRAL_EXPLORER + 'gemini-3h/consensus/',
-      },
-      {
-        name: NetworkExplorerName.SUBSCAN,
-        url: SUBSCAN_EXPLORER,
       },
     ],
     domains: [
