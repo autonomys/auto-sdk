@@ -1,10 +1,12 @@
 import {
+  CID,
   compressFile,
   CompressionAlgorithm,
   decompressFile,
   decryptFile,
   encryptFile,
   EncryptionAlgorithm,
+  stringToCid,
 } from '@autonomys/auto-dag-data'
 import fs from 'fs'
 import mime from 'mime-types'
@@ -63,7 +65,7 @@ export const uploadFile = async (
   filePath: string,
   { password, compression = true }: UploadFileOptions,
   uploadChunkSize?: number,
-) => {
+): Promise<CID> => {
   let asyncIterable: AsyncIterable<Buffer> = fs.createReadStream(filePath)
 
   if (compression) {
@@ -100,7 +102,9 @@ export const uploadFile = async (
 
   await uploadFileChunks(api, fileUpload.id, asyncIterable, uploadChunkSize)
 
-  await completeUpload(api, { uploadId: fileUpload.id })
+  const result = await completeUpload(api, { uploadId: fileUpload.id })
+
+  return stringToCid(result.cid)
 }
 
 /**
@@ -120,7 +124,7 @@ export const uploadFolder = async (
   api: AutoDriveApi,
   folderPath: string,
   uploadChunkSize?: number,
-) => {
+): Promise<CID> => {
   const files = await getFiles(folderPath)
 
   const fileTree = constructFromFileSystemEntries(files)
@@ -139,7 +143,9 @@ export const uploadFolder = async (
     await uploadFileWithinFolderUpload(api, folderUpload.id, file, uploadChunkSize)
   }
 
-  await completeUpload(api, { uploadId: folderUpload.id })
+  const result = await completeUpload(api, { uploadId: folderUpload.id })
+
+  return stringToCid(result.cid)
 }
 
 /**
@@ -156,7 +162,7 @@ export const uploadFileWithinFolderUpload = async (
   uploadId: string,
   filepath: string,
   uploadChunkSize?: number,
-) => {
+): Promise<CID> => {
   const name = filepath.split('/').pop()!
   const fileUpload = await createFileUploadWithinFolderUpload(api, {
     uploadId,
@@ -168,7 +174,9 @@ export const uploadFileWithinFolderUpload = async (
 
   await uploadFileChunks(api, fileUpload.id, fs.createReadStream(filepath), uploadChunkSize)
 
-  await completeUpload(api, { uploadId: fileUpload.id })
+  const result = await completeUpload(api, { uploadId: fileUpload.id })
+
+  return stringToCid(result.cid)
 }
 
 /**

@@ -47,3 +47,7 @@ export const folderUploadSchema = z.object({
 })
 
 export type FolderUpload = z.infer<typeof folderUploadSchema>
+
+export type CompleteUploadResponse = {
+  cid: string
+}

@@ -1,8 +1,8 @@
-import { FileUploadOptions } from '@autonomys/auto-dag-data'
+import { CID, FileUploadOptions } from '@autonomys/auto-dag-data'
 import { ArgsWithoutPagination } from '../../utils/types.js'
 import { AutoDriveApi } from '../connection.js'
 import { FolderTree } from '../models/folderTree.js'
-import { FileUpload, FolderUpload } from '../models/uploads.js'
+import { CompleteUploadResponse, FileUpload, FolderUpload } from '../models/uploads.js'
 
 /**
  * Initiates a file upload to the server.
@@ -185,7 +185,7 @@ export const uploadFileChunk = async (
 export const completeUpload = async (
   api: AutoDriveApi,
   { uploadId }: ArgsWithoutPagination<{ uploadId: string }>,
-) => {
+): Promise<CompleteUploadResponse> => {
   const response = await api.sendRequest(`/uploads/${uploadId}/complete`, {
     method: 'POST',
   })
@@ -194,5 +194,5 @@ export const completeUpload = async (
     throw new Error(`Failed to complete upload: ${response.statusText}`)
   }
 
-  return response.json()
+  return response.json() as Promise<CompleteUploadResponse>
 }
