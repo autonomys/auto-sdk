@@ -73,10 +73,7 @@ export const networks: Network[] = [
   {
     id: NetworkId.GEMINI_3H,
     name: NetworkName.GEMINI_3H,
-    rpcUrls: [
-      'wss://rpc-0.gemini-3h.subspace.network/ws',
-      'wss://rpc-1.gemini-3h.subspace.network/ws',
-    ],
+    rpcUrls: ['wss://rpc-0.gemini-3h.subspace.network/ws'],
     explorer: [
       {
         name: NetworkExplorerName.ASTRAL,
