@@ -1,2 +1,2 @@
-export * from './protobuf/OnchainMetadata.js'
-export * from './utils.js'
+export * from './protobuf/OnchainMetadata.ts'
+export * from './utils.ts'

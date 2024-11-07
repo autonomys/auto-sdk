@@ -1,5 +1,5 @@
 import { CID } from 'multiformats'
-import { cidToString, FileUploadOptions } from '../../index.js'
+import { cidToString, FileUploadOptions } from '../../index.ts'
 
 export type OffchainFileMetadata = {
   type: 'file'

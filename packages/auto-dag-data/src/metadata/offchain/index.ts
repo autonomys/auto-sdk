@@ -1,3 +1,3 @@
-export * from './base.js'
-export * from './file.js'
-export * from './folder.js'
+export * from './base.ts'
+export * from './file.ts'
+export * from './folder.ts'

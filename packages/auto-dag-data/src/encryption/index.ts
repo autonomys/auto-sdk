@@ -1,9 +1,9 @@
 import { Crypto } from '@peculiar/webcrypto'
 import { randomBytes } from 'crypto'
-import { EncryptionAlgorithm, EncryptionOptions } from '../metadata/index.js'
-import { asyncByChunk } from '../utils/async.js'
-import type { PickPartial } from '../utils/types.js'
-import { PasswordGenerationOptions } from './types.js'
+import { EncryptionAlgorithm, EncryptionOptions } from '../metadata/index.ts'
+import { asyncByChunk } from '../utils/async.ts'
+import type { PickPartial } from '../utils/types.ts'
+import { PasswordGenerationOptions } from './types.ts'
 
 const crypto = new Crypto()
 

@@ -1,5 +1,5 @@
-import { decodeNode } from '../../ipld/index.js'
-import { IPLDNodeData } from './index.js'
+import { decodeNode } from '../../ipld/index.ts'
+import { IPLDNodeData } from './index.ts'
 
 export const encodeIPLDNodeData = (metadata: IPLDNodeData): Uint8Array => {
   return IPLDNodeData.encode(metadata)

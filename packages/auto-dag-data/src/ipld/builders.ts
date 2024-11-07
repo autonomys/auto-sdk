@@ -1,6 +1,6 @@
 import { CID } from 'multiformats/cid'
-import { FileUploadOptions } from '../metadata/index.js'
-import { PBNode } from './index.js'
+import { FileUploadOptions } from '../metadata/index.ts'
+import { PBNode } from './index.ts'
 import {
   createChunkedFileIpldNode,
   createChunkedMetadataIpldNode,
@@ -10,7 +10,7 @@ import {
   createMetadataInlinkIpldNode,
   createSingleFileIpldNode,
   createSingleMetadataIpldNode,
-} from './nodes.js'
+} from './nodes.ts'
 
 export interface Builders {
   inlink: (links: CID[], size: number, linkDepth: number, chunkSize: number) => PBNode

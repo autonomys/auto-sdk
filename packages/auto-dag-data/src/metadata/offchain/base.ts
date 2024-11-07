@@ -1,4 +1,4 @@
-import { OffchainFileMetadata } from './file.js'
-import { OffchainFolderMetadata } from './folder.js'
+import { OffchainFileMetadata } from './file.ts'
+import { OffchainFolderMetadata } from './folder.ts'
 
 export type OffchainMetadata = OffchainFolderMetadata | OffchainFileMetadata

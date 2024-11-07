@@ -1,7 +1,7 @@
 import { CID } from 'multiformats'
-import { cidOfNode, cidToString } from '../../cid/index.js'
-import { PBNode } from '../../ipld/index.js'
-import { FileUploadOptions, IPLDNodeData, MetadataType } from '../onchain/index.js'
+import { cidOfNode, cidToString } from '../../cid/index.ts'
+import { PBNode } from '../../ipld/index.ts'
+import { FileUploadOptions, IPLDNodeData, MetadataType } from '../onchain/index.ts'
 
 interface ChildrenMetadata {
   type: 'folder' | 'file'

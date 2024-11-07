@@ -1,2 +1,2 @@
-export * from './offchain/index.js'
-export * from './onchain/index.js'
+export * from './offchain/index.ts'
+export * from './onchain/index.ts'

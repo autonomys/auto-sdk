@@ -1,8 +1,8 @@
 import { CID } from 'multiformats/cid'
-import { FileUploadOptions, OffchainMetadata } from '../metadata/index.js'
-import { encodeIPLDNodeData, MetadataType } from '../metadata/onchain/index.js'
-import { DEFAULT_MAX_CHUNK_SIZE, ensureNodeMaxSize } from './chunker.js'
-import { createNode, PBNode } from './index.js'
+import { FileUploadOptions, OffchainMetadata } from '../metadata/index.ts'
+import { encodeIPLDNodeData, MetadataType } from '../metadata/onchain/index.ts'
+import { DEFAULT_MAX_CHUNK_SIZE, ensureNodeMaxSize } from './chunker.ts'
+import { createNode, PBNode } from './index.ts'
 
 /// Creates a file chunk ipld node
 export const createFileChunkIpldNode = (data: Buffer): PBNode =>

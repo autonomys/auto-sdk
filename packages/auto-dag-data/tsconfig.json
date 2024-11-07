@@ -6,6 +6,8 @@
     "moduleResolution": "NodeNext",
     "module": "NodeNext",
     "forceConsistentCasingInFileNames": true,
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
     "skipLibCheck": true,
     "stripInternal": true,
     "resolveJsonModule": true

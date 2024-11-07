@@ -1,9 +1,9 @@
 import { Unzlib, Zlib } from 'fflate'
 import type { AwaitIterable } from 'interface-store'
-import { CompressionAlgorithm } from '../metadata/index.js'
-import { asyncByChunk } from '../utils/async.js'
-import type { PickPartial } from '../utils/types.js'
-import { CompressionOptions } from './types.js'
+import { CompressionAlgorithm } from '../metadata/index.ts'
+import { asyncByChunk } from '../utils/async.ts'
+import type { PickPartial } from '../utils/types.ts'
+import { CompressionOptions } from './types.ts'
 
 export const COMPRESSION_CHUNK_SIZE = 1024 * 1024
 

@@ -3,7 +3,7 @@ import * as base32 from 'multiformats/bases/base32'
 import { CID } from 'multiformats/cid'
 import * as raw from 'multiformats/codecs/raw'
 import { create } from 'multiformats/hashes/digest'
-import { encodeNode, PBNode } from '../ipld/utils.js'
+import { encodeNode, PBNode } from '../ipld/utils.ts'
 
 export const BLAKE3_CODE = 0x1f
 

@@ -1,11 +1,11 @@
 import type { BaseBlockstore } from 'blockstore-core'
 import type { AwaitIterable } from 'interface-store'
 import { CID } from 'multiformats'
-import { cidOfNode } from '../cid/index.js'
-import { decodeIPLDNodeData, FileUploadOptions, OffchainMetadata } from '../metadata/index.js'
-import { Builders, fileBuilders, metadataBuilders } from './builders.js'
-import { createFolderInlinkIpldNode, createFolderIpldNode } from './nodes.js'
-import { chunkBuffer, encodeNode, PBNode } from './utils.js'
+import { cidOfNode } from '../cid/index.ts'
+import { decodeIPLDNodeData, FileUploadOptions, OffchainMetadata } from '../metadata/index.ts'
+import { Builders, fileBuilders, metadataBuilders } from './builders.ts'
+import { createFolderInlinkIpldNode, createFolderIpldNode } from './nodes.ts'
+import { chunkBuffer, encodeNode, PBNode } from './utils.ts'
 
 type ChunkerLimits = {
   maxChunkSize: number
