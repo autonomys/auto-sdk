@@ -16,7 +16,7 @@
     "typescript": "^5.6.3"
   },
   "dependencies": {
-    "@autonomys/auto-dag-data": "^1.0.1",
+    "@autonomys/auto-dag-data": "workspace:*",
     "mime-types": "^2.1.35",
     "zod": "^3.23.8"
   },

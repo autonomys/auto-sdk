@@ -22,7 +22,7 @@
     "url": "https://www.autonomys.net"
   },
   "dependencies": {
-    "@autonomys/auto-utils": "^1.0.1"
+    "@autonomys/auto-utils": "workspace:*"
   },
   "devDependencies": {
     "@polkadot/types-codec": "^11.2.1",
