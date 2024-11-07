@@ -8,8 +8,8 @@ import {
 } from '@autonomys/auto-dag-data'
 import fs from 'fs'
 import mime from 'mime-types'
-import { asyncByChunk, asyncFromStream } from '../utils/async.ts'
-import { getFiles } from '../utils/folder.ts'
+import { asyncByChunk, asyncFromStream } from '../utils/async.js'
+import { getFiles } from '../utils/folder.js'
 import {
   completeUpload,
   createFileUpload,
@@ -18,9 +18,9 @@ import {
   downloadObject,
   getObjectMetadata,
   uploadFileChunk,
-} from './calls/index.ts'
-import { AutoDriveApi } from './connection.ts'
-import { constructFromFileSystemEntries } from './models/folderTree.ts'
+} from './calls/index.js'
+import { AutoDriveApi } from './connection.js'
+import { constructFromFileSystemEntries } from './models/folderTree.js'
 
 type UploadFileOptions = {
   password?: string
