@@ -1,6 +1,6 @@
-import { ArgsWithoutPagination, ArgsWithPagination } from '../../utils/types.ts'
-import { AutoDriveApi } from '../connection.ts'
-import { ObjectInformation, ObjectSummary, Scope } from '../models/objects.ts'
+import { ArgsWithoutPagination, ArgsWithPagination } from '../../utils/types.js'
+import { AutoDriveApi } from '../connection.js'
+import { ObjectInformation, ObjectSummary, Scope } from '../models/objects.js'
 
 /**
  * Retrieves the root objects based on the specified scope.
