@@ -12,7 +12,7 @@
     "clean": "lerna run clean",
     "format": "lerna run format",
     "test": "lerna run test",
-    "publish": "lerna publish --no-private"
+    "publish": "yarn build && lerna publish --no-private"
   },
   "packageManager": "yarn@4.2.2",
   "engines": {
