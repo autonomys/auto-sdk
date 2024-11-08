@@ -6,10 +6,20 @@ export interface AutoDriveApi {
   ) => Promise<Response>
 }
 
+export enum OAuthProvider {
+  GOOGLE = 'google',
+  DISCORD = 'discord',
+}
+
+export type ApiKeyAuthProvider = 'apikey'
+export type AuthProvider = ApiKeyAuthProvider | 'oauth'
+
 export const createAutoDriveApi = ({
+  provider = 'apikey',
   apiKey,
   url = 'https://demo.auto-drive.autonomys.xyz',
 }: {
+  provider: AuthProvider
   apiKey: string
   url?: string
 }): AutoDriveApi => {
@@ -17,7 +27,7 @@ export const createAutoDriveApi = ({
     sendRequest: async (relativeUrl: string, request: Partial<Request>, body?: BodyInit) => {
       const headers = new Headers({
         ...Object.fromEntries(request.headers?.entries() || []),
-        'x-auth-provider': 'apikey',
+        'x-auth-provider': provider,
         Authorization: `Bearer ${apiKey}`,
       })
       const fullRequest = {
