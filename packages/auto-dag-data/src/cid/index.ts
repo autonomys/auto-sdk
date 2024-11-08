@@ -1,4 +1,5 @@
-import { hash } from 'blake3'
+import { blake3Hash } from '@webbuf/blake3'
+import { WebBuf } from '@webbuf/webbuf'
 import * as base32 from 'multiformats/bases/base32'
 import { CID } from 'multiformats/cid'
 import * as raw from 'multiformats/codecs/raw'
@@ -8,7 +9,7 @@ import { encodeNode, PBNode } from '../ipld/utils.js'
 export const BLAKE3_CODE = 0x1f
 
 export const cidOfNode = (node: PBNode) => {
-  return cidFromBlakeHash(hash(encodeNode(node)))
+  return cidFromBlakeHash(blake3Hash(WebBuf.from(encodeNode(node))))
 }
 
 export const cidToString = (cid: CID) => {
