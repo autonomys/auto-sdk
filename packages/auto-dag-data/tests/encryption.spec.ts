@@ -64,4 +64,41 @@ describe('encryption', () => {
 
     expect(decryptedBuffer.toString()).toBe(file.toString())
   })
+
+  it('encrypts and decrypts a file with a password (with chunking)', async () => {
+    const chunk = 'hello'
+    const ONE_MB = 1024 * 1024
+    const file = Buffer.from(chunk.repeat(2 * ONE_MB))
+    const password = 'password'
+
+    const encrypted = encryptFile(
+      (async function* () {
+        yield file
+      })(),
+      password,
+      {
+        algorithm: EncryptionAlgorithm.AES_256_GCM,
+      },
+    )
+
+    let encryptedBuffer = Buffer.alloc(0)
+    for await (const chunk of encrypted) {
+      encryptedBuffer = Buffer.concat([encryptedBuffer, chunk])
+    }
+
+    const decrypted = decryptFile(
+      (async function* () {
+        yield encryptedBuffer
+      })(),
+      password,
+      {
+        algorithm: EncryptionAlgorithm.AES_256_GCM,
+      },
+    )
+
+    let decryptedBuffer = Buffer.alloc(0)
+    for await (const chunk of decrypted) {
+      decryptedBuffer = Buffer.concat([decryptedBuffer, chunk])
+    }
+  })
 })
