@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@autonomys/auto-dag-data": "^1.0.4",
+    "jszip": "^3.10.1",
     "mime-types": "^2.1.35",
     "zod": "^3.23.8"
   },

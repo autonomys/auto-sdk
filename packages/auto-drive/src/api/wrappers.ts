@@ -10,8 +10,10 @@ import {
 } from '@autonomys/auto-dag-data'
 import fs from 'fs'
 import mime from 'mime-types'
-import { asyncByChunk, asyncFromStream } from '../utils/async.js'
+import { asyncByChunk, asyncFromStream, fileToIterable } from '../utils/async.js'
 import { getFiles } from '../utils/folder.js'
+import { progressToPercentage } from '../utils/misc.js'
+import { PromisedObservable } from '../utils/observable.js'
 import {
   completeUpload,
   createFileUpload,
@@ -22,7 +24,13 @@ import {
   uploadFileChunk,
 } from './calls/index.js'
 import { AutoDriveApi } from './connection.js'
-import { constructFromFileSystemEntries } from './models/folderTree.js'
+import { GenericFile } from './models/file.js'
+import {
+  constructFromFileSystemEntries,
+  constructFromInput,
+  constructZipBlobFromTreeAndPaths,
+} from './models/folderTree.js'
+import { UploadChunksStatus, UploadFileStatus, UploadFolderStatus } from './models/uploads.js'
 
 type UploadFileOptions = {
   password?: string
@@ -31,80 +39,220 @@ type UploadFileOptions = {
 
 const UPLOAD_FILE_CHUNK_SIZE = 1024 * 1024
 
-const uploadFileChunks = async (
+const uploadFileChunks = (
   api: AutoDriveApi,
   fileUploadId: string,
   asyncIterable: AsyncIterable<Buffer>,
   uploadChunkSize: number = UPLOAD_FILE_CHUNK_SIZE,
-) => {
-  let index = 0
-  for await (const chunk of asyncByChunk(asyncIterable, uploadChunkSize)) {
-    await uploadFileChunk(api, { uploadId: fileUploadId, chunk, index })
-    index++
-  }
+): PromisedObservable<UploadChunksStatus> => {
+  return new PromisedObservable<UploadChunksStatus>(async (subscriber) => {
+    let index = 0
+    let uploadBytes = 0
+    for await (const chunk of asyncByChunk(asyncIterable, uploadChunkSize)) {
+      await uploadFileChunk(api, { uploadId: fileUploadId, chunk, index })
+      uploadBytes += chunk.length
+      subscriber.next({ uploadBytes })
+      index++
+    }
+    subscriber.complete()
+  })
 }
 
 /**
  * Uploads a file to the server with optional encryption and compression.
  *
  * This function reads a file from the specified file path, optionally encrypts it
- * using the provided password, and compresses it using the ZLIB algorithm if specified.
+ * using the provided password, and compresses it using the specified algorithm if requested.
  * It then uploads the file in chunks to the server, creating an upload session and
- * completing it once all chunks have been uploaded.
+ * completing it once all chunks have been successfully uploaded.
  *
  * @param {AutoDriveApi} api - The API instance used to send requests.
  * @param {string} filePath - The path to the file to be uploaded.
  * @param {UploadFileOptions} options - Options for the upload process.
  * @param {string} [options.password] - The password for encryption (optional).
  * @param {boolean} [options.compression=true] - Whether to compress the file (optional).
- * @returns {Promise<void>} - A promise that resolves when the upload is complete.
+ * @param {number} [uploadChunkSize] - The size of each chunk to upload (optional).
+ * @returns {PromisedObservable<UploadFileStatus>} - An observable that emits the upload status.
  * @throws {Error} - Throws an error if the upload fails at any stage.
  */
-export const uploadFile = async (
+export const uploadFileFromFilepath = (
   api: AutoDriveApi,
   filePath: string,
   { password, compression = true }: UploadFileOptions,
   uploadChunkSize?: number,
-): Promise<CID> => {
-  let asyncIterable: AsyncIterable<Buffer> = fs.createReadStream(filePath)
+): PromisedObservable<UploadFileStatus> => {
+  const name = filePath.split('/').pop()!
 
-  if (compression) {
-    asyncIterable = compressFile(asyncIterable, {
-      level: 9,
-      algorithm: CompressionAlgorithm.ZLIB,
+  return uploadFileFromInput(
+    api,
+    {
+      read: () => fs.createReadStream(filePath),
+      name,
+      mimeType: mime.lookup(name) || undefined,
+      size: fs.statSync(filePath).size,
+      path: filePath,
+    },
+    {
+      password,
+      compression,
+    },
+    uploadChunkSize,
+  )
+}
+
+/**
+ * Uploads a file to the server with optional encryption and compression.
+ *
+ * This function reads a file from the provided input, optionally encrypts it
+ * using the specified password, and compresses it using the specified algorithm if requested.
+ * It uploads the file in chunks to the server, creating an upload session and
+ * completing it once all chunks have been successfully uploaded.
+ *
+ * @param {AutoDriveApi} api - The API instance used to send requests.
+ * @param {File | GenericFile} file - The file to be uploaded, which can be a File or a GenericFile.
+ * @param {UploadFileOptions} options - Options for the upload process.
+ * @param {string} [options.password] - The password for encryption (optional).
+ * @param {boolean} [options.compression=true] - Whether to compress the file (optional).
+ * @param {number} [uploadChunkSize] - The size of each chunk to upload (optional).
+ * @returns {Promise<CID>} - A promise that resolves with the CID of the uploaded file.
+ * @throws {Error} - Throws an error if the upload fails at any stage.
+ */
+export const uploadFileFromInput = (
+  api: AutoDriveApi,
+  file: File | GenericFile,
+  { password, compression = true }: UploadFileOptions,
+  uploadChunkSize?: number,
+): PromisedObservable<UploadFileStatus> => {
+  return new PromisedObservable<UploadFileStatus>(async (subscriber) => {
+    let asyncIterable: AsyncIterable<Buffer> =
+      file instanceof File ? fileToIterable(file) : file.read()
+
+    if (compression) {
+      asyncIterable = compressFile(asyncIterable, {
+        level: 9,
+        algorithm: CompressionAlgorithm.ZLIB,
+      })
+    }
+
+    if (password) {
+      asyncIterable = encryptFile(asyncIterable, password, {
+        algorithm: EncryptionAlgorithm.AES_256_GCM,
+      })
+    }
+
+    const uploadOptions = {
+      compression: compression
+        ? {
+            level: 9,
+            algorithm: CompressionAlgorithm.ZLIB,
+          }
+        : undefined,
+      encryption: password
+        ? {
+            algorithm: EncryptionAlgorithm.AES_256_GCM,
+          }
+        : undefined,
+    }
+    const fileUpload = await createFileUpload(api, {
+      mimeType: mime.lookup(file.name) || undefined,
+      filename: file.name,
+      uploadOptions,
     })
-  }
+
+    await uploadFileChunks(api, fileUpload.id, asyncIterable, uploadChunkSize).forEach((e) =>
+      subscriber.next({ type: 'file', progress: progressToPercentage(e.uploadBytes, file.size) }),
+    )
+
+    const result = await completeUpload(api, { uploadId: fileUpload.id })
+
+    subscriber.next({ type: 'file', progress: 100, cid: stringToCid(result.cid) })
+    subscriber.complete()
+  })
+}
+
+/**
+ * Uploads an entire folder to the server.
+ *
+ * This function retrieves all files within the specified folder,
+ * constructs a file tree representation, and initiates the upload
+ * process. It also handles optional compression and encryption of the files during
+ * the upload.
+ *
+ * If a password is provided, the files will be zipped before uploading.
+ *
+ * @param {AutoDriveApi} api - The API instance used to send requests.
+ * @param {string} folderPath - The path of the folder to be uploaded.
+ * @param {Object} options - Optional parameters for the upload.
+ * @param {number} [options.uploadChunkSize] - The size of each chunk to be uploaded.
+ * @param {string} [options.password] - An optional password for encrypting the files.
+ * @returns {Promise<PromisedObservable<UploadFileStatus | UploadFolderStatus>>} - A promise that resolves to an observable that tracks the upload progress.
+ * @throws {Error} - Throws an error if the upload fails at any stage.
+ */
+export const uploadFolderFromFolderPath = async (
+  api: AutoDriveApi,
+  folderPath: string,
+  { uploadChunkSize, password }: { uploadChunkSize?: number; password?: string } = {},
+): Promise<PromisedObservable<UploadFileStatus | UploadFolderStatus>> => {
+  const files = await getFiles(folderPath)
+  const fileTree = constructFromFileSystemEntries(files)
 
   if (password) {
-    asyncIterable = encryptFile(asyncIterable, password, {
-      algorithm: EncryptionAlgorithm.AES_256_GCM,
-    })
+    const filesMap = Object.fromEntries(files.map((file) => [file, file]))
+    const zipBlob = await constructZipBlobFromTreeAndPaths(fileTree, filesMap)
+    const name = folderPath.split('/').pop()!
+    return uploadFileFromInput(
+      api,
+      {
+        read: () => fileToIterable(zipBlob),
+        name,
+        mimeType: 'application/zip',
+        size: zipBlob.size,
+        path: name,
+      },
+      {
+        password,
+        compression: true,
+      },
+    )
   }
 
-  const uploadOptions = {
-    compression: compression
-      ? {
-          level: 9,
+  return new PromisedObservable<UploadFolderStatus>(async (subscriber) => {
+    const folderUpload = await createFolderUpload(api, {
+      fileTree,
+      uploadOptions: {
+        compression: {
           algorithm: CompressionAlgorithm.ZLIB,
-        }
-      : undefined,
-    encryption: password
-      ? {
-          algorithm: EncryptionAlgorithm.AES_256_GCM,
-        }
-      : undefined,
-  }
-  const fileUpload = await createFileUpload(api, {
-    mimeType: mime.lookup(filePath) || undefined,
-    filename: filePath.split('/').pop()!,
-    uploadOptions,
+          level: 9,
+        },
+      },
+    })
+
+    const genericFiles: GenericFile[] = files.map((file) => ({
+      read: () => fs.createReadStream(file),
+      name: file.split('/').pop()!,
+      mimeType: mime.lookup(file.split('/').pop()!) || undefined,
+      size: fs.statSync(file).size,
+      path: file,
+    }))
+
+    const totalSize = genericFiles.reduce((acc, file) => acc + file.size, 0)
+
+    let progress = 0
+    for (const file of genericFiles) {
+      await uploadFileWithinFolderUpload(api, folderUpload.id, file, uploadChunkSize).forEach((e) =>
+        subscriber.next({
+          type: 'folder',
+          progress: progressToPercentage(progress + e.uploadBytes, totalSize),
+        }),
+      )
+      progress += file.size
+    }
+
+    const result = await completeUpload(api, { uploadId: folderUpload.id })
+
+    subscriber.next({ type: 'folder', progress: 100, cid: stringToCid(result.cid) })
+    subscriber.complete()
   })
-
-  await uploadFileChunks(api, fileUpload.id, asyncIterable, uploadChunkSize)
-
-  const result = await completeUpload(api, { uploadId: fileUpload.id })
-
-  return stringToCid(result.cid)
 }
 
 /**
@@ -113,39 +261,84 @@ export const uploadFile = async (
  * This function retrieves all files within the specified folder,
  * constructs a file tree representation, and initiates the upload
  * process. It also handles optional compression of the files during
- * the upload.
+ * the upload. If a password is provided, the files will be zipped
+ * before uploading.
  *
  * @param {AutoDriveApi} api - The API instance used to send requests.
- * @param {string} folderPath - The path of the folder to be uploaded.
- * @returns {Promise<void>} - A promise that resolves when the folder upload is complete.
+ * @param {FileList | File[]} fileList - The list of files to be uploaded.
+ * @param {Object} options - Options for the upload process.
+ * @param {number} [options.uploadChunkSize] - The size of each chunk to upload (optional).
+ * @param {string} [options.password] - The password for encryption (optional).
+ * @returns {PromisedObservable<UploadFileStatus | UploadFolderStatus>} - An observable that emits the upload status.
  * @throws {Error} - Throws an error if the upload fails at any stage.
  */
-export const uploadFolder = async (
+export const uploadFolderFromInput = async (
   api: AutoDriveApi,
-  folderPath: string,
-  uploadChunkSize?: number,
-): Promise<CID> => {
-  const files = await getFiles(folderPath)
+  fileList: FileList | File[],
+  { uploadChunkSize, password }: { uploadChunkSize?: number; password?: string } = {},
+): Promise<PromisedObservable<UploadFileStatus | UploadFolderStatus>> => {
+  const files = fileList instanceof FileList ? Array.from(fileList) : fileList
+  const fileTree = constructFromInput(files)
 
-  const fileTree = constructFromFileSystemEntries(files)
+  // If password is provided, we zip the files and upload the zip file
+  if (password) {
+    const filesMap: Record<string, File> = Object.fromEntries(
+      files.map((file) => [file.webkitRelativePath, file]),
+    )
+    const zipBlob = await constructZipBlobFromTreeAndPaths(fileTree, filesMap)
+    const name = fileList[0].webkitRelativePath.split('/').filter(Boolean)[0]!
 
-  const folderUpload = await createFolderUpload(api, {
-    fileTree,
-    uploadOptions: {
-      compression: {
-        algorithm: CompressionAlgorithm.ZLIB,
-        level: 9,
+    return uploadFileFromInput(
+      api,
+      {
+        read: () => fileToIterable(zipBlob),
+        name: `${name}.zip`,
+        mimeType: 'application/zip',
+        size: zipBlob.size,
+        path: name,
       },
-    },
-  })
-
-  for (const file of files) {
-    await uploadFileWithinFolderUpload(api, folderUpload.id, file, uploadChunkSize)
+      {
+        password,
+        compression: true,
+      },
+    )
   }
 
-  const result = await completeUpload(api, { uploadId: folderUpload.id })
+  return new PromisedObservable<UploadFolderStatus>(async (subscriber) => {
+    // Otherwise, we upload the files as a folder w/o compression or encryption
+    const folderUpload = await createFolderUpload(api, {
+      fileTree,
+    })
 
-  return stringToCid(result.cid)
+    let currentBytesUploaded = 0
+    const totalSize = files.reduce((acc, file) => acc + file.size, 0)
+    for (const file of files) {
+      await uploadFileWithinFolderUpload(
+        api,
+        folderUpload.id,
+        {
+          read: () => fileToIterable(file),
+          name: file.name,
+          mimeType: mime.lookup(file.name) || undefined,
+          size: file.size,
+          path: file.webkitRelativePath,
+        },
+        uploadChunkSize,
+      ).forEach((e) => {
+        subscriber.next({
+          type: 'folder',
+          progress: progressToPercentage(currentBytesUploaded + e.uploadBytes, totalSize),
+        })
+      })
+
+      currentBytesUploaded += file.size
+    }
+
+    const result = await completeUpload(api, { uploadId: folderUpload.id })
+
+    subscriber.next({ type: 'folder', progress: 100, cid: stringToCid(result.cid) })
+    subscriber.complete()
+  })
 }
 
 /**
@@ -157,26 +350,29 @@ export const uploadFolder = async (
  *
  * @returns {Promise<void>} A promise that resolves when the file upload is complete.
  */
-export const uploadFileWithinFolderUpload = async (
+export const uploadFileWithinFolderUpload = (
   api: AutoDriveApi,
   uploadId: string,
-  filepath: string,
+  file: GenericFile,
   uploadChunkSize?: number,
-): Promise<CID> => {
-  const name = filepath.split('/').pop()!
-  const fileUpload = await createFileUploadWithinFolderUpload(api, {
-    uploadId,
-    name,
-    mimeType: mime.lookup(name) || undefined,
-    relativeId: filepath,
-    uploadOptions: {},
+): PromisedObservable<UploadChunksStatus> => {
+  return new PromisedObservable<UploadChunksStatus>(async (subscriber) => {
+    const fileUpload = await createFileUploadWithinFolderUpload(api, {
+      uploadId,
+      name: file.name,
+      mimeType: file.mimeType,
+      relativeId: file.path,
+      uploadOptions: {},
+    })
+
+    await uploadFileChunks(api, fileUpload.id, file.read(), uploadChunkSize).forEach((e) =>
+      subscriber.next({ uploadBytes: e.uploadBytes }),
+    )
+
+    await completeUpload(api, { uploadId: fileUpload.id })
+
+    subscriber.complete()
   })
-
-  await uploadFileChunks(api, fileUpload.id, fs.createReadStream(filepath), uploadChunkSize)
-
-  const result = await completeUpload(api, { uploadId: fileUpload.id })
-
-  return stringToCid(result.cid)
 }
 
 /**
@@ -210,28 +406,4 @@ export const downloadFile = async (
   }
 
   return iterable
-}
-
-/**
- * Downloads a folder from the AutoDrive service without encryption.
- *
- * @param {AutoDriveApi} api - The API instance to interact with the AutoDrive service.
- * @param {string} cid - The CID of the folder to be downloaded.
- *
- * @returns {Promise<ReadableStream<Uint8Array>>} A promise that resolves to a ReadableStream of the downloaded folder.
- *
- * @warning If the folder is encrypted, a warning will be logged, but the download will proceed without decryption.
- */
-export const downloadFolderWithoutEncryption = async (
-  api: AutoDriveApi,
-  cid: string,
-): Promise<ReadableStream<Uint8Array>> => {
-  const metadata = await getObjectMetadata(api, { cid })
-  if (metadata.uploadOptions?.encryption) {
-    console.warn(
-      'Downloading encrypted folder. Folder support encryption but it is not recommended.',
-    )
-  }
-
-  return downloadObject(api, { cid })
 }
