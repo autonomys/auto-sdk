@@ -35,7 +35,9 @@
   },
   "dependencies": {
     "@ipld/dag-pb": "^4.1.2",
-    "blake3": "1.1.0",
+    "@webbuf/blake3": "^3.0.26",
+    "@webbuf/fixedbuf": "^3.0.26",
+    "@webbuf/webbuf": "^3.0.26",
     "fflate": "^0.8.2",
     "multiformats": "^13.2.2",
     "protobufjs": "^7.4.0",

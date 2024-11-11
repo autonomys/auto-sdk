@@ -59,8 +59,8 @@ export const createFolderUpload = async (
   api: AutoDriveApi,
   {
     fileTree,
-    uploadOptions,
-  }: ArgsWithoutPagination<{ fileTree: FolderTree; uploadOptions: FileUploadOptions }>,
+    uploadOptions = {},
+  }: ArgsWithoutPagination<{ fileTree: FolderTree; uploadOptions?: FileUploadOptions }>,
 ): Promise<FolderUpload> => {
   const response = await api.sendRequest(
     `/uploads/folder`,

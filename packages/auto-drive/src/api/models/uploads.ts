@@ -1,4 +1,4 @@
-import { FileUploadOptions } from '@autonomys/auto-dag-data'
+import { CID, FileUploadOptions } from '@autonomys/auto-dag-data'
 import { z } from 'zod'
 import { FolderTreeFolderSchema } from './folderTree.js'
 
@@ -50,4 +50,20 @@ export type FolderUpload = z.infer<typeof folderUploadSchema>
 
 export type CompleteUploadResponse = {
   cid: string
+}
+
+export type UploadFileStatus = {
+  type: 'file'
+  progress: number
+  cid?: CID
+}
+
+export type UploadFolderStatus = {
+  type: 'folder'
+  progress: number
+  cid?: CID
+}
+
+export type UploadChunksStatus = {
+  uploadBytes: number
 }

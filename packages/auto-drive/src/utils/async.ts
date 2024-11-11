@@ -27,3 +27,10 @@ export const asyncFromStream = async function* (
     result = await reader.read()
   }
 }
+
+export const fileToIterable = async function* (file: File | Blob): AsyncIterable<Buffer> {
+  const chunkSize = 1024 * 1024
+  for (let i = 0; i < file.size; i += chunkSize) {
+    yield Buffer.from(await file.slice(i, i + chunkSize).arrayBuffer())
+  }
+}
