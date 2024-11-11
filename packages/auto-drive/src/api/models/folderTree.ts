@@ -1,4 +1,7 @@
+import fs from 'fs'
+import JSZip from 'jszip'
 import { z } from 'zod'
+
 export type FolderTreeFolder = {
   name: string
   type: 'folder'
@@ -74,4 +77,52 @@ export const constructFromFileSystemEntries = (entries: string[]): FolderTree =>
   }
 
   return root.children.length === 1 ? root.children[0] : root
+}
+
+export const constructFromInput = (input: File[]): FolderTree => {
+  return constructFromFileSystemEntries(
+    Array.from(input).map((file) => {
+      if (!file.webkitRelativePath) {
+        throw new Error('webkitRelativePath is not supported')
+      }
+      return file.webkitRelativePath
+    }),
+  )
+}
+
+const addFilesToZip = (
+  folder: JSZip,
+  folderNode: FolderTreeFolder,
+  files: Record<string, File | string>,
+) => {
+  folderNode.children.forEach((child) => {
+    if (child.type === 'file') {
+      const file = files[child.id]
+      if (typeof file === 'string') {
+        folder.file(child.name, fs.createReadStream(file))
+      } else {
+        folder.file(child.name, file)
+      }
+    } else if (child.type === 'folder') {
+      const subFolder = folder.folder(child.name)
+      if (!subFolder) {
+        throw new Error('Failed to create folder in zip')
+      }
+      addFilesToZip(subFolder, child as FolderTreeFolder, files)
+    }
+  })
+}
+
+export const constructZipBlobFromTreeAndPaths = async (
+  tree: FolderTree,
+  files: Record<string, File | string>,
+) => {
+  if (tree.type === 'file') {
+    throw new Error('Cannot construct zip from file')
+  }
+
+  const zip = new JSZip()
+  addFilesToZip(zip, tree as FolderTreeFolder, files)
+
+  return zip.generateAsync({ type: 'blob' })
 }

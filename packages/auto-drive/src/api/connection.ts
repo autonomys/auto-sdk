@@ -19,7 +19,7 @@ export const createAutoDriveApi = ({
   apiKey,
   url = 'https://demo.auto-drive.autonomys.xyz',
 }: {
-  provider: AuthProvider
+  provider?: AuthProvider
   apiKey: string
   url?: string
 }): AutoDriveApi => {

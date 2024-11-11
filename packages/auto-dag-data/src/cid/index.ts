@@ -9,7 +9,9 @@ import { encodeNode, PBNode } from '../ipld/utils.js'
 export const BLAKE3_CODE = 0x1f
 
 export const cidOfNode = (node: PBNode) => {
-  return cidFromBlakeHash(blake3Hash(WebBuf.from(encodeNode(node))))
+  const encodedNode = WebBuf.from(encodeNode(node))
+  const hash = Buffer.from(blake3Hash(encodedNode).buf)
+  return cidFromBlakeHash(hash)
 }
 
 export const cidToString = (cid: CID) => {

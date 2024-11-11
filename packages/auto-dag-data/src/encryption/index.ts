@@ -72,18 +72,18 @@ export const decryptFile = async function* (
 
   let key: CryptoKey | undefined = undefined
   let chunks = Buffer.alloc(0)
-  for await (const chunk of file) {
-    chunks = Buffer.concat([chunks, chunk])
+  for await (const bufferSlice of file) {
+    chunks = Buffer.concat([chunks, bufferSlice])
 
     if (chunks.length >= SALT_SIZE && !key) {
-      const salt = chunks.subarray(0, 32)
+      const salt = chunks.subarray(0, SALT_SIZE)
       key = await getKeyFromPassword({ password, salt })
       chunks = chunks.subarray(SALT_SIZE)
     }
 
     while (key && chunks.length >= chunkSize) {
       const iv = chunks.subarray(0, IV_SIZE)
-      const encryptedChunk = chunk.subarray(IV_SIZE, chunkSize)
+      const encryptedChunk = chunks.subarray(IV_SIZE, chunkSize)
       const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, encryptedChunk)
       chunks = chunks.subarray(chunkSize)
       yield Buffer.from(decrypted)
@@ -92,8 +92,8 @@ export const decryptFile = async function* (
 
   if (key && chunks.length > 0) {
     const iv = chunks.subarray(0, IV_SIZE)
-    const encryptedChunk = chunks.subarray(IV_SIZE, chunkSize)
-    const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, encryptedChunk)
+    const chunk = chunks.subarray(IV_SIZE, chunkSize)
+    const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, chunk)
     yield Buffer.from(decrypted)
   }
 }
