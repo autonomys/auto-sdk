@@ -8,6 +8,9 @@
     "name": "Autonomys",
     "url": "https://autonomys.net"
   },
+  "engines": {
+    "node": ">=20.8.0"
+  },
   "scripts": {
     "build": "tsc"
   },
