@@ -1,5 +1,4 @@
 import {
-  CID,
   compressFile,
   CompressionAlgorithm,
   decompressFile,
@@ -83,7 +82,7 @@ export const uploadFileFromFilepath = (
 ): PromisedObservable<UploadFileStatus> => {
   const name = filePath.split('/').pop()!
 
-  return uploadFileFromInput(
+  return uploadFile(
     api,
     {
       read: () => fs.createReadStream(filePath),
@@ -109,23 +108,91 @@ export const uploadFileFromFilepath = (
  * completing it once all chunks have been successfully uploaded.
  *
  * @param {AutoDriveApi} api - The API instance used to send requests.
+ * @param {File} file - The file to be uploaded.
+ * @param {UploadFileOptions} options - Options for the upload process.
+ * @param {string} [options.password] - The password for encryption (optional).
+ * @param {boolean} [options.compression=true] - Whether to compress the file (optional).
+ * @param {number} [uploadChunkSize] - The size of each chunk to upload (optional).
+ * @returns {PromisedObservable<UploadFileStatus>} - An observable that emits the upload status.
+ * @throws {Error} - Throws an error if the upload fails at any stage.
+ */
+export const uploadFileFromInput = (
+  api: AutoDriveApi,
+  file: File,
+  { password, compression = true }: UploadFileOptions,
+  uploadChunkSize?: number,
+): PromisedObservable<UploadFileStatus> => {
+  return new PromisedObservable<UploadFileStatus>(async (subscriber) => {
+    let asyncIterable: AsyncIterable<Buffer> = fileToIterable(file)
+
+    if (compression) {
+      asyncIterable = compressFile(asyncIterable, {
+        level: 9,
+        algorithm: CompressionAlgorithm.ZLIB,
+      })
+    }
+
+    if (password) {
+      asyncIterable = encryptFile(asyncIterable, password, {
+        algorithm: EncryptionAlgorithm.AES_256_GCM,
+      })
+    }
+
+    const uploadOptions = {
+      compression: compression
+        ? {
+            level: 9,
+            algorithm: CompressionAlgorithm.ZLIB,
+          }
+        : undefined,
+      encryption: password
+        ? {
+            algorithm: EncryptionAlgorithm.AES_256_GCM,
+          }
+        : undefined,
+    }
+    const fileUpload = await createFileUpload(api, {
+      mimeType: mime.lookup(file.name) || undefined,
+      filename: file.name,
+      uploadOptions,
+    })
+
+    await uploadFileChunks(api, fileUpload.id, asyncIterable, uploadChunkSize).forEach((e) =>
+      subscriber.next({ type: 'file', progress: progressToPercentage(e.uploadBytes, file.size) }),
+    )
+
+    const result = await completeUpload(api, { uploadId: fileUpload.id })
+
+    subscriber.next({ type: 'file', progress: 100, cid: stringToCid(result.cid) })
+    subscriber.complete()
+  })
+}
+
+/**
+ * Uploads a file to the server with optional encryption and compression.
+ *
+ * This function reads a file from the provided input, optionally encrypts it
+ * using the specified password, and compresses it using the specified algorithm if requested.
+ * It uploads the file in chunks to the server, creating an upload session and
+ * completing it once all chunks have been successfully uploaded.
+ *
+ * @param {AutoDriveApi} api - The API instance used to send requests.
  * @param {File | GenericFile} file - The file to be uploaded, which can be a File or a GenericFile.
  * @param {UploadFileOptions} options - Options for the upload process.
  * @param {string} [options.password] - The password for encryption (optional).
  * @param {boolean} [options.compression=true] - Whether to compress the file (optional).
  * @param {number} [uploadChunkSize] - The size of each chunk to upload (optional).
- * @returns {Promise<CID>} - A promise that resolves with the CID of the uploaded file.
+ * @returns {PromisedObservable<UploadFileStatus>} - An observable that emits the upload status.
  * @throws {Error} - Throws an error if the upload fails at any stage.
  */
-export const uploadFileFromInput = (
+export const uploadFile = (
   api: AutoDriveApi,
-  file: File | GenericFile,
+  file: GenericFile,
   { password, compression = true }: UploadFileOptions,
   uploadChunkSize?: number,
 ): PromisedObservable<UploadFileStatus> => {
   return new PromisedObservable<UploadFileStatus>(async (subscriber) => {
-    let asyncIterable: AsyncIterable<Buffer> =
-      file instanceof File ? fileToIterable(file) : file.read()
+    let asyncIterable: AsyncIterable<Buffer> = file.read()
 
     if (compression) {
       asyncIterable = compressFile(asyncIterable, {
@@ -200,11 +267,11 @@ export const uploadFolderFromFolderPath = async (
     const filesMap = Object.fromEntries(files.map((file) => [file, file]))
     const zipBlob = await constructZipBlobFromTreeAndPaths(fileTree, filesMap)
     const name = folderPath.split('/').pop()!
-    return uploadFileFromInput(
+    return uploadFile(
       api,
       {
         read: () => fileToIterable(zipBlob),
-        name,
+        name: `${name}.zip`,
         mimeType: 'application/zip',
         size: zipBlob.size,
         path: name,
@@ -288,7 +355,7 @@ export const uploadFolderFromInput = async (
     const zipBlob = await constructZipBlobFromTreeAndPaths(fileTree, filesMap)
     const name = fileList[0].webkitRelativePath.split('/').filter(Boolean)[0]!
 
-    return uploadFileFromInput(
+    return uploadFile(
       api,
       {
         read: () => fileToIterable(zipBlob),
