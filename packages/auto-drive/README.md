@@ -1,6 +1,4 @@
-# auto-drive
-
-## auto-drive API Tools
+# Auto-Drive
 
 The `auto-drive` package provides a set of tools to interact with the auto-drive API. Below are some key functionalities:
 
