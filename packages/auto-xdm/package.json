@@ -1,6 +1,6 @@
 {
   "name": "@autonomys/auto-xdm",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "license": "MIT",
   "main": "dist/index.js",
   "scripts": {
@@ -22,7 +22,7 @@
     "url": "https://www.autonomys.net"
   },
   "dependencies": {
-    "@autonomys/auto-utils": "^1.0.4"
+    "@autonomys/auto-utils": "^1.0.5"
   },
   "devDependencies": {
     "@polkadot/types-codec": "^11.2.1",
@@ -33,5 +33,5 @@
     "ts-jest": "^29.1.4",
     "typescript": "^5.4.5"
   },
-  "gitHead": "7cf7c4940f48d88322bdfc2ab6e1e28d34dd396a"
+  "gitHead": "2ee93dd0867c16e0a42f2f47b2fa66bc41ba29cf"
 }
