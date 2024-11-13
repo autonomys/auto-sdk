@@ -24,6 +24,9 @@
     ".": "./dist/index.js",
     "./protobuf": "./dist/metadata/onchain/protobuf/onchainMetadata.js"
   },
+  "engines": {
+    "node": ">=20.8.0"
+  },
   "devDependencies": {
     "@types/jest": "^29.5.13",
     "blockstore-core": "^5.0.2",
