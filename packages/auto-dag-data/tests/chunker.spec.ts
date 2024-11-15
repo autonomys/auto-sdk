@@ -200,7 +200,7 @@ describe('chunker', () => {
         dataCid: 'test',
         name: 'test',
         mimeType: 'text/plain',
-        totalSize: 1000,
+        totalSize: BigInt(1000),
         totalChunks: 10,
         chunks: [],
       }
@@ -217,7 +217,7 @@ describe('chunker', () => {
         dataCid: 'test',
         name: 'test',
         mimeType: 'text/plain'.repeat(100),
-        totalSize: 1000,
+        totalSize: BigInt(1000),
         totalChunks: 10,
         chunks: [],
       }

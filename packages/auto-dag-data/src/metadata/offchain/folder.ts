@@ -29,7 +29,7 @@ export const childrenMetadataFromNode = (node: PBNode): ChildrenMetadata => {
   return {
     type: ipldData.type === MetadataType.File ? 'file' : 'folder',
     cid: cidToString(cidOfNode(node)),
-    totalSize: ipldData.size ?? BigInt(0),
+    totalSize: ipldData.size ?? BigInt(0).valueOf(),
     name: ipldData.name,
   }
 }
@@ -44,7 +44,7 @@ export const folderMetadata = (
 
   return {
     dataCid: cid,
-    totalSize: children.reduce((acc, child) => acc + child.totalSize, BigInt(0)),
+    totalSize: children.reduce((acc, child) => acc + child.totalSize, BigInt(0).valueOf()),
     totalFiles: children.length,
     children,
     type: 'folder',

@@ -14,7 +14,7 @@ export const createFileChunkIpldNode = (
     createNode(
       encodeIPLDNodeData({
         type: MetadataType.FileChunk,
-        size: BigInt(data.length),
+        size: BigInt(data.length).valueOf(),
         linkDepth: 0,
         data,
       }),
@@ -59,7 +59,7 @@ export const createFileInlinkIpldNode = (
     createNode(
       encodeIPLDNodeData({
         type: MetadataType.FileInlink,
-        size: BigInt(size),
+        size: BigInt(size).valueOf(),
         linkDepth,
       }),
       links.map((cid) => ({ Hash: cid })),
@@ -79,7 +79,7 @@ export const createSingleFileIpldNode = (
     encodeIPLDNodeData({
       type: MetadataType.File,
       name,
-      size: BigInt(data.length),
+      size: BigInt(data.length).valueOf(),
       linkDepth: 0,
       data,
       uploadOptions,
@@ -100,7 +100,7 @@ export const createMetadataInlinkIpldNode = (
     createNode(
       encodeIPLDNodeData({
         type: MetadataType.FileInlink,
-        size: BigInt(size),
+        size: BigInt(size).valueOf(),
         linkDepth,
       }),
       links.map((cid) => ({ Hash: cid })),
@@ -116,7 +116,7 @@ export const createSingleMetadataIpldNode = (data: Buffer, name?: string): PBNod
     encodeIPLDNodeData({
       type: MetadataType.Metadata,
       name,
-      size: BigInt(data.length),
+      size: BigInt(data.length).valueOf(),
       linkDepth: 0,
       data,
     }),
@@ -131,7 +131,7 @@ export const createMetadataChunkIpldNode = (
     createNode(
       encodeIPLDNodeData({
         type: MetadataType.MetadataChunk,
-        size: BigInt(data.length),
+        size: BigInt(data.length).valueOf(),
         linkDepth: 0,
         data,
       }),
