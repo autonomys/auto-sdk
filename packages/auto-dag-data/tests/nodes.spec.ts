@@ -15,7 +15,7 @@ describe('node creation', () => {
       const node = createSingleFileIpldNode(buffer, filename)
       const decoded = IPLDNodeData.decode(node.Data ?? new Uint8Array())
       expect(decoded.name).toBe(filename)
-      expect(decoded.size).toBe(buffer.length)
+      expect(decoded.size!.toString()).toBe(buffer.length.toString())
       expect(Buffer.from(decoded.data ?? '').toString()).toBe(buffer.toString())
     })
 
@@ -25,7 +25,7 @@ describe('node creation', () => {
       const decoded = IPLDNodeData.decode(node.Data ?? new Uint8Array())
       expect(decoded.type).toBe(MetadataType.File)
       expect(decoded.name).toBeUndefined()
-      expect(decoded.size).toBe(buffer.length)
+      expect(decoded.size!.toString()).toBe(buffer.length.toString())
       expect(Buffer.from(decoded.data ?? '').toString()).toBe(buffer.toString())
     })
 
@@ -33,15 +33,15 @@ describe('node creation', () => {
       const links = Array.from({ length: 10 }, () =>
         cidOfNode(createNode(Buffer.from(Math.random().toString()))),
       )
-      const size = 1000
+      const size = BigInt(1000)
       const linkDepth = 1
       const filename = 'test.txt'
-      const node = createChunkedFileIpldNode(links, size, linkDepth, filename)
+      const node = createChunkedFileIpldNode(links, BigInt(size), linkDepth, filename)
 
       const decoded = IPLDNodeData.decode(node.Data ?? new Uint8Array())
       expect(decoded.type).toBe(MetadataType.File)
       expect(decoded.name).toBe(filename)
-      expect(decoded.size).toBe(size)
+      expect(decoded.size!.toString()).toBe(size.toString())
       expect(decoded.linkDepth).toBe(linkDepth)
     })
 
@@ -49,14 +49,14 @@ describe('node creation', () => {
       const links = Array.from({ length: 10 }, () =>
         cidOfNode(createNode(Buffer.from(Math.random().toString()))),
       )
-      const size = 1000
+      const size = BigInt(1000)
       const linkDepth = 1
       const node = createChunkedFileIpldNode(links, size, linkDepth)
 
       const decoded = IPLDNodeData.decode(node.Data ?? new Uint8Array())
       expect(decoded.type).toBe(MetadataType.File)
       expect(decoded.name).toBeUndefined()
-      expect(decoded.size).toBe(size)
+      expect(decoded.size!.toString()).toBe(size.toString())
       expect(decoded.linkDepth).toBe(linkDepth)
     })
 
@@ -67,7 +67,7 @@ describe('node creation', () => {
       const decoded = IPLDNodeData.decode(node.Data ?? new Uint8Array())
       expect(decoded.type).toBe(MetadataType.FileChunk)
       expect(decoded.name).toBeUndefined()
-      expect(decoded.size).toBe(buffer.length)
+      expect(decoded.size!.toString()).toBe(buffer.length.toString())
       expect(decoded.linkDepth).toBe(0)
     })
   })

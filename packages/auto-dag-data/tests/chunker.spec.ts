@@ -16,7 +16,12 @@ describe('chunker', () => {
       const name = 'test.txt'
       const blockstore = new MemoryBlockstore()
 
-      await processFileToIPLDFormat(blockstore, bufferToIterable(Buffer.from(text)), size, name)
+      await processFileToIPLDFormat(
+        blockstore,
+        bufferToIterable(Buffer.from(text)),
+        BigInt(size),
+        name,
+      )
       const nodes = await nodesFromBlockstore(blockstore)
       expect(nodes.length).toBe(1)
 
@@ -31,7 +36,7 @@ describe('chunker', () => {
       expect(decoded.type).toBe(MetadataType.File)
       expect(Buffer.from(decoded.data ?? '').toString()).toBe(text)
       expect(decoded.linkDepth).toBe(0)
-      expect(decoded.size).toBe(text.length)
+      expect(decoded.size?.toString()).toBe(text.length.toString())
 
       /// Check no links
       expect(node?.Links.length).toBe(0)
@@ -52,7 +57,7 @@ describe('chunker', () => {
       const headCID = await processFileToIPLDFormat(
         blockstore,
         bufferToIterable(Buffer.from(text)),
-        size,
+        BigInt(size),
         name,
         {
           maxChunkSize,
@@ -72,7 +77,7 @@ describe('chunker', () => {
       expect(decoded.name).toBe(name)
       expect(decoded.type).toBe(MetadataType.File)
       expect(decoded.linkDepth).toBe(1)
-      expect(decoded.size).toBe(text.length)
+      expect(decoded.size!.toString()).toBe(text.length.toString())
 
       nodes.forEach((node) => {
         if (cidToString(cidOfNode(node)) !== cidToString(headCID)) {
@@ -96,7 +101,7 @@ describe('chunker', () => {
       const headCID = await processFileToIPLDFormat(
         blockstore,
         bufferToIterable(Buffer.from(text)),
-        size,
+        BigInt(size),
         name,
         {
           maxChunkSize,
@@ -136,7 +141,7 @@ describe('chunker', () => {
       const name = 'folder'
       const size = 1000
       const blockstore = new MemoryBlockstore()
-      const headCID = processFolderToIPLDFormat(blockstore, links, name, size, {
+      const headCID = processFolderToIPLDFormat(blockstore, links, name, BigInt(size), {
         maxLinkPerNode: 4,
       })
 
@@ -149,7 +154,7 @@ describe('chunker', () => {
       expect(decoded.name).toBe(name)
       expect(decoded.type).toBe(MetadataType.Folder)
       expect(decoded.linkDepth).toBe(0)
-      expect(decoded.size).toBe(size)
+      expect(decoded.size!.toString()).toBe(size.toString())
     })
 
     it('create a folder dag with inlinks', async () => {
@@ -163,7 +168,7 @@ describe('chunker', () => {
       const EXPECTED_NODE_COUNT = 4
 
       const blockstore = new MemoryBlockstore()
-      const headCID = processFolderToIPLDFormat(blockstore, links, name, size, {
+      const headCID = processFolderToIPLDFormat(blockstore, links, name, BigInt(size), {
         maxLinkPerNode: 4,
       })
 
@@ -235,13 +240,13 @@ describe('chunker', () => {
       const singleBufferCID = await processFileToIPLDFormat(
         blockstore,
         bufferToIterable(buffer),
-        buffer.length,
+        BigInt(buffer.length),
         'test.txt',
       )
       const chunkedBufferCID = await processFileToIPLDFormat(
         chunkedBlockstore,
         separateBufferToIterable(buffer, 5),
-        buffer.length,
+        BigInt(buffer.length),
         'test.txt',
       )
 
@@ -255,13 +260,13 @@ describe('chunker', () => {
       const singleBufferCID = await processFileToIPLDFormat(
         blockstore,
         bufferToIterable(buffer),
-        buffer.length,
+        BigInt(buffer.length),
         'test.txt',
       )
       const chunkedBufferCID = await processFileToIPLDFormat(
         chunkedBlockstore,
         separateBufferToIterable(buffer, 5),
-        buffer.length,
+        BigInt(buffer.length),
         'test.txt',
       )
 
