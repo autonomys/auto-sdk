@@ -26,7 +26,7 @@ export enum NetworkExplorerName {
 }
 
 export const ASTRAL_EXPLORER = 'https://explorer.autonomys.xyz/'
-export const SUBSCAN_EXPLORER = 'https://subspace.subscan.io/'
+export const SUBSCAN_EXPLORER = 'https://autonomys.subscan.io/'
 
 export const networks: Network[] = [
   {
