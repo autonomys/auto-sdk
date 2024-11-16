@@ -1,4 +1,4 @@
-# Autonomys Auto SDK Utility
+# Autonomys Auto Utility SDK
 
 ![Autonomys Banner](https://github.com/autonomys/auto-sdk/blob/main/.github/images/autonomys-banner.webp)
 

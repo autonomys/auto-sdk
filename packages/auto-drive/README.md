@@ -1,8 +1,14 @@
-# auto-drive
+# Autonomys Auto Drive SDK
 
-## auto-drive API Tools
+![Autonomys Banner](https://github.com/autonomys/auto-sdk/blob/main/.github/images/autonomys-banner.webp)
 
-The `auto-drive` package provides a set of tools to interact with the auto-drive API. Below are some key functionalities:
+[![Latest Github release](https://img.shields.io/github/v/tag/autonomys/auto-sdk.svg)](https://github.com/autonomys/auto-sdk/tags)
+[![Build status of the main branch on Linux/OSX](https://img.shields.io/github/actions/workflow/status/autonomys/auto-sdk/build.yaml?branch=main&label=Linux%2FOSX%20build)](https://github.com/autonomys/auto-sdk/actions/workflows/build.yaml)
+[![npm version](https://badge.fury.io/js/@autonomys%2Fauto-drive.svg)](https://badge.fury.io/js/@autonomys/auto-drive)
+
+## Overview
+
+The `auto-drive` package provides a set of tools to interact with the Autonomys Auto-Drive API. Below are some key functionalities:
 
 ### Installation
 
@@ -72,3 +78,19 @@ getRoots(api)
     console.error('Error retrieving root directories:', error)
   })
 ```
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+## Additional Resources
+
+- **Autonomys Academy**: Learn more at [Autonomys Academy](https://academy.autonomys.xyz).
+
+## Contact
+
+If you have any questions or need support, feel free to reach out:
+
+- **GitHub Issues**: [GitHub Issues Page](https://github.com/autonomys/auto-sdk/issues)
+
+We appreciate your feedback and contributions!
