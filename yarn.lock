@@ -48,6 +48,7 @@ __metadata:
   resolution: "@autonomys/auto-dag-data@workspace:packages/auto-dag-data"
   dependencies:
     "@ipld/dag-pb": "npm:^4.1.2"
+    "@peculiar/webcrypto": "npm:^1.5.0"
     "@types/jest": "npm:^29.5.13"
     "@webbuf/blake3": "npm:^3.0.26"
     "@webbuf/fixedbuf": "npm:^3.0.26"
