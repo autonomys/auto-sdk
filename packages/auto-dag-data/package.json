@@ -38,6 +38,7 @@
   },
   "dependencies": {
     "@ipld/dag-pb": "^4.1.2",
+    "@peculiar/webcrypto": "^1.5.0",
     "@webbuf/blake3": "^3.0.26",
     "@webbuf/fixedbuf": "^3.0.26",
     "@webbuf/webbuf": "^3.0.26",
