@@ -42,7 +42,7 @@ export const NODE_METADATA_SIZE =
 
 export const DEFAULT_MAX_CHUNK_SIZE = DEFAULT_NODE_MAX_SIZE - NODE_METADATA_SIZE
 
-const LINK_SIZE_IN_BYTES = 40
+export const LINK_SIZE_IN_BYTES = 40
 export const DEFAULT_MAX_LINK_PER_NODE = Math.floor(DEFAULT_MAX_CHUNK_SIZE / LINK_SIZE_IN_BYTES)
 
 export const processFileToIPLDFormat = (

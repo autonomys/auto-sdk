@@ -1,13 +1,14 @@
 import { BaseBlockstore, MemoryBlockstore } from 'blockstore-core'
-import { cidOfNode, cidToString } from '../src'
+import { cidOfNode, cidToString, createSingleFileIpldNode } from '../src'
 import {
+  LINK_SIZE_IN_BYTES,
   NODE_METADATA_SIZE,
   processFileToIPLDFormat,
   processFolderToIPLDFormat,
   processMetadataToIPLDFormat,
 } from '../src/ipld/chunker'
 import { createNode, decodeNode, PBNode } from '../src/ipld/utils'
-import { IPLDNodeData, MetadataType, OffchainMetadata } from '../src/metadata'
+import { decodeIPLDNodeData, IPLDNodeData, MetadataType, OffchainMetadata } from '../src/metadata'
 
 describe('chunker', () => {
   describe('file creation', () => {
@@ -112,7 +113,7 @@ describe('chunker', () => {
       )
 
       const nodes = await nodesFromBlockstore(blockstore)
-      // expect(nodes.length).toBe(EXPECTED_NODE_COUNT)
+      expect(nodes.length).toBe(EXPECTED_NODE_COUNT)
 
       let [rootCount, inlinkCount, chunkCount] = [0, 0, 0]
 
@@ -273,6 +274,61 @@ describe('chunker', () => {
       )
 
       expect(singleBufferCID).toEqual(chunkedBufferCID)
+    })
+  })
+
+  describe('nodes sizes', () => {
+    it('file root node with inlinks', async () => {
+      const maxNodeSize = 1000
+      const maxChunkSize = maxNodeSize - NODE_METADATA_SIZE
+      const maxLinkPerNode = Math.floor(maxChunkSize / LINK_SIZE_IN_BYTES)
+      const buffer = Buffer.from('h'.repeat(maxChunkSize).repeat(maxLinkPerNode ** 3))
+
+      const blockstore = new MemoryBlockstore()
+
+      await processFileToIPLDFormat(
+        blockstore,
+        bufferToIterable(buffer),
+        BigInt(buffer.length),
+        'test.txt',
+        {
+          maxNodeSize,
+          maxLinkPerNode,
+        },
+      )
+
+      const nodes = await nodesFromBlockstore(blockstore)
+
+      const inlinks = nodes.filter(
+        (node) =>
+          IPLDNodeData.decode(node.Data ?? new Uint8Array()).type === MetadataType.FileInlink,
+      )
+      inlinks.map((e) => e.Links.length).forEach((e) => expect(e).toBe(maxLinkPerNode))
+    })
+
+    it('folder root node with inlinks', async () => {
+      const maxLinkPerNode = 4
+      const maxNodeSize = maxLinkPerNode * LINK_SIZE_IN_BYTES + NODE_METADATA_SIZE
+      const links = Array.from({ length: 16 }, () =>
+        cidOfNode(createNode(Buffer.from(Math.random().toString()))),
+      )
+
+      const blockstore = new MemoryBlockstore()
+      processFolderToIPLDFormat(blockstore, links, 'test', BigInt(1000), {
+        maxLinkPerNode,
+        maxNodeSize,
+      })
+
+      const nodes = await nodesFromBlockstore(blockstore)
+      for (const node of nodes) {
+        expect(node.Data?.length).toBeLessThanOrEqual(maxNodeSize)
+      }
+
+      const inlinks = nodes.filter(
+        (node) =>
+          IPLDNodeData.decode(node.Data ?? new Uint8Array()).type === MetadataType.FolderInlink,
+      )
+      inlinks.map((e) => e.Links.length).forEach((e) => expect(e).toBe(maxLinkPerNode))
     })
   })
 })

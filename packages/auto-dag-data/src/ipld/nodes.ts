@@ -74,17 +74,21 @@ export const createSingleFileIpldNode = (
   data: Buffer,
   name?: string,
   uploadOptions?: FileUploadOptions,
+  maxNodeSize: number = DEFAULT_MAX_CHUNK_SIZE,
 ): PBNode =>
-  createNode(
-    encodeIPLDNodeData({
-      type: MetadataType.File,
-      name,
-      size: BigInt(data.length).valueOf(),
-      linkDepth: 0,
-      data,
-      uploadOptions,
-    }),
-    [],
+  ensureNodeMaxSize(
+    createNode(
+      encodeIPLDNodeData({
+        type: MetadataType.File,
+        name,
+        size: BigInt(data.length).valueOf(),
+        linkDepth: 0,
+        data,
+        uploadOptions,
+      }),
+      [],
+    ),
+    maxNodeSize,
   )
 
 // Creates a file ipld node
