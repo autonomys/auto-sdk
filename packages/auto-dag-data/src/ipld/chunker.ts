@@ -3,41 +3,71 @@ import type { AwaitIterable } from 'interface-store'
 import { CID } from 'multiformats'
 import { cidOfNode } from '../cid/index.js'
 import { decodeIPLDNodeData, FileUploadOptions, OffchainMetadata } from '../metadata/index.js'
+import { stringifyMetadata } from '../utils/metadata.js'
 import { Builders, fileBuilders, metadataBuilders } from './builders.js'
 import { createFolderInlinkIpldNode, createFolderIpldNode } from './nodes.js'
 import { chunkBuffer, encodeNode, PBNode } from './utils.js'
 
 type ChunkerLimits = {
-  maxChunkSize: number
+  maxNodeSize: number
   maxLinkPerNode: number
 }
 
 type ChunkerOptions = ChunkerLimits & FileUploadOptions
 
-export const DEFAULT_MAX_CHUNK_SIZE = 64 * 1024
+const DEFAULT_NODE_MAX_SIZE = 65535
 
-const ESTIMATED_LINK_SIZE_IN_BYTES = 64
-export const DEFAULT_MAX_LINK_PER_NODE = DEFAULT_MAX_CHUNK_SIZE / ESTIMATED_LINK_SIZE_IN_BYTES
+// u8 -> 1 byte (may grow in the future but unlikely further than 255)
+const NODE_TYPE_SIZE = 1
+// u32 -> 4 bytes
+const NODE_LINK_DEPTH_SIZE = 4
+// u64 -> 8 bytes
+const NODE_SIZE_SIZE = 8
+// Limit at 255 string length (Mac Limit)
+const MAX_NAME_SIZE = 255
+const END_OF_STRING_BYTE = 1
+const NODE_NAME_SIZE = MAX_NAME_SIZE + END_OF_STRING_BYTE
+// Upload options may be amplified in the future
+const NODE_UPLOAD_OPTIONS_SIZE = 100
+// Reserve 100 bytes for future use
+const NODE_RESERVED_SIZE = 100
+
+export const NODE_METADATA_SIZE =
+  NODE_TYPE_SIZE +
+  NODE_LINK_DEPTH_SIZE +
+  NODE_SIZE_SIZE +
+  NODE_NAME_SIZE +
+  NODE_RESERVED_SIZE +
+  NODE_UPLOAD_OPTIONS_SIZE
+
+export const DEFAULT_MAX_CHUNK_SIZE = DEFAULT_NODE_MAX_SIZE - NODE_METADATA_SIZE
+
+export const LINK_SIZE_IN_BYTES = 40
+export const DEFAULT_MAX_LINK_PER_NODE = Math.floor(DEFAULT_MAX_CHUNK_SIZE / LINK_SIZE_IN_BYTES)
 
 export const processFileToIPLDFormat = (
   blockstore: BaseBlockstore,
   file: AwaitIterable<Buffer>,
-  totalSize: number,
+  totalSize: bigint,
   filename?: string,
   {
-    maxChunkSize = DEFAULT_MAX_CHUNK_SIZE,
+    maxNodeSize = DEFAULT_MAX_CHUNK_SIZE,
     maxLinkPerNode = DEFAULT_MAX_LINK_PER_NODE,
     encryption = undefined,
     compression = undefined,
   }: Partial<ChunkerOptions> = {
-    maxChunkSize: DEFAULT_MAX_CHUNK_SIZE,
+    maxNodeSize: DEFAULT_MAX_CHUNK_SIZE,
     maxLinkPerNode: DEFAULT_MAX_LINK_PER_NODE,
     encryption: undefined,
     compression: undefined,
   },
 ): Promise<CID> => {
+  if (filename && filename.length > MAX_NAME_SIZE) {
+    throw new Error(`Filename is too long: ${filename.length} > ${MAX_NAME_SIZE}`)
+  }
+
   return processBufferToIPLDFormat(blockstore, file, filename, totalSize, fileBuilders, {
-    maxChunkSize,
+    maxNodeSize,
     maxLinkPerNode,
     encryption,
     compression,
@@ -47,20 +77,24 @@ export const processFileToIPLDFormat = (
 export const processMetadataToIPLDFormat = async (
   blockstore: BaseBlockstore,
   metadata: OffchainMetadata,
-  limits: { maxChunkSize: number; maxLinkPerNode: number } = {
-    maxChunkSize: DEFAULT_MAX_CHUNK_SIZE,
+  limits: { maxNodeSize: number; maxLinkPerNode: number } = {
+    maxNodeSize: DEFAULT_MAX_CHUNK_SIZE,
     maxLinkPerNode: DEFAULT_MAX_LINK_PER_NODE,
   },
 ): Promise<CID> => {
-  const buffer = Buffer.from(JSON.stringify(metadata))
-  const name = `${metadata.name}.metadata.json`
+  if (metadata.name && metadata.name.length > MAX_NAME_SIZE) {
+    throw new Error(`Filename is too long: ${metadata.name.length} > ${MAX_NAME_SIZE}`)
+  }
+
+  const buffer = Buffer.from(stringifyMetadata(metadata))
+
   return processBufferToIPLDFormat(
     blockstore,
     (async function* () {
       yield buffer
     })(),
-    name,
-    buffer.byteLength,
+    metadata.name,
+    BigInt(buffer.byteLength),
     metadataBuilders,
     limits,
   )
@@ -70,21 +104,25 @@ const processBufferToIPLDFormat = async (
   blockstore: BaseBlockstore,
   buffer: AwaitIterable<Buffer>,
   filename: string | undefined,
-  totalSize: number,
+  totalSize: bigint,
   builders: Builders,
   {
-    maxChunkSize = DEFAULT_MAX_CHUNK_SIZE,
+    maxNodeSize: maxNodeSize = DEFAULT_MAX_CHUNK_SIZE,
     maxLinkPerNode = DEFAULT_MAX_LINK_PER_NODE,
     encryption = undefined,
     compression = undefined,
   }: ChunkerOptions = {
-    maxChunkSize: DEFAULT_MAX_CHUNK_SIZE,
+    maxNodeSize: DEFAULT_MAX_CHUNK_SIZE,
     maxLinkPerNode: DEFAULT_MAX_LINK_PER_NODE,
     encryption: undefined,
     compression: undefined,
   },
 ): Promise<CID> => {
-  const bufferChunks = chunkBuffer(buffer, { maxChunkSize: maxChunkSize })
+  if (filename && filename.length > MAX_NAME_SIZE) {
+    throw new Error(`Filename is too long: ${filename.length} > ${MAX_NAME_SIZE}`)
+  }
+
+  const bufferChunks = chunkBuffer(buffer, { maxChunkSize: maxNodeSize - NODE_METADATA_SIZE })
 
   let CIDs: CID[] = []
   for await (const chunk of bufferChunks) {
@@ -96,7 +134,7 @@ const processBufferToIPLDFormat = async (
 
   return processBufferToIPLDFormatFromChunks(blockstore, CIDs, filename, totalSize, builders, {
     maxLinkPerNode,
-    maxChunkSize,
+    maxNodeSize,
     encryption,
     compression,
   })
@@ -106,20 +144,24 @@ export const processBufferToIPLDFormatFromChunks = async (
   blockstore: BaseBlockstore,
   chunks: AwaitIterable<CID>,
   filename: string | undefined,
-  totalSize: number,
+  totalSize: bigint,
   builders: Builders,
   {
-    maxChunkSize = DEFAULT_MAX_CHUNK_SIZE,
+    maxNodeSize: maxNodeSize = DEFAULT_MAX_CHUNK_SIZE,
     maxLinkPerNode = DEFAULT_MAX_LINK_PER_NODE,
     encryption = undefined,
     compression = undefined,
   }: Partial<ChunkerOptions> = {
-    maxChunkSize: DEFAULT_MAX_CHUNK_SIZE,
+    maxNodeSize: DEFAULT_MAX_CHUNK_SIZE,
     maxLinkPerNode: DEFAULT_MAX_LINK_PER_NODE,
     encryption: undefined,
     compression: undefined,
   },
 ): Promise<CID> => {
+  if (filename && filename.length > MAX_NAME_SIZE) {
+    throw new Error(`Filename is too long: ${filename.length} > ${MAX_NAME_SIZE}`)
+  }
+
   let chunkCount = 0
   let CIDs: CID[] = []
   for await (const chunk of chunks) {
@@ -147,7 +189,7 @@ export const processBufferToIPLDFormatFromChunks = async (
     for (let i = 0; i < CIDs.length; i += maxLinkPerNode) {
       const chunk = CIDs.slice(i, i + maxLinkPerNode)
 
-      const node = builders.inlink(chunk, chunk.length, depth, maxChunkSize)
+      const node = builders.inlink(chunk, chunk.length, depth, maxNodeSize)
       const cid = cidOfNode(node)
       await blockstore.put(cid, encodeNode(node))
       newCIDs.push(cid)
@@ -155,7 +197,7 @@ export const processBufferToIPLDFormatFromChunks = async (
     depth++
     CIDs = newCIDs
   }
-  const head = builders.root(CIDs, totalSize, depth, filename, maxChunkSize, {
+  const head = builders.root(CIDs, totalSize, depth, filename, maxNodeSize, {
     compression,
     encryption,
   })
@@ -169,19 +211,23 @@ export const processFolderToIPLDFormat = async (
   blockstore: BaseBlockstore,
   children: CID[],
   name: string,
-  size: number,
+  size: bigint,
   {
     maxLinkPerNode = DEFAULT_MAX_LINK_PER_NODE,
-    maxChunkSize = DEFAULT_MAX_CHUNK_SIZE,
+    maxNodeSize: maxNodeSize = DEFAULT_MAX_CHUNK_SIZE,
     compression = undefined,
     encryption = undefined,
   }: Partial<ChunkerOptions> = {
     maxLinkPerNode: DEFAULT_MAX_LINK_PER_NODE,
-    maxChunkSize: DEFAULT_MAX_CHUNK_SIZE,
+    maxNodeSize: DEFAULT_MAX_CHUNK_SIZE,
     compression: undefined,
     encryption: undefined,
   },
 ): Promise<CID> => {
+  if (name.length > MAX_NAME_SIZE) {
+    throw new Error(`Filename is too long: ${name.length} > ${MAX_NAME_SIZE}`)
+  }
+
   let cids = children
   let depth = 0
   while (cids.length > maxLinkPerNode) {
@@ -197,7 +243,7 @@ export const processFolderToIPLDFormat = async (
     depth++
   }
 
-  const node = createFolderIpldNode(cids, name, depth, size, maxChunkSize, {
+  const node = createFolderIpldNode(cids, name, depth, size, maxNodeSize, {
     compression,
     encryption,
   })
@@ -215,12 +261,15 @@ export const processChunksToIPLDFormat = async (
   blockstore: BaseBlockstore,
   chunks: AwaitIterable<Buffer>,
   builders: Builders,
-  { maxChunkSize = DEFAULT_MAX_CHUNK_SIZE }: { maxChunkSize?: number },
+  { maxNodeSize = DEFAULT_MAX_CHUNK_SIZE }: { maxNodeSize?: number },
 ): Promise<Buffer> => {
-  const bufferChunks = chunkBuffer(chunks, { maxChunkSize, ignoreLastChunk: false })
+  const bufferChunks = chunkBuffer(chunks, {
+    maxChunkSize: maxNodeSize - NODE_METADATA_SIZE,
+    ignoreLastChunk: false,
+  })
 
   for await (const chunk of bufferChunks) {
-    if (chunk.byteLength < maxChunkSize) {
+    if (chunk.byteLength < maxNodeSize) {
       return chunk
     }
 

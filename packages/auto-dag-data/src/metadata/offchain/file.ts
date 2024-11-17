@@ -6,21 +6,21 @@ export type OffchainFileMetadata = {
   dataCid: string
   name?: string
   mimeType?: string
-  totalSize: number
+  totalSize: bigint
   totalChunks: number
   chunks: ChunkInfo[]
   uploadOptions?: FileUploadOptions
 }
 
 export interface ChunkInfo {
-  size: number
+  size: bigint
   cid: string
 }
 
 export const fileMetadata = (
   headCID: CID,
   chunks: ChunkInfo[],
-  totalSize: number,
+  totalSize: bigint,
   name?: string | null,
   mimeType?: string | null,
   uploadOptions: FileUploadOptions = {

@@ -1,12 +1,13 @@
 syntax = "proto3";
 
 message IPLDNodeData {
-  MetadataType type = 1;
-  int32 linkDepth = 2;
-  optional int32 size = 3;
-  optional string name = 4;
-  optional bytes data = 5;
-  optional FileUploadOptions uploadOptions = 6;
+  MetadataType type = 1; // maxLength = 1
+  int32 linkDepth = 2; // maxLength = 4
+  optional int64 size = 3; // maxLength = 8
+  optional string name = 4; // maxLength = 256
+  optional bytes data = 5; // maxLength = XXX
+  optional FileUploadOptions uploadOptions = 6; // maxLength = 100
+  /// Reserve 100 bytes for future use
 }
 
 // MetadataType defines the possible types of metadata.

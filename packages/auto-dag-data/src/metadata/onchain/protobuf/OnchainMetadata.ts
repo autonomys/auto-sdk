@@ -10,7 +10,7 @@ import type { Uint8ArrayList } from 'uint8arraylist'
 export interface IPLDNodeData {
   type: MetadataType
   linkDepth: number
-  size?: number
+  size?: bigint
   name?: string
   data?: Uint8Array
   uploadOptions?: FileUploadOptions
@@ -38,7 +38,7 @@ export namespace IPLDNodeData {
 
         if (obj.size != null) {
           w.uint32(24)
-          w.int32(obj.size)
+          w.int64(obj.size)
         }
 
         if (obj.name != null) {
@@ -80,7 +80,7 @@ export namespace IPLDNodeData {
               break
             }
             case 3: {
-              obj.size = reader.int32()
+              obj.size = reader.int64()
               break
             }
             case 4: {

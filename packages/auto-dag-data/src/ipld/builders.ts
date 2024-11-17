@@ -14,10 +14,10 @@ import {
 
 export interface Builders {
   inlink: (links: CID[], size: number, linkDepth: number, chunkSize: number) => PBNode
-  chunk: (data: Buffer) => PBNode
+  chunk: (data: Buffer, maxNodeSize?: number) => PBNode
   root: (
     links: CID[],
-    size: number,
+    size: bigint,
     linkDepth: number,
     name?: string,
     maxNodeSize?: number,
