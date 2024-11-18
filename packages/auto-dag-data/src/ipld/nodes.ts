@@ -2,13 +2,13 @@ import { CID } from 'multiformats/cid'
 import { FileUploadOptions, OffchainMetadata } from '../metadata/index.js'
 import { encodeIPLDNodeData, MetadataType } from '../metadata/onchain/index.js'
 import { stringifyMetadata } from '../utils/metadata.js'
-import { DEFAULT_MAX_CHUNK_SIZE, ensureNodeMaxSize } from './chunker.js'
+import { DEFAULT_NODE_MAX_SIZE, ensureNodeMaxSize } from './chunker.js'
 import { createNode, PBNode } from './index.js'
 
 /// Creates a file chunk ipld node
 export const createFileChunkIpldNode = (
   data: Buffer,
-  maxNodeSize: number = DEFAULT_MAX_CHUNK_SIZE,
+  maxNodeSize: number = DEFAULT_NODE_MAX_SIZE,
 ): PBNode =>
   ensureNodeMaxSize(
     createNode(
@@ -31,7 +31,7 @@ export const createChunkedFileIpldNode = (
   size: bigint,
   linkDepth: number,
   name?: string,
-  maxNodeSize: number = DEFAULT_MAX_CHUNK_SIZE,
+  maxNodeSize: number = DEFAULT_NODE_MAX_SIZE,
   uploadOptions?: FileUploadOptions,
 ): PBNode =>
   ensureNodeMaxSize(
@@ -53,7 +53,7 @@ export const createFileInlinkIpldNode = (
   links: CID[],
   size: number,
   linkDepth: number,
-  maxNodeSize: number = DEFAULT_MAX_CHUNK_SIZE,
+  maxNodeSize: number = DEFAULT_NODE_MAX_SIZE,
 ): PBNode =>
   ensureNodeMaxSize(
     createNode(
@@ -74,7 +74,7 @@ export const createSingleFileIpldNode = (
   data: Buffer,
   name?: string,
   uploadOptions?: FileUploadOptions,
-  maxNodeSize: number = DEFAULT_MAX_CHUNK_SIZE,
+  maxNodeSize: number = DEFAULT_NODE_MAX_SIZE,
 ): PBNode =>
   ensureNodeMaxSize(
     createNode(
@@ -98,7 +98,7 @@ export const createMetadataInlinkIpldNode = (
   links: CID[],
   size: number,
   linkDepth: number,
-  maxNodeSize: number = DEFAULT_MAX_CHUNK_SIZE,
+  maxNodeSize: number = DEFAULT_NODE_MAX_SIZE,
 ): PBNode =>
   ensureNodeMaxSize(
     createNode(
@@ -129,7 +129,7 @@ export const createSingleMetadataIpldNode = (data: Buffer, name?: string): PBNod
 
 export const createMetadataChunkIpldNode = (
   data: Buffer,
-  maxNodeSize: number = DEFAULT_MAX_CHUNK_SIZE,
+  maxNodeSize: number = DEFAULT_NODE_MAX_SIZE,
 ): PBNode =>
   ensureNodeMaxSize(
     createNode(
@@ -148,7 +148,7 @@ export const createChunkedMetadataIpldNode = (
   size: bigint,
   linkDepth: number,
   name?: string,
-  maxNodeSize: number = DEFAULT_MAX_CHUNK_SIZE,
+  maxNodeSize: number = DEFAULT_NODE_MAX_SIZE,
 ): PBNode =>
   ensureNodeMaxSize(
     createNode(
@@ -171,7 +171,7 @@ export const createFolderIpldNode = (
   name: string,
   linkDepth: number,
   size: bigint,
-  maxNodeSize: number = DEFAULT_MAX_CHUNK_SIZE,
+  maxNodeSize: number = DEFAULT_NODE_MAX_SIZE,
   uploadOptions?: FileUploadOptions,
 ): PBNode =>
   ensureNodeMaxSize(
@@ -191,7 +191,7 @@ export const createFolderIpldNode = (
 export const createFolderInlinkIpldNode = (
   links: CID[],
   linkDepth: number,
-  maxNodeSize: number = DEFAULT_MAX_CHUNK_SIZE,
+  maxNodeSize: number = DEFAULT_NODE_MAX_SIZE,
 ): PBNode =>
   ensureNodeMaxSize(
     createNode(
@@ -207,7 +207,7 @@ export const createFolderInlinkIpldNode = (
 /// Creates a metadata ipld node
 export const createMetadataNode = (
   metadata: OffchainMetadata,
-  maxNodeSize: number = DEFAULT_MAX_CHUNK_SIZE,
+  maxNodeSize: number = DEFAULT_NODE_MAX_SIZE,
 ): PBNode => {
   const data = Buffer.from(stringifyMetadata(metadata))
 

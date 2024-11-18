@@ -4,7 +4,7 @@ import {
   createFileChunkIpldNode,
   createSingleFileIpldNode,
 } from '../src/index.js'
-import { createNode, DEFAULT_MAX_CHUNK_SIZE } from '../src/ipld/index.js'
+import { createNode, DEFAULT_MAX_CHUNK_SIZE, DEFAULT_NODE_MAX_SIZE } from '../src/ipld/index.js'
 import { IPLDNodeData, MetadataType } from '../src/metadata/onchain/protobuf/OnchainMetadata.js'
 
 describe('node creation', () => {
@@ -30,7 +30,7 @@ describe('node creation', () => {
     })
 
     it('single file root node | buffer too large', () => {
-      const maxNodeSize = DEFAULT_MAX_CHUNK_SIZE
+      const maxNodeSize = DEFAULT_NODE_MAX_SIZE
       const buffer = Buffer.from('h'.repeat(maxNodeSize))
       expect(() => createSingleFileIpldNode(buffer, 'test.txt')).toThrow()
     })
