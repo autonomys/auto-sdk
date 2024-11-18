@@ -15,7 +15,7 @@ type ChunkerLimits = {
 
 type ChunkerOptions = ChunkerLimits & FileUploadOptions
 
-const DEFAULT_NODE_MAX_SIZE = 65535
+export const DEFAULT_NODE_MAX_SIZE = 65535
 
 // u8 -> 1 byte (may grow in the future but unlikely further than 255)
 const NODE_TYPE_SIZE = 1
@@ -51,12 +51,12 @@ export const processFileToIPLDFormat = (
   totalSize: bigint,
   filename?: string,
   {
-    maxNodeSize = DEFAULT_MAX_CHUNK_SIZE,
+    maxNodeSize = DEFAULT_NODE_MAX_SIZE,
     maxLinkPerNode = DEFAULT_MAX_LINK_PER_NODE,
     encryption = undefined,
     compression = undefined,
   }: Partial<ChunkerOptions> = {
-    maxNodeSize: DEFAULT_MAX_CHUNK_SIZE,
+    maxNodeSize: DEFAULT_NODE_MAX_SIZE,
     maxLinkPerNode: DEFAULT_MAX_LINK_PER_NODE,
     encryption: undefined,
     compression: undefined,
@@ -78,7 +78,7 @@ export const processMetadataToIPLDFormat = async (
   blockstore: BaseBlockstore,
   metadata: OffchainMetadata,
   limits: { maxNodeSize: number; maxLinkPerNode: number } = {
-    maxNodeSize: DEFAULT_MAX_CHUNK_SIZE,
+    maxNodeSize: DEFAULT_NODE_MAX_SIZE,
     maxLinkPerNode: DEFAULT_MAX_LINK_PER_NODE,
   },
 ): Promise<CID> => {
@@ -107,12 +107,12 @@ const processBufferToIPLDFormat = async (
   totalSize: bigint,
   builders: Builders,
   {
-    maxNodeSize: maxNodeSize = DEFAULT_MAX_CHUNK_SIZE,
+    maxNodeSize: maxNodeSize = DEFAULT_NODE_MAX_SIZE,
     maxLinkPerNode = DEFAULT_MAX_LINK_PER_NODE,
     encryption = undefined,
     compression = undefined,
   }: ChunkerOptions = {
-    maxNodeSize: DEFAULT_MAX_CHUNK_SIZE,
+    maxNodeSize: DEFAULT_NODE_MAX_SIZE,
     maxLinkPerNode: DEFAULT_MAX_LINK_PER_NODE,
     encryption: undefined,
     compression: undefined,
@@ -147,12 +147,12 @@ export const processBufferToIPLDFormatFromChunks = async (
   totalSize: bigint,
   builders: Builders,
   {
-    maxNodeSize: maxNodeSize = DEFAULT_MAX_CHUNK_SIZE,
+    maxNodeSize: maxNodeSize = DEFAULT_NODE_MAX_SIZE,
     maxLinkPerNode = DEFAULT_MAX_LINK_PER_NODE,
     encryption = undefined,
     compression = undefined,
   }: Partial<ChunkerOptions> = {
-    maxNodeSize: DEFAULT_MAX_CHUNK_SIZE,
+    maxNodeSize: DEFAULT_NODE_MAX_SIZE,
     maxLinkPerNode: DEFAULT_MAX_LINK_PER_NODE,
     encryption: undefined,
     compression: undefined,
@@ -214,12 +214,12 @@ export const processFolderToIPLDFormat = async (
   size: bigint,
   {
     maxLinkPerNode = DEFAULT_MAX_LINK_PER_NODE,
-    maxNodeSize: maxNodeSize = DEFAULT_MAX_CHUNK_SIZE,
+    maxNodeSize: maxNodeSize = DEFAULT_NODE_MAX_SIZE,
     compression = undefined,
     encryption = undefined,
   }: Partial<ChunkerOptions> = {
     maxLinkPerNode: DEFAULT_MAX_LINK_PER_NODE,
-    maxNodeSize: DEFAULT_MAX_CHUNK_SIZE,
+    maxNodeSize: DEFAULT_NODE_MAX_SIZE,
     compression: undefined,
     encryption: undefined,
   },
@@ -261,15 +261,17 @@ export const processChunksToIPLDFormat = async (
   blockstore: BaseBlockstore,
   chunks: AwaitIterable<Buffer>,
   builders: Builders,
-  { maxNodeSize = DEFAULT_MAX_CHUNK_SIZE }: { maxNodeSize?: number },
+  { maxChunkSize = DEFAULT_MAX_CHUNK_SIZE }: { maxChunkSize?: number } = {
+    maxChunkSize: DEFAULT_MAX_CHUNK_SIZE,
+  },
 ): Promise<Buffer> => {
   const bufferChunks = chunkBuffer(chunks, {
-    maxChunkSize: maxNodeSize - NODE_METADATA_SIZE,
+    maxChunkSize,
     ignoreLastChunk: false,
   })
 
   for await (const chunk of bufferChunks) {
-    if (chunk.byteLength < maxNodeSize) {
+    if (chunk.byteLength < maxChunkSize) {
       return chunk
     }
 
@@ -283,7 +285,7 @@ export const processChunksToIPLDFormat = async (
 
 export const ensureNodeMaxSize = (
   node: PBNode,
-  maxSize: number = DEFAULT_MAX_CHUNK_SIZE,
+  maxSize: number = DEFAULT_NODE_MAX_SIZE,
 ): PBNode => {
   const nodeSize = encodeNode(node).byteLength
   if (nodeSize > maxSize) {
