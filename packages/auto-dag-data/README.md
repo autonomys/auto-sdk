@@ -8,7 +8,7 @@
 
 ## Overview
 
-The **Autonomys Auto DAG Data SDK** (`@autonomys/auto-dag-data`) provides utilities for creating and managing IPLD DAGs (InterPlanetary Linked Data Directed Acyclic Graphs) for files and folders. It facilitates chunking large files, handling metadata, and creating folder structures suitable for distributed storage systems like IPFS.
+The **Autonomys Auto Dag Data SDK** (`@autonomys/auto-dag-data`) provides utilities for creating and managing IPLD DAGs (InterPlanetary Linked Data Directed Acyclic Graphs) for files and folders. It facilitates chunking large files, handling metadata, and creating folder structures suitable for distributed storage systems like IPFS.
 
 ## Features
 
@@ -20,7 +20,7 @@ The **Autonomys Auto DAG Data SDK** (`@autonomys/auto-dag-data`) provides utilit
 
 ## Installation
 
-You can install Auto-DAG-Data using npm or yarn:
+You can install Auto-Dag-Data using npm or yarn:
 
 ```bash
 npm install @autonomys/auto-dag-data
@@ -36,23 +36,27 @@ yarn add @autonomys/auto-dag-data
 
 ### Creating an IPLD DAG from a File
 
-To create an IPLD DAG from a file, you can use the `createFileIPLDDag` function:
+To create an IPLD DAG from a file, you can use the `processFileToIPLDFormat` function:
 
 ```typescript
-import { createFileIPLDDag } from '@autonomys/auto-dag-data'
+import { processFileToIPLDFormat } from '@autonomys/auto-dag-data'
+import { MemoryBlockstore } from 'blockstore-core/memory'
 import fs from 'fs'
 
-const fileBuffer = fs.readFileSync('path/to/your/file.txt')
+const fileStream = fs.createReadStream('path/to/your/file.txt')
+const fileSize = fs.statSync('path/to/your/file.txt').size
 
-const dag = createFileIPLDDag(fileBuffer, 'file.txt')
+const blockstore = new MemoryBlockstore()
+const fileCID = processFileToIPLDFormat(blockstore, fileStream, totalSize, 'file.txt')
 ```
 
 ### Creating an IPLD DAG from a Folder
 
-To create an IPLD DAG from a folder, you can use the `createFolderIPLDDag` function:
+To generate an IPLD DAG from a folder, you can use the `processFolderToIPLDFormat` function:
 
 ```typescript
-import { createFolderIPLDDag } from '@autonomys/auto-dag-data'
+import { processFolderToIPLDFormat, decodeNode } from '@autonomys/auto-dag-data'
+import { MemoryBlockstore } from 'blockstore-core/memory'
 import { CID } from 'multiformats'
 
 // Example child CIDs and folder information
@@ -60,9 +64,12 @@ const childCIDs: CID[] = [
   /* array of CIDs */
 ]
 const folderName = 'my-folder'
-const folderSize = 1024 // size in bytes
+const folderSize = 1024 // size in bytes (the sum of their children size)
 
-const folderDag = createFolderIPLDDag(childCIDs, folderName, folderSize)
+const blockstore = new MemoryBlockstore()
+const folderCID = processFolderToIPLDFormat(blockstore, childCIDs, folderName, folderSize)
+
+const node = decodeNode(blockstore.get(folderCID))
 ```
 
 ### Working with CIDs
@@ -115,14 +122,16 @@ const metadataNode = createMetadataNode(metadata)
 ### Example: Creating a File DAG and Converting to CID
 
 ```typescript
-import { createFileIPLDDag, cidOfNode, cidToString } from '@autonomys/auto-dag-data'
+import { processFileToIPLDFormat } from '@autonomys/auto-dag-data'
+import { MemoryBlockstore } from 'blockstore-core/memory'
 import fs from 'fs'
 
-const fileBuffer = fs.readFileSync('path/to/your/file.txt')
+const fileStream = fs.createReadStream('path/to/your/file.txt')
+const fileSize = fs.statSync('path/to/your/file.txt').size
 
-const dag = createFileIPLDDag(fileBuffer, 'file.txt')
+const blockstore = new MemoryBlockstore()
+const cid = processFileToIPLDFormat(blockstore, fileStream, totalSize, 'file.txt')
 
-const cid = cidOfNode(dag.headCID)
 const cidString = cidToString(cid)
 
 console.log(`CID of the file DAG: ${cidString}`)
@@ -137,13 +146,14 @@ import {
   cidToString,
   type OffchainMetadata,
 } from '@autonomys/auto-dag-data'
+import { MemoryBlockstore } from 'blockstore-core/memory'
 import fs from 'fs'
 
 const metadata: OffchainMetadata = fs.readFileSync('path/to/your/metadata.json')
 
-const dag = createMetadataIPLDDag(metadata)
+const blockstore = new MemoryBlockstore()
+const cid = processMetadataToIPLDFormat(blockstore, metadata)
 
-const cid = cidOfNode(dag.headCID)
 const cidString = cidToString(cid)
 
 console.log(`CID of the metadata DAG: ${cidString}`)
