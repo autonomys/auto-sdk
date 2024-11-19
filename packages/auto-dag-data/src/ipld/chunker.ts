@@ -24,7 +24,7 @@ const NODE_LINK_DEPTH_SIZE = 4
 // u64 -> 8 bytes
 const NODE_SIZE_SIZE = 8
 // Limit at 255 string length (Mac Limit)
-const MAX_NAME_SIZE = 255
+export const MAX_NAME_SIZE = 255
 const END_OF_STRING_BYTE = 1
 const NODE_NAME_SIZE = MAX_NAME_SIZE + END_OF_STRING_BYTE
 // Upload options may be amplified in the future

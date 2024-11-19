@@ -1,11 +1,14 @@
 import {
   cidOfNode,
+  cidToString,
   createChunkedFileIpldNode,
   createFileChunkIpldNode,
   createSingleFileIpldNode,
+  fileMetadata,
 } from '../src/index.js'
-import { createNode, DEFAULT_MAX_CHUNK_SIZE, DEFAULT_NODE_MAX_SIZE } from '../src/ipld/index.js'
+import { createMetadataNode, createNode, DEFAULT_NODE_MAX_SIZE } from '../src/ipld/index.js'
 import { IPLDNodeData, MetadataType } from '../src/metadata/onchain/protobuf/OnchainMetadata.js'
+import { stringifyMetadata } from '../src/utils/metadata.js'
 
 describe('node creation', () => {
   describe('files nodes', () => {
@@ -75,6 +78,26 @@ describe('node creation', () => {
       expect(decoded.name).toBeUndefined()
       expect(decoded.size!.toString()).toBe(buffer.length.toString())
       expect(decoded.linkDepth).toBe(0)
+    })
+  })
+
+  describe('metadata nodes', () => {
+    it('metadata node | correctly params setup', () => {
+      const randomCID = cidOfNode(createNode(Buffer.from(Math.random().toString())))
+      const metadata = fileMetadata(
+        randomCID,
+        [{ cid: cidToString(randomCID), size: BigInt(1000) }],
+        BigInt(1000),
+        'test.txt',
+      )
+      const metadataSize = Buffer.from(stringifyMetadata(metadata)).length
+
+      const metadataNode = createMetadataNode(metadata)
+
+      const decoded = IPLDNodeData.decode(metadataNode.Data ?? new Uint8Array())
+      expect(decoded.type).toBe(MetadataType.Metadata)
+      expect(decoded.name).toBe('test.txt')
+      expect(decoded.size!.toString()).toBe(BigInt(metadataSize).toString())
     })
   })
 })

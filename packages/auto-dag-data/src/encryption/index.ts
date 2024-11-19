@@ -1,5 +1,6 @@
 import { Crypto } from '@peculiar/webcrypto'
 import { randomBytes } from 'crypto'
+import { AwaitIterable } from 'interface-store'
 import { EncryptionAlgorithm, EncryptionOptions } from '../metadata/index.js'
 import { asyncByChunk } from '../utils/async.js'
 import type { PickPartial } from '../utils/types.js'
@@ -41,7 +42,7 @@ export const getKeyFromPassword = async ({ password, salt }: PasswordGenerationO
 }
 
 export const encryptFile = async function* (
-  file: AsyncIterable<Buffer>,
+  file: AwaitIterable<Buffer>,
   password: string,
   { chunkSize = ENCRYPTING_CHUNK_SIZE, algorithm }: PickPartial<EncryptionOptions, 'algorithm'>,
 ): AsyncIterable<Buffer> {
@@ -62,7 +63,7 @@ export const encryptFile = async function* (
 }
 
 export const decryptFile = async function* (
-  file: AsyncIterable<Buffer>,
+  file: AwaitIterable<Buffer>,
   password: string,
   { chunkSize = ENCRYPTED_CHUNK_SIZE, algorithm }: PickPartial<EncryptionOptions, 'algorithm'>,
 ): AsyncIterable<Buffer> {

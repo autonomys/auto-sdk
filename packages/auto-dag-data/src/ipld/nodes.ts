@@ -218,6 +218,7 @@ export const createMetadataNode = (
         name: metadata.name,
         linkDepth: 0,
         data,
+        size: BigInt(data.length).valueOf(),
       }),
     ),
     maxNodeSize,
