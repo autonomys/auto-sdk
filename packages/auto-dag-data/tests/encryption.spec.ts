@@ -1,4 +1,9 @@
+import { AwaitIterable } from 'interface-store'
 import { decryptFile, encryptFile, EncryptionAlgorithm } from '../src'
+
+const awaitIterable = async (it: AwaitIterable<Buffer>) => {
+  for await (const _ of it);
+}
 
 describe('encryption', () => {
   it('encrypts and decrypts a file with default chunk size', async () => {
@@ -100,5 +105,21 @@ describe('encryption', () => {
     for await (const chunk of decrypted) {
       decryptedBuffer = Buffer.concat([decryptedBuffer, chunk])
     }
+  })
+
+  it('throws an error if the encryption algorithm is not supported', async () => {
+    await expect(
+      awaitIterable(
+        encryptFile([Buffer.from('hello')], 'password', { algorithm: 'efwhhgfew' as any }),
+      ),
+    ).rejects.toThrow('Unsupported encryption algorithm')
+  })
+
+  it('throws an error if the decryption algorithm is not supported', async () => {
+    await expect(
+      awaitIterable(
+        decryptFile([Buffer.from('hello')], 'password', { algorithm: 'efwhhgfew' as any }),
+      ),
+    ).rejects.toThrow('Unsupported encryption algorithm')
   })
 })

@@ -14,4 +14,5 @@ module.exports = {
       },
     ],
   },
+  coveragePathIgnorePatterns: ['./src/metadata/onchain/protobuf'],
 }

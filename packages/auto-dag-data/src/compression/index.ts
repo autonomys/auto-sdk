@@ -49,7 +49,7 @@ export async function* decompressFile(
   compressedFile: AwaitIterable<Buffer>,
   {
     chunkSize = COMPRESSION_CHUNK_SIZE,
-    algorithm = CompressionAlgorithm.ZLIB,
+    algorithm,
     level = 9,
   }: PickPartial<CompressionOptions, 'algorithm'>,
 ): AsyncIterable<Buffer> {

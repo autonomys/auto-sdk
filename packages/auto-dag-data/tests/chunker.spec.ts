@@ -1,14 +1,24 @@
 import { BaseBlockstore, MemoryBlockstore } from 'blockstore-core'
-import { cidOfNode, cidToString, createSingleFileIpldNode } from '../src'
 import {
+  cidOfNode,
+  cidToString,
+  createFileChunkIpldNode,
+  createSingleFileIpldNode,
+  fileBuilders,
+} from '../src'
+import {
+  DEFAULT_MAX_CHUNK_SIZE,
   LINK_SIZE_IN_BYTES,
+  MAX_NAME_SIZE,
   NODE_METADATA_SIZE,
+  processBufferToIPLDFormatFromChunks,
+  processChunksToIPLDFormat,
   processFileToIPLDFormat,
   processFolderToIPLDFormat,
   processMetadataToIPLDFormat,
 } from '../src/ipld/chunker'
-import { createNode, decodeNode, PBNode } from '../src/ipld/utils'
-import { decodeIPLDNodeData, IPLDNodeData, MetadataType, OffchainMetadata } from '../src/metadata'
+import { createNode, decodeNode, encodeNode, PBNode } from '../src/ipld/utils'
+import { fileMetadata, IPLDNodeData, MetadataType, OffchainMetadata } from '../src/metadata'
 
 describe('chunker', () => {
   describe('file creation', () => {
@@ -86,6 +96,22 @@ describe('chunker', () => {
           expect(node?.Links.length).toBe(0)
         }
       })
+    })
+
+    it('create a file with long name should throw an error', async () => {
+      const name = 'a'.repeat(MAX_NAME_SIZE + 1)
+      const blockstore = new MemoryBlockstore()
+      expect(() =>
+        processFileToIPLDFormat(blockstore, [Buffer.from('hello')], BigInt(5), name),
+      ).toThrow(`Filename is too long: ${name.length} > ${MAX_NAME_SIZE}`)
+    })
+
+    it('create a file with long name from buffer should throw an error', async () => {
+      const name = 'a'.repeat(MAX_NAME_SIZE + 1)
+      const blockstore = new MemoryBlockstore()
+      await expect(
+        processBufferToIPLDFormatFromChunks(blockstore, [], name, BigInt(5), fileBuilders),
+      ).rejects.toThrow(`Filename is too long: ${name.length} > ${MAX_NAME_SIZE}`)
     })
 
     it('create a file dag with inlinks', async () => {
@@ -194,6 +220,89 @@ describe('chunker', () => {
       expect(rootCount).toBe(1)
       expect(inlinkCount).toBe(3)
     })
+
+    it('create a folder with long name should throw an error', async () => {
+      const name = 'a'.repeat(MAX_NAME_SIZE + 1)
+      const blockstore = new MemoryBlockstore()
+      await expect(processFolderToIPLDFormat(blockstore, [], name, BigInt(1000))).rejects.toThrow(
+        `Filename is too long: ${name.length} > ${MAX_NAME_SIZE}`,
+      )
+    })
+  })
+
+  describe('asyncronous file creation', () => {
+    it('process chunks to IPLD format should return the leftover buffer', async () => {
+      const filename = 'test.txt'
+      const chunkSize = DEFAULT_MAX_CHUNK_SIZE
+      const chunksCount = 1.5
+      const buffer = Buffer.from(
+        Array.from({ length: chunkSize * chunksCount })
+          .map(() => Math.floor(Math.random() * 16).toString(16))
+          .join(''),
+      )
+
+      const leftoverSize = buffer.length % chunkSize
+      const blockstore = new MemoryBlockstore()
+      const leftover = await processChunksToIPLDFormat(blockstore, [buffer], fileBuilders)
+      expect(leftover.length).toBe(leftoverSize)
+    })
+
+    it('process chunks with exact chunk size len(leftover)=0', async () => {
+      const filename = 'test.txt'
+      const chunkSize = DEFAULT_MAX_CHUNK_SIZE
+      const chunksCount = 4
+      const buffer = Buffer.from(
+        Array.from({ length: chunkSize * chunksCount })
+          .map(() => Math.floor(Math.random() * 16).toString(16))
+          .join(''),
+      )
+
+      const blockstore = new MemoryBlockstore()
+      const leftover = await processChunksToIPLDFormat(blockstore, [buffer], fileBuilders)
+
+      expect(leftover.length).toBe(0)
+    })
+
+    it('process file by chunks', async () => {
+      const filename = 'test.txt'
+      const chunkSize = DEFAULT_MAX_CHUNK_SIZE
+      const chunksCount = 4.5
+      const buffer = Buffer.from(
+        Array.from({ length: chunkSize * chunksCount })
+          .map(() => Math.floor(Math.random() * 16).toString(16))
+          .join(''),
+      )
+
+      const blockstore = new MemoryBlockstore()
+      const leftover = await processChunksToIPLDFormat(blockstore, [buffer], fileBuilders)
+      const leftoverCid = createFileChunkIpldNode(leftover)
+      await blockstore.put(cidOfNode(leftoverCid), encodeNode(leftoverCid))
+
+      const mapCIDs = (async function* () {
+        for await (const { cid } of blockstore.getAll()) {
+          yield cid
+        }
+      })()
+
+      const headCID = await processBufferToIPLDFormatFromChunks(
+        blockstore,
+        mapCIDs,
+        filename,
+        BigInt(buffer.length),
+        fileBuilders,
+      )
+
+      const headNode = decodeNode(await blockstore.get(headCID))
+      expect(headNode?.Links.length).toBe(Math.ceil(chunksCount))
+      expect(cidToString(headNode?.Links[headNode.Links.length - 1].Hash)).toEqual(
+        cidToString(cidOfNode(leftoverCid)),
+      )
+      const ipldMetadata = IPLDNodeData.decode(headNode?.Data ?? new Uint8Array())
+      expect(ipldMetadata.name).toBe(filename)
+      expect(ipldMetadata.type).toBe(MetadataType.File)
+      expect(ipldMetadata.linkDepth).toBe(1)
+      expect(ipldMetadata.size!.toString()).toBe(buffer.length.toString())
+    })
   })
 
   describe('metadata creation', () => {
@@ -209,9 +318,29 @@ describe('chunker', () => {
       }
 
       const blockstore = new MemoryBlockstore()
-      const headCID = await processMetadataToIPLDFormat(blockstore, metadata)
+      await processMetadataToIPLDFormat(blockstore, metadata)
       const nodes = await nodesFromBlockstore(blockstore)
       expect(nodes.length).toBe(1)
+    })
+
+    it('create a metadata dag with long name should throw an error', async () => {
+      const name = 'a'.repeat(MAX_NAME_SIZE + 1)
+      const metadata = fileMetadata(
+        cidOfNode(createNode(Buffer.from(Math.random().toString()))),
+        [
+          {
+            cid: cidToString(cidOfNode(createNode(Buffer.from(Math.random().toString())))),
+            size: BigInt(1000),
+          },
+        ],
+        BigInt(1000),
+        name,
+      )
+
+      const blockstore = new MemoryBlockstore()
+      await expect(processMetadataToIPLDFormat(blockstore, metadata)).rejects.toThrow(
+        `Filename is too long: ${name.length} > ${MAX_NAME_SIZE}`,
+      )
     })
 
     it('large metadata dag represented into multiple nodes', async () => {

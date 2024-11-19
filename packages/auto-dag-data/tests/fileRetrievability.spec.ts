@@ -6,6 +6,9 @@ import {
   decodeNode,
   DEFAULT_MAX_CHUNK_SIZE,
   encodeNode,
+  fileBuilders,
+  processBufferToIPLDFormatFromChunks,
+  processChunksToIPLDFormat,
   processFileToIPLDFormat,
 } from '../src'
 
@@ -117,6 +120,51 @@ describe('file retrievability', () => {
     const decodedNode = decodeNode(node)
 
     expect(decodedNode.Links.length).toBe(Math.ceil(expectedChunks))
+    const chunks = await Promise.all(
+      decodedNode.Links.map(async (e) => {
+        const chunk = await blockstore.get(e.Hash)
+        const decodedChunk = decodeIPLDNodeData(chunk)
+        expect(decodedChunk.data).toBeDefined()
+        return Buffer.from(decodedChunk.data!)
+      }),
+    )
+
+    const allChunks = await Promise.all(chunks)
+    const finalBuffer = Buffer.concat(allChunks)
+    expect(finalBuffer.toString()).toBe(buffer.toString())
+  })
+
+  it('should retrieve a file generated asynchronously', async () => {
+    const filename = 'test.txt'
+    const chunkSize = DEFAULT_MAX_CHUNK_SIZE
+    const chunksCount = 50
+    const buffer = Buffer.from(
+      Array.from({ length: chunkSize * chunksCount })
+        .map(() => Math.floor(Math.random() * 16).toString(16))
+        .join(''),
+    )
+
+    const blockstore = new MemoryBlockstore()
+    await processChunksToIPLDFormat(blockstore, [buffer], fileBuilders)
+
+    const mapCIDs = (async function* () {
+      for await (const { cid } of blockstore.getAll()) {
+        yield cid
+      }
+    })()
+
+    const headCID = await processBufferToIPLDFormatFromChunks(
+      blockstore,
+      mapCIDs,
+      filename,
+      BigInt(buffer.length),
+      fileBuilders,
+    )
+
+    const node = await blockstore.get(headCID)
+    const decodedNode = decodeNode(node)
+
+    expect(decodedNode.Links.length).toBe(chunksCount)
     const chunks = await Promise.all(
       decodedNode.Links.map(async (e) => {
         const chunk = await blockstore.get(e.Hash)
