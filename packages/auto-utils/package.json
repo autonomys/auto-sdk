@@ -1,6 +1,6 @@
 {
   "name": "@autonomys/auto-utils",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "license": "MIT",
   "main": "dist/index.js",
   "scripts": {
@@ -38,5 +38,5 @@
   "browser": {
     "fs": false
   },
-  "gitHead": "2ee93dd0867c16e0a42f2f47b2fa66bc41ba29cf"
+  "gitHead": "88b1b90467db7dd1e301387451ed727189f9808c"
 }
