@@ -19,7 +19,7 @@
     "fs": "^0.0.1-security"
   },
   "devDependencies": {
-    "@polkadot/types-codec": "^13.1.1",
+    "@polkadot/types-codec": "^14.3.1",
     "@types/jest": "^29.5.12",
     "eslint": "^8.57.0",
     "jest": "^29.7.0",

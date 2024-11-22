@@ -121,7 +121,7 @@ __metadata:
   dependencies:
     "@polkadot/api": "npm:^14.3.1"
     "@polkadot/extension-dapp": "npm:^0.54.1"
-    "@polkadot/types-codec": "npm:^13.1.1"
+    "@polkadot/types-codec": "npm:^14.3.1"
     "@types/jest": "npm:^29.5.12"
     eslint: "npm:^8.57.0"
     fs: "npm:^0.0.1-security"
@@ -2360,7 +2360,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/types-codec@npm:14.3.1":
+"@polkadot/types-codec@npm:14.3.1, @polkadot/types-codec@npm:^14.3.1":
   version: 14.3.1
   resolution: "@polkadot/types-codec@npm:14.3.1"
   dependencies:
@@ -2379,17 +2379,6 @@ __metadata:
     "@polkadot/x-bigint": "npm:^12.6.2"
     tslib: "npm:^2.6.2"
   checksum: 10c0/d9e195571177e40d709576850d3148f834a48e974e56581cd97d631633d6b8db251e918caab98b06d31162e1991b52d0e2807849e43741aaff97d9506e0f8722
-  languageName: node
-  linkType: hard
-
-"@polkadot/types-codec@npm:^13.1.1":
-  version: 13.2.1
-  resolution: "@polkadot/types-codec@npm:13.2.1"
-  dependencies:
-    "@polkadot/util": "npm:^13.1.1"
-    "@polkadot/x-bigint": "npm:^13.1.1"
-    tslib: "npm:^2.7.0"
-  checksum: 10c0/0f4367ecef8005b33e33c1fedef75636187864119d128cf2276b178726f50b7d316a61f6b2848da0b2e7fe79175585bed27d44fbd580b194b48d165751967ae5
   languageName: node
   linkType: hard
 
@@ -2670,7 +2659,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/x-bigint@npm:13.2.1, @polkadot/x-bigint@npm:^13.1.1, @polkadot/x-bigint@npm:^13.2.1":
+"@polkadot/x-bigint@npm:13.2.1, @polkadot/x-bigint@npm:^13.2.1":
   version: 13.2.1
   resolution: "@polkadot/x-bigint@npm:13.2.1"
   dependencies:
