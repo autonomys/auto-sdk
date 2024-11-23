@@ -1,6 +1,6 @@
 {
   "name": "@autonomys/auto-id",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "license": "MIT",
   "main": "dist/index.js",
   "scripts": {
@@ -10,7 +10,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@autonomys/auto-utils": "^1.0.7",
+    "@autonomys/auto-utils": "^1.0.9",
     "@peculiar/asn1-schema": "^2.3.8",
     "@peculiar/asn1-x509": "^2.3.8",
     "@peculiar/webcrypto": "^1.5.0",
@@ -36,5 +36,5 @@
     "name": "Autonomys",
     "url": "https://www.autonomys.net"
   },
-  "gitHead": "88b1b90467db7dd1e301387451ed727189f9808c"
+  "gitHead": "c8da43fe9c2ba885d1ff5e0241d9a41e2c4f3389"
 }
