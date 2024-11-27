@@ -70,29 +70,14 @@ export const withdrawals = async (
 
 export const registerOperator = (params: RegisterOperatorParams) => {
   try {
-    const {
-      api,
-      senderAddress,
-      Operator,
-      domainId,
-      amountToStake,
-      minimumNominatorStake,
-      nominationTax,
-    } = params
+    const { api, signingKey, domainId, amountToStake, minimumNominatorStake, nominationTax } =
+      params
 
-    const message = createAccountIdType(api, senderAddress)
-    const signature = Operator.sign(message)
-
-    return api.tx.domains.registerOperator(
-      parseString(domainId),
-      parseString(amountToStake),
-      {
-        signingKey: signingKey(Operator.publicKey),
-        minimumNominatorStake: parseString(minimumNominatorStake),
-        nominationTax: parseString(nominationTax),
-      },
-      signature,
-    )
+    return api.tx.domains.registerOperator(parseString(domainId), parseString(amountToStake), {
+      signingKey,
+      minimumNominatorStake: parseString(minimumNominatorStake),
+      nominationTax: parseString(nominationTax),
+    })
   } catch (error) {
     console.error('error', error)
     throw new Error('Error creating register operator tx.' + error)
