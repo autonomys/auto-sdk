@@ -1,4 +1,4 @@
-import { networks } from '@autonomys/auto-utils'
+import { NetworkId, networks } from '@autonomys/auto-utils'
 import { useParams } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
@@ -17,7 +17,7 @@ export const useNetwork = () => {
   const listOfNetworks = useMemo(() => networks.map((network) => network.id), [])
 
   const handleNetworkChange = useCallback(
-    (networkId: string) => {
+    (networkId: NetworkId) => {
       if (!listOfNetworks.includes(networkId)) {
         throw new Error(`Network ${networkId} not found`)
       }
@@ -29,7 +29,7 @@ export const useNetwork = () => {
 
   useEffect(() => {
     if (networkName && config.networkId !== networkName && Array.isArray(networkName) === false)
-      handleNetworkChange(networkName)
+      handleNetworkChange(networkName as NetworkId)
   }, [networkName])
 
   return { config, handleNetworkChange }
