@@ -66,7 +66,18 @@ export const networks: Network[] = [
         url: ASTRAL_EXPLORER + 'taurus/consensus/',
       },
     ],
-    domains: [],
+    domains: [
+      {
+        domainId: '0',
+        ...domains[DomainRuntime.AUTO_EVM],
+        rpcUrls: [
+          'wss://auto-evm-0.taurus.subspace.network/ws',
+          'wss://auto-evm-1.taurus.subspace.network/ws',
+          'wss://auto-evm-0.taurus.autonomys.xyz/ws',
+          'wss://auto-evm-1.taurus.autonomys.xyz/ws',
+        ],
+      },
+    ],
     token: TESTNET_TOKEN,
     isTestnet: true,
   },
@@ -83,7 +94,7 @@ export const networks: Network[] = [
     domains: [
       {
         domainId: '0',
-        ...domains[DomainRuntime.NOVA],
+        ...domains[DomainRuntime.AUTO_EVM],
         rpcUrls: ['wss://nova-0.gemini-3h.subspace.network/ws'],
       },
       {
@@ -108,7 +119,7 @@ export const networks: Network[] = [
     domains: [
       {
         domainId: '0',
-        ...domains[DomainRuntime.NOVA],
+        ...domains[DomainRuntime.AUTO_EVM],
         rpcUrls: ['wss:///nova.devnet.subspace.network/ws'],
       },
       {
@@ -134,13 +145,13 @@ export const networks: Network[] = [
     domains: [
       {
         domainId: '0',
-        ...domains[DomainRuntime.NOVA],
-        rpcUrls: ['ws:///127.0.0.1:9946/ws'],
+        ...domains[DomainRuntime.AUTO_EVM],
+        rpcUrls: ['ws://127.0.0.1:9945/ws'],
       },
       {
         domainId: '1',
         ...domains[DomainRuntime.AUTO_ID],
-        rpcUrls: ['ws://127.0.0.1:9945/ws'],
+        rpcUrls: ['ws:///127.0.0.1:9946/ws'],
       },
     ],
     token: TESTNET_TOKEN,
