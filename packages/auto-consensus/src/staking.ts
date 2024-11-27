@@ -1,7 +1,7 @@
 // file: src/staking.ts
 
 import type { Api } from '@autonomys/auto-utils'
-import { createAccountIdType, signingKey } from '@autonomys/auto-utils'
+import { signingKey as signingKeyFn } from '@autonomys/auto-utils'
 import type {
   NominateOperatorParams,
   RegisterOperatorParams,
@@ -70,29 +70,19 @@ export const withdrawals = async (
 
 export const registerOperator = (params: RegisterOperatorParams) => {
   try {
-    const {
-      api,
-      senderAddress,
-      Operator,
-      domainId,
-      amountToStake,
-      minimumNominatorStake,
-      nominationTax,
-    } = params
+    const { api, domainId, amountToStake, minimumNominatorStake, nominationTax, publicKey } = params
+    let signingKey = params.signingKey
 
-    const message = createAccountIdType(api, senderAddress)
-    const signature = Operator.sign(message)
+    if (!signingKey && !publicKey) throw new Error('Signing key or public key not provided')
+    else if (!signingKey && publicKey) signingKey = signingKeyFn(publicKey)
 
-    return api.tx.domains.registerOperator(
-      parseString(domainId),
-      parseString(amountToStake),
-      {
-        signingKey: signingKey(Operator.publicKey),
-        minimumNominatorStake: parseString(minimumNominatorStake),
-        nominationTax: parseString(nominationTax),
-      },
-      signature,
-    )
+    if (!signingKey) throw new Error('Signing key not provided')
+
+    return api.tx.domains.registerOperator(parseString(domainId), parseString(amountToStake), {
+      signingKey,
+      minimumNominatorStake: parseString(minimumNominatorStake),
+      nominationTax: parseString(nominationTax),
+    })
   } catch (error) {
     console.error('error', error)
     throw new Error('Error creating register operator tx.' + error)

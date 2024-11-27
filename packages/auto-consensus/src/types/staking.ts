@@ -120,12 +120,12 @@ export type StringNumberOrBigInt = string | number | bigint
 
 export type RegisterOperatorParams = {
   api: ApiPromise
-  senderAddress: string
-  Operator: KeyringPair
   domainId: StringNumberOrBigInt
   amountToStake: StringNumberOrBigInt
   minimumNominatorStake: StringNumberOrBigInt
   nominationTax: StringNumberOrBigInt
+  signingKey?: string
+  publicKey?: Uint8Array
 }
 
 export type StakingParams = {
