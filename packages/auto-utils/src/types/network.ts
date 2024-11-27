@@ -1,5 +1,6 @@
 // file: src/types/network.ts
 import type { ApiOptions } from '@polkadot/api/types'
+import { NetworkId, NetworkName } from '../constants/network'
 import type { NetworkDomains } from './domain'
 import { Token } from './token'
 
@@ -9,8 +10,8 @@ export type Explorer = {
 }
 
 export type Network = {
-  id: string
-  name: string
+  id: NetworkId
+  name: NetworkName
   rpcUrls: string[]
   explorer: Explorer[]
   domains: NetworkDomains[]
