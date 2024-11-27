@@ -31,12 +31,11 @@ export const RegisterOperator = () => {
     await handleTx(
       await registerOperator({
         api: selectedWallet.api,
-        senderAddress: selectedWallet.accounts[0].address,
-        Operator: operatorAccounts[0],
         domainId,
         amountToStake,
         minimumNominatorStake,
         nominationTax,
+        publicKey: operatorAccounts[0].publicKey,
       }),
       setErrorForm,
     )
