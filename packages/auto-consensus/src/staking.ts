@@ -1,7 +1,7 @@
 // file: src/staking.ts
 
 import type { Api } from '@autonomys/auto-utils'
-import { createAccountIdType, signingKey } from '@autonomys/auto-utils'
+import { signingKey as signingKeyFn } from '@autonomys/auto-utils'
 import type {
   NominateOperatorParams,
   RegisterOperatorParams,
@@ -70,8 +70,13 @@ export const withdrawals = async (
 
 export const registerOperator = (params: RegisterOperatorParams) => {
   try {
-    const { api, signingKey, domainId, amountToStake, minimumNominatorStake, nominationTax } =
-      params
+    const { api, domainId, amountToStake, minimumNominatorStake, nominationTax, publicKey } = params
+    let signingKey = params.signingKey
+
+    if (!signingKey && !publicKey) throw new Error('Signing key or public key not provided')
+    else if (!signingKey && publicKey) signingKey = signingKeyFn(publicKey)
+
+    if (!signingKey) throw new Error('Signing key not provided')
 
     return api.tx.domains.registerOperator(parseString(domainId), parseString(amountToStake), {
       signingKey,
