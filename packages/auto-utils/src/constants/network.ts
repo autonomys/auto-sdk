@@ -151,7 +151,7 @@ export const networks: Network[] = [
       {
         domainId: '1',
         ...domains[DomainRuntime.AUTO_ID],
-        rpcUrls: ['ws:///127.0.0.1:9946/ws'],
+        rpcUrls: ['ws://127.0.0.1:9946/ws'],
       },
     ],
     token: TESTNET_TOKEN,
