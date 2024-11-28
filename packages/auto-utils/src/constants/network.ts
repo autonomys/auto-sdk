@@ -71,6 +71,7 @@ export const networks: Network[] = [
         domainId: '0',
         ...domains[DomainRuntime.AUTO_EVM],
         rpcUrls: [
+          'wss://auto-evm.taurus.subspace.network/ws',
           'wss://auto-evm-0.taurus.subspace.network/ws',
           'wss://auto-evm-1.taurus.subspace.network/ws',
           'wss://auto-evm-0.taurus.autonomys.xyz/ws',
