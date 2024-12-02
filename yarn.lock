@@ -74,6 +74,7 @@ __metadata:
     "@types/mime-types": "npm:^2"
     jszip: "npm:^3.10.1"
     mime-types: "npm:^2.1.35"
+    rxjs: "npm:^7.8.1"
     typescript: "npm:^5.6.3"
     zod: "npm:^3.23.8"
   languageName: unknown

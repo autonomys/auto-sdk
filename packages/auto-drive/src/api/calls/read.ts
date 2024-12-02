@@ -1,5 +1,6 @@
 import { ArgsWithoutPagination, ArgsWithPagination } from '../../utils/types.js'
 import { AutoDriveApi } from '../connection.js'
+import { PaginatedResult } from '../models/common.js'
 import { ObjectInformation, ObjectSummary, Scope } from '../models/objects.js'
 
 /**
@@ -13,7 +14,7 @@ import { ObjectInformation, ObjectSummary, Scope } from '../models/objects.js'
 export const getRoots = async (
   api: AutoDriveApi,
   query: ArgsWithPagination<{ scope: Scope }>,
-): Promise<ObjectSummary[]> => {
+): Promise<PaginatedResult<ObjectSummary>> => {
   const response = await api.sendRequest(
     `/objects/roots?scope=${query.scope}&limit=${query.limit}&offset=${query.offset}`,
     {
@@ -42,7 +43,7 @@ export const getRoots = async (
 export const getSharedWithMe = async (
   api: AutoDriveApi,
   query: ArgsWithPagination,
-): Promise<ObjectSummary[]> => {
+): Promise<PaginatedResult<ObjectSummary>> => {
   const response = await api.sendRequest(
     `/objects/roots/shared?limit=${query.limit}&offset=${query.offset}`,
     {
@@ -71,7 +72,7 @@ export const getSharedWithMe = async (
 export const getDeleted = async (
   api: AutoDriveApi,
   query: ArgsWithPagination,
-): Promise<ObjectSummary[]> => {
+): Promise<PaginatedResult<ObjectSummary>> => {
   const response = await api.sendRequest(
     `/objects/roots/deleted?limit=${query.limit}&offset=${query.offset}`,
     {

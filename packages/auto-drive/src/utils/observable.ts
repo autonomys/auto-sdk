@@ -1,4 +1,4 @@
-import { firstValueFrom, lastValueFrom, Observable, Subscriber } from 'rxjs'
+import rxjs from 'rxjs'
 
 const asyncCallback = <T, O>(callback: (t: T) => O) => {
   return (t: T) => {
@@ -6,8 +6,8 @@ const asyncCallback = <T, O>(callback: (t: T) => O) => {
   }
 }
 
-export class PromisedObservable<T> extends Observable<T> {
-  constructor(subscribe?: (this: Observable<T>, subscriber: Subscriber<T>) => void) {
+export class PromisedObservable<T> extends rxjs.Observable<T> {
+  constructor(subscribe?: (this: rxjs.Observable<T>, subscriber: rxjs.Subscriber<T>) => void) {
     super(subscribe && asyncCallback(subscribe))
   }
 
@@ -16,4 +16,4 @@ export class PromisedObservable<T> extends Observable<T> {
   }
 }
 
-export { firstValueFrom, lastValueFrom }
+export const { firstValueFrom, lastValueFrom } = rxjs
