@@ -17,7 +17,7 @@ export type AuthProvider = ApiKeyAuthProvider | 'oauth'
 export const createAutoDriveApi = ({
   provider = 'apikey',
   apiKey,
-  url = 'https://demo.auto-drive.autonomys.xyz',
+  url = 'https://demo.auto-drive.autonomys.xyz/api',
 }: {
   provider?: AuthProvider
   apiKey: string
