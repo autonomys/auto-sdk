@@ -1,12 +1,11 @@
 import { Crypto } from '@peculiar/webcrypto'
-import { randomBytes } from 'crypto'
 import { AwaitIterable } from 'interface-store'
 import { EncryptionAlgorithm, EncryptionOptions } from '../metadata/index.js'
 import { asyncByChunk } from '../utils/async.js'
 import type { PickPartial } from '../utils/types.js'
 import { PasswordGenerationOptions } from './types.js'
 
-const crypto = new Crypto()
+export const crypto = typeof window === 'undefined' ? new Crypto() : window.crypto
 
 export const ENCRYPTING_CHUNK_SIZE = 1024 * 1024
 const IV_SIZE = 16
@@ -50,7 +49,7 @@ export const encryptFile = async function* (
     throw new Error('Unsupported encryption algorithm')
   }
 
-  const salt = randomBytes(SALT_SIZE)
+  const salt = crypto.getRandomValues(Buffer.alloc(SALT_SIZE))
   const key = await getKeyFromPassword({ password, salt })
 
   yield salt

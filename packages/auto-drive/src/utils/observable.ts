@@ -1,4 +1,4 @@
-import rxjs from 'rxjs'
+import * as rxjs from 'rxjs'
 
 const asyncCallback = <T, O>(callback: (t: T) => O) => {
   return (t: T) => {
