@@ -33,7 +33,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-consensus@workspace:packages/auto-consensus"
   dependencies:
-    "@autonomys/auto-utils": "npm:^1.0.10"
+    "@autonomys/auto-utils": "npm:^1.0.11"
     "@types/jest": "npm:^29.5.12"
     eslint: "npm:^8.57.0"
     jest: "npm:^29.7.0"
@@ -43,7 +43,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@autonomys/auto-dag-data@npm:^1.0.10, @autonomys/auto-dag-data@workspace:packages/auto-dag-data":
+"@autonomys/auto-dag-data@npm:^1.0.11, @autonomys/auto-dag-data@workspace:packages/auto-dag-data":
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-dag-data@workspace:packages/auto-dag-data"
   dependencies:
@@ -70,7 +70,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-drive@workspace:packages/auto-drive"
   dependencies:
-    "@autonomys/auto-dag-data": "npm:^1.0.10"
+    "@autonomys/auto-dag-data": "npm:^1.0.11"
     "@types/mime-types": "npm:^2"
     jszip: "npm:^3.10.1"
     mime-types: "npm:^2.1.35"
@@ -84,7 +84,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-id@workspace:packages/auto-id"
   dependencies:
-    "@autonomys/auto-utils": "npm:^1.0.10"
+    "@autonomys/auto-utils": "npm:^1.0.11"
     "@peculiar/asn1-schema": "npm:^2.3.8"
     "@peculiar/asn1-x509": "npm:^2.3.8"
     "@peculiar/webcrypto": "npm:^1.5.0"
@@ -116,7 +116,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@autonomys/auto-utils@npm:^1.0.10, @autonomys/auto-utils@workspace:*, @autonomys/auto-utils@workspace:packages/auto-utils":
+"@autonomys/auto-utils@npm:^1.0.11, @autonomys/auto-utils@workspace:*, @autonomys/auto-utils@workspace:packages/auto-utils":
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-utils@workspace:packages/auto-utils"
   dependencies:
@@ -137,7 +137,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-xdm@workspace:packages/auto-xdm"
   dependencies:
-    "@autonomys/auto-utils": "npm:^1.0.10"
+    "@autonomys/auto-utils": "npm:^1.0.11"
     "@polkadot/types-codec": "npm:^14.3.1"
     "@types/jest": "npm:^29.5.12"
     eslint: "npm:^8.57.0"
