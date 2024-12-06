@@ -18,7 +18,7 @@
     "pb": "yarn protons src/metadata/onchain/protobuf/OnchainMetadata.proto -o src/metadata/onchain/protobuf",
     "clean": "rm -rf dist",
     "format": "prettier --write \"src/**/*.ts\"",
-    "test": "yarn node --experimental-vm-modules $  (yarn bin jest)"
+    "test": "yarn node --experimental-vm-modules $(yarn bin jest)"
   },
   "exports": {
     ".": "./dist/index.js",
