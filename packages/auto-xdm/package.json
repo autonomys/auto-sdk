@@ -11,6 +11,9 @@
     "name": "Autonomys",
     "url": "https://www.autonomys.xyz"
   },
+  "bugs": {
+    "url": "https://github.com/autonomys/auto-sdk/issues"
+  },
   "scripts": {
     "build": "tsc",
     "clean": "rm -rf dist",
