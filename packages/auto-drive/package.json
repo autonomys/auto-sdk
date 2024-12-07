@@ -1,12 +1,17 @@
 {
   "name": "@autonomys/auto-drive",
   "packageManager": "yarn@4.2.2",
+  "version": "1.0.12",
+  "license": "MIT",
   "type": "module",
   "main": "dist/index.js",
-  "version": "1.0.12",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/autonomys/auto-sdk"
+  },
   "author": {
     "name": "Autonomys",
-    "url": "https://autonomys.net"
+    "url": "https://www.autonomys.xyz"
   },
   "engines": {
     "node": ">=20.8.0"

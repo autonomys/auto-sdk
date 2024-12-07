@@ -3,6 +3,14 @@
   "version": "1.0.12",
   "license": "MIT",
   "main": "dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/autonomys/auto-sdk"
+  },
+  "author": {
+    "name": "Autonomys",
+    "url": "https://www.autonomys.xyz"
+  },
   "scripts": {
     "build": "tsc",
     "clean": "rm -rf dist",
@@ -13,14 +21,6 @@
     "dist",
     "README.md"
   ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/autonomys/auto-sdk"
-  },
-  "author": {
-    "name": "Autonomys",
-    "url": "https://www.autonomys.net"
-  },
   "dependencies": {
     "@autonomys/auto-utils": "^1.0.12"
   },
