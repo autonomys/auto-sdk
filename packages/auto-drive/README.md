@@ -10,6 +10,10 @@
 
 The `auto-drive` package provides a set of tools to interact with the Autonomys Auto-Drive API. Below are some key functionalities:
 
+### This package is an ES Module package and it's designed to work with ESM applications.
+
+Check [this tutorial](https://dev.to/mangadev/set-up-a-backend-nodejs-typescript-jest-using-es-modules-1530) in how to setup a ES module application
+
 ### Installation
 
 To install the package, use the following command:
@@ -34,7 +38,7 @@ const options = {
   compression: true,
 }
 
-const uploadObservable = uploadFile(api, filePath, options)
+const uploadObservable = uploadFileFromFilepath(api, filePath, options)
   .then(() => {
     console.log('File uploaded successfully!')
   })
@@ -188,17 +192,16 @@ import { downloadObject } from '@autonomys/auto-drive'
 const api = createAutoDriveApi({ apiKey: 'your-api-key' }) // Initialize your API instance with API key
 
 try {
-    const cid = ".."
-    const stream = await downloadObject(api, { cid })
-    let file = Buffer.alloc(0);
-    for await (const chunk of stream) {
-      file = Buffer.concat([file, chunk])
-    }
-    console.log('File downloaded successfully:', stream)
+  const cid = '..'
+  const stream = await downloadObject(api, { cid })
+  let file = Buffer.alloc(0)
+  for await (const chunk of stream) {
+    file = Buffer.concat([file, chunk])
+  }
+  console.log('File downloaded successfully:', stream)
 } catch (error) {
-    console.error('Error downloading file:', error)
+  console.error('Error downloading file:', error)
 }
-
 ```
 
 ### Example Usage of getRoots
