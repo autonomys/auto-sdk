@@ -1,4 +1,3 @@
-import fs from 'fs'
 import JSZip from 'jszip'
 import { z } from 'zod'
 
@@ -93,16 +92,11 @@ export const constructFromInput = (input: File[]): FolderTree => {
 const addFilesToZip = (
   folder: JSZip,
   folderNode: FolderTreeFolder,
-  files: Record<string, File | string>,
+  files: Record<string, File>,
 ) => {
   folderNode.children.forEach((child) => {
     if (child.type === 'file') {
-      const file = files[child.id]
-      if (typeof file === 'string') {
-        folder.file(child.name, fs.createReadStream(file))
-      } else {
-        folder.file(child.name, file)
-      }
+      folder.file(child.name, files[child.id])
     } else if (child.type === 'folder') {
       const subFolder = folder.folder(child.name)
       if (!subFolder) {
@@ -115,7 +109,7 @@ const addFilesToZip = (
 
 export const constructZipBlobFromTreeAndPaths = async (
   tree: FolderTree,
-  files: Record<string, File | string>,
+  files: Record<string, File>,
 ) => {
   if (tree.type === 'file') {
     throw new Error('Cannot construct zip from file')
