@@ -4,15 +4,18 @@
   "version": "1.0.12",
   "license": "MIT",
   "main": "dist/index.js",
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "https://github.com/autonomys/auto-sdk"
   },
   "author": {
     "name": "Autonomys",
-    "url": "https://www.autonomys.net"
+    "url": "https://www.autonomys.xyz"
   },
-  "type": "module",
+  "bugs": {
+    "url": "https://github.com/autonomys/auto-sdk/issues"
+  },
   "scripts": {
     "build": "tsc",
     "pb": "yarn protons src/metadata/onchain/protobuf/OnchainMetadata.proto -o src/metadata/onchain/protobuf",
