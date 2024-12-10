@@ -1,4 +1,4 @@
 export * from './async'
-export * from './folder'
-export * from './stream'
+export * from './misc'
+export * from './observable'
 export * from './types'
