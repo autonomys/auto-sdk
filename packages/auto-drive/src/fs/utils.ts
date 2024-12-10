@@ -2,7 +2,7 @@ import { WriteStream, createReadStream } from 'fs'
 import fs from 'fs/promises'
 import JSZip from 'jszip'
 import path from 'path'
-import { FolderTree, FolderTreeFolder } from '../api/models/folderTree.js'
+import { FolderTree, FolderTreeFolder } from '../api/models/folderTree'
 
 export const getFiles = async (folderPath: string): Promise<string[]> => {
   const stat = await fs.stat(folderPath)

@@ -1,4 +1,3 @@
-import { CompressionAlgorithm, stringToCid } from '@autonomys/auto-dag-data'
 import fs from 'fs'
 import mime from 'mime-types'
 import { AutoDriveApi } from '../api/connection.js'
@@ -101,6 +100,7 @@ export const uploadFolderFromFolderPath = async (
   }
 
   return new PromisedObservable<UploadFolderStatus>(async (subscriber) => {
+    const { CompressionAlgorithm } = await import('@autonomys/auto-dag-data')
     const folderUpload = await createFolderUpload(api, {
       fileTree,
       uploadOptions: {
@@ -134,7 +134,7 @@ export const uploadFolderFromFolderPath = async (
 
     const result = await completeUpload(api, { uploadId: folderUpload.id })
 
-    subscriber.next({ type: 'folder', progress: 100, cid: stringToCid(result.cid) })
+    subscriber.next({ type: 'folder', progress: 100, cid: result.cid })
     subscriber.complete()
   })
 }

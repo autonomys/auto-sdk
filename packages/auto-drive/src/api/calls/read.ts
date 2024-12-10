@@ -1,7 +1,7 @@
-import { ArgsWithoutPagination, ArgsWithPagination } from '../../utils/types.js'
-import { AutoDriveApi } from '../connection.js'
-import { PaginatedResult } from '../models/common.js'
-import { ObjectInformation, ObjectSummary, Scope } from '../models/objects.js'
+import { ArgsWithoutPagination, ArgsWithPagination } from '../../utils/types'
+import { AutoDriveApi } from '../connection'
+import { PaginatedResult } from '../models/common'
+import { ObjectInformation, ObjectSummary, Scope } from '../models/objects'
 
 /**
  * Retrieves the root objects based on the specified scope.
