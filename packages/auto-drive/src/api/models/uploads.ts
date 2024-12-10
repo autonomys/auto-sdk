@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { FolderTreeFolderSchema } from './folderTree.js'
+import { FolderTreeFolderSchema } from './folderTree'
 
 export enum UploadType {
   FILE = 'file',

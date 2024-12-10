@@ -1,12 +1,12 @@
-import { ArgsWithoutPagination } from '../../utils/types.js'
-import { AutoDriveApi } from '../connection.js'
-import { FolderTree } from '../models/folderTree.js'
+import { ArgsWithoutPagination } from '../../utils/types'
+import { AutoDriveApi } from '../connection'
+import { FolderTree } from '../models/folderTree'
 import {
   CompleteUploadResponse,
   FileUpload,
   FileUploadOptions,
   FolderUpload,
-} from '../models/uploads.js'
+} from '../models/uploads'
 
 /**
  * Initiates a file upload to the server.

@@ -1,9 +1,9 @@
 import fs from 'fs'
 import mime from 'mime-types'
-import { asyncByChunk, asyncFromStream, fileToIterable } from '../utils/async.js'
-import { getFiles } from '../utils/folder.js'
-import { progressToPercentage } from '../utils/misc.js'
-import { PromisedObservable } from '../utils/observable.js'
+import { asyncByChunk, asyncFromStream, fileToIterable } from '../utils/async'
+import { getFiles } from '../utils/folder'
+import { progressToPercentage } from '../utils/misc'
+import { PromisedObservable } from '../utils/observable'
 import {
   completeUpload,
   createFileUpload,
@@ -12,15 +12,15 @@ import {
   downloadObject,
   getObjectMetadata,
   uploadFileChunk,
-} from './calls/index.js'
-import { AutoDriveApi } from './connection.js'
-import { GenericFile } from './models/file.js'
+} from './calls/index'
+import { AutoDriveApi } from './connection'
+import { GenericFile } from './models/file'
 import {
   constructFromFileSystemEntries,
   constructFromInput,
   constructZipBlobFromTreeAndPaths,
-} from './models/folderTree.js'
-import { UploadChunksStatus, UploadFileStatus, UploadFolderStatus } from './models/uploads.js'
+} from './models/folderTree'
+import { UploadChunksStatus, UploadFileStatus, UploadFolderStatus } from './models/uploads'
 
 type UploadFileOptions = {
   password?: string

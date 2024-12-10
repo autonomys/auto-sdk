@@ -1,2 +1,2 @@
-export * from './api/index.js'
-export * from './utils/index.js'
+export * from './api/index'
+export * from './utils/index'
