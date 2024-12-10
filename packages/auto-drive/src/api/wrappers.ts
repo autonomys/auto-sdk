@@ -1,12 +1,3 @@
-import {
-  compressFile,
-  CompressionAlgorithm,
-  decompressFile,
-  decryptFile,
-  encryptFile,
-  EncryptionAlgorithm,
-  stringToCid,
-} from '@autonomys/auto-dag-data'
 import fs from 'fs'
 import mime from 'mime-types'
 import { asyncByChunk, asyncFromStream, fileToIterable } from '../utils/async.js'
@@ -123,6 +114,8 @@ export const uploadFileFromInput = (
   uploadChunkSize?: number,
 ): PromisedObservable<UploadFileStatus> => {
   return new PromisedObservable<UploadFileStatus>(async (subscriber) => {
+    const { stringToCid, compressFile, CompressionAlgorithm, encryptFile, EncryptionAlgorithm } =
+      await import('@autonomys/auto-dag-data')
     let asyncIterable: AsyncIterable<Buffer> = fileToIterable(file)
 
     if (compression) {
@@ -163,7 +156,7 @@ export const uploadFileFromInput = (
 
     const result = await completeUpload(api, { uploadId: fileUpload.id })
 
-    subscriber.next({ type: 'file', progress: 100, cid: stringToCid(result.cid) })
+    subscriber.next({ type: 'file', progress: 100, cid: result.cid })
     subscriber.complete()
   })
 }
@@ -192,6 +185,8 @@ export const uploadFile = (
   uploadChunkSize?: number,
 ): PromisedObservable<UploadFileStatus> => {
   return new PromisedObservable<UploadFileStatus>(async (subscriber) => {
+    const { stringToCid, compressFile, CompressionAlgorithm, encryptFile, EncryptionAlgorithm } =
+      await import('@autonomys/auto-dag-data')
     let asyncIterable: AsyncIterable<Buffer> = file.read()
 
     if (compression) {
@@ -232,7 +227,7 @@ export const uploadFile = (
 
     const result = await completeUpload(api, { uploadId: fileUpload.id })
 
-    subscriber.next({ type: 'file', progress: 100, cid: stringToCid(result.cid) })
+    subscriber.next({ type: 'file', progress: 100, cid: result.cid })
     subscriber.complete()
   })
 }
@@ -260,6 +255,7 @@ export const uploadFolderFromFolderPath = async (
   folderPath: string,
   { uploadChunkSize, password }: { uploadChunkSize?: number; password?: string } = {},
 ): Promise<PromisedObservable<UploadFileStatus | UploadFolderStatus>> => {
+  const { CompressionAlgorithm, stringToCid } = await import('@autonomys/auto-dag-data')
   const files = await getFiles(folderPath)
   const fileTree = constructFromFileSystemEntries(files)
 
@@ -317,7 +313,7 @@ export const uploadFolderFromFolderPath = async (
 
     const result = await completeUpload(api, { uploadId: folderUpload.id })
 
-    subscriber.next({ type: 'folder', progress: 100, cid: stringToCid(result.cid) })
+    subscriber.next({ type: 'folder', progress: 100, cid: result.cid })
     subscriber.complete()
   })
 }
@@ -344,6 +340,8 @@ export const uploadFolderFromInput = async (
   fileList: FileList | File[],
   { uploadChunkSize, password }: { uploadChunkSize?: number; password?: string } = {},
 ): Promise<PromisedObservable<UploadFileStatus | UploadFolderStatus>> => {
+  const { stringToCid } = await import('@autonomys/auto-dag-data')
+
   const files = fileList instanceof FileList ? Array.from(fileList) : fileList
   const fileTree = constructFromInput(files)
 
@@ -403,7 +401,7 @@ export const uploadFolderFromInput = async (
 
     const result = await completeUpload(api, { uploadId: folderUpload.id })
 
-    subscriber.next({ type: 'folder', progress: 100, cid: stringToCid(result.cid) })
+    subscriber.next({ type: 'folder', progress: 100, cid: result.cid })
     subscriber.complete()
   })
 }
@@ -454,6 +452,10 @@ export const downloadFile = async (
   cid: string,
   password?: string,
 ): Promise<AsyncIterable<Buffer>> => {
+  const { decompressFile, CompressionAlgorithm, EncryptionAlgorithm, decryptFile } = await import(
+    '@autonomys/auto-dag-data'
+  )
+
   const metadata = await getObjectMetadata(api, { cid })
 
   let iterable = asyncFromStream(await downloadObject(api, { cid }))

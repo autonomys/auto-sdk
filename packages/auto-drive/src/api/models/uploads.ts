@@ -1,4 +1,3 @@
-import { CID, FileUploadOptions } from '@autonomys/auto-dag-data'
 import { z } from 'zod'
 import { FolderTreeFolderSchema } from './folderTree.js'
 
@@ -28,6 +27,29 @@ export const fileUploadSchema = z.object({
   oauthUserId: z.string(),
 })
 
+export enum CompressionAlgorithm {
+  ZLIB = 'ZLIB',
+}
+export interface CompressionOptions {
+  algorithm: CompressionAlgorithm
+  level?: number
+  chunkSize?: number
+}
+
+export type FileUploadOptions = {
+  compression?: CompressionOptions
+  encryption?: EncryptionOptions
+}
+
+export enum EncryptionAlgorithm {
+  AES_256_GCM = 'AES_256_GCM',
+}
+
+export interface EncryptionOptions {
+  algorithm: EncryptionAlgorithm
+  chunkSize?: number
+}
+
 export type FileUpload = z.infer<typeof fileUploadSchema> & {
   uploadOptions: FileUploadOptions | null
 }
@@ -55,13 +77,13 @@ export type CompleteUploadResponse = {
 export type UploadFileStatus = {
   type: 'file'
   progress: number
-  cid?: CID
+  cid?: string
 }
 
 export type UploadFolderStatus = {
   type: 'folder'
   progress: number
-  cid?: CID
+  cid?: string
 }
 
 export type UploadChunksStatus = {

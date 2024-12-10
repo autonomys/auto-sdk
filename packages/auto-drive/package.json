@@ -3,7 +3,6 @@
   "packageManager": "yarn@4.2.2",
   "version": "1.0.12",
   "license": "MIT",
-  "type": "module",
   "main": "dist/index.js",
   "repository": {
     "type": "git",

@@ -1,4 +1,38 @@
-import { OffchainMetadata } from '@autonomys/auto-dag-data'
+import { FileUploadOptions } from './uploads'
+
+export type OffchainMetadata = OffchainFileMetadata | OffchainFolderMetadata
+interface ChildrenMetadata {
+  type: 'folder' | 'file'
+  name?: string
+  cid: string
+  totalSize: bigint
+}
+
+export type OffchainFolderMetadata = {
+  type: 'folder'
+  dataCid: string
+  name?: string
+  totalSize: bigint
+  totalFiles: number
+  children: ChildrenMetadata[]
+  uploadOptions: FileUploadOptions
+}
+
+export type OffchainFileMetadata = {
+  type: 'file'
+  dataCid: string
+  name?: string
+  mimeType?: string
+  totalSize: bigint
+  totalChunks: number
+  chunks: ChunkInfo[]
+  uploadOptions?: FileUploadOptions
+}
+
+export interface ChunkInfo {
+  size: bigint
+  cid: string
+}
 
 export enum Scope {
   Global = 'global',

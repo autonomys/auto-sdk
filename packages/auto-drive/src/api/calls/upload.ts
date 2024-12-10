@@ -1,8 +1,12 @@
-import { CID, FileUploadOptions } from '@autonomys/auto-dag-data'
 import { ArgsWithoutPagination } from '../../utils/types.js'
 import { AutoDriveApi } from '../connection.js'
 import { FolderTree } from '../models/folderTree.js'
-import { CompleteUploadResponse, FileUpload, FolderUpload } from '../models/uploads.js'
+import {
+  CompleteUploadResponse,
+  FileUpload,
+  FileUploadOptions,
+  FolderUpload,
+} from '../models/uploads.js'
 
 /**
  * Initiates a file upload to the server.
