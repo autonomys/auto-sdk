@@ -2,7 +2,7 @@ import fs from 'fs'
 import mime from 'mime-types'
 import { AutoDriveApi } from '../api/connection.js'
 import { completeUpload, createFolderUpload } from '../api/index.js'
-import { GenericFile } from '../api/models/file.js'
+import { GenericFileWithinFolder } from '../api/models/file.js'
 import { constructFromFileSystemEntries } from '../api/models/folderTree.js'
 import { UploadFileStatus, UploadFolderStatus } from '../api/models/uploads.js'
 import { uploadFile, UploadFileOptions, uploadFileWithinFolderUpload } from '../api/wrappers.js'
@@ -31,9 +31,10 @@ import { constructZipFromTreeAndFileSystemPaths, getFiles } from './utils.js'
 export const uploadFileFromFilepath = (
   api: AutoDriveApi,
   filePath: string,
-  { password, compression = true }: UploadFileOptions,
+  options: UploadFileOptions = {},
   uploadChunkSize?: number,
 ): PromisedObservable<UploadFileStatus> => {
+  const { password = undefined, compression = true } = options
   const name = filePath.split('/').pop()!
 
   return uploadFile(
@@ -43,7 +44,6 @@ export const uploadFileFromFilepath = (
       name,
       mimeType: mime.lookup(name) || undefined,
       size: fs.statSync(filePath).size,
-      path: filePath,
     },
     {
       password,
@@ -90,7 +90,6 @@ export const uploadFolderFromFolderPath = async (
         name: `${name}.zip`,
         mimeType: 'application/zip',
         size: zipBlob.size,
-        path: name,
       },
       {
         password,
@@ -111,7 +110,7 @@ export const uploadFolderFromFolderPath = async (
       },
     })
 
-    const genericFiles: GenericFile[] = files.map((file) => ({
+    const genericFiles: GenericFileWithinFolder[] = files.map((file) => ({
       read: () => fs.createReadStream(file),
       name: file.split('/').pop()!,
       mimeType: mime.lookup(file.split('/').pop()!) || undefined,
