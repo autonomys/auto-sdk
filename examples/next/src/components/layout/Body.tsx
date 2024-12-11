@@ -78,7 +78,7 @@ export const Body: FC = () => {
     <div className='relative height-full w-1/2'>
       {walletName && (
         <>
-          <b>{walletName}</b> wallet has {parseTokenAmount(currentWalletBalance)} tSSC
+          <b>{walletName}</b> wallet has {String(parseTokenAmount(currentWalletBalance))} tSSC
         </>
       )}
       {networkToDisplay && (
