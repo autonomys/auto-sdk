@@ -1,2 +1,2 @@
-export * from './utils.js'
-export * from './wrappers.js'
+export * from './utils'
+export * from './wrappers'

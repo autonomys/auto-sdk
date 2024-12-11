@@ -8,11 +8,7 @@
 
 ## Overview
 
-The `auto-drive` package provides a set of tools to interact with the Autonomys Auto-Drive API. Below are some key functionalities:
-
-### This package is an ES Module package and it's designed to work with ESM applications.
-
-Check [this tutorial](https://dev.to/mangadev/set-up-a-backend-nodejs-typescript-jest-using-es-modules-1530) in how to setup a ES module application
+The `auto-drive` package provides a set of tools to interact with the Autonomys Auto-Drive API.
 
 ### Installation
 

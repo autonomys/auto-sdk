@@ -3,8 +3,9 @@
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": "./src/",
-    "moduleResolution": "NodeNext",
-    "module": "NodeNext",
+    "moduleResolution": "node16",
+    "module": "Node16",
+    "target": "es6",
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
     "stripInternal": true,

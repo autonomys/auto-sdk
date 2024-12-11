@@ -10,6 +10,10 @@
 
 The **Autonomys Auto Dag Data SDK** (`@autonomys/auto-dag-data`) provides utilities for creating and managing IPLD DAGs (InterPlanetary Linked Data Directed Acyclic Graphs) for files and folders. It facilitates chunking large files, handling metadata, and creating folder structures suitable for distributed storage systems like IPFS.
 
+### This package is an ES Module package and it's designed to work with ESM applications.
+
+Check [this tutorial](https://dev.to/mangadev/set-up-a-backend-nodejs-typescript-jest-using-es-modules-1530) in how to setup a ES module application.
+
 ## Features
 
 - **File Chunking and DAG Creation**: Efficiently split large files into smaller chunks and create IPLD DAGs.
