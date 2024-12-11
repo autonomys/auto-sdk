@@ -14,7 +14,7 @@ import {
   uploadFileChunk,
 } from './calls/index'
 import { AutoDriveApi } from './connection'
-import { GenericFile } from './models/file'
+import { GenericFile, GenericFileWithinFolder } from './models/file'
 import { constructFromInput, constructZipBlobFromTreeAndPaths } from './models/folderTree'
 import { UploadChunksStatus, UploadFileStatus, UploadFolderStatus } from './models/uploads'
 
@@ -229,7 +229,6 @@ export const uploadFolderFromInput = async (
         name: `${name}.zip`,
         mimeType: 'application/zip',
         size: zipBlob.size,
-        path: name,
       },
       {
         password,
@@ -287,7 +286,7 @@ export const uploadFolderFromInput = async (
 export const uploadFileWithinFolderUpload = (
   api: AutoDriveApi,
   uploadId: string,
-  file: GenericFile,
+  file: GenericFileWithinFolder,
   uploadChunkSize?: number,
 ): PromisedObservable<UploadChunksStatus> => {
   return new PromisedObservable<UploadChunksStatus>(async (subscriber) => {

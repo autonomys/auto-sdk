@@ -3,5 +3,8 @@ export interface GenericFile {
   name: string
   mimeType?: string
   size: number
+}
+
+export interface GenericFileWithinFolder extends GenericFile {
   path: string
 }
