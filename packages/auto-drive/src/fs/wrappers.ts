@@ -31,9 +31,10 @@ import { constructZipFromTreeAndFileSystemPaths, getFiles } from './utils.js'
 export const uploadFileFromFilepath = (
   api: AutoDriveApi,
   filePath: string,
-  { password, compression = true }: UploadFileOptions,
+  options: UploadFileOptions = {},
   uploadChunkSize?: number,
 ): PromisedObservable<UploadFileStatus> => {
+  const { password = undefined, compression = true } = options
   const name = filePath.split('/').pop()!
 
   return uploadFile(

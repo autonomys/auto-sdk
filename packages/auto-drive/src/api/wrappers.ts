@@ -64,9 +64,10 @@ const uploadFileChunks = (
 export const uploadFileFromInput = (
   api: AutoDriveApi,
   file: File,
-  { password, compression = true }: UploadFileOptions,
+  options: UploadFileOptions = {},
   uploadChunkSize?: number,
 ): PromisedObservable<UploadFileStatus> => {
+  const { password = undefined, compression = true } = options
   return new PromisedObservable<UploadFileStatus>(async (subscriber) => {
     const { stringToCid, compressFile, CompressionAlgorithm, encryptFile, EncryptionAlgorithm } =
       await import('@autonomys/auto-dag-data')
@@ -135,9 +136,11 @@ export const uploadFileFromInput = (
 export const uploadFile = (
   api: AutoDriveApi,
   file: GenericFile,
-  { password, compression = true }: UploadFileOptions,
+  options: UploadFileOptions = {},
   uploadChunkSize?: number,
 ): PromisedObservable<UploadFileStatus> => {
+  const { password = undefined, compression = true } = options
+
   return new PromisedObservable<UploadFileStatus>(async (subscriber) => {
     const { stringToCid, compressFile, CompressionAlgorithm, encryptFile, EncryptionAlgorithm } =
       await import('@autonomys/auto-dag-data')
