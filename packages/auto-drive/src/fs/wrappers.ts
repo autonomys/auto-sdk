@@ -1,7 +1,7 @@
 import fs from 'fs'
 import mime from 'mime-types'
 import { AutoDriveApi } from '../api/connection.js'
-import { completeUpload, createFolderUpload } from '../api/index.js'
+import { apiCalls } from '../api/index.js'
 import { GenericFileWithinFolder } from '../api/models/file.js'
 import { constructFromFileSystemEntries } from '../api/models/folderTree.js'
 import { UploadFileStatus, UploadFolderStatus } from '../api/models/uploads.js'
@@ -100,7 +100,7 @@ export const uploadFolderFromFolderPath = async (
 
   return new PromisedObservable<UploadFolderStatus>(async (subscriber) => {
     const { CompressionAlgorithm } = await import('@autonomys/auto-dag-data')
-    const folderUpload = await createFolderUpload(api, {
+    const folderUpload = await apiCalls.createFolderUpload(api, {
       fileTree,
       uploadOptions: {
         compression: {
@@ -131,7 +131,7 @@ export const uploadFolderFromFolderPath = async (
       progress += file.size
     }
 
-    const result = await completeUpload(api, { uploadId: folderUpload.id })
+    const result = await apiCalls.completeUpload(api, { uploadId: folderUpload.id })
 
     subscriber.next({ type: 'folder', progress: 100, cid: result.cid })
     subscriber.complete()

@@ -1,4 +1,11 @@
-export * from './download'
-export * from './read'
-export * from './upload'
-export * from './write'
+import * as downloadCalls from './download'
+import * as readCalls from './read'
+import * as uploadCalls from './upload'
+import * as writeCalls from './write'
+
+export const apiCalls = {
+  ...downloadCalls,
+  ...readCalls,
+  ...uploadCalls,
+  ...writeCalls,
+}
