@@ -2,14 +2,7 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "rootDir": "./src/",
-    "moduleResolution": "node16",
-    "module": "Node16",
-    "target": "es6",
-    "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": true,
-    "stripInternal": true,
-    "resolveJsonModule": true
+    "rootDir": "./src"
   },
   "include": ["src"]
 }
