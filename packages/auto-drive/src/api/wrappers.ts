@@ -1,4 +1,3 @@
-import fs from 'fs'
 import mime from 'mime-types'
 import { asyncByChunk, asyncFromStream, fileToIterable } from '../utils/async'
 import { progressToPercentage } from '../utils/misc'
