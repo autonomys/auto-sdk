@@ -20,6 +20,8 @@
   "scripts": {
     "build": "yarn tsc"
   },
+  "main": "./dist/node.js",
+  "types": "./dist/node.d.ts",
   "exports": {
     ".": {
       "browser": "./dist/browser.js",
