@@ -3,16 +3,7 @@ import mime from 'mime-types'
 import { asyncByChunk, asyncFromStream, fileToIterable } from '../utils/async'
 import { progressToPercentage } from '../utils/misc'
 import { PromisedObservable } from '../utils/observable'
-
-import {
-  completeUpload,
-  createFileUpload,
-  createFileUploadWithinFolderUpload,
-  createFolderUpload,
-  downloadObject,
-  getObjectMetadata,
-  uploadFileChunk,
-} from './calls/index'
+import { apiCalls } from './calls/index'
 import { AutoDriveApi } from './connection'
 import { GenericFile, GenericFileWithinFolder } from './models/file'
 import { constructFromInput, constructZipBlobFromTreeAndPaths } from './models/folderTree'
@@ -35,7 +26,7 @@ const uploadFileChunks = (
     let index = 0
     let uploadBytes = 0
     for await (const chunk of asyncByChunk(asyncIterable, uploadChunkSize)) {
-      await uploadFileChunk(api, { uploadId: fileUploadId, chunk, index })
+      await apiCalls.uploadFileChunk(api, { uploadId: fileUploadId, chunk, index })
       uploadBytes += chunk.length
       subscriber.next({ uploadBytes })
       index++
@@ -99,7 +90,7 @@ export const uploadFileFromInput = (
           }
         : undefined,
     }
-    const fileUpload = await createFileUpload(api, {
+    const fileUpload = await apiCalls.createFileUpload(api, {
       mimeType: mime.lookup(file.name) || undefined,
       filename: file.name,
       uploadOptions,
@@ -109,7 +100,7 @@ export const uploadFileFromInput = (
       subscriber.next({ type: 'file', progress: progressToPercentage(e.uploadBytes, file.size) }),
     )
 
-    const result = await completeUpload(api, { uploadId: fileUpload.id })
+    const result = await apiCalls.completeUpload(api, { uploadId: fileUpload.id })
 
     subscriber.next({ type: 'file', progress: 100, cid: result.cid })
     subscriber.complete()
@@ -172,7 +163,7 @@ export const uploadFile = (
           }
         : undefined,
     }
-    const fileUpload = await createFileUpload(api, {
+    const fileUpload = await apiCalls.createFileUpload(api, {
       mimeType: mime.lookup(file.name) || undefined,
       filename: file.name,
       uploadOptions,
@@ -182,7 +173,7 @@ export const uploadFile = (
       subscriber.next({ type: 'file', progress: progressToPercentage(e.uploadBytes, file.size) }),
     )
 
-    const result = await completeUpload(api, { uploadId: fileUpload.id })
+    const result = await apiCalls.completeUpload(api, { uploadId: fileUpload.id })
 
     subscriber.next({ type: 'file', progress: 100, cid: result.cid })
     subscriber.complete()
@@ -239,7 +230,7 @@ export const uploadFolderFromInput = async (
 
   return new PromisedObservable<UploadFolderStatus>(async (subscriber) => {
     // Otherwise, we upload the files as a folder w/o compression or encryption
-    const folderUpload = await createFolderUpload(api, {
+    const folderUpload = await apiCalls.createFolderUpload(api, {
       fileTree,
     })
 
@@ -267,7 +258,7 @@ export const uploadFolderFromInput = async (
       currentBytesUploaded += file.size
     }
 
-    const result = await completeUpload(api, { uploadId: folderUpload.id })
+    const result = await apiCalls.completeUpload(api, { uploadId: folderUpload.id })
 
     subscriber.next({ type: 'folder', progress: 100, cid: result.cid })
     subscriber.complete()
@@ -290,7 +281,7 @@ export const uploadFileWithinFolderUpload = (
   uploadChunkSize?: number,
 ): PromisedObservable<UploadChunksStatus> => {
   return new PromisedObservable<UploadChunksStatus>(async (subscriber) => {
-    const fileUpload = await createFileUploadWithinFolderUpload(api, {
+    const fileUpload = await apiCalls.createFileUploadWithinFolderUpload(api, {
       uploadId,
       name: file.name,
       mimeType: file.mimeType,
@@ -302,7 +293,7 @@ export const uploadFileWithinFolderUpload = (
       subscriber.next({ uploadBytes: e.uploadBytes }),
     )
 
-    await completeUpload(api, { uploadId: fileUpload.id })
+    await apiCalls.completeUpload(api, { uploadId: fileUpload.id })
 
     subscriber.complete()
   })
@@ -324,9 +315,9 @@ export const downloadFile = async (
     '@autonomys/auto-dag-data'
   )
 
-  const metadata = await getObjectMetadata(api, { cid })
+  const metadata = await apiCalls.getObjectMetadata(api, { cid })
 
-  let iterable = asyncFromStream(await downloadObject(api, { cid }))
+  let iterable = asyncFromStream(await apiCalls.downloadObject(api, { cid }))
   if (metadata.uploadOptions?.encryption) {
     if (!password) {
       throw new Error('Password is required to decrypt the file')
