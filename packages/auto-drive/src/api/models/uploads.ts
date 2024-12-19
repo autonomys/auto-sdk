@@ -74,17 +74,22 @@ export type CompleteUploadResponse = {
   cid: string
 }
 
-export type UploadFileStatus = {
-  type: 'file'
-  progress: number
-  cid?: string
-}
+type ObjectUploadStatus<Type extends 'file' | 'folder'> =
+  | {
+      completed: true
+      type: Type
+      progress: number
+      cid: string
+    }
+  | {
+      completed: false
+      type: Type
+      progress: number
+      cid: null
+    }
 
-export type UploadFolderStatus = {
-  type: 'folder'
-  progress: number
-  cid?: string
-}
+export type UploadFileStatus = ObjectUploadStatus<'file'>
+export type UploadFolderStatus = ObjectUploadStatus<'folder'>
 
 export type UploadChunksStatus = {
   uploadBytes: number
