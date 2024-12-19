@@ -1,5 +1,6 @@
 import mime from 'mime-types'
 import { asyncByChunk, asyncFromStream, fileToIterable } from '../utils/async'
+import { AutoCID } from '../utils/autohash'
 import { progressToPercentage } from '../utils/misc'
 import { PromisedObservable } from '../utils/observable'
 import { apiCalls } from './calls/index'
@@ -110,7 +111,7 @@ export const uploadFileFromInput = (
       type: 'file',
       progress: 100,
       completed: true,
-      cid: result.cid,
+      cid: await AutoCID.create(result.cid),
     })
     subscriber.complete()
   })
@@ -193,7 +194,7 @@ export const uploadFile = (
       type: 'file',
       progress: 100,
       completed: true,
-      cid: result.cid,
+      cid: await AutoCID.create(result.cid),
     })
     subscriber.complete()
   })
@@ -285,7 +286,7 @@ export const uploadFolderFromInput = async (
       type: 'folder',
       progress: 100,
       completed: true,
-      cid: result.cid,
+      cid: await AutoCID.create(result.cid),
     })
     subscriber.complete()
   })

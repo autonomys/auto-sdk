@@ -6,6 +6,7 @@ import { GenericFileWithinFolder } from '../api/models/file.js'
 import { constructFromFileSystemEntries } from '../api/models/folderTree.js'
 import { UploadFileStatus, UploadFolderStatus } from '../api/models/uploads.js'
 import { uploadFile, UploadFileOptions, uploadFileWithinFolderUpload } from '../api/wrappers.js'
+import { AutoCID } from '../utils/autohash.js'
 import { fileToIterable } from '../utils/index.js'
 import { progressToPercentage } from '../utils/misc.js'
 import { PromisedObservable } from '../utils/observable.js'
@@ -139,7 +140,7 @@ export const uploadFolderFromFolderPath = async (
       type: 'folder',
       progress: 100,
       completed: true,
-      cid: result.cid,
+      cid: await AutoCID.create(result.cid),
     })
     subscriber.complete()
   })

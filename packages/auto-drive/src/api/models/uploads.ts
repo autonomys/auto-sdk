@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { AutoCID } from '../../utils/autohash'
 import { FolderTreeFolderSchema } from './folderTree'
 
 export enum UploadType {
@@ -79,7 +80,7 @@ export type UploadFileStatus =
       completed: true
       type: 'file'
       progress: number
-      cid: string
+      cid: AutoCID
     }
   | {
       completed: false
@@ -93,7 +94,7 @@ export type UploadFolderStatus =
       completed: true
       type: 'folder'
       progress: number
-      cid: string
+      cid: AutoCID
     }
   | {
       completed: false
