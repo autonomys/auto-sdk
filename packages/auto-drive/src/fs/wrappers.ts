@@ -126,6 +126,8 @@ export const uploadFolderFromFolderPath = async (
         subscriber.next({
           type: 'folder',
           progress: progressToPercentage(progress + e.uploadBytes, totalSize),
+          completed: false,
+          cid: null,
         }),
       )
       progress += file.size
@@ -133,7 +135,12 @@ export const uploadFolderFromFolderPath = async (
 
     const result = await apiCalls.completeUpload(api, { uploadId: folderUpload.id })
 
-    subscriber.next({ type: 'folder', progress: 100, cid: result.cid })
+    subscriber.next({
+      type: 'folder',
+      progress: 100,
+      completed: true,
+      cid: result.cid,
+    })
     subscriber.complete()
   })
 }

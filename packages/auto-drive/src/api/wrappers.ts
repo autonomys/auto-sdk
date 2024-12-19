@@ -96,12 +96,22 @@ export const uploadFileFromInput = (
     })
 
     await uploadFileChunks(api, fileUpload.id, asyncIterable, uploadChunkSize).forEach((e) =>
-      subscriber.next({ type: 'file', progress: progressToPercentage(e.uploadBytes, file.size) }),
+      subscriber.next({
+        type: 'file',
+        progress: progressToPercentage(e.uploadBytes, file.size),
+        completed: false,
+        cid: null,
+      }),
     )
 
     const result = await apiCalls.completeUpload(api, { uploadId: fileUpload.id })
 
-    subscriber.next({ type: 'file', progress: 100, cid: result.cid })
+    subscriber.next({
+      type: 'file',
+      progress: 100,
+      completed: true,
+      cid: result.cid,
+    })
     subscriber.complete()
   })
 }
@@ -169,12 +179,22 @@ export const uploadFile = (
     })
 
     await uploadFileChunks(api, fileUpload.id, asyncIterable, uploadChunkSize).forEach((e) =>
-      subscriber.next({ type: 'file', progress: progressToPercentage(e.uploadBytes, file.size) }),
+      subscriber.next({
+        type: 'file',
+        progress: progressToPercentage(e.uploadBytes, file.size),
+        completed: false,
+        cid: null,
+      }),
     )
 
     const result = await apiCalls.completeUpload(api, { uploadId: fileUpload.id })
 
-    subscriber.next({ type: 'file', progress: 100, cid: result.cid })
+    subscriber.next({
+      type: 'file',
+      progress: 100,
+      completed: true,
+      cid: result.cid,
+    })
     subscriber.complete()
   })
 }
@@ -251,6 +271,8 @@ export const uploadFolderFromInput = async (
         subscriber.next({
           type: 'folder',
           progress: progressToPercentage(currentBytesUploaded + e.uploadBytes, totalSize),
+          completed: false,
+          cid: null,
         })
       })
 
@@ -259,7 +281,12 @@ export const uploadFolderFromInput = async (
 
     const result = await apiCalls.completeUpload(api, { uploadId: folderUpload.id })
 
-    subscriber.next({ type: 'folder', progress: 100, cid: result.cid })
+    subscriber.next({
+      type: 'folder',
+      progress: 100,
+      completed: true,
+      cid: result.cid,
+    })
     subscriber.complete()
   })
 }
