@@ -4,11 +4,10 @@ import { AutoDriveApi } from '../api/connection.js'
 import { apiCalls } from '../api/index.js'
 import { GenericFileWithinFolder } from '../api/models/file.js'
 import { constructFromFileSystemEntries } from '../api/models/folderTree.js'
-import { UploadFileStatus, UploadFolderStatus } from '../api/models/uploads.js'
+import { CompressionAlgorithm } from '../api/models/uploads.js'
 import { uploadFile, UploadFileOptions, uploadFileWithinFolderUpload } from '../api/wrappers.js'
 import { fileToIterable } from '../utils/index.js'
 import { progressToPercentage } from '../utils/misc.js'
-import { PromisedObservable } from '../utils/observable.js'
 import { constructZipFromTreeAndFileSystemPaths, getFiles } from './utils.js'
 
 /**
@@ -33,8 +32,8 @@ export const uploadFileFromFilepath = (
   filePath: string,
   options: UploadFileOptions = {},
   uploadChunkSize?: number,
-): PromisedObservable<UploadFileStatus> => {
-  const { password = undefined, compression = true } = options
+): Promise<string> => {
+  const { password = undefined, compression = true, onProgress } = options
   const name = filePath.split('/').pop()!
 
   return uploadFile(
@@ -48,6 +47,7 @@ export const uploadFileFromFilepath = (
     {
       password,
       compression,
+      onProgress,
     },
     uploadChunkSize,
   )
@@ -74,8 +74,16 @@ export const uploadFileFromFilepath = (
 export const uploadFolderFromFolderPath = async (
   api: AutoDriveApi,
   folderPath: string,
-  { uploadChunkSize, password }: { uploadChunkSize?: number; password?: string } = {},
-): Promise<PromisedObservable<UploadFileStatus | UploadFolderStatus>> => {
+  {
+    uploadChunkSize,
+    password,
+    onProgress,
+  }: {
+    uploadChunkSize?: number
+    password?: string
+    onProgress?: (progressInPercentage: number) => void
+  } = {},
+): Promise<Promise<string>> => {
   const files = await getFiles(folderPath)
   const fileTree = constructFromFileSystemEntries(files)
 
@@ -94,46 +102,43 @@ export const uploadFolderFromFolderPath = async (
       {
         password,
         compression: true,
+        onProgress: (progressInPercentage) => {
+          onProgress?.(progressToPercentage(progressInPercentage, zipBlob.size))
+        },
       },
     )
   }
 
-  return new PromisedObservable<UploadFolderStatus>(async (subscriber) => {
-    const { CompressionAlgorithm } = await import('@autonomys/auto-dag-data')
-    const folderUpload = await apiCalls.createFolderUpload(api, {
-      fileTree,
-      uploadOptions: {
-        compression: {
-          algorithm: CompressionAlgorithm.ZLIB,
-          level: 9,
-        },
+  const folderUpload = await apiCalls.createFolderUpload(api, {
+    fileTree,
+    uploadOptions: {
+      compression: {
+        algorithm: CompressionAlgorithm.ZLIB,
+        level: 9,
+      },
+    },
+  })
+
+  const genericFiles: GenericFileWithinFolder[] = files.map((file) => ({
+    read: () => fs.createReadStream(file),
+    name: file.split('/').pop()!,
+    mimeType: mime.lookup(file.split('/').pop()!) || undefined,
+    size: fs.statSync(file).size,
+    path: file,
+  }))
+
+  const totalSize = genericFiles.reduce((acc, file) => acc + file.size, 0)
+  let progress = 0
+  for (const file of genericFiles) {
+    await uploadFileWithinFolderUpload(api, folderUpload.id, file, uploadChunkSize, {
+      onProgress: (uploadedBytes) => {
+        onProgress?.(progressToPercentage(progress + uploadedBytes, totalSize))
       },
     })
+    progress += file.size
+  }
 
-    const genericFiles: GenericFileWithinFolder[] = files.map((file) => ({
-      read: () => fs.createReadStream(file),
-      name: file.split('/').pop()!,
-      mimeType: mime.lookup(file.split('/').pop()!) || undefined,
-      size: fs.statSync(file).size,
-      path: file,
-    }))
+  const result = await apiCalls.completeUpload(api, { uploadId: folderUpload.id })
 
-    const totalSize = genericFiles.reduce((acc, file) => acc + file.size, 0)
-
-    let progress = 0
-    for (const file of genericFiles) {
-      await uploadFileWithinFolderUpload(api, folderUpload.id, file, uploadChunkSize).forEach((e) =>
-        subscriber.next({
-          type: 'folder',
-          progress: progressToPercentage(progress + e.uploadBytes, totalSize),
-        }),
-      )
-      progress += file.size
-    }
-
-    const result = await apiCalls.completeUpload(api, { uploadId: folderUpload.id })
-
-    subscriber.next({ type: 'folder', progress: 100, cid: result.cid })
-    subscriber.complete()
-  })
+  return result.cid
 }
