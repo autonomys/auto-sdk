@@ -32,15 +32,15 @@ const filePath = 'path/to/your/file.txt' // Specify the path to your file
 const options = {
   password: 'your-encryption-password', // Optional: specify a password for encryption
   compression: true,
+  // an optional callback useful for large file uploads
+  onProgress?: (progress: number) => {
+    console.log(`The upload is completed is ${progress}% completed`)
+  }
 }
 
-const uploadObservable = uploadFileFromFilepath(api, filePath, options)
-  .then(() => {
-    console.log('File uploaded successfully!')
-  })
-  .catch((error) => {
-    console.error('Error uploading file:', error)
-  })
+const cid = await uploadFileFromFilepath(api, filePath, options)
+
+console.log(`The file is uploaded and its cid is ${cid}`)
 ```
 
 ### How to upload [File](https://developer.mozilla.org/en-US/docs/Web/API/File) interface
@@ -55,13 +55,9 @@ const options = {
   compression: true,
 }
 
-const uploadObservable = uploadFile(api, filePath, options)
-  .then(() => {
-    console.log('File uploaded successfully!')
-  })
-  .catch((error) => {
-    console.error('Error uploading file:', error)
-  })
+const cid = await uploadFile(api, filePath, options)
+
+console.log(`The file is uploaded and its cid is ${cid}`)
 ```
 
 ### How to upload a file from a custom interface?
@@ -100,15 +96,15 @@ const genericFile = {
 const options = {
   password: 'your-encryption-password', // Optional: specify a password for encryption
   compression: true,
+  // an optional callback useful for large file uploads
+  onProgress?: (progress: number) => {
+    console.log(`The upload is completed is ${progress}% completed`)
+  }
 }
 
-const uploadObservable = uploadFile(api, genericFile, options)
-  .then(() => {
-    console.log('File uploaded successfully!')
-  })
-  .catch((error) => {
-    console.error('Error uploading file:', error)
-  })
+const cid = uploadFile(api, genericFile, options)
+
+console.log(`The file is uploaded and its cid is ${cid}`)
 ```
 
 ### How to upload a folder from folder? (Not available in browser)
@@ -122,61 +118,18 @@ const folderPath = 'path/to/your/folder' // Specify the path to your folder
 const options = {
   uploadChunkSize: 1024 * 1024, // Optional: specify the chunk size for uploads
   password: 'your-encryption-password', // Optional: If folder is encrypted
+  // an optional callback useful for large file uploads
+  onProgress?: (progress: number) => {
+    console.log(`The upload is completed is ${progress}% completed`)
+  }
 }
 
-const uploadObservable = uploadFolderFromFolderPath(api, folderPath, options)
+const folderCID = await uploadFolderFromFolderPath(api, folderPath, options)
+
+console.log(`The folder is uploaded and its cid is ${cid}`)
 ```
 
 **Note: If a folder is tried to be encrypted a zip file would be generated and that file would be encrypted and uploaded.**
-
-### Handle observables
-
-Since uploads may take some time, specially in big-sized files. Uploads do implement `rxjs` observables so you could have feedback about the process or even show your users the progress of the upload.
-
-For that reason when file upload functions return `PromisedObservable<UploadFileStatus>`:
-
-```typescript
-export type UploadFileStatus = {
-  type: 'file'
-  progress: number
-  cid?: CID
-}
-```
-
-Being the cid only returned (and thus optional) when the upload is completed.
-
-Similarly, for folder uploads the functions return `PromisedObservable<UploadFolderStatus>`
-
-```ts
-export type UploadFolderStatus = {
-  type: 'folder'
-  progress: number
-  cid?: CID
-}
-```
-
-**e.g Show upload progress in React**
-
-```typescript
-const [progress, setProgress] = useState<number>(0)
-
-useEffect(async () => {
-  const finalStatus = await uploadFileFromInput(api, genericFile, options).forEach((status) => {
-    setProgress(status.progress)
-  })
-})
-```
-
-**e.g Ignore observables**
-
-Other users may want to not use the progress observability. For having a promise instead the field `promise` is a Promise that resolves into `UploadFileStatus` and `UploadFolderStatus` for files and folders respectively.
-
-e.g
-
-```ts
-const status = await uploadFileFromInput(api, genericFile, options).promise
-const cid = status.cid
-```
 
 ### Example Usage of Download
 
