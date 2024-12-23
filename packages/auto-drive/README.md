@@ -25,7 +25,7 @@ yarn add @autonomys/auto-drive
 Here is an example of how to use the `uploadFileFromFilepath` method to upload a file with optional encryption and compression:
 
 ```typescript
-import { uploadFileFromFilepath } from '@autonomys/auto-drive'
+import { uploadFileFromFilepath,createAutoDriveApi } from '@autonomys/auto-drive'
 
 const api = createAutoDriveApi({ apiKey: 'your-api-key' }) // Initialize your API instance with API key
 const filePath = 'path/to/your/file.txt' // Specify the path to your file
@@ -46,16 +46,17 @@ console.log(`The file is uploaded and its cid is ${cid}`)
 ### How to upload [File](https://developer.mozilla.org/en-US/docs/Web/API/File) interface
 
 ```typescript
-import { uploadFileFromFilepath } from '@autonomys/auto-drive'
+import { uploadFileFromInput, createAutoDriveApi } from '@autonomys/auto-drive'
 
 const api = createAutoDriveApi({ apiKey: 'your-api-key' }) // Initialize your API instance with API key
-const filePath = 'path/to/your/file.txt' // Specify the path to your file
+
+// e.g Get File from object from HTML event
+const file: File = e.target.value // Substitute with your file
 const options = {
   password: 'your-encryption-password', // Optional: specify a password for encryption
   compression: true,
 }
-
-const cid = await uploadFile(api, filePath, options)
+const cid = await uploadFileFromInput(api, file, options)
 
 console.log(`The file is uploaded and its cid is ${cid}`)
 ```
@@ -79,7 +80,7 @@ For more info about asynn generator visit [this website](https://developer.mozil
 You could upload any file that could be represented in that way. For example, uploading a file as a `Buffer`
 
 ```typescript
-import { uploadFile } from '@autonomys/auto-drive'
+import { createAutoDriveApi, uploadFile } from '@autonomys/auto-drive'
 
 const api = createAutoDriveApi({ apiKey: 'your-api-key' }) // Initialize your API instance with API key
 const buffer = Buffer.from(...);
@@ -110,7 +111,7 @@ console.log(`The file is uploaded and its cid is ${cid}`)
 ### How to upload a folder from folder? (Not available in browser)
 
 ```ts
-import { uploadFolderFromFolderPath } from '@autonomys/auto-drive'
+import { createAutoDriveApi, uploadFolderFromFolderPath } from '@autonomys/auto-drive'
 
 const api = createAutoDriveApi({ apiKey: 'your-api-key' }) // Initialize your API instance with API key
 const folderPath = 'path/to/your/folder' // Specify the path to your folder
@@ -119,14 +120,14 @@ const options = {
   uploadChunkSize: 1024 * 1024, // Optional: specify the chunk size for uploads
   password: 'your-encryption-password', // Optional: If folder is encrypted
   // an optional callback useful for large file uploads
-  onProgress?: (progress: number) => {
+  onProgress: (progress: number) => {
     console.log(`The upload is completed is ${progress}% completed`)
-  }
+  },
 }
 
 const folderCID = await uploadFolderFromFolderPath(api, folderPath, options)
 
-console.log(`The folder is uploaded and its cid is ${cid}`)
+console.log(`The folder is uploaded and its cid is ${folderCID}`)
 ```
 
 **Note: If a folder is tried to be encrypted a zip file would be generated and that file would be encrypted and uploaded.**
@@ -136,13 +137,13 @@ console.log(`The folder is uploaded and its cid is ${cid}`)
 Here is an example of how to use the `downloadFile` method to download a file from the server:
 
 ```typescript
-import { downloadObject } from '@autonomys/auto-drive'
+import { createAutoDriveApi, downloadFile } from '@autonomys/auto-drive'
 
 const api = createAutoDriveApi({ apiKey: 'your-api-key' }) // Initialize your API instance with API key
 
 try {
   const cid = '..'
-  const stream = await downloadObject(api, { cid })
+  const stream = await downloadFile(api, cid)
   let file = Buffer.alloc(0)
   for await (const chunk of stream) {
     file = Buffer.concat([file, chunk])
@@ -158,16 +159,20 @@ try {
 Here is an example of how to use the `getRoots` method to retrieve the root directories:
 
 ```typescript
-import { createAutoDriveApi, downloadObject } from '@autonomys/auto-drive'
-import fs from 'fs'
+import { createAutoDriveApi, apiCalls, Scope } from '@autonomys/auto-drive'
 
 const api = createAutoDriveApi({ apiKey: 'your-api-key' }) // Initialize your API instance with API key
 
 try {
-  const stream = fs.createWriteStream('/path/to/file')
-  const asyncBuffer = await downloadObject(api, { cid })
-  for await (const buffer of asyncBuffer) {
-    stream.write(buffer)
+  const myFiles = await apiCalls.getRoots(api, {
+    scope: Scope.User,
+    limit: 100,
+    offset: 0,
+  })
+
+  console.log(`Retrieved ${myFiles.rows.length} files of ${myFiles.totalCount} total`)
+  for (const file of myFiles.rows) {
+    console.log(`${file.name} - ${file.headCid}: ${file.size}`)
   }
 } catch (error) {
   console.error('Error downloading file:', error)
