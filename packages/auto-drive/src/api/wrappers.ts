@@ -5,6 +5,7 @@ import { apiCalls } from './calls/index'
 import { AutoDriveApi } from './connection'
 import { GenericFile, GenericFileWithinFolder } from './models/file'
 import { constructFromInput, constructZipBlobFromTreeAndPaths } from './models/folderTree'
+import { SubscriptionInfo } from './models/user'
 
 export type UploadFileOptions = {
   password?: string
@@ -374,4 +375,20 @@ export const downloadFile = async (
   }
 
   return iterable
+}
+
+export const getPendingCredits = async (
+  api: AutoDriveApi,
+): Promise<{ upload: number; download: number }> => {
+  const me = await apiCalls.getMe(api)
+  return {
+    upload: me.subscription.pendingUploadCredits,
+    download: me.subscription.pendingDownloadCredits,
+  }
+}
+
+export const getSubscriptionInfo = async (api: AutoDriveApi): Promise<SubscriptionInfo> => {
+  const me = await apiCalls.getMe(api)
+
+  return me.subscription
 }
