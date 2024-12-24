@@ -1,5 +1,5 @@
 import mime from 'mime-types'
-import { asyncByChunk, asyncFromStream, fileToIterable } from '../utils/async'
+import { asyncByChunk, asyncFromStream, bufferToIterable, fileToIterable } from '../utils/async'
 import { progressToPercentage } from '../utils/misc'
 import { apiCalls } from './calls/index'
 import { AutoDriveApi } from './connection'
@@ -125,7 +125,7 @@ export const uploadFileFromInput = (
  * @param {string} [options.password] - The password for encryption (optional).
  * @param {boolean} [options.compression=true] - Whether to compress the file (optional).
  * @param {number} [uploadChunkSize] - The size of each chunk to upload (optional).
- * @returns {PromisedObservable<UploadFileStatus>} - An observable that emits the upload status.
+ * @returns {Promise<string>} - The CID of the uploaded file.
  * @throws {Error} - Throws an error if the upload fails at any stage.
  */
 export const uploadFile = async (
@@ -180,6 +180,46 @@ export const uploadFile = async (
   const result = await apiCalls.completeUpload(api, { uploadId: fileUpload.id })
 
   return result.cid
+}
+
+/**
+ * Uploads an object as a JSON file to the server.
+ *
+ * This function serializes the provided object to a JSON string,
+ * and then uploads the JSON string as a file to the server.
+ *
+ * @param {AutoDriveApi} api - The API instance used to send requests.
+ * @param {File | GenericFile} file - The file to be uploaded, which can be a File or a GenericFile.
+ * @param {UploadFileOptions} options - Options for the upload process.
+ * @param {string} [options.password] - The password for encryption (optional).
+ * @param {boolean} [options.compression=true] - Whether to compress the file (optional).
+ * @param {number} [uploadChunkSize] - The size of each chunk to upload (optional).
+ * @returns {Promise<string>} - The CID of the uploaded file.
+ * @throws {Error} - Throws an error if the upload fails at any stage.
+ */
+export const uploadObjectAsJSON = async (
+  api: AutoDriveApi,
+  object: unknown,
+  name?: string | undefined,
+  options: UploadFileOptions = {},
+  uploadChunkSize?: number,
+): Promise<string> => {
+  try {
+    const json = Buffer.from(JSON.stringify(object))
+    return uploadFile(
+      api,
+      {
+        read: () => bufferToIterable(json),
+        name: name || 'object.json',
+        mimeType: 'application/json',
+        size: json.length,
+      },
+      options,
+      uploadChunkSize,
+    )
+  } catch (e) {
+    throw new Error('Failed to serialize object to JSON')
+  }
 }
 
 /**
