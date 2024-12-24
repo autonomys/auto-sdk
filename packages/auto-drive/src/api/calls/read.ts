@@ -2,6 +2,7 @@ import { ArgsWithoutPagination, ArgsWithPagination } from '../../utils/types'
 import { AutoDriveApi } from '../connection'
 import { PaginatedResult } from '../models/common'
 import { ObjectInformation, ObjectSummary, Scope } from '../models/objects'
+import { UserInfo } from '../models/user'
 
 /**
  * Retrieves the root objects based on the specified scope.
@@ -189,6 +190,24 @@ export const getObjectMetadata = async (
 
   if (!response.ok) {
     throw new Error(`Failed to get object: ${response.statusText}`)
+  }
+
+  return response.json()
+}
+
+/**
+ * Get upload and download limits of the user
+ *
+ * @param {AutoDriveApi} api - The API instance used to send requests.
+ * @returns {Promise<UserInfo>} - A promise that resolves to the user info.
+ * @throws {Error} - Throws an error if the request fails.
+ */
+export const getMe = async (api: AutoDriveApi): Promise<UserInfo> => {
+  const response = await api.sendRequest('@me', {
+    method: 'GET',
+  })
+  if (!response.ok) {
+    throw new Error(`Failed to get limits: ${response.statusText}`)
   }
 
   return response.json()

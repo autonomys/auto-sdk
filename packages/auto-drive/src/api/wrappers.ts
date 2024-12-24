@@ -2,6 +2,7 @@ import mime from 'mime-types'
 import { asyncByChunk, asyncFromStream, bufferToIterable, fileToIterable } from '../utils/async'
 import { progressToPercentage } from '../utils/misc'
 import { apiCalls } from './calls/index'
+import { getMe } from './calls/read'
 import { AutoDriveApi } from './connection'
 import { GenericFile, GenericFileWithinFolder } from './models/file'
 import { constructFromInput, constructZipBlobFromTreeAndPaths } from './models/folderTree'
@@ -374,4 +375,15 @@ export const downloadFile = async (
   }
 
   return iterable
+}
+
+export const getLimits = async (
+  api: AutoDriveApi,
+): Promise<{ upload: number; download: number }> => {
+  const me = await apiCalls.getMe(api)
+
+  return {
+    upload: me.subscription.uploadLimit,
+    download: me.subscription.downloadLimit,
+  }
 }
