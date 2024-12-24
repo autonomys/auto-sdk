@@ -36,3 +36,7 @@ export const fileToIterable = async function* (file: File | Blob): AsyncIterable
     yield Buffer.from(await file.slice(i, i + chunkSize).arrayBuffer())
   }
 }
+
+export const bufferToIterable = async function* (buffer: Buffer): AsyncIterable<Buffer> {
+  yield buffer
+}
