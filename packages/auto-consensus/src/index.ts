@@ -1,5 +1,6 @@
 // file: src/index.ts
 
+export * from './account'
 export * from './balances'
 export * from './batch'
 export * from './domain'

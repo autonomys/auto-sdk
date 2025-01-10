@@ -12,7 +12,8 @@
     "clean": "lerna run clean",
     "format": "lerna run format",
     "test": "lerna run test",
-    "publish": "lerna publish --no-private"
+    "prepublish": "yarn build && yarn test",
+    "publish": "yarn prepublish && lerna publish --no-private"
   },
   "packageManager": "yarn@4.2.2",
   "engines": {

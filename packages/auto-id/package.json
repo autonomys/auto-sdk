@@ -1,7 +1,19 @@
 {
   "name": "@autonomys/auto-id",
-  "version": "0.4.0",
+  "version": "1.2.1",
+  "license": "MIT",
   "main": "dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/autonomys/auto-sdk"
+  },
+  "author": {
+    "name": "Autonomys",
+    "url": "https://www.autonomys.xyz"
+  },
+  "bugs": {
+    "url": "https://github.com/autonomys/auto-sdk/issues"
+  },
   "scripts": {
     "build": "tsc",
     "clean": "rm -rf dist",
@@ -9,7 +21,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@autonomys/auto-utils": "^0.4.0",
+    "@autonomys/auto-utils": "^1.2.1",
     "@peculiar/asn1-schema": "^2.3.8",
     "@peculiar/asn1-x509": "^2.3.8",
     "@peculiar/webcrypto": "^1.5.0",
@@ -27,13 +39,5 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.5.4"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/autonomys/auto-sdk"
-  },
-  "author": {
-    "name": "Autonomys",
-    "url": "https://www.autonomys.net"
-  },
-  "gitHead": "60e178a2c02aff3693007a1620e2067856a389f8"
+  "gitHead": "72285a024adcc7681ec59fabd1f061a6e40aeb09"
 }

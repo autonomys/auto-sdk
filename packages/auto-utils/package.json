@@ -1,7 +1,19 @@
 {
   "name": "@autonomys/auto-utils",
-  "version": "0.4.0",
+  "version": "1.2.1",
+  "license": "MIT",
   "main": "dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/autonomys/auto-sdk"
+  },
+  "author": {
+    "name": "Autonomys",
+    "url": "https://www.autonomys.xyz"
+  },
+  "bugs": {
+    "url": "https://github.com/autonomys/auto-sdk/issues"
+  },
   "scripts": {
     "build": "tsc",
     "clean": "rm -rf dist",
@@ -13,12 +25,12 @@
     "README.md"
   ],
   "dependencies": {
-    "@polkadot/api": "^11.2.1",
-    "@polkadot/extension-dapp": "^0.47.5",
+    "@polkadot/api": "^14.3.1",
+    "@polkadot/extension-dapp": "^0.56.2",
     "fs": "^0.0.1-security"
   },
   "devDependencies": {
-    "@polkadot/types-codec": "^11.2.1",
+    "@polkadot/types-codec": "^14.3.1",
     "@types/jest": "^29.5.12",
     "eslint": "^8.57.0",
     "jest": "^29.7.0",
@@ -26,16 +38,8 @@
     "ts-jest": "^29.1.4",
     "typescript": "^5.4.5"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/autonomys/auto-sdk"
-  },
-  "author": {
-    "name": "Autonomys",
-    "url": "https://www.autonomys.net"
-  },
   "browser": {
     "fs": false
   },
-  "gitHead": "60e178a2c02aff3693007a1620e2067856a389f8"
+  "gitHead": "72285a024adcc7681ec59fabd1f061a6e40aeb09"
 }

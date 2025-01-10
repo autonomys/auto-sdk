@@ -13,6 +13,14 @@
       "path": "../packages/auto-consensus",
     },
     {
+      "name": "Auto-Dag-Data",
+      "path": "../packages/auto-dag-data",
+    },
+    {
+      "name": "Auto-Drive",
+      "path": "../packages/auto-drive",
+    },
+    {
       "name": "Auto-ID",
       "path": "../packages/auto-id",
     },
@@ -49,6 +57,7 @@
     "cSpell.words": [
       "autoid",
       "autonomys",
+      "consts",
       "devnet",
       "extrinsics",
       "gemini",

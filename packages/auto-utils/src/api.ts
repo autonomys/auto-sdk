@@ -1,9 +1,10 @@
 import { ApiPromise, WsProvider } from '@polkadot/api'
 import { getNetworkDomainRpcUrls, getNetworkRpcUrls } from './network'
 import type { ActivateParams, ApiOptions, DomainParams, NetworkParams } from './types/network'
+import { CHAIN_TYPES } from './types/network'
 
 export const createConnection = async (
-  endpoint: string,
+  endpoint: string | string[],
   options?: ApiOptions,
 ): Promise<ApiPromise> => {
   // Create the provider
@@ -11,6 +12,7 @@ export const createConnection = async (
   // Create the API instance
   const api = await ApiPromise.create({
     ...options,
+    types: { ...CHAIN_TYPES, ...options?.types },
     noInitWarn: options?.noInitWarn ?? true,
     provider,
   })
@@ -25,7 +27,7 @@ export const activate = async (params?: ActivateParams<NetworkParams>): Promise<
   // Remove the networkId from the input
   if (params) delete params.networkId
 
-  return await createConnection(endpoint[0], params)
+  return await createConnection(endpoint, params)
 }
 
 export const activateDomain = async (params: ActivateParams<DomainParams>): Promise<ApiPromise> => {
@@ -34,7 +36,7 @@ export const activateDomain = async (params: ActivateParams<DomainParams>): Prom
   // Remove the domainId from the input
   const { domainId, ...rest } = params
 
-  return await createConnection(endpoint[0], rest)
+  return await createConnection(endpoint, rest)
 }
 
 export const disconnect = async (api: ApiPromise): Promise<void> => {

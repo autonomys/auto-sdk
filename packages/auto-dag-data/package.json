@@ -1,0 +1,55 @@
+{
+  "name": "@autonomys/auto-dag-data",
+  "packageManager": "yarn@4.1.1",
+  "version": "1.2.1",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/autonomys/auto-sdk"
+  },
+  "author": {
+    "name": "Autonomys",
+    "url": "https://www.autonomys.xyz"
+  },
+  "bugs": {
+    "url": "https://github.com/autonomys/auto-sdk/issues"
+  },
+  "scripts": {
+    "build": "tsc",
+    "pb": "yarn protons src/metadata/onchain/protobuf/OnchainMetadata.proto -o src/metadata/onchain/protobuf",
+    "clean": "rm -rf dist",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "test": "yarn node --experimental-vm-modules $(yarn bin jest)"
+  },
+  "exports": {
+    ".": "./dist/index.js",
+    "./protobuf": "./dist/metadata/onchain/protobuf/onchainMetadata.js"
+  },
+  "engines": {
+    "node": ">=20.8.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.13",
+    "blockstore-core": "^5.0.2",
+    "interface-store": "^6.0.2",
+    "jest": "^29.7.0",
+    "protobufjs": "^7.4.0",
+    "ts-jest": "^29.2.5",
+    "typescript": "^5.6.2"
+  },
+  "dependencies": {
+    "@ipld/dag-pb": "^4.1.2",
+    "@peculiar/webcrypto": "^1.5.0",
+    "@webbuf/blake3": "^3.0.26",
+    "@webbuf/fixedbuf": "^3.0.26",
+    "@webbuf/webbuf": "^3.0.26",
+    "fflate": "^0.8.2",
+    "multiformats": "^13.2.2",
+    "protobufjs": "^7.4.0",
+    "protons": "^7.6.0",
+    "protons-runtime": "^5.5.0"
+  },
+  "gitHead": "72285a024adcc7681ec59fabd1f061a6e40aeb09"
+}

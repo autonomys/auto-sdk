@@ -8,6 +8,7 @@ export * from './network'
 export * from './number'
 export * from './read'
 export * from './save'
+export * from './string'
 export * from './wallet'
 
 export * from './constants'
