@@ -1,8 +1,5 @@
 import { createAutoDriveApi, uploadFolderFromFolderPath } from '@autonomys/auto-drive'
 import path from 'path'
-import { fileURLToPath } from 'url'
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 async function uploadBuild() {
   const apiKey =
@@ -17,7 +14,7 @@ async function uploadBuild() {
   }
 
   const api = createAutoDriveApi({ apiKey })
-  const outDir = path.join(__dirname, 'out')
+  const outDir = path.join('out')
 
   try {
     console.log('Starting upload of build files to Auto-Drive...')
