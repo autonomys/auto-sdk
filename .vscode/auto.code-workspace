@@ -29,6 +29,10 @@
       "path": "../packages/auto-xdm",
     },
     {
+      "name": "Auto-EVM-Storage",
+      "path": "../packages/auto-evm-storage",
+    },
+    {
       "name": "Example - NextJS",
       "path": "../examples/next",
     },
