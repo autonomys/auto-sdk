@@ -36,6 +36,10 @@
       "name": "Example - Node",
       "path": "../examples/node",
     },
+    {
+      "name": "Example - Auto Drive Create Next App",
+      "path": "../examples/auto-drive-create-next-app",
+    },
   ],
   "settings": {
     "editor.codeActionsOnSave": {
