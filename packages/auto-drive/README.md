@@ -20,6 +20,13 @@ yarn add @autonomys/auto-drive
 
 ### How to use it?
 
+For interacting with auto-drive API would be needed to create an API. For that purpose, follow the following steps:
+
+- Go to [Auto-Drive](https://ai3.storage) and login with your preffered SSO.
+- Once you're logged in, click on the profile section at the left-sided menu.
+- On the profile section, click on 'Create API Key'
+- Read the modal message and click on generate
+
 ### How to upload a file from filepath? (Not available in browser)
 
 Here is an example of how to use the `uploadFileFromFilepath` method to upload a file with optional encryption and compression:
