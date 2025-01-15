@@ -116,55 +116,40 @@ The `@autonomys/auto-dag-data` package provides utilities for creating and manag
 
 #### **Creating an IPLD DAG from a File**
 
+To create an IPLD DAG from a file, you can use the `processFileToIPLDFormat` function:
+
 ```typescript
-// Import necessary functions
-import { createFileIPLDDag } from '@autonomys/auto-dag-data'
+import { processFileToIPLDFormat } from '@autonomys/auto-dag-data'
+import { MemoryBlockstore } from 'blockstore-core/memory'
 import fs from 'fs'
 
-const fileBuffer = fs.readFileSync('path/to/your/file.txt')
+const fileStream = fs.createReadStream('path/to/your/file.txt')
+const fileSize = fs.statSync('path/to/your/file.txt').size
 
-// Create an IPLD DAG from the file data
-const dag = createFileIPLDDag(fileBuffer, 'file.txt')
-
-console.log(`Created DAG with head CID: ${dag.headCID}`)
-
-// The 'nodes' map contains all nodes in the DAG
-console.log(`Total nodes in DAG: ${dag.nodes.size}`)
+const blockstore = new MemoryBlockstore()
+const fileCID = processFileToIPLDFormat(blockstore, fileStream, totalSize, 'file.txt')
 ```
 
 #### **Creating an IPLD DAG from a Folder**
 
+To generate an IPLD DAG from a folder, you can use the `processFolderToIPLDFormat` function:
+
 ```typescript
-// Import necessary functions
-import { createFolderIPLDDag } from '@autonomys/auto-dag-data'
+import { processFolderToIPLDFormat, decodeNode } from '@autonomys/auto-dag-data'
+import { MemoryBlockstore } from 'blockstore-core/memory'
 import { CID } from 'multiformats'
-import fs from 'fs'
-import path from 'path'
 
-// Function to read files from a directory and create CIDs
-function getFilesCIDs(directoryPath: string): CID[] {
-  const fileNames = fs.readdirSync(directoryPath)
-  const cids: CID[] = []
-
-  fileNames.forEach((fileName) => {
-    const filePath = path.join(directoryPath, fileName)
-    const fileBuffer = fs.readFileSync(filePath)
-    const fileDag = createFileIPLDDag(fileBuffer, fileName)
-    cids.push(fileDag.headCID)
-  })
-
-  return cids
-}
-
-const directoryPath = 'path/to/your/folder'
-const childCIDs = getFilesCIDs(directoryPath)
+// Example child CIDs and folder information
+const childCIDs: CID[] = [
+  /* array of CIDs */
+]
 const folderName = 'my-folder'
-const folderSize = childCIDs.length
+const folderSize = 1024 // size in bytes (the sum of their children size)
 
-// Create an IPLD DAG for the folder
-const folderDag = createFolderIPLDDag(childCIDs, folderName, folderSize)
+const blockstore = new MemoryBlockstore()
+const folderCID = processFolderToIPLDFormat(blockstore, childCIDs, folderName, folderSize)
 
-console.log(`Created folder DAG with head CID: ${folderDag.headCID}`)
+const node = decodeNode(blockstore.get(folderCID))
 ```
 
 ### 3. Using `@autonomys/auto-id`
