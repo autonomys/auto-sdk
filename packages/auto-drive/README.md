@@ -24,7 +24,7 @@ To interact with the Auto-Drive API, you'll need to create an API key. Follow th
 
 - Go to [Auto-Drive](https://ai3.storage) and login with your preffered SSO.
 - Once you're logged in, click on the profile section in the left sidebar menu.
-- On the profile section, click on 'Create API Key'
+- In the profile section, click on 'Create API Key'
 - Read the modal message and click on generate
 
 ### How to upload a file from filepath? (Not available in browser)
