@@ -22,7 +22,7 @@ type ConnectionOptions =
       provider?: AuthProvider
       apiKey?: string
       url?: null
-      network?: NetworkId
+      network: NetworkId
     }
   | {
       provider?: AuthProvider
@@ -35,9 +35,9 @@ export const createAutoDriveApi = ({
   provider = 'apikey',
   apiKey,
   url = null,
-  network = NetworkId.TAURUS,
+  network,
 }: ConnectionOptions): AutoDriveApi => {
-  const baseUrl = network === null ? url : getNetworkUrl(network)
+  const baseUrl = !network ? url : getNetworkUrl(network)
 
   return {
     sendRequest: async (relativeUrl: string, request: Partial<Request>, body?: BodyInit) => {
@@ -56,3 +56,8 @@ export const createAutoDriveApi = ({
     },
   }
 }
+
+createAutoDriveApi({
+  apiKey: '123',
+  network: NetworkId.TAURUS,
+})
