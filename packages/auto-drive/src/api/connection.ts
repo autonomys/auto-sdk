@@ -1,5 +1,5 @@
 import { NetworkId } from '@autonomys/auto-utils'
-import { getNetworkUrl } from './networks'
+import { getNetworkUrl, networks } from './networks'
 
 export interface AutoDriveApi {
   sendRequest: (
@@ -22,7 +22,7 @@ type ConnectionOptions =
       provider?: AuthProvider
       apiKey?: string
       url?: null
-      network: NetworkId
+      network: keyof typeof networks
     }
   | {
       provider?: AuthProvider

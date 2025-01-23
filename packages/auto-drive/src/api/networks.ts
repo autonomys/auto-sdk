@@ -1,8 +1,8 @@
 import { NetworkId } from '@autonomys/auto-utils'
 
-export const networks: Partial<Record<NetworkId, string>> = {
+export const networks = {
   [NetworkId.TAURUS]: 'https://demo.auto-drive.autonomys.xyz/api',
-}
+} satisfies Partial<Record<NetworkId, string>>
 
 export const getNetworkUrl = (networkId: NetworkId) => {
   if (!networks[networkId]) {
