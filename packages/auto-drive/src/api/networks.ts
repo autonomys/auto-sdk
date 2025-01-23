@@ -4,7 +4,7 @@ export const networks = {
   [NetworkId.TAURUS]: 'https://demo.auto-drive.autonomys.xyz/api',
 } satisfies Partial<Record<NetworkId, string>>
 
-export const getNetworkUrl = (networkId: NetworkId) => {
+export const getNetworkUrl = (networkId: keyof typeof networks) => {
   if (!networks[networkId]) {
     throw new Error(`Network ${networkId} not found`)
   }
