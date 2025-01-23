@@ -1,4 +1,5 @@
 import { createAutoDriveApi, uploadFolderFromFolderPath } from '@autonomys/auto-drive'
+import { NetworkId } from '@autonomys/auto-utils'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
@@ -16,7 +17,7 @@ async function uploadBuild() {
     process.exit(1)
   }
 
-  const api = createAutoDriveApi({ apiKey })
+  const api = createAutoDriveApi({ apiKey, network: NetworkId.TAURUS })
   const outDir = path.join(__dirname, 'out')
 
   try {
