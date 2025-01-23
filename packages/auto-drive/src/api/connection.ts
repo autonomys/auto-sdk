@@ -56,8 +56,3 @@ export const createAutoDriveApi = ({
     },
   }
 }
-
-createAutoDriveApi({
-  apiKey: '123',
-  network: NetworkId.TAURUS,
-})
