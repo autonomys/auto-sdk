@@ -1,3 +1,6 @@
+import { NetworkId } from '@autonomys/auto-utils'
+import { AutoDriveNetwork, getNetworkUrl, networks } from './networks'
+
 export interface AutoDriveApi {
   sendRequest: (
     relativeUrl: string,
@@ -14,15 +17,28 @@ export enum OAuthProvider {
 export type ApiKeyAuthProvider = 'apikey'
 export type AuthProvider = ApiKeyAuthProvider | 'oauth'
 
+type ConnectionOptions =
+  | {
+      provider?: AuthProvider
+      apiKey?: string
+      url?: null
+      network: AutoDriveNetwork
+    }
+  | {
+      provider?: AuthProvider
+      apiKey?: string
+      url: string
+      network?: null
+    }
+
 export const createAutoDriveApi = ({
   provider = 'apikey',
   apiKey,
-  url = 'https://demo.auto-drive.autonomys.xyz/api',
-}: {
-  provider?: AuthProvider
-  apiKey: string
-  url?: string
-}): AutoDriveApi => {
+  url = null,
+  network,
+}: ConnectionOptions): AutoDriveApi => {
+  const baseUrl = !network ? url : getNetworkUrl(network)
+
   return {
     sendRequest: async (relativeUrl: string, request: Partial<Request>, body?: BodyInit) => {
       const headers = new Headers({
@@ -36,7 +52,7 @@ export const createAutoDriveApi = ({
         body,
       }
 
-      return fetch(`${url}${relativeUrl}`, fullRequest)
+      return fetch(`${baseUrl}${relativeUrl}`, fullRequest)
     },
   }
 }

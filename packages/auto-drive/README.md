@@ -20,14 +20,22 @@ yarn add @autonomys/auto-drive
 
 ### How to use it?
 
+To interact with the Auto-Drive API, you'll need to create an API key. Follow these steps:
+
+- Go to [Auto-Drive](https://ai3.storage) and login with your preffered SSO.
+- Once you're logged in, click on the profile section in the left sidebar menu.
+- In the profile section, click on 'Create API Key'
+- Read the modal message and click on generate
+
 ### How to upload a file from filepath? (Not available in browser)
 
 Here is an example of how to use the `uploadFileFromFilepath` method to upload a file with optional encryption and compression:
 
 ```typescript
 import { uploadFileFromFilepath,createAutoDriveApi } from '@autonomys/auto-drive'
+import { NetworkId } from '@autonomys/auto-utils'
 
-const api = createAutoDriveApi({ apiKey: 'your-api-key' }) // Initialize your API instance with API key
+const api = createAutoDriveApi({ apiKey: 'your-api-key', network: NetworkId.TAURUS }) // Initialize your API instance with API key
 const filePath = 'path/to/your/file.txt' // Specify the path to your file
 const options = {
   password: 'your-encryption-password', // Optional: specify a password for encryption
@@ -47,8 +55,9 @@ console.log(`The file is uploaded and its cid is ${cid}`)
 
 ```typescript
 import { uploadFileFromInput, createAutoDriveApi } from '@autonomys/auto-drive'
+import { NetworkId } from '@autonomys/auto-utils'
 
-const api = createAutoDriveApi({ apiKey: 'your-api-key' }) // Initialize your API instance with API key
+const api = createAutoDriveApi({ apiKey: 'your-api-key', network: NetworkId.TAURUS }) // Initialize your API instance with API key
 
 // e.g Get File from object from HTML event
 const file: File = e.target.value // Substitute with your file
@@ -81,8 +90,9 @@ You could upload any file that could be represented in that way. For example, up
 
 ```typescript
 import { createAutoDriveApi, uploadFile } from '@autonomys/auto-drive'
+import { NetworkId } from '@autonomys/auto-utils'
 
-const api = createAutoDriveApi({ apiKey: 'your-api-key' }) // Initialize your API instance with API key
+const api = createAutoDriveApi({ apiKey: 'your-api-key', network: NetworkId.TAURUS }) // Initialize your API instance with API key
 const buffer = Buffer.from(...);
 const genericFile = {
   read: async function *() {
@@ -112,8 +122,9 @@ console.log(`The file is uploaded and its cid is ${cid}`)
 
 ```ts
 import { createAutoDriveApi, uploadFolderFromFolderPath } from '@autonomys/auto-drive'
+import { NetworkId } from '@autonomys/auto-utils'
 
-const api = createAutoDriveApi({ apiKey: 'your-api-key' }) // Initialize your API instance with API key
+const api = createAutoDriveApi({ apiKey: 'your-api-key', network: NetworkId.TAURUS }) // Initialize your API instance with API key
 const folderPath = 'path/to/your/folder' // Specify the path to your folder
 
 const options = {
@@ -138,8 +149,9 @@ Here is an example of how to use the `downloadFile` method to download a file fr
 
 ```typescript
 import { createAutoDriveApi, downloadFile } from '@autonomys/auto-drive'
+import { NetworkId } from '@autonomys/auto-utils'
 
-const api = createAutoDriveApi({ apiKey: 'your-api-key' }) // Initialize your API instance with API key
+const api = createAutoDriveApi({ apiKey: 'your-api-key', network: NetworkId.TAURUS }) // Initialize your API instance with API key
 
 try {
   const cid = '..'
@@ -160,8 +172,9 @@ Here is an example of how to use the `getRoots` method to retrieve the root dire
 
 ```typescript
 import { createAutoDriveApi, apiCalls, Scope } from '@autonomys/auto-drive'
+import { NetworkId } from '@autonomys/auto-utils'
 
-const api = createAutoDriveApi({ apiKey: 'your-api-key' }) // Initialize your API instance with API key
+const api = createAutoDriveApi({ apiKey: 'your-api-key', network: NetworkId.TAURUS }) // Initialize your API instance with API key
 
 try {
   const myFiles = await apiCalls.getRoots(api, {
