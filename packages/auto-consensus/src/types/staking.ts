@@ -131,13 +131,9 @@ export type StakingParams = {
   operatorId: StringNumberOrBigInt
 }
 
-export type WithdrawStakeParams = StakingParams &
-  (
-    | { all: true; percent?: never; stake?: never; shares?: never }
-    | { all?: never; percent: number; stake?: never; shares?: never }
-    | { all?: never; percent?: never; stake: StringNumberOrBigInt; shares?: never }
-    | { all?: never; percent?: never; stake?: never; shares: StringNumberOrBigInt }
-  )
+export interface WithdrawStakeParams extends StakingParams {
+  shares: StringNumberOrBigInt
+}
 
 export interface NominateOperatorParams extends StakingParams {
   amountToStake: StringNumberOrBigInt
