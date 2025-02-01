@@ -9,9 +9,8 @@ export type RawOperatorDetails = {
   minimumNominatorStake: string
   nominationTax: number
   currentTotalStake: number
-  currentEpochRewards: number
   currentTotalShares: number
-  status: object[]
+  partialStatus: object[]
   depositsInEpoch: string
   withdrawalsInEpoch: number
   totalStorageFeeDeposit: string
@@ -34,9 +33,8 @@ export type OperatorDetails = {
   minimumNominatorStake: bigint
   nominationTax: number
   currentTotalStake: bigint
-  currentEpochRewards: bigint
   currentTotalShares: bigint
-  status: object[]
+  partialStatus: object
   depositsInEpoch: bigint
   withdrawalsInEpoch: bigint
   totalStorageFeeDeposit: bigint
@@ -133,9 +131,13 @@ export type StakingParams = {
   operatorId: StringNumberOrBigInt
 }
 
-export interface WithdrawStakeParams extends StakingParams {
-  shares: StringNumberOrBigInt
-}
+export type WithdrawStakeParams = StakingParams &
+  (
+    | { all: true; percent?: never; stake?: never; shares?: never }
+    | { all?: never; percent: number; stake?: never; shares?: never }
+    | { all?: never; percent?: never; stake: StringNumberOrBigInt; shares?: never }
+    | { all?: never; percent?: never; stake?: never; shares: StringNumberOrBigInt }
+  )
 
 export interface NominateOperatorParams extends StakingParams {
   amountToStake: StringNumberOrBigInt
