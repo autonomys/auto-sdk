@@ -10,7 +10,7 @@ export type RawOperatorDetails = {
   nominationTax: number
   currentTotalStake: number
   currentTotalShares: number
-  partialStatus: object[]
+  partialStatus: object
   depositsInEpoch: string
   withdrawalsInEpoch: number
   totalStorageFeeDeposit: string
@@ -34,7 +34,7 @@ export type OperatorDetails = {
   nominationTax: number
   currentTotalStake: bigint
   currentTotalShares: bigint
-  partialStatus: object
+  status: object
   depositsInEpoch: bigint
   withdrawalsInEpoch: bigint
   totalStorageFeeDeposit: bigint
