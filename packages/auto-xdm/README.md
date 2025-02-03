@@ -36,53 +36,50 @@ yarn add @autonomys/auto-xdm
 - Familiarity with async/await and promise handling in JavaScript/TypeScript.
 - **@autonomys/auto-utils** package installed (as it provides utility functions and API activation).
 
-### Importing the SDK
-
-You can import specific functions from the package as needed:
-
-```typescript
-import { transfer } from '@autonomys/auto-xdm'
-```
-
 ## Usage Examples
 
 Below are examples demonstrating how to use the functions provided by `@autonomys/auto-xdm`.
 
-### 1. Transfer from Consensus to Domain
+### 1. Transfer from Consensus to Domain using an EVM address
 
 ```ts
-import { activate } from '@autonomys/auto-utils'
-import { transfer } from '@autonomys/auto-xdm'
+import { activateWallet } from '@autonomys/auto-utils'
+import { transferToDomainAccount20Type } from '@autonomys/auto-xdm'
 
-const api = await activate({ networkId: 'taurus' })
-const tx = await transfer(
+const api = await activateWallet({ networkId: 'taurus', uri: '//alice' })
+const tx = await transferToDomainAccount20Type(
   api,
-  {
-    type: 'domain',
-    domainId: 0, // Receiver domain (0 is Auto EVM on Taurus Testnet)
-  },
-  receiver: {
-    accountId20: '0x1234567890abcdef', // Receiver domain account
-  },
-  amount: '1000000000000000000',
+  0, // Receiver domain (0 is Auto EVM on Taurus Testnet)
+  '0x1234567890abcdef', // Receiver domain account
+  '1000000000000000000',
 )
 ```
 
-### 2. Transfer from Domain to Consensus
+### 2. Transfer from Consensus to Domain using an substrate address
 
 ```ts
-import { activateDomain } from '@autonomys/auto-utils'
-import { transfer } from '@autonomys/auto-xdm'
+import { activateWallet } from '@autonomys/auto-utils'
+import { transferToDomainAccount32Type } from '@autonomys/auto-xdm'
 
-const api = await activateDomain({ networkId: 'taurus', domainId: 0 })
-const tx = await transfer(
+const api = await activateWallet({ networkId: 'taurus', uri: '//alice' })
+const tx = await transferToDomainAccount32Type(
   api,
-  {
-    type: 'consensus'
-  },
-  receiver: {
-    accountId32: 'su1234567890abcdef', // Receiver consensus account
-  },
-  amount: '1000000000000000000',
+  0, // Receiver domain (0 is Auto EVM on Taurus Testnet)
+  'su1234567890abcdef', // Receiver domain account
+  '1000000000000000000',
+)
+```
+
+### 3. Transfer from Domain to Consensus
+
+```ts
+import { activateWallet } from '@autonomys/auto-utils'
+import { transferToConsensus } from '@autonomys/auto-xdm'
+
+const api = await activateWallet({ networkId: 'taurus', domainId: 0, uri: '//alice' })
+const tx = await transferToConsensus(
+  api,
+  'su1234567890abcdef', // Receiver consensus account,
+  '1000000000000000000',
 )
 ```
