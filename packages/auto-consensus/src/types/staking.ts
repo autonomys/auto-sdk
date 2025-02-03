@@ -34,7 +34,7 @@ export type OperatorDetails = {
   nominationTax: number
   currentTotalStake: bigint
   currentTotalShares: bigint
-  status: object
+  partialStatus: object
   depositsInEpoch: bigint
   withdrawalsInEpoch: bigint
   totalStorageFeeDeposit: bigint
