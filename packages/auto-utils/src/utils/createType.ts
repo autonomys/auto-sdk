@@ -74,3 +74,5 @@ export const createTransporterToDomainAccount32Type = (
   })
   return createTransporterLocationType(api, chainId, accountId)
 }
+
+export { createType }
