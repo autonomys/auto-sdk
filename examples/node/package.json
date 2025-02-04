@@ -20,13 +20,6 @@
     "transfer": "npx ts-node ./src/transfer.ts",
     "operators": "npx ts-node ./src/operators.ts",
     "register-operator": "npx ts-node ./src/register-operator.ts",
-    "autoid:register": "npx ts-node src/auto-id/register.ts",
-    "autoid:revoke-self": "npx ts-node src/auto-id/revoke-self.ts",
-    "autoid:revoke-leaf": "npx ts-node src/auto-id/revoke-leaf.ts",
-    "autoid:deactivate": "npx ts-node src/auto-id/deactivate.ts",
-    "autoid:renew": "npx ts-node src/auto-id/renew.ts",
-    "autoid:view-cert": "npx ts-node src/auto-id/view-cert.ts",
-    "autoid:view-revoked-certs": "npx ts-node src/auto-id/view-revoked-certs.ts",
     "nominate-operator": "npx ts-node ./src/nominate-operator.ts",
     "withdraw-stake": "npx ts-node ./src/withdraw-stake.ts",
     "deregister-operator": "npx ts-node ./src/deregister-operator.ts",
@@ -35,7 +28,6 @@
   },
   "dependencies": {
     "@autonomys/auto-consensus": "workspace:*",
-    "@autonomys/auto-id": "workspace:*",
     "@autonomys/auto-utils": "workspace:*"
   },
   "devDependencies": {
