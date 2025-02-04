@@ -29,7 +29,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@autonomys/auto-consensus@workspace:*, @autonomys/auto-consensus@workspace:packages/auto-consensus":
+"@autonomys/auto-consensus@npm:^1.2.3, @autonomys/auto-consensus@workspace:*, @autonomys/auto-consensus@workspace:packages/auto-consensus":
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-consensus@workspace:packages/auto-consensus"
   dependencies:
@@ -146,8 +146,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-xdm@workspace:packages/auto-xdm"
   dependencies:
+    "@autonomys/auto-consensus": "npm:^1.2.3"
     "@autonomys/auto-utils": "npm:^1.2.3"
-    "@polkadot/types-codec": "npm:^14.3.1"
     "@types/jest": "npm:^29.5.12"
     eslint: "npm:^8.57.0"
     jest: "npm:^29.7.0"
