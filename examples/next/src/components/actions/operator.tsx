@@ -43,7 +43,6 @@ export const Operator = () => {
           Minimum Nominator Stake: {operatorDetails.minimumNominatorStake.toString()} <br />
           Nomination Tax: {operatorDetails.nominationTax.toString()} <br />
           Current Total Stake: {operatorDetails.currentTotalStake.toString()} <br />
-          Current Epoch Rewards: {operatorDetails.currentEpochRewards.toString()} <br />
           Current Total Shares: {operatorDetails.currentTotalShares.toString()} <br />
           Deposits in Epoch: {operatorDetails.depositsInEpoch.toString()} <br />
           Withdrawals in Epoch: {operatorDetails.withdrawalsInEpoch.toString()} <br />
