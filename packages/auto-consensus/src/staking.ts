@@ -1,7 +1,13 @@
 // file: src/staking.ts
 
 import type { Api, Codec } from '@autonomys/auto-utils'
-import { createType, signingKey as signingKeyFn } from '@autonomys/auto-utils'
+import {
+  createWithdrawStakeAll,
+  createWithdrawStakeByPercent,
+  createWithdrawStakeByShares,
+  createWithdrawStakeByStake,
+  signingKey as signingKeyFn,
+} from '@autonomys/auto-utils'
 import type {
   NominateOperatorParams,
   RegisterOperatorParams,
@@ -104,20 +110,10 @@ export const withdrawStake = (params: WithdrawStakeParams) => {
   try {
     const { api, operatorId } = params
     let param2: Codec | null = null
-    if (params.all)
-      param2 = createType(api.registry, 'PalletDomainsStakingWithdrawStake', { All: null })
-    else if (params.percent)
-      param2 = createType(api.registry, 'PalletDomainsStakingWithdrawStake', {
-        Percent: parseString(params.percent),
-      })
-    else if (params.stake)
-      param2 = createType(api.registry, 'PalletDomainsStakingWithdrawStake', {
-        Stake: parseString(params.stake),
-      })
-    else if (params.shares)
-      param2 = createType(api.registry, 'PalletDomainsStakingWithdrawStake', {
-        Shares: parseString(params.shares),
-      })
+    if (params.all) param2 = createWithdrawStakeAll(api)
+    else if (params.percent) param2 = createWithdrawStakeByPercent(api, parseString(params.percent))
+    else if (params.stake) param2 = createWithdrawStakeByStake(api, parseString(params.stake))
+    else if (params.shares) param2 = createWithdrawStakeByShares(api, parseString(params.shares))
 
     if (param2 === null)
       throw new Error(
