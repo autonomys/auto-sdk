@@ -1,7 +1,7 @@
 // file: src/staking.ts
 
-import type { Api } from '@autonomys/auto-utils'
-import { signingKey as signingKeyFn } from '@autonomys/auto-utils'
+import type { Api, Codec } from '@autonomys/auto-utils'
+import { createType, signingKey as signingKeyFn } from '@autonomys/auto-utils'
 import type {
   NominateOperatorParams,
   RegisterOperatorParams,
@@ -102,9 +102,29 @@ export const nominateOperator = (params: NominateOperatorParams) => {
 
 export const withdrawStake = (params: WithdrawStakeParams) => {
   try {
-    const { api, operatorId, shares } = params
+    const { api, operatorId } = params
+    let param2: Codec | null = null
+    if (params.all)
+      param2 = createType(api.registry, 'PalletDomainsStakingWithdrawStake', { All: null })
+    else if (params.percent)
+      param2 = createType(api.registry, 'PalletDomainsStakingWithdrawStake', {
+        Percent: parseString(params.percent),
+      })
+    else if (params.stake)
+      param2 = createType(api.registry, 'PalletDomainsStakingWithdrawStake', {
+        Stake: parseString(params.stake),
+      })
+    else if (params.shares)
+      param2 = createType(api.registry, 'PalletDomainsStakingWithdrawStake', {
+        Shares: parseString(params.shares),
+      })
 
-    return api.tx.domains.withdrawStake(parseString(operatorId), parseString(shares))
+    if (param2 === null)
+      throw new Error(
+        'Provide all(boolean), percent(string/number/bigint), stake(string/number/bigint) or shared(string/number/bigint) to withdraw stake',
+      )
+
+    return api.tx.domains.withdrawStake(parseString(operatorId), param2)
   } catch (error) {
     console.error('error', error)
     throw new Error('Error creating withdraw stake tx.' + error)
