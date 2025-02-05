@@ -16,7 +16,6 @@ This monorepo contains multiple packages, each serving a specific purpose. All p
 - **[`@autonomys/auto-utils`](https://www.npmjs.com/package/@autonomys/auto-utils)**: Core utility functions for interacting with the Autonomys Network.
 - **[`@autonomys/auto-consensus`](https://www.npmjs.com/package/@autonomys/auto-consensus)**: Functions for interacting with the Consensus Layer.
 - **[`@autonomys/auto-dag-data`](https://www.npmjs.com/package/@autonomys/auto-dag-data)**: Tools for preparing and managing data for on-chain storage.
-- **[`@autonomys/auto-id`](https://www.npmjs.com/package/@autonomys/auto-id)**: Functions for generating, renewing, and revoking Decentralized Identities (Auto IDs).
 - **[`@autonomys/auto-drive`](https://www.npmjs.com/package/@autonomys/auto-drive)**: Tools for interacting with the Autonomys Auto-Drive API.
 
 ## Installation
@@ -150,65 +149,6 @@ const blockstore = new MemoryBlockstore()
 const folderCID = processFolderToIPLDFormat(blockstore, childCIDs, folderName, folderSize)
 
 const node = decodeNode(blockstore.get(folderCID))
-```
-
-### 3. Using `@autonomys/auto-id`
-
-The `@autonomys/auto-id` package provides functionalities for managing certificates, authenticating users, and integrating Zero-Knowledge Proofs (ZKPs) on the Autonomys Network.
-
-#### **Authenticate a User with Auto ID**
-
-```typescript
-// Import necessary functions
-import { authenticateAutoIdUser } from '@autonomys/auto-id'
-import { activate } from '@autonomys/auto-utils'
-
-;(async () => {
-  // Activate the network API
-  const api = await activate()
-
-  // User's Auto ID
-  const autoId = 'user-auto-id' // Replace with the user's Auto ID
-
-  // Challenge message that the user needs to sign
-  const challengeMessage = 'Please sign this message to authenticate.'
-  const challenge = new TextEncoder().encode(challengeMessage)
-
-  // Assume the user provides the signature
-  const signature = new Uint8Array([...]) // User's signature as Uint8Array
-
-  // Authenticate the user
-  const isAuthenticated = await authenticateAutoIdUser(api, autoId, challenge, signature)
-
-  if (isAuthenticated) {
-    console.log('User authenticated successfully.')
-  } else {
-    console.log('Authentication failed.')
-  }
-
-  // Disconnect when done
-  await api.disconnect()
-})()
-```
-
-#### **Self-Issuing a Certificate**
-
-```typescript
-// Import necessary functions
-import { selfIssueCertificate } from '@autonomys/auto-id'
-import { generateKeyPair } from '@autonomys/auto-utils'
-;(async () => {
-  // Generate a key pair
-  const keyPair = await generateKeyPair()
-
-  // Subject name for the certificate
-  const subjectName = 'CN=User Name' // Replace with appropriate subject
-
-  // Generate a self-signed certificate
-  const certificate = await selfIssueCertificate(subjectName, keyPair)
-
-  console.log('Certificate created:', certificate)
-})()
 ```
 
 ## Local Development and Testing
