@@ -75,4 +75,18 @@ export const createTransporterToDomainAccount32Type = (
   return createTransporterLocationType(api, chainId, accountId)
 }
 
+export const createWithdrawStakeAll = (api: ApiPromise) =>
+  createType(api.registry, 'PalletDomainsStakingWithdrawStake', { All: null })
+
+export const createWithdrawStakeByPercent = (api: ApiPromise, percent: string) =>
+  createType(api.registry, 'PalletDomainsStakingWithdrawStake', {
+    Percent: percent,
+  })
+
+export const createWithdrawStakeByStake = (api: ApiPromise, stake: string) =>
+  createType(api.registry, 'PalletDomainsStakingWithdrawStake', { Stake: stake })
+
+export const createWithdrawStakeByShares = (api: ApiPromise, shares: string) =>
+  createType(api.registry, 'PalletDomainsStakingWithdrawStake', { Shares: shares })
+
 export { createType }
