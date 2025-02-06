@@ -17,6 +17,7 @@ This monorepo contains multiple packages, each serving a specific purpose. All p
 - **[`@autonomys/auto-consensus`](https://www.npmjs.com/package/@autonomys/auto-consensus)**: Functions for interacting with the Consensus Layer.
 - **[`@autonomys/auto-dag-data`](https://www.npmjs.com/package/@autonomys/auto-dag-data)**: Tools for preparing and managing data for on-chain storage.
 - **[`@autonomys/auto-drive`](https://www.npmjs.com/package/@autonomys/auto-drive)**: Tools for interacting with the Autonomys Auto-Drive API.
+- **[`@autonomys/auto-xdm`](https://www.npmjs.com/package/@autonomys/auto-xdm)**: Tools for for cross-domain transfer of native tokens..
 
 ## Installation
 
