@@ -19,3 +19,7 @@ export const downloadObject = async (
 
   return response.body
 }
+
+export const publicDownloadUrl = (api: AutoDriveApi, cid: string): string => {
+  return `${api.baseUrl}/objects/${cid}/public`
+}

@@ -1,5 +1,5 @@
-import { ArgsWithoutPagination } from '../../utils/types'
-import { AutoDriveApi } from '../connection'
+import { ArgsWithoutPagination } from '../../utils/types';
+import { AutoDriveApi } from '../connection';
 
 /**
  * Shares an object with a specified public ID.
@@ -82,6 +82,33 @@ export const restoreObject = async (
 
   if (!response.ok) {
     throw new Error(`Failed to restore object: ${response.statusText}`)
+  }
+
+  return response.json()
+}
+
+/**
+ * Publishes an object by sending a request to the server.
+ *
+ * This function sends a request to the server to publish an object identified
+ * by its CID. The publication process may depend on the server's implementation
+ * and the object's current state.
+ *
+ * @param {AutoDriveApi} api - The API instance used to send requests.
+ * @param {ArgsWithoutPagination<{ cid: string }>} query - The query parameters containing the CID of the object to publish.
+ * @returns {Promise<void>} - A promise that resolves when the object has been successfully published.
+ * @throws {Error} - Throws an error if the publication process fails.
+ */
+export const publishObject = async (
+  api: AutoDriveApi,
+  query: ArgsWithoutPagination<{ cid: string }>,
+): Promise<{ result: string }> => {
+  const response = await api.sendRequest(`/objects/${query.cid}/publish`, {
+    method: 'POST',
+  })
+
+  if (!response.ok) {
+    throw new Error(`Failed to publish object: ${response.statusText}`)
   }
 
   return response.json()

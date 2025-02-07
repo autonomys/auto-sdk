@@ -7,6 +7,7 @@ export interface AutoDriveApi {
     request: Partial<Request>,
     body?: BodyInit,
   ) => Promise<Response>
+  baseUrl: string
 }
 
 export enum OAuthProvider {
@@ -38,6 +39,9 @@ export const createAutoDriveApi = ({
   network,
 }: ConnectionOptions): AutoDriveApi => {
   const baseUrl = !network ? url : getNetworkUrl(network)
+  if (!baseUrl) {
+    throw new Error('No base URL provided')
+  }
 
   return {
     sendRequest: async (relativeUrl: string, request: Partial<Request>, body?: BodyInit) => {
@@ -54,5 +58,6 @@ export const createAutoDriveApi = ({
 
       return fetch(`${baseUrl}${relativeUrl}`, fullRequest)
     },
+    baseUrl,
   }
 }
