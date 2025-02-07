@@ -166,6 +166,27 @@ try {
 }
 ```
 
+### Create shareable download link
+
+Here is an example of how to use the `publishObject` method to publish an object and get its public download URL:
+
+```typescript
+import { createAutoDriveApi, publishObject } from '@autonomys/auto-drive'
+import { NetworkId } from '@autonomys/auto-utils'
+
+const api = createAutoDriveApi({ apiKey: 'your-api-key', network: NetworkId.TAURUS }) // Initialize your API instance with API key
+
+try {
+  const cid = 'your-file-cid'
+  const publicUrl = await publishObject(api, cid)
+  console.log('Public download URL:', publicUrl)
+} catch (error) {
+  console.error('Error publishing object:', error)
+}
+```
+
+**Note: For retrieving the link of an already published object just call again `publishObject` method**
+
 ### Example Usage of getRoots
 
 Here is an example of how to use the `getRoots` method to retrieve the root directories:
