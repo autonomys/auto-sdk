@@ -21,10 +21,6 @@
       "path": "../packages/auto-drive",
     },
     {
-      "name": "Auto-ID",
-      "path": "../packages/auto-id",
-    },
-    {
       "name": "Auto-XDM",
       "path": "../packages/auto-xdm",
     },
