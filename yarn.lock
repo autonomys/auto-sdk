@@ -64,6 +64,7 @@ __metadata:
   resolution: "@autonomys/auto-drive@workspace:packages/auto-drive"
   dependencies:
     "@autonomys/auto-dag-data": "npm:^1.2.6"
+    "@autonomys/auto-utils": "npm:^1.2.6"
     "@prerenderer/rollup-plugin": "npm:^0.3.12"
     "@rollup/plugin-commonjs": "npm:^28.0.1"
     "@rollup/plugin-json": "npm:^6.1.0"
