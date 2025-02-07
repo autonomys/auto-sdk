@@ -1,6 +1,7 @@
 import mime from 'mime-types'
 import { asyncByChunk, asyncFromStream, bufferToIterable, fileToIterable } from '../utils/async'
 import { progressToPercentage } from '../utils/misc'
+import { publicDownloadUrl } from './calls/download'
 import { apiCalls } from './calls/index'
 import { AutoDriveApi } from './connection'
 import { GenericFile, GenericFileWithinFolder } from './models/file'
@@ -391,4 +392,19 @@ export const getSubscriptionInfo = async (api: AutoDriveApi): Promise<Subscripti
   const me = await apiCalls.getMe(api)
 
   return me.subscription
+}
+
+/**
+ * Publishes an object by sending a request to the server.
+ *
+ * If already published, it will return the same public download URL.
+ *
+ * @param api {AutoDriveApi} - The API instance used to send requests.
+ * @param cid {string} - The CID of the object to publish.
+ * @returns {Promise<string>} - The public download URL of the published object.
+ */
+export const publishObject = async (api: AutoDriveApi, cid: string): Promise<string> => {
+  const result = await apiCalls.publishObject(api, { cid })
+
+  return publicDownloadUrl(api, result.result)
 }
