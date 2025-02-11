@@ -1,5 +1,6 @@
-import { NetworkId } from '@autonomys/auto-utils'
-import { AutoDriveNetwork, getNetworkUrl, networks } from './networks'
+import { AutoDriveNetwork, getNetworkUrl } from './networks'
+import { ApiInterface } from './type'
+import { createApiInterface } from './wrappers'
 
 export interface AutoDriveApi {
   sendRequest: (
@@ -37,13 +38,13 @@ export const createAutoDriveApi = ({
   apiKey,
   url = null,
   network,
-}: ConnectionOptions): AutoDriveApi => {
+}: ConnectionOptions): ApiInterface => {
   const baseUrl = !network ? url : getNetworkUrl(network)
   if (!baseUrl) {
     throw new Error('No base URL provided')
   }
 
-  return {
+  const api = {
     sendRequest: async (relativeUrl: string, request: Partial<Request>, body?: BodyInit) => {
       const headers = new Headers({
         ...Object.fromEntries(request.headers?.entries() || []),
@@ -60,4 +61,6 @@ export const createAutoDriveApi = ({
     },
     baseUrl,
   }
+
+  return createApiInterface(api)
 }
