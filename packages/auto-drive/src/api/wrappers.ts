@@ -4,7 +4,7 @@ import { progressToPercentage } from '../utils/misc'
 import { publicDownloadUrl } from './calls/download'
 import { apiCalls } from './calls/index'
 import { AutoDriveApi } from './connection'
-import { ObjectSummary, Scope } from './models'
+import { ObjectSearchResult, ObjectSummary, Scope } from './models'
 import { PaginatedResult } from './models/common'
 import { GenericFile, GenericFileWithinFolder } from './models/file'
 import { constructFromInput, constructZipBlobFromTreeAndPaths } from './models/folderTree'
@@ -431,4 +431,30 @@ export const getMyFiles = async (
   })
 
   return result
+}
+
+export const searchByNameOrCIDInMyFiles = async (
+  api: AutoDriveApi,
+  value: string,
+): Promise<ObjectSummary[]> => {
+  const results = await apiCalls.searchByNameOrCID(api, { value, scope: Scope.User })
+
+  const summaries = await Promise.all(
+    results.map(async (e) => apiCalls.getObjectSummary(api, { cid: e.cid })),
+  )
+
+  return summaries
+}
+
+export const searchByNameOrCID = async (
+  api: AutoDriveApi,
+  value: string,
+): Promise<ObjectSummary[]> => {
+  const results = await apiCalls.searchByNameOrCID(api, { value, scope: Scope.Global })
+
+  const summaries = await Promise.all(
+    results.map(async (e) => apiCalls.getObjectSummary(api, { cid: e.cid })),
+  )
+
+  return summaries
 }

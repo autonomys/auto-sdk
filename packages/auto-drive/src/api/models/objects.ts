@@ -56,6 +56,11 @@ export interface ObjectUploadStatus {
   maximumBlockDepth: number | null
 }
 
+export interface ObjectSearchResult {
+  cid: string
+  name: string
+}
+
 export type ObjectSummary = {
   headCid: string
   name?: string

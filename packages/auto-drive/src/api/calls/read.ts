@@ -1,7 +1,7 @@
 import { ArgsWithoutPagination, ArgsWithPagination } from '../../utils/types'
 import { AutoDriveApi } from '../connection'
 import { PaginatedResult } from '../models/common'
-import { ObjectInformation, ObjectSummary, Scope } from '../models/objects'
+import { ObjectInformation, ObjectSearchResult, ObjectSummary, Scope } from '../models/objects'
 import { UserInfo } from '../models/user'
 
 /**
@@ -59,6 +59,24 @@ export const getSharedWithMe = async (
   return response.json()
 }
 
+export const searchByNameOrCID = async (
+  api: AutoDriveApi,
+  query: ArgsWithoutPagination<{ value: string; scope: Scope }>,
+): Promise<ObjectSearchResult[]> => {
+  const response = await api.sendRequest(
+    `/objects/search?value=${query.value}&scope=${query.scope}`,
+    {
+      method: 'GET',
+    },
+  )
+
+  if (!response.ok) {
+    throw new Error(`Failed to search by name or CID: ${response.statusText}`)
+  }
+
+  return response.json()
+}
+
 /**
  * Retrieves the objects that have been marked as deleted.
  *
@@ -109,6 +127,31 @@ export const getObject = async (
 
   if (!response.ok) {
     throw new Error(`Failed to get object: ${response.statusText}`)
+  }
+
+  return response.json()
+}
+
+/**
+ * Retrieves the summary of a specific object identified by its CID.
+ *
+ * This method sends a request to the server to fetch the summary of the object.
+ *
+ * @param {AutoDriveApi} api - The API instance used to send requests.
+ * @param {ArgsWithoutPagination<{ cid: string }>} query - The query parameters containing the CID of the object whose upload status is to be retrieved.
+ * @returns {Promise<ObjectSummary>} - A promise that resolves to the summary of the requested object.
+ * @throws {Error} - Throws an error if the request fails.
+ */
+export const getObjectSummary = async (
+  api: AutoDriveApi,
+  query: ArgsWithoutPagination<{ cid: string }>,
+): Promise<ObjectSummary> => {
+  const response = await api.sendRequest(`/objects/${query.cid}/summary`, {
+    method: 'GET',
+  })
+
+  if (!response.ok) {
+    throw new Error(`Failed to get object summary: ${response.statusText}`)
   }
 
   return response.json()
