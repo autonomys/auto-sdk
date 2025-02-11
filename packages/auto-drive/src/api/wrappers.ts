@@ -4,6 +4,8 @@ import { progressToPercentage } from '../utils/misc'
 import { publicDownloadUrl } from './calls/download'
 import { apiCalls } from './calls/index'
 import { AutoDriveApi } from './connection'
+import { ObjectSummary, Scope } from './models'
+import { PaginatedResult } from './models/common'
 import { GenericFile, GenericFileWithinFolder } from './models/file'
 import { constructFromInput, constructZipBlobFromTreeAndPaths } from './models/folderTree'
 import { SubscriptionInfo } from './models/user'
@@ -407,4 +409,26 @@ export const publishObject = async (api: AutoDriveApi, cid: string): Promise<str
   const result = await apiCalls.publishObject(api, { cid })
 
   return publicDownloadUrl(api, result.result)
+}
+
+/**
+ * Gets the files of the current user.
+ *
+ * @param api {AutoDriveApi} - The API instance used to send requests.
+ * @param page {number} - The page number to get.
+ * @param limit {number} - The number of files to get per page.
+ * @returns {Promise<PaginatedResult<ObjectSummary>>} - A promise that resolves to the paginated result of the files.
+ */
+export const getMyFiles = async (
+  api: AutoDriveApi,
+  page: number,
+  limit: number = 100,
+): Promise<PaginatedResult<ObjectSummary>> => {
+  const result = await apiCalls.getRoots(api, {
+    scope: Scope.User,
+    limit,
+    offset: page * limit,
+  })
+
+  return result
 }
