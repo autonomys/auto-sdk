@@ -1,8 +1,8 @@
 import { ArgsWithoutPagination } from '../../utils/types'
-import { AutoDriveApi } from '../connection'
+import { AutoDriveApiHandler } from '../type'
 
 export const downloadObject = async (
-  api: AutoDriveApi,
+  api: AutoDriveApiHandler,
   query: ArgsWithoutPagination<{ cid: string }>,
 ): Promise<ReadableStream<Uint8Array>> => {
   const response = await api.sendRequest(`/objects/${query.cid}/download`, {
@@ -20,6 +20,6 @@ export const downloadObject = async (
   return response.body
 }
 
-export const publicDownloadUrl = (api: AutoDriveApi, cid: string): string => {
+export const publicDownloadUrl = (api: AutoDriveApiHandler, cid: string): string => {
   return `${api.baseUrl}/objects/${cid}/public`
 }

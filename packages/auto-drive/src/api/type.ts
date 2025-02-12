@@ -2,8 +2,9 @@ import { ObjectSummary } from './models'
 import { PaginatedResult } from './models/common'
 import { GenericFile, GenericFileWithinFolder } from './models/file'
 import { SubscriptionInfo } from './models/user'
+import { AutoDriveNetwork } from './networks'
 
-export interface ApiInterface {
+export interface AutoDriveApi extends AutoDriveApiHandler {
   /**
    * Uploads a file to the server with optional encryption and compression.
    *
@@ -162,8 +163,39 @@ export interface ApiInterface {
   searchByNameOrCID: (value: string) => Promise<ObjectSummary[]>
 }
 
+export interface AutoDriveApiHandler {
+  sendRequest: (
+    relativeUrl: string,
+    request: Partial<Request>,
+    body?: BodyInit,
+  ) => Promise<Response>
+  baseUrl: string
+}
+
 export type UploadFileOptions = {
   password?: string
   compression?: boolean
   onProgress?: (progress: number) => void
 }
+
+export enum OAuthProvider {
+  GOOGLE = 'google',
+  DISCORD = 'discord',
+}
+
+export type ApiKeyAuthProvider = 'apikey'
+export type AuthProvider = ApiKeyAuthProvider | 'oauth'
+
+export type ConnectionOptions =
+  | {
+      provider?: AuthProvider
+      apiKey?: string
+      url?: null
+      network: AutoDriveNetwork
+    }
+  | {
+      provider?: AuthProvider
+      apiKey?: string
+      url: string
+      network?: null
+    }

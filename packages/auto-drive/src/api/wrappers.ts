@@ -3,18 +3,17 @@ import { asyncByChunk, asyncFromStream, bufferToIterable, fileToIterable } from 
 import { progressToPercentage } from '../utils/misc'
 import { publicDownloadUrl } from './calls/download'
 import { apiCalls } from './calls/index'
-import { AutoDriveApi } from './connection'
 import { ObjectSummary, Scope } from './models'
 import { PaginatedResult } from './models/common'
 import { GenericFile, GenericFileWithinFolder } from './models/file'
 import { constructFromInput, constructZipBlobFromTreeAndPaths } from './models/folderTree'
 import { SubscriptionInfo } from './models/user'
-import { ApiInterface, UploadFileOptions } from './type'
+import { AutoDriveApi, AutoDriveApiHandler, UploadFileOptions } from './type'
 
 const UPLOAD_FILE_CHUNK_SIZE = 1024 * 1024
 
 const uploadFileChunks = (
-  api: AutoDriveApi,
+  api: AutoDriveApiHandler,
   fileUploadId: string,
   asyncIterable: AsyncIterable<Buffer>,
   uploadChunkSize: number = UPLOAD_FILE_CHUNK_SIZE,
@@ -38,7 +37,7 @@ const uploadFileChunks = (
   })
 }
 
-export const createApiInterface = (api: AutoDriveApi): ApiInterface => {
+export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
   const uploadFileFromInput = (
     file: File,
     options: UploadFileOptions = {},
@@ -169,23 +168,6 @@ export const createApiInterface = (api: AutoDriveApi): ApiInterface => {
     }
   }
 
-  /**
-   * Uploads an entire folder to the server.
-   *
-   * This function retrieves all files within the specified folder,
-   * constructs a file tree representation, and initiates the upload
-   * process. It also handles optional compression of the files during
-   * the upload. If a password is provided, the files will be zipped
-   * before uploading.
-   *
-   * @param {AutoDriveApi} api - The API instance used to send requests.
-   * @param {FileList | File[]} fileList - The list of files to be uploaded.
-   * @param {Object} options - Options for the upload process.
-   * @param {number} [options.uploadChunkSize] - The size of each chunk to upload (optional).
-   * @param {string} [options.password] - The password for encryption (optional).
-   * @returns {PromisedObservable<UploadFileStatus | UploadFolderStatus>} - An observable that emits the upload status.
-   * @throws {Error} - Throws an error if the upload fails at any stage.
-   */
   const uploadFolderFromInput = async (
     fileList: FileList | File[],
     {
@@ -369,5 +351,7 @@ export const createApiInterface = (api: AutoDriveApi): ApiInterface => {
     getMyFiles,
     searchByNameOrCIDInMyFiles,
     searchByNameOrCID,
+    sendRequest: api.sendRequest,
+    baseUrl: api.baseUrl,
   }
 }
