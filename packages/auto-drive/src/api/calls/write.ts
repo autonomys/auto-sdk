@@ -1,5 +1,5 @@
 import { ArgsWithoutPagination } from '../../utils/types'
-import { AutoDriveApiHandler } from '../type'
+import { AutoDriveApiHandler } from '../types'
 
 /**
  * Shares an object with a specified public ID.

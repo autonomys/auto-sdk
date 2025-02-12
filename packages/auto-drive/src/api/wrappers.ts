@@ -8,7 +8,7 @@ import { PaginatedResult } from './models/common'
 import { GenericFile, GenericFileWithinFolder } from './models/file'
 import { constructFromInput, constructZipBlobFromTreeAndPaths } from './models/folderTree'
 import { SubscriptionInfo } from './models/user'
-import { AutoDriveApi, AutoDriveApiHandler, UploadFileOptions } from './type'
+import { AutoDriveApi, AutoDriveApiHandler, UploadFileOptions } from './types'
 
 const UPLOAD_FILE_CHUNK_SIZE = 1024 * 1024
 

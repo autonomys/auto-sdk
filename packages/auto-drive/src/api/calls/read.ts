@@ -2,7 +2,7 @@ import { ArgsWithoutPagination, ArgsWithPagination } from '../../utils/types'
 import { PaginatedResult } from '../models/common'
 import { ObjectInformation, ObjectSearchResult, ObjectSummary, Scope } from '../models/objects'
 import { UserInfo } from '../models/user'
-import { AutoDriveApiHandler } from '../type'
+import { AutoDriveApiHandler } from '../types'
 
 /**
  * Retrieves the root objects based on the specified scope.

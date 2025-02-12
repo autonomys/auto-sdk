@@ -6,7 +6,7 @@ import {
   FileUploadOptions,
   FolderUpload,
 } from '../models/uploads'
-import { AutoDriveApiHandler } from '../type'
+import { AutoDriveApiHandler } from '../types'
 
 /**
  * Initiates a file upload to the server.

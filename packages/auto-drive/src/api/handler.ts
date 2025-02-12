@@ -1,5 +1,5 @@
 import { getNetworkUrl } from './networks'
-import { AutoDriveApiHandler, ConnectionOptions } from './type'
+import { AutoDriveApiHandler, ConnectionOptions } from './types'
 
 export const createApiRequestHandler = ({
   provider = 'apikey',
