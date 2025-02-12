@@ -29,10 +29,10 @@ To interact with the Auto-Drive API, you'll need to create an API key. Follow th
 
 ### How to upload a file from filepath? (Not available in browser)
 
-Here is an example of how to use the `uploadFileFromFilepath` method to upload a file with optional encryption and compression:
+Here is an example of how to use the `fs.uploadFileFromFilepath` method to upload a file with optional encryption and compression:
 
 ```typescript
-import { uploadFileFromFilepath,createAutoDriveApi } from '@autonomys/auto-drive'
+import { fs,createAutoDriveApi } from '@autonomys/auto-drive'
 import { NetworkId } from '@autonomys/auto-utils'
 
 const api = createAutoDriveApi({ apiKey: 'your-api-key', network: NetworkId.TAURUS }) // Initialize your API instance with API key
@@ -46,7 +46,7 @@ const options = {
   }
 }
 
-const cid = await uploadFileFromFilepath(api, filePath, options)
+const cid = await fs.uploadFileFromFilepath(api, filePath, options)
 
 console.log(`The file is uploaded and its cid is ${cid}`)
 ```
@@ -65,7 +65,7 @@ const options = {
   password: 'your-encryption-password', // Optional: specify a password for encryption
   compression: true,
 }
-const cid = await uploadFileFromInput(api, file, options)
+const cid = await api.uploadFileFromInput(file, options)
 
 console.log(`The file is uploaded and its cid is ${cid}`)
 ```
@@ -113,7 +113,7 @@ const options = {
   }
 }
 
-const cid = uploadFile(api, genericFile, options)
+const cid = api.uploadFile(genericFile, options)
 
 console.log(`The file is uploaded and its cid is ${cid}`)
 ```
@@ -121,7 +121,7 @@ console.log(`The file is uploaded and its cid is ${cid}`)
 ### How to upload a folder from folder? (Not available in browser)
 
 ```ts
-import { createAutoDriveApi, uploadFolderFromFolderPath } from '@autonomys/auto-drive'
+import { createAutoDriveApi, fs } from '@autonomys/auto-drive'
 import { NetworkId } from '@autonomys/auto-utils'
 
 const api = createAutoDriveApi({ apiKey: 'your-api-key', network: NetworkId.TAURUS }) // Initialize your API instance with API key
@@ -136,7 +136,7 @@ const options = {
   },
 }
 
-const folderCID = await uploadFolderFromFolderPath(api, folderPath, options)
+const folderCID = await fs.uploadFolderFromFolderPath(api, folderPath, options)
 
 console.log(`The folder is uploaded and its cid is ${folderCID}`)
 ```
@@ -148,14 +148,14 @@ console.log(`The folder is uploaded and its cid is ${folderCID}`)
 Here is an example of how to use the `downloadFile` method to download a file from the server:
 
 ```typescript
-import { createAutoDriveApi, downloadFile } from '@autonomys/auto-drive'
+import { createAutoDriveApi } from '@autonomys/auto-drive'
 import { NetworkId } from '@autonomys/auto-utils'
 
 const api = createAutoDriveApi({ apiKey: 'your-api-key', network: NetworkId.TAURUS }) // Initialize your API instance with API key
 
 try {
   const cid = '..'
-  const stream = await downloadFile(api, cid)
+  const stream = await api.downloadFile(cid)
   let file = Buffer.alloc(0)
   for await (const chunk of stream) {
     file = Buffer.concat([file, chunk])
@@ -171,14 +171,14 @@ try {
 Here is an example of how to use the `publishObject` method to publish an object and get its public download URL:
 
 ```typescript
-import { createAutoDriveApi, publishObject } from '@autonomys/auto-drive'
+import { createAutoDriveApi } from '@autonomys/auto-drive'
 import { NetworkId } from '@autonomys/auto-utils'
 
 const api = createAutoDriveApi({ apiKey: 'your-api-key', network: NetworkId.TAURUS }) // Initialize your API instance with API key
 
 try {
   const cid = 'your-file-cid'
-  const publicUrl = await publishObject(api, cid)
+  const publicUrl = await api.publishObject(cid)
   console.log('Public download URL:', publicUrl)
 } catch (error) {
   console.error('Error publishing object:', error)
@@ -187,26 +187,23 @@ try {
 
 **Note: For retrieving the link of an already published object just call again `publishObject` method**
 
-### Example Usage of getRoots
+### Example Usage of getMyFiles
 
-Here is an example of how to use the `getRoots` method to retrieve the root directories:
+Here is an example of how to use the `getMyFiles` method to retrieve the root directories:
 
 ```typescript
-import { createAutoDriveApi, apiCalls, Scope } from '@autonomys/auto-drive'
+import { createAutoDriveApi } from '@autonomys/auto-drive'
 import { NetworkId } from '@autonomys/auto-utils'
 
 const api = createAutoDriveApi({ apiKey: 'your-api-key', network: NetworkId.TAURUS }) // Initialize your API instance with API key
 
 try {
-  const myFiles = await apiCalls.getRoots(api, {
-    scope: Scope.User,
-    limit: 100,
-    offset: 0,
-  })
-
-  console.log(`Retrieved ${myFiles.rows.length} files of ${myFiles.totalCount} total`)
-  for (const file of myFiles.rows) {
-    console.log(`${file.name} - ${file.headCid}: ${file.size}`)
+  for (let i = 0; i < 10; i++) {
+    const myFiles = await api.getMyFiles(i, 100)
+    console.log(`Retrieved ${myFiles.rows.length} files of ${myFiles.totalCount} total`)
+    for (const file of myFiles.rows) {
+      console.log(`${file.name} - ${file.headCid}: ${file.size}`)
+    }
   }
 } catch (error) {
   console.error('Error downloading file:', error)
