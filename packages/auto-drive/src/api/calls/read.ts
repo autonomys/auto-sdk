@@ -64,7 +64,7 @@ export const searchByNameOrCID = async (
   query: ArgsWithoutPagination<{ value: string; scope: Scope }>,
 ): Promise<ObjectSearchResult[]> => {
   const response = await api.sendRequest(
-    `/objects/search?value=${query.value}&scope=${query.scope}`,
+    `/objects/search?cid=${encodeURIComponent(query.value)}&scope=${query.scope}`,
     {
       method: 'GET',
     },
