@@ -1,2 +1,2 @@
-export * from './browser.js'
-export * from './fs/index.js'
+export * from './browser'
+export * as fs from './fs/index'

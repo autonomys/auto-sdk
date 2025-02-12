@@ -1,5 +1,4 @@
 import { ArgsWithoutPagination } from '../../utils/types'
-import { AutoDriveApi } from '../connection'
 import { FolderTree } from '../models/folderTree'
 import {
   CompleteUploadResponse,
@@ -7,11 +6,12 @@ import {
   FileUploadOptions,
   FolderUpload,
 } from '../models/uploads'
+import { AutoDriveApiHandler } from '../types'
 
 /**
  * Initiates a file upload to the server.
  *
- * @param {AutoDriveApi} api - The API instance used to send requests.
+ * @param {AutoDriveApiHandler} api - The API instance used to send requests.
  * @param {ArgsWithoutPagination<{ mimeType?: string; filename: string; uploadOptions: FileUploadOptions | null }>} args - The arguments for the file upload.
  * @param {string} args.mimeType - The MIME type of the file (optional).
  * @param {string} args.filename - The name of the file to be uploaded.
@@ -20,7 +20,7 @@ import {
  * @throws {Error} - Throws an error if the upload fails.
  */
 export const createFileUpload = async (
-  api: AutoDriveApi,
+  api: AutoDriveApiHandler,
   {
     mimeType,
     filename,
@@ -52,7 +52,7 @@ export const createFileUpload = async (
 /**
  * Initiates a folder upload to the server.
  *
- * @param {AutoDriveApi} api - The API instance used to send requests.
+ * @param {AutoDriveApiHandler} api - The API instance used to send requests.
  * @param {ArgsWithoutPagination<{ fileTree: FolderTree; uploadOptions: FileUploadOptions }>} args - The arguments for the folder upload.
  * @param {FolderTree} args.fileTree - The structure of the folder and its contents to be uploaded.
  * @param {FileUploadOptions} args.uploadOptions - Additional options for the folder upload.
@@ -60,7 +60,7 @@ export const createFileUpload = async (
  * @throws {Error} - Throws an error if the upload fails.
  */
 export const createFolderUpload = async (
-  api: AutoDriveApi,
+  api: AutoDriveApiHandler,
   {
     fileTree,
     uploadOptions = {},
@@ -87,7 +87,7 @@ export const createFolderUpload = async (
 /**
  * Creates a file upload within an existing folder upload.
  *
- * @param {AutoDriveApi} api - The API instance used to send requests.
+ * @param {AutoDriveApiHandler} api - The API instance used to send requests.
  * @param {ArgsWithoutPagination<{ uploadId: string; name: string; mimeType: string; relativeId: string; uploadOptions: FileUploadOptions }>} args - The arguments for the file upload.
  * @param {string} args.uploadId - The ID of the folder upload to which the file will be added.
  * @param {string} args.name - The name of the file to be uploaded.
@@ -98,7 +98,7 @@ export const createFolderUpload = async (
  * @throws {Error} - Throws an error if the upload fails.
  */
 export const createFileUploadWithinFolderUpload = async (
-  api: AutoDriveApi,
+  api: AutoDriveApiHandler,
   {
     uploadId,
     name,
@@ -139,7 +139,7 @@ export const createFileUploadWithinFolderUpload = async (
  * index to the server, which can be used to reconstruct the file on the
  * server side.
  *
- * @param {AutoDriveApi} api - The API instance used to send requests.
+ * @param {AutoDriveApiHandler} api - The API instance used to send requests.
  * @param {ArgsWithoutPagination<{ uploadId: string; chunk: Buffer; index: number }>} args - The arguments for the file chunk upload.
  * @param {string} args.uploadId - The ID of the upload session.
  * @param {Buffer} args.chunk - The chunk of the file to be uploaded.
@@ -148,7 +148,7 @@ export const createFileUploadWithinFolderUpload = async (
  * @throws {Error} - Throws an error if the upload fails.
  */
 export const uploadFileChunk = async (
-  api: AutoDriveApi,
+  api: AutoDriveApiHandler,
   {
     uploadId,
     chunk,
@@ -180,14 +180,14 @@ export const uploadFileChunk = async (
  * typically called after all file chunks have been uploaded. This method
  * can be used to complete both file and folder uploads.
  *
- * @param {AutoDriveApi} api - The API instance used to send requests.
+ * @param {AutoDriveApiHandler} api - The API instance used to send requests.
  * @param {ArgsWithoutPagination<{ uploadId: string }>} args - The arguments for completing the upload.
  * @param {string} args.uploadId - The ID of the upload session to complete.
  * @returns {Promise<any>} - A promise that resolves to the response from the server.
  * @throws {Error} - Throws an error if the completion of the upload fails.
  */
 export const completeUpload = async (
-  api: AutoDriveApi,
+  api: AutoDriveApiHandler,
   { uploadId }: ArgsWithoutPagination<{ uploadId: string }>,
 ): Promise<CompleteUploadResponse> => {
   const response = await api.sendRequest(`/uploads/${uploadId}/complete`, {

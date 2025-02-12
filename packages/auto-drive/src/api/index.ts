@@ -1,4 +1,6 @@
 export * from './calls/index'
 export * from './connection'
+export * from './handler'
 export * from './models/index'
+export * from './types'
 export * from './wrappers'

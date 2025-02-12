@@ -1,14 +1,13 @@
 import fs from 'fs'
 import mime from 'mime-types'
-import { AutoDriveApi } from '../api/connection.js'
-import { apiCalls } from '../api/index.js'
-import { GenericFileWithinFolder } from '../api/models/file.js'
-import { constructFromFileSystemEntries } from '../api/models/folderTree.js'
-import { CompressionAlgorithm } from '../api/models/uploads.js'
-import { uploadFile, UploadFileOptions, uploadFileWithinFolderUpload } from '../api/wrappers.js'
-import { fileToIterable } from '../utils/index.js'
-import { progressToPercentage } from '../utils/misc.js'
-import { constructZipFromTreeAndFileSystemPaths, getFiles } from './utils.js'
+import { apiCalls } from '../api/index'
+import { GenericFileWithinFolder } from '../api/models/file'
+import { constructFromFileSystemEntries } from '../api/models/folderTree'
+import { CompressionAlgorithm } from '../api/models/uploads'
+import { AutoDriveApi, UploadFileOptions } from '../api/types'
+import { fileToIterable } from '../utils/index'
+import { progressToPercentage } from '../utils/misc'
+import { constructZipFromTreeAndFileSystemPaths, getFiles } from './utils'
 
 /**
  * Uploads a file to the server with optional encryption and compression.
@@ -36,8 +35,7 @@ export const uploadFileFromFilepath = (
   const { password = undefined, compression = true, onProgress } = options
   const name = filePath.split('/').pop()!
 
-  return uploadFile(
-    api,
+  return api.uploadFile(
     {
       read: () => fs.createReadStream(filePath),
       name,
@@ -91,8 +89,7 @@ export const uploadFolderFromFolderPath = async (
     const filesMap = Object.fromEntries(files.map((file) => [file, file]))
     const zipBlob = await constructZipFromTreeAndFileSystemPaths(fileTree, filesMap)
     const name = folderPath.split('/').pop()!
-    return uploadFile(
-      api,
+    return api.uploadFile(
       {
         read: () => fileToIterable(zipBlob),
         name: `${name}.zip`,
@@ -130,7 +127,7 @@ export const uploadFolderFromFolderPath = async (
   const totalSize = genericFiles.reduce((acc, file) => acc + file.size, 0)
   let progress = 0
   for (const file of genericFiles) {
-    await uploadFileWithinFolderUpload(api, folderUpload.id, file, uploadChunkSize, {
+    await api.uploadFileWithinFolderUpload(folderUpload.id, file, uploadChunkSize, {
       onProgress: (uploadedBytes) => {
         onProgress?.(progressToPercentage(progress + uploadedBytes, totalSize))
       },
