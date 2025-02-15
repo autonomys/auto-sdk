@@ -101,17 +101,19 @@ export type WithdrawalUnlock = {
   storageFeeRefund: bigint
 }
 
+export type WithdrawalInShares = {
+  domainEpoch: number[]
+  unlockAtConfirmedDomainBlockNumber: number
+  shares: bigint
+  storageFeeRefund: bigint
+}
+
 export type Withdrawal = {
   operatorId: number
   account: string
   totalWithdrawalAmount: bigint
   withdrawals: WithdrawalUnlock[]
-  withdrawalInShares: {
-    domainEpoch: number[]
-    unlockAtConfirmedDomainBlockNumber: number
-    shares: bigint
-    storageFeeRefund: bigint
-  }
+  withdrawalInShares: WithdrawalInShares | null
 }
 
 export type StringNumberOrBigInt = string | number | bigint

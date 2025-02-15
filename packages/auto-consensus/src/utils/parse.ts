@@ -13,6 +13,7 @@ import {
   RawWithdrawalHeader,
   StringNumberOrBigInt,
   Withdrawal,
+  WithdrawalInShares,
 } from '../types/staking'
 
 export const parseBN = (value: BN): bigint => BigInt(value.toString())
@@ -88,6 +89,15 @@ export const parseDeposit = (deposit: [StorageKey<AnyTuple>, Codec]): Deposit =>
   } as Deposit
 }
 
+export const parseWithdrawalInShares = (
+  withdrawalInShares: RawWithdrawal['withdrawalInShares'],
+): WithdrawalInShares => ({
+  domainEpoch: withdrawalInShares.domainEpoch,
+  unlockAtConfirmedDomainBlockNumber: withdrawalInShares.unlockAtConfirmedDomainBlockNumber,
+  shares: BigInt(withdrawalInShares.shares),
+  storageFeeRefund: BigInt(withdrawalInShares.storageFeeRefund),
+})
+
 export const parseWithdrawal = (withdrawal: [StorageKey<AnyTuple>, Codec]): Withdrawal => {
   const header = withdrawal[0].toHuman() as RawWithdrawalHeader
   const parsedWithdrawal = withdrawal[1].toJSON() as RawWithdrawal
@@ -95,13 +105,10 @@ export const parseWithdrawal = (withdrawal: [StorageKey<AnyTuple>, Codec]): With
     operatorId: parseInt(header[0]),
     account: header[1],
     totalWithdrawalAmount: BigInt(parsedWithdrawal.totalWithdrawalAmount),
-    withdrawalInShares: {
-      domainEpoch: parsedWithdrawal.withdrawalInShares.domainEpoch,
-      unlockAtConfirmedDomainBlockNumber:
-        parsedWithdrawal.withdrawalInShares.unlockAtConfirmedDomainBlockNumber,
-      shares: BigInt(parsedWithdrawal.withdrawalInShares.shares),
-      storageFeeRefund: BigInt(parsedWithdrawal.withdrawalInShares.storageFeeRefund),
-    },
+    withdrawalInShares:
+      parsedWithdrawal.withdrawalInShares !== null
+        ? parseWithdrawalInShares(parsedWithdrawal.withdrawalInShares)
+        : null,
     withdrawals:
       parsedWithdrawal.withdrawals &&
       parsedWithdrawal.withdrawals.length > 0 &&
