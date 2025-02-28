@@ -1,4 +1,4 @@
-import type { BN } from '@autonomys/auto-utils'
+import type { BN, Codec } from '@autonomys/auto-utils'
 
 export type RawBlock = {
   block: {
@@ -11,6 +11,7 @@ export type RawBlock = {
         logs: string[]
       }
     }
+    extrinsics: Codec[]
   }
 }
 
