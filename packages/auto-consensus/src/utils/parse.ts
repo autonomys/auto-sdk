@@ -61,6 +61,14 @@ export const parseBlockExtrinsics = (block: RawBlock): Extrinsic[] => {
   return block.block.extrinsics.map(parseExtrinsic)
 }
 
+export const parseBlockTransfers = (block: RawBlock): Extrinsic[] => {
+  return parseBlockExtrinsics(block).filter(
+    (e) =>
+      (e.section === 'balances' && e.method === 'transfer') ||
+      (e.section === 'transporter' && e.method === 'transfer'),
+  )
+}
+
 export const parseDomain = (domain: [StorageKey<AnyTuple>, Codec]): DomainRegistry => {
   const header = domain[0].toHuman() as [string]
   return {

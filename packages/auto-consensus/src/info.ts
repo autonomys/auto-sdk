@@ -2,7 +2,7 @@
 
 import type { AnyTuple, Api, ApiPromise, Codec, StorageKey } from '@autonomys/auto-utils'
 import type { RawBlock, RawBlockHeader } from './types/block'
-import { parseBlockExtrinsics } from './utils/parse'
+import { parseBlockExtrinsics, parseBlockTransfers } from './utils/parse'
 import { queryMethodPath } from './utils/query'
 
 const PIECE_SIZE = BigInt(1048576)
@@ -13,18 +13,19 @@ export const rpc = async <T>(api: Api, methodPath: string, params: any[] = []): 
 export const query = async <T>(api: Api, methodPath: string, params: any[] = []): Promise<T> =>
   await queryMethodPath<T>(api, `query.${methodPath}`, params)
 
+export const header = async (api: Api) => await rpc<RawBlockHeader>(api, 'chain.getHeader', [])
+
 export const block = async (api: Api, blockHash?: string) =>
   await rpc<RawBlock>(api, 'chain.getBlock', [blockHash])
 
 export const blockExtrinsics = async (api: Api, blockHash?: string) =>
   await block(api, blockHash).then((block) => parseBlockExtrinsics(block))
 
-export const header = async (api: Api) => await rpc<RawBlockHeader>(api, 'chain.getHeader', [])
+export const blockTransfers = async (api: Api, blockHash?: string) =>
+  await block(api, blockHash).then((block) => parseBlockTransfers(block))
 
 export const blockNumber = async (api: Api): Promise<number> => {
-  // Get the block
   const _block = await block(api)
-
   return _block.block.header.number.toNumber()
 }
 
