@@ -12,7 +12,8 @@ export const rpc = async <T>(api: Api, methodPath: string, params: any[] = []): 
 export const query = async <T>(api: Api, methodPath: string, params: any[] = []): Promise<T> =>
   await queryMethodPath<T>(api, `query.${methodPath}`, params)
 
-export const block = async (api: Api) => await rpc<RawBlock>(api, 'chain.getBlock', [])
+export const block = async (api: Api, blockHash?: string) =>
+  await rpc<RawBlock>(api, 'chain.getBlock', [blockHash])
 
 export const header = async (api: Api) => await rpc<RawBlockHeader>(api, 'chain.getHeader', [])
 
@@ -23,10 +24,13 @@ export const blockNumber = async (api: Api): Promise<number> => {
   return _block.block.header.number.toNumber()
 }
 
-export const blockHash = async (api: Api) => {
-  const _blockHash = await rpc<Codec>(api, 'chain.getBlockHash', [])
+export const blockHash = async (api: Api, blockNumber?: number) => {
+  const _blockHash = await rpc<Codec>(api, 'chain.getBlockHash', [blockNumber])
   return _blockHash.toString()
 }
+
+export const finalizedHead = async (api: Api) =>
+  await rpc<RawBlockHeader>(api, 'chain.getFinalizedHead', [])
 
 export const networkTimestamp = async (api: Api) => await query<Codec>(api, 'timestamp.now', [])
 
