@@ -1,6 +1,8 @@
 import type { AnyTuple, BN, Codec, StorageKey } from '@autonomys/auto-utils'
 import type { BalanceData, RawBalanceData } from '../types/balance'
+import { RawBlock } from '../types/block'
 import { DomainRegistry } from '../types/domain'
+import type { Extrinsic } from '../types/extrinsic'
 import {
   Deposit,
   Operator,
@@ -30,6 +32,41 @@ export const parseBalance = (data: RawBalanceData): BalanceData => {
     console.error('Error parsing balance:', error)
     throw new Error('Failed to parse balance')
   }
+}
+
+export const parseExtrinsic = (extrinsic: Codec): Extrinsic => {
+  const hash = extrinsic.hash.toHex()
+  const {
+    isSigned,
+    method: { section, method },
+  } = extrinsic.toHuman() as any
+  const {
+    signature: { signer, signature },
+    method: { callIndex, args },
+  } = extrinsic.toPrimitive() as any
+  return {
+    hash,
+    isSigned,
+    section,
+    method,
+    signer,
+    signature,
+    callIndex,
+    args,
+  }
+}
+
+export const parseBlockExtrinsics = (block: RawBlock): Extrinsic[] => {
+  if (!block.block.extrinsics || block.block.extrinsics.length === 0) return []
+  return block.block.extrinsics.map(parseExtrinsic)
+}
+
+export const parseBlockTransfers = (block: RawBlock): Extrinsic[] => {
+  return parseBlockExtrinsics(block).filter(
+    (e) =>
+      (e.section === 'balances' && e.method === 'transfer') ||
+      (e.section === 'transporter' && e.method === 'transfer'),
+  )
 }
 
 export const parseDomain = (domain: [StorageKey<AnyTuple>, Codec]): DomainRegistry => {
