@@ -4,7 +4,7 @@ export type Extrinsic = {
   section: string
   method: string
   signer: string
-  signature: any
+  signature: { [signatureType: string]: string }
   callIndex: number
-  args: any
+  args: object
 }
