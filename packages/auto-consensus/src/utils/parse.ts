@@ -41,7 +41,10 @@ export const parseExtrinsic = (extrinsic: Codec): Extrinsic => {
     method: { section, method },
   } = extrinsic.toHuman() as any
   const {
-    signature: { signer, signature },
+    signature: {
+      signer: { id: signer },
+      signature,
+    },
     method: { callIndex, args },
   } = extrinsic.toPrimitive() as any
   return {
@@ -62,10 +65,15 @@ export const parseBlockExtrinsics = (block: RawBlock): Extrinsic[] => {
 }
 
 export const parseBlockTransfers = (block: RawBlock): Extrinsic[] => {
-  return parseBlockExtrinsics(block).filter(
-    (e) =>
-      (e.section === 'balances' && e.method === 'transfer') ||
-      (e.section === 'transporter' && e.method === 'transfer'),
+  const transferTypes = [
+    { section: 'balances', methods: ['transferKeepAlive', 'transferAllowDeath', 'transferAll'] },
+    { section: 'transporter', methods: ['transfer'] },
+  ]
+
+  return parseBlockExtrinsics(block).filter((extrinsic) =>
+    transferTypes.some(
+      (type) => type.section === extrinsic.section && type.methods.includes(extrinsic.method),
+    ),
   )
 }
 
