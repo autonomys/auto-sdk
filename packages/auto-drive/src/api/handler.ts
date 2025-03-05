@@ -1,3 +1,4 @@
+import { version } from '../package'
 import { getNetworkUrl } from './networks'
 import { AutoDriveApiHandler, ConnectionOptions } from './types'
 
@@ -18,6 +19,8 @@ export const createApiRequestHandler = ({
         ...Object.fromEntries(request.headers?.entries() || []),
         'x-auth-provider': provider,
         Authorization: `Bearer ${apiKey}`,
+        'x-auto-sdk-version': version,
+        'User-Agent': `AutoDrive/${version}`,
       })
       const fullRequest = {
         ...request,
