@@ -25,12 +25,14 @@
     "README.md"
   ],
   "dependencies": {
-    "@polkadot/api": "^14.3.1",
-    "@polkadot/extension-dapp": "^0.56.2",
+    "@polkadot/api": "^15.8.1",
+    "@polkadot/extension-dapp": "^0.58.5",
     "fs": "^0.0.1-security"
   },
   "devDependencies": {
-    "@polkadot/types-codec": "^14.3.1",
+    "@polkadot/extension-inject": "^0.58.5",
+    "@polkadot/types": "^15.8.1",
+    "@polkadot/types-codec": "^15.8.1",
     "@types/jest": "^29.5.12",
     "eslint": "^8.57.0",
     "jest": "^29.7.0",
