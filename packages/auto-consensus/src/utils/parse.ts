@@ -1,6 +1,5 @@
-import type { AnyTuple, BN, Codec, StorageKey } from '@autonomys/auto-utils'
+import type { AnyTuple, BN, Codec, SignedBlock, StorageKey } from '@autonomys/auto-utils'
 import type { BalanceData, RawBalanceData } from '../types/balance'
-import { RawBlock } from '../types/block'
 import { DomainRegistry } from '../types/domain'
 import type { Extrinsic } from '../types/extrinsic'
 import {
@@ -59,12 +58,12 @@ export const parseExtrinsic = (extrinsic: Codec): Extrinsic => {
   }
 }
 
-export const parseBlockExtrinsics = (block: RawBlock): Extrinsic[] => {
+export const parseBlockExtrinsics = (block: SignedBlock): Extrinsic[] => {
   if (!block.block.extrinsics || block.block.extrinsics.length === 0) return []
   return block.block.extrinsics.map(parseExtrinsic)
 }
 
-export const parseBlockTransfers = (block: RawBlock): Extrinsic[] => {
+export const parseBlockTransfers = (block: SignedBlock): Extrinsic[] => {
   const transferTypes = [
     { section: 'balances', methods: ['transferKeepAlive', 'transferAllowDeath', 'transferAll'] },
     { section: 'transporter', methods: ['transfer'] },
