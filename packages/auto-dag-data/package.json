@@ -1,6 +1,6 @@
 {
   "name": "@autonomys/auto-dag-data",
-  "packageManager": "yarn@4.1.1",
+  "packageManager": "yarn@4.7.0",
   "version": "1.3.4",
   "license": "MIT",
   "main": "dist/index.js",
