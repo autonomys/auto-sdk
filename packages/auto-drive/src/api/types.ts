@@ -1,10 +1,17 @@
 import { ObjectSummary } from './models'
 import { PaginatedResult } from './models/common'
 import { GenericFile, GenericFileWithinFolder } from './models/file'
-import { SubscriptionInfo } from './models/user'
+import { SubscriptionInfo, UserInfo } from './models/user'
 import { AutoDriveNetwork } from './networks'
 
 export interface AutoDriveApi extends AutoDriveApiHandler {
+  /**
+   * Gets the user info for the current user.
+   *
+   * @returns {Promise<UserInfo>} A promise that resolves to the user info.
+   */
+  me: () => Promise<UserInfo>
+
   /**
    * Uploads a file to the server with optional encryption and compression.
    *

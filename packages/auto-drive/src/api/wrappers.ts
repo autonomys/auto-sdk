@@ -338,7 +338,10 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
     return summaries
   }
 
+  const me = () => apiCalls.getMe(api)
+
   return {
+    me,
     uploadFileFromInput,
     uploadFile,
     uploadObjectAsJSON,
