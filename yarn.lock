@@ -68,7 +68,7 @@ __metadata:
     "@prerenderer/rollup-plugin": "npm:^0.3.12"
     "@rollup/plugin-commonjs": "npm:^28.0.1"
     "@rollup/plugin-json": "npm:^6.1.0"
-    "@rollup/plugin-node-resolve": "npm:^15.3.0"
+    "@rollup/plugin-node-resolve": "npm:^15.3.1"
     "@rollup/plugin-terser": "npm:^0.4.0"
     "@rollup/plugin-typescript": "npm:^12.1.1"
     "@types/mime-types": "npm:^2"
@@ -2822,7 +2822,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rollup/plugin-node-resolve@npm:^15.3.0":
+"@rollup/plugin-node-resolve@npm:^15.3.1":
   version: 15.3.1
   resolution: "@rollup/plugin-node-resolve@npm:15.3.1"
   dependencies:
