@@ -1,7 +1,15 @@
 // file: src/info.ts
 
-import type { AnyTuple, Api, ApiPromise, Codec, StorageKey } from '@autonomys/auto-utils'
-import type { RawBlock, RawBlockHeader } from './types/block'
+import type {
+  AnyTuple,
+  Api,
+  ApiPromise,
+  BlockHash,
+  Codec,
+  Header,
+  SignedBlock,
+  StorageKey,
+} from '@autonomys/auto-utils'
 import { parseBlockExtrinsics, parseBlockTransfers } from './utils/parse'
 import { queryMethodPath } from './utils/query'
 
@@ -13,10 +21,10 @@ export const rpc = async <T>(api: Api, methodPath: string, params: any[] = []): 
 export const query = async <T>(api: Api, methodPath: string, params: any[] = []): Promise<T> =>
   await queryMethodPath<T>(api, `query.${methodPath}`, params)
 
-export const header = async (api: Api) => await rpc<RawBlockHeader>(api, 'chain.getHeader', [])
+export const header = async (api: Api) => await rpc<Header>(api, 'chain.getHeader', [])
 
 export const block = async (api: Api, blockHash?: string) =>
-  await rpc<RawBlock>(api, 'chain.getBlock', [blockHash])
+  await rpc<SignedBlock>(api, 'chain.getBlock', [blockHash])
 
 export const blockExtrinsics = async (api: Api, blockHash?: string) =>
   await block(api, blockHash).then((block) => parseBlockExtrinsics(block))
@@ -26,16 +34,16 @@ export const blockTransfers = async (api: Api, blockHash?: string) =>
 
 export const blockNumber = async (api: Api): Promise<number> => {
   const _block = await block(api)
-  return _block.block.header.number.toNumber()
+  return parseInt(_block.block.header.number.toString())
 }
 
 export const blockHash = async (api: Api, blockNumber?: number) => {
-  const _blockHash = await rpc<Codec>(api, 'chain.getBlockHash', [blockNumber])
+  const _blockHash = await rpc<BlockHash>(api, 'chain.getBlockHash', [blockNumber])
   return _blockHash.toString()
 }
 
 export const finalizedHead = async (api: Api) =>
-  await rpc<RawBlockHeader>(api, 'chain.getFinalizedHead', [])
+  await rpc<BlockHash>(api, 'chain.getFinalizedHead', [])
 
 export const networkTimestamp = async (api: Api) => await query<Codec>(api, 'timestamp.now', [])
 
