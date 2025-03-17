@@ -22,7 +22,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@autonomys/async@workspace:packages/async":
+"@autonomys/async@workspace:*, @autonomys/async@workspace:packages/async":
   version: 0.0.0-use.local
   resolution: "@autonomys/async@workspace:packages/async"
   dependencies:
@@ -61,6 +61,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-dag-data@workspace:packages/auto-dag-data"
   dependencies:
+    "@autonomys/async": "workspace:*"
     "@ipld/dag-pb": "npm:^4.1.2"
     "@peculiar/webcrypto": "npm:^1.5.0"
     "@types/jest": "npm:^29.5.13"
@@ -84,6 +85,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-drive@workspace:packages/auto-drive"
   dependencies:
+    "@autonomys/async": "workspace:*"
     "@autonomys/auto-dag-data": "npm:^1.4.0"
     "@autonomys/auto-utils": "npm:^1.4.0"
     "@prerenderer/rollup-plugin": "npm:^0.3.12"
