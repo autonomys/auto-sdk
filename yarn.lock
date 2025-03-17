@@ -26,20 +26,13 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@autonomys/async@workspace:packages/async"
   dependencies:
-    "@autonomys/auto-dag-data": "npm:^1.4.0"
-    "@autonomys/auto-utils": "npm:^1.4.0"
     "@types/jest": "npm:^29.5.12"
     eslint: "npm:^9.21.0"
     interface-store: "npm:^6.0.2"
     jest: "npm:^29.7.0"
-    jszip: "npm:^3.10.1"
-    mime-types: "npm:^2.1.35"
     prettier: "npm:^3.2.5"
-    process: "npm:^0.11.10"
-    stream: "npm:^0.0.3"
     ts-jest: "npm:^29.1.4"
     typescript: "npm:^5.4.5"
-    zod: "npm:^3.23.8"
   languageName: unknown
   linkType: soft
 
