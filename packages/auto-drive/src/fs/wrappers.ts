@@ -5,7 +5,7 @@ import { GenericFileWithinFolder } from '../api/models/file'
 import { constructFromFileSystemEntries } from '../api/models/folderTree'
 import { CompressionAlgorithm } from '../api/models/uploads'
 import { AutoDriveApi, UploadFileOptions } from '../api/types'
-import { fileToIterable } from '../utils/index'
+import { fileToIterable } from '@autonomys/async'
 import { progressToPercentage } from '../utils/misc'
 import { constructZipFromTreeAndFileSystemPaths, getFiles } from './utils'
 
