@@ -29,14 +29,6 @@
     "ts-jest": "^29.1.4",
     "typescript": "^5.4.5"
   },
-  "dependencies": {
-    "@autonomys/auto-dag-data": "^1.4.0",
-    "@autonomys/auto-utils": "^1.4.0",
-    "jszip": "^3.10.1",
-    "mime-types": "^2.1.35",
-    "process": "^0.11.10",
-    "stream": "^0.0.3",
-    "zod": "^3.23.8"
-  },
+  "dependencies": {},
   "gitHead": "53cf74430ba08ed3b8f38ccc2fcee7b373a7934c"
 }
