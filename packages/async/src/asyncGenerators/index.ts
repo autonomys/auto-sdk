@@ -1,5 +1,6 @@
-type AwaitIterable<T> = AsyncIterable<T> | Iterable<T>
 import { PassThrough, Readable } from 'stream'
+
+export type AwaitIterable<T> = AsyncIterable<T> | Iterable<T>
 
 export const asyncIterableMap = async <T, R>(
   iterable: AwaitIterable<T>,
