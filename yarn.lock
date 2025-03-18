@@ -36,11 +36,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@autonomys/auto-consensus@npm:^1.4.0, @autonomys/auto-consensus@workspace:*, @autonomys/auto-consensus@workspace:packages/auto-consensus":
+"@autonomys/auto-consensus@npm:^1.4.1, @autonomys/auto-consensus@workspace:*, @autonomys/auto-consensus@workspace:packages/auto-consensus":
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-consensus@workspace:packages/auto-consensus"
   dependencies:
-    "@autonomys/auto-utils": "npm:^1.4.0"
+    "@autonomys/auto-utils": "npm:^1.4.1"
     "@types/jest": "npm:^29.5.14"
     eslint: "npm:^9.22.0"
     jest: "npm:^29.7.0"
@@ -50,7 +50,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@autonomys/auto-dag-data@npm:^1.4.0, @autonomys/auto-dag-data@workspace:packages/auto-dag-data":
+"@autonomys/auto-dag-data@npm:^1.4.1, @autonomys/auto-dag-data@workspace:packages/auto-dag-data":
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-dag-data@workspace:packages/auto-dag-data"
   dependencies:
@@ -79,8 +79,8 @@ __metadata:
   resolution: "@autonomys/auto-drive@workspace:packages/auto-drive"
   dependencies:
     "@autonomys/asynchronous": "workspace:*"
-    "@autonomys/auto-dag-data": "npm:^1.4.0"
-    "@autonomys/auto-utils": "npm:^1.4.0"
+    "@autonomys/auto-dag-data": "npm:^1.4.1"
+    "@autonomys/auto-utils": "npm:^1.4.1"
     "@prerenderer/rollup-plugin": "npm:^0.3.12"
     "@rollup/plugin-commonjs": "npm:^28.0.3"
     "@rollup/plugin-json": "npm:^6.1.0"
@@ -113,7 +113,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@autonomys/auto-utils@npm:^1.4.0, @autonomys/auto-utils@workspace:*, @autonomys/auto-utils@workspace:packages/auto-utils":
+"@autonomys/auto-utils@npm:^1.4.1, @autonomys/auto-utils@workspace:*, @autonomys/auto-utils@workspace:packages/auto-utils":
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-utils@workspace:packages/auto-utils"
   dependencies:
@@ -136,8 +136,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-xdm@workspace:packages/auto-xdm"
   dependencies:
-    "@autonomys/auto-consensus": "npm:^1.4.0"
-    "@autonomys/auto-utils": "npm:^1.4.0"
+    "@autonomys/auto-consensus": "npm:^1.4.1"
+    "@autonomys/auto-utils": "npm:^1.4.1"
     "@types/jest": "npm:^29.5.14"
     eslint: "npm:^9.22.0"
     jest: "npm:^29.7.0"
