@@ -15,7 +15,7 @@
     "url": "https://github.com/autonomys/auto-sdk/issues"
   },
   "engines": {
-    "node": ">=20.8.0"
+    "node": ">=20.19.0"
   },
   "scripts": {
     "build": "yarn tsc"
