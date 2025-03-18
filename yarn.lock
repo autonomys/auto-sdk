@@ -90,7 +90,7 @@ __metadata:
     "@types/jest": "npm:^29.5.14"
     eslint: "npm:^9.22.0"
     jest: "npm:^29.7.0"
-    lerna: "npm:^8.1.5"
+    lerna: "npm:^8.2.1"
     prettier: "npm:^3.2.5"
     ts-jest: "npm:^29.1.4"
     typescript: "npm:^5.4.5"
@@ -9241,7 +9241,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lerna@npm:^8.1.5":
+"lerna@npm:^8.2.1":
   version: 8.2.1
   resolution: "lerna@npm:8.2.1"
   dependencies:
