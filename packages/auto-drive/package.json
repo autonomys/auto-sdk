@@ -31,12 +31,12 @@
   },
   "devDependencies": {
     "@prerenderer/rollup-plugin": "^0.3.12",
-    "@rollup/plugin-commonjs": "^28.0.1",
+    "@rollup/plugin-commonjs": "^28.0.3",
     "@rollup/plugin-json": "^6.1.0",
-    "@rollup/plugin-node-resolve": "^15.3.0",
-    "@rollup/plugin-terser": "^0.4.0",
-    "@rollup/plugin-typescript": "^12.1.1",
-    "@types/mime-types": "^2",
+    "@rollup/plugin-node-resolve": "^16.0.0",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^12.1.2",
+    "@types/mime-types": "^2.1.4",
     "rollup-plugin-jscc": "^2.0.0",
     "tslib": "^2.8.1",
     "typescript": "^5.6.3"
