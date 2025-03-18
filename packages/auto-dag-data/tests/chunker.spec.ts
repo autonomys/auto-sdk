@@ -46,7 +46,8 @@ describe('chunker', () => {
       /// Check the metadata
       expect(decoded.name).toBe(name)
       expect(decoded.type).toBe(MetadataType.File)
-      expect(Buffer.from(decoded.data ?? '').toString()).toBe(text)
+      const data = decoded.data ? Buffer.from(decoded.data) : Buffer.from('')
+      expect(data.toString()).toBe(text)
       expect(decoded.linkDepth).toBe(0)
       expect(decoded.size?.toString()).toBe(text.length.toString())
 

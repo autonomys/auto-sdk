@@ -19,7 +19,8 @@ describe('node creation', () => {
       const decoded = IPLDNodeData.decode(node.Data ?? new Uint8Array())
       expect(decoded.name).toBe(filename)
       expect(decoded.size!.toString()).toBe(buffer.length.toString())
-      expect(Buffer.from(decoded.data ?? '').toString()).toBe(buffer.toString())
+      const data = decoded.data ? Buffer.from(decoded.data) : Buffer.from('')
+      expect(data.toString()).toBe(buffer.toString())
     })
 
     it('single file root node | no name', () => {
@@ -29,7 +30,8 @@ describe('node creation', () => {
       expect(decoded.type).toBe(MetadataType.File)
       expect(decoded.name).toBeUndefined()
       expect(decoded.size!.toString()).toBe(buffer.length.toString())
-      expect(Buffer.from(decoded.data ?? '').toString()).toBe(buffer.toString())
+      const data = decoded.data ? Buffer.from(decoded.data) : Buffer.from('')
+      expect(data.toString()).toBe(buffer.toString())
     })
 
     it('single file root node | buffer too large', () => {

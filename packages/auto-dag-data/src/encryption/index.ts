@@ -1,7 +1,7 @@
+import { asyncByChunk } from '@autonomys/asynchronous'
 import { Crypto } from '@peculiar/webcrypto'
 import { AwaitIterable } from 'interface-store'
 import { EncryptionAlgorithm, EncryptionOptions } from '../metadata/index.js'
-import { asyncByChunk } from '../utils/async.js'
 import type { PickPartial } from '../utils/types.js'
 import { PasswordGenerationOptions } from './types.js'
 
