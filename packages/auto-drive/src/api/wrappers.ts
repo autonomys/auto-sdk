@@ -1,4 +1,9 @@
-import { asyncByChunk, bufferToIterable, fileToIterable, asyncFromStream } from '@autonomys/async'
+import {
+  asyncByChunk,
+  asyncFromStream,
+  bufferToIterable,
+  fileToIterable,
+} from '@autonomys/asynchronous'
 import mime from 'mime-types'
 import { progressToPercentage } from '../utils/misc'
 import { publicDownloadUrl } from './calls/download'

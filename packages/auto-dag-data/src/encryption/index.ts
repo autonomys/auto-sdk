@@ -1,4 +1,4 @@
-import { asyncByChunk } from '@autonomys/async'
+import { asyncByChunk } from '@autonomys/asynchronous'
 import { Crypto } from '@peculiar/webcrypto'
 import { AwaitIterable } from 'interface-store'
 import { EncryptionAlgorithm, EncryptionOptions } from '../metadata/index.js'

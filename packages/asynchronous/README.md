@@ -1,4 +1,4 @@
-# @autonomys/async
+# @autonomys/asynchronous
 
 ## Description
 

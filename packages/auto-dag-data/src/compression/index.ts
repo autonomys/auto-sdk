@@ -1,4 +1,4 @@
-import { asyncByChunk, AwaitIterable } from '@autonomys/async'
+import { asyncByChunk, AwaitIterable } from '@autonomys/asynchronous'
 import { Unzlib, Zlib } from 'fflate'
 import { CompressionAlgorithm } from '../metadata/index.js'
 import type { PickPartial } from '../utils/types.js'

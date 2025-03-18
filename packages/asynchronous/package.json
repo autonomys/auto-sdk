@@ -1,5 +1,5 @@
 {
-  "name": "@autonomys/async",
+  "name": "@autonomys/asynchronous",
   "packageManager": "yarn@4.7.0",
   "version": "1.4.0",
   "license": "MIT",
