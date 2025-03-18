@@ -22,7 +22,8 @@ describe('file retrievability', () => {
 
     expect(decodedNode.name).toBe(filename)
     expect(decodedNode.size!.toString()).toBe(buffer.length.toString())
-    expect(Buffer.from(decodedNode.data ?? '').toString()).toBe(buffer.toString())
+    const data = decodedNode.data ? Buffer.from(decodedNode.data) : Buffer.from('')
+    expect(data.toString()).toBe(buffer.toString())
   })
 
   it('should be able to retrieve a file with chunked file', async () => {
