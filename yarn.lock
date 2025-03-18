@@ -28,7 +28,7 @@ __metadata:
   dependencies:
     "@autonomys/auto-utils": "npm:^1.4.0"
     "@types/jest": "npm:^29.5.14"
-    eslint: "npm:^9.21.0"
+    eslint: "npm:^9.22.0"
     jest: "npm:^29.7.0"
     prettier: "npm:^3.2.5"
     ts-jest: "npm:^29.1.4"
@@ -88,7 +88,7 @@ __metadata:
   resolution: "@autonomys/auto-sdk@workspace:."
   dependencies:
     "@types/jest": "npm:^29.5.14"
-    eslint: "npm:^9.21.0"
+    eslint: "npm:^9.22.0"
     jest: "npm:^29.7.0"
     lerna: "npm:^8.1.5"
     prettier: "npm:^3.2.5"
@@ -107,7 +107,7 @@ __metadata:
     "@polkadot/types": "npm:^15.8.1"
     "@polkadot/types-codec": "npm:^15.8.1"
     "@types/jest": "npm:^29.5.14"
-    eslint: "npm:^9.21.0"
+    eslint: "npm:^9.22.0"
     fs: "npm:^0.0.1-security"
     jest: "npm:^29.7.0"
     prettier: "npm:^3.2.5"
@@ -123,7 +123,7 @@ __metadata:
     "@autonomys/auto-consensus": "npm:^1.4.0"
     "@autonomys/auto-utils": "npm:^1.4.0"
     "@types/jest": "npm:^29.5.14"
-    eslint: "npm:^9.21.0"
+    eslint: "npm:^9.22.0"
     jest: "npm:^29.7.0"
     prettier: "npm:^3.2.5"
     ts-jest: "npm:^29.1.4"
@@ -6292,7 +6292,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint@npm:^9.21.0":
+"eslint@npm:^9.22.0":
   version: 9.22.0
   resolution: "eslint@npm:9.22.0"
   dependencies:
