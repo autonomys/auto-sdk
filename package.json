@@ -8,7 +8,6 @@
     "examples/*"
   ],
   "scripts": {
-    "prebuild": "yarn build @autonomys/asynchronous",
     "build": "lerna run build",
     "clean": "lerna run clean",
     "format": "lerna run format",
