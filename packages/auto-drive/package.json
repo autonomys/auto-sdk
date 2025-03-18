@@ -39,7 +39,7 @@
     "@types/mime-types": "^2.1.4",
     "rollup-plugin-jscc": "^2.0.0",
     "tslib": "^2.8.1",
-    "typescript": "^5.6.3"
+    "typescript": "^5.8.2"
   },
   "dependencies": {
     "@autonomys/auto-dag-data": "^1.4.0",
