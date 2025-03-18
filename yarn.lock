@@ -31,7 +31,7 @@ __metadata:
     interface-store: "npm:^6.0.2"
     jest: "npm:^29.7.0"
     prettier: "npm:^3.2.5"
-    ts-jest: "npm:^29.1.4"
+    ts-jest: "npm:^29.2.6"
     typescript: "npm:^5.4.5"
   languageName: unknown
   linkType: soft
@@ -12962,7 +12962,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ts-jest@npm:^29.1.4, ts-jest@npm:^29.2.6":
+"ts-jest@npm:^29.2.6":
   version: 29.2.6
   resolution: "ts-jest@npm:29.2.6"
   dependencies:
