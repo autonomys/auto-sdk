@@ -31,7 +31,7 @@ __metadata:
     eslint: "npm:^9.22.0"
     jest: "npm:^29.7.0"
     prettier: "npm:^3.5.3"
-    ts-jest: "npm:^29.1.4"
+    ts-jest: "npm:^29.2.6"
     typescript: "npm:^5.4.5"
   languageName: unknown
   linkType: soft
@@ -54,7 +54,7 @@ __metadata:
     protobufjs: "npm:^7.4.0"
     protons: "npm:^7.6.0"
     protons-runtime: "npm:^5.5.0"
-    ts-jest: "npm:^29.2.5"
+    ts-jest: "npm:^29.2.6"
     typescript: "npm:^5.6.2"
   languageName: unknown
   linkType: soft
@@ -92,7 +92,7 @@ __metadata:
     jest: "npm:^29.7.0"
     lerna: "npm:^8.2.1"
     prettier: "npm:^3.5.3"
-    ts-jest: "npm:^29.1.4"
+    ts-jest: "npm:^29.2.6"
     typescript: "npm:^5.4.5"
   languageName: unknown
   linkType: soft
@@ -111,7 +111,7 @@ __metadata:
     fs: "npm:^0.0.1-security"
     jest: "npm:^29.7.0"
     prettier: "npm:^3.5.3"
-    ts-jest: "npm:^29.1.4"
+    ts-jest: "npm:^29.2.6"
     typescript: "npm:^5.4.5"
   languageName: unknown
   linkType: soft
@@ -126,7 +126,7 @@ __metadata:
     eslint: "npm:^9.22.0"
     jest: "npm:^29.7.0"
     prettier: "npm:^3.5.3"
-    ts-jest: "npm:^29.1.4"
+    ts-jest: "npm:^29.2.6"
     typescript: "npm:^5.4.5"
   languageName: unknown
   linkType: soft
@@ -13295,7 +13295,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ts-jest@npm:^29.1.4, ts-jest@npm:^29.2.5":
+"ts-jest@npm:^29.2.6":
   version: 29.2.6
   resolution: "ts-jest@npm:29.2.6"
   dependencies:
