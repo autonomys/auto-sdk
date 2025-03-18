@@ -71,7 +71,7 @@ __metadata:
     "@rollup/plugin-node-resolve": "npm:^16.0.0"
     "@rollup/plugin-terser": "npm:^0.4.4"
     "@rollup/plugin-typescript": "npm:^12.1.2"
-    "@types/mime-types": "npm:^2"
+    "@types/mime-types": "npm:^2.1.4"
     jszip: "npm:^3.10.1"
     mime-types: "npm:^2.1.35"
     process: "npm:^0.11.10"
@@ -3289,7 +3289,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/mime-types@npm:^2":
+"@types/mime-types@npm:^2.1.4":
   version: 2.1.4
   resolution: "@types/mime-types@npm:2.1.4"
   checksum: 10c0/a10d57881d14a053556b3d09292de467968d965b0a06d06732c748da39b3aa569270b5b9f32529fd0e9ac1e5f3b91abb894f5b1996373254a65cb87903c86622
