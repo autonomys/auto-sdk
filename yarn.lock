@@ -50,7 +50,7 @@ __metadata:
     fflate: "npm:^0.8.2"
     interface-store: "npm:^6.0.2"
     jest: "npm:^29.7.0"
-    multiformats: "npm:^13.2.2"
+    multiformats: "npm:^13.3.2"
     protobufjs: "npm:^7.4.0"
     protons: "npm:^7.6.0"
     protons-runtime: "npm:^5.5.0"
@@ -10027,7 +10027,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"multiformats@npm:^13.0.0, multiformats@npm:^13.1.0, multiformats@npm:^13.2.2, multiformats@npm:^13.2.3":
+"multiformats@npm:^13.0.0, multiformats@npm:^13.1.0, multiformats@npm:^13.2.3, multiformats@npm:^13.3.2":
   version: 13.3.2
   resolution: "multiformats@npm:13.3.2"
   checksum: 10c0/a2c6f17b04d6a9cd5d0cb7d07e32dc4f3be82804d44fc056357a98e449340a7ad37d0789da41186ccd8c953e0cf783be3b71f03a00b0a84788689f544ecade46
