@@ -41,13 +41,13 @@
   },
   "dependencies": {
     "@autonomys/asynchronous": "workspace:*",
-    "@ipld/dag-pb": "^4.1.2",
+    "@ipld/dag-pb": "^4.1.3",
     "@peculiar/webcrypto": "^1.5.0",
     "@webbuf/blake3": "^3.0.26",
     "@webbuf/fixedbuf": "^3.0.26",
     "@webbuf/webbuf": "^3.0.26",
     "fflate": "^0.8.2",
-    "multiformats": "^13.2.2",
+    "multiformats": "^13.3.2",
     "protobufjs": "^7.4.0",
     "protons": "^7.6.0",
     "protons-runtime": "^5.5.0"
