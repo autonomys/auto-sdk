@@ -27,7 +27,7 @@ __metadata:
   resolution: "@autonomys/auto-consensus@workspace:packages/auto-consensus"
   dependencies:
     "@autonomys/auto-utils": "npm:^1.4.0"
-    "@types/jest": "npm:^29.5.12"
+    "@types/jest": "npm:^29.5.14"
     eslint: "npm:^9.21.0"
     jest: "npm:^29.7.0"
     prettier: "npm:^3.2.5"
@@ -42,7 +42,7 @@ __metadata:
   dependencies:
     "@ipld/dag-pb": "npm:^4.1.2"
     "@peculiar/webcrypto": "npm:^1.5.0"
-    "@types/jest": "npm:^29.5.13"
+    "@types/jest": "npm:^29.5.14"
     "@webbuf/blake3": "npm:^3.0.26"
     "@webbuf/fixedbuf": "npm:^3.0.26"
     "@webbuf/webbuf": "npm:^3.0.26"
@@ -87,7 +87,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-sdk@workspace:."
   dependencies:
-    "@types/jest": "npm:^29.5.12"
+    "@types/jest": "npm:^29.5.14"
     eslint: "npm:^9.21.0"
     jest: "npm:^29.7.0"
     lerna: "npm:^8.1.5"
@@ -106,7 +106,7 @@ __metadata:
     "@polkadot/extension-inject": "npm:^0.58.5"
     "@polkadot/types": "npm:^15.8.1"
     "@polkadot/types-codec": "npm:^15.8.1"
-    "@types/jest": "npm:^29.5.12"
+    "@types/jest": "npm:^29.5.14"
     eslint: "npm:^9.21.0"
     fs: "npm:^0.0.1-security"
     jest: "npm:^29.7.0"
@@ -122,7 +122,7 @@ __metadata:
   dependencies:
     "@autonomys/auto-consensus": "npm:^1.4.0"
     "@autonomys/auto-utils": "npm:^1.4.0"
-    "@types/jest": "npm:^29.5.12"
+    "@types/jest": "npm:^29.5.14"
     eslint: "npm:^9.21.0"
     jest: "npm:^29.7.0"
     prettier: "npm:^3.2.5"
@@ -3241,7 +3241,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/jest@npm:^29.5.12, @types/jest@npm:^29.5.13":
+"@types/jest@npm:^29.5.14":
   version: 29.5.14
   resolution: "@types/jest@npm:29.5.14"
   dependencies:
