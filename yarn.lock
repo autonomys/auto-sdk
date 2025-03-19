@@ -27,7 +27,7 @@ __metadata:
   resolution: "@autonomys/asynchronous@workspace:packages/asynchronous"
   dependencies:
     "@types/jest": "npm:^29.5.12"
-    eslint: "npm:^9.21.0"
+    eslint: "npm:^9.22.0"
     interface-store: "npm:^6.0.2"
     jest: "npm:^29.7.0"
     prettier: "npm:^3.5.3"
@@ -6100,7 +6100,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint@npm:^9, eslint@npm:^9.21.0, eslint@npm:^9.22.0":
+"eslint@npm:^9, eslint@npm:^9.22.0":
   version: 9.22.0
   resolution: "eslint@npm:9.22.0"
   dependencies:
