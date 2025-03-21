@@ -26,7 +26,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@autonomys/asynchronous@workspace:packages/asynchronous"
   dependencies:
-    "@types/jest": "npm:^29.5.12"
+    "@types/jest": "npm:^29.5.14"
     eslint: "npm:^9.22.0"
     interface-store: "npm:^6.0.2"
     jest: "npm:^29.7.0"
@@ -3218,7 +3218,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/jest@npm:^29.5.12, @types/jest@npm:^29.5.14":
+"@types/jest@npm:^29.5.14":
   version: 29.5.14
   resolution: "@types/jest@npm:29.5.14"
   dependencies:
