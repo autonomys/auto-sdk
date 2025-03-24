@@ -1,9 +1,9 @@
 import Websocket from 'websocket'
-import { ClientRPC } from '../models/client'
-import { Message, MessageQuery } from '../models/common'
 import { schedule, unresolvablePromise } from '../utils'
+import { encodeMessage } from '../utils/websocket'
+import { WsClient, WsMessageCallback } from './types'
 
-export const createRpcClient = ({
+export const createWsClient = ({
   endpoint,
   callbacks,
   reconnectInterval = 10_000,
@@ -16,15 +16,15 @@ export const createRpcClient = ({
     onClose?: (event: Websocket.ICloseEvent) => void
   }
   reconnectInterval?: number | null
-}): ClientRPC => {
+}): WsClient => {
   let ws: Websocket.w3cwebsocket
-  let onMessageCallbacks: ((event: Message) => void)[] = []
+  let onMessageCallbacks: WsMessageCallback[] = []
   let connected: Promise<void> = unresolvablePromise
   let closed = false
 
   const handleConnection = () => {
     ws = new Websocket.w3cwebsocket(endpoint)
-    connected = new Promise((resolve) => {
+    connected = new Promise<void>((resolve) => {
       ws.onopen = () => {
         callbacks.onOpen?.()
         resolve()
@@ -42,7 +42,7 @@ export const createRpcClient = ({
     }
 
     ws.onerror = (event) => {
-      connected = unresolvablePromise
+      // connected = unresolvablePromise
       callbacks.onError?.(event)
       if (!closed) {
         handleErrorOrClose()
@@ -50,11 +50,11 @@ export const createRpcClient = ({
     }
 
     ws.onmessage = (event) => {
-      onMessageCallbacks.forEach((callback) => callback(JSON.parse(event.data.toString())))
+      onMessageCallbacks.forEach((callback) => callback(event.data, (message) => ws.send(message)))
     }
 
     ws.onclose = (event) => {
-      connected = unresolvablePromise
+      // connected = unresolvablePromise
       callbacks.onClose?.(event)
       if (!closed) {
         handleErrorOrClose()
@@ -65,34 +65,16 @@ export const createRpcClient = ({
   // Init connection
   handleConnection()
 
-  const send = async (message: MessageQuery) => {
+  const send = async (message: Websocket.IMessageEvent['data']) => {
     await connected
-
-    const id = message.id ?? Math.floor(Math.random() * 65546)
-    const messageWithID = { ...message, id }
-
-    return new Promise<Message>((resolve, reject) => {
-      const cb = (event: Message) => {
-        try {
-          if (event.id === id) {
-            off(cb)
-            resolve(event)
-          }
-        } catch (error) {
-          reject(error)
-        }
-      }
-      on(cb)
-
-      ws.send(JSON.stringify(messageWithID))
-    })
+    ws.send(message)
   }
 
-  const on = (callback: (event: Message) => void) => {
+  const on = (callback: WsMessageCallback) => {
     onMessageCallbacks.push(callback)
   }
 
-  const off = (callback: (event: Message) => void) => {
+  const off = (callback: WsMessageCallback) => {
     onMessageCallbacks = onMessageCallbacks.filter((cb) => cb !== callback)
   }
 

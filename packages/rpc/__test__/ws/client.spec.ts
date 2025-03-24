@@ -1,40 +1,38 @@
-import { createRpcClient } from '../src'
-import { createTestServer } from './utils'
-
+import Websocket from 'websocket'
+import { createWsClient } from '../../src'
+import { createTestServer } from '../utils'
 describe('Client', () => {
-  let server: ReturnType<typeof createTestServer>
+  let server: Awaited<ReturnType<typeof createTestServer>>
 
-  beforeEach(() => {
-    server = createTestServer()
+  const mockMessage = JSON.stringify({
+    jsonrpc: '2.0',
+    method: 'test',
+    params: [],
+  })
+
+  beforeEach(async () => {
+    server = await createTestServer()
 
     jest.clearAllMocks()
     jest.restoreAllMocks()
   })
 
-  afterEach(() => {
+  afterEach(async () => {
     server.wsServer.closeAllConnections()
     server.wsServer.shutDown()
     server.httpServer.closeAllConnections()
     server.httpServer.close()
+    await new Promise((resolve) => server.httpServer.on('close', resolve))
   })
 
   it('should be able to send a message', async () => {
-    const ws = createRpcClient({
+    const ws = createWsClient({
       endpoint: server.url,
       callbacks: {},
       reconnectInterval: 10_000,
     })
 
-    const message = {
-      id: 1,
-      jsonrpc: '2.0',
-      method: 'test',
-      params: [],
-    }
-    const response = await ws.send(message)
-
-    // Expected response should be echoed back
-    expect(response).toEqual(message)
+    await ws.send(mockMessage)
 
     await new Promise((resolve) => setTimeout(resolve, 100))
 
@@ -44,10 +42,10 @@ describe('Client', () => {
   })
 
   it('should be able to recover from a connection error', async () => {
-    const reconnectInterval = 1_000
+    const reconnectInterval = 500
 
-    const ws = await new Promise<ReturnType<typeof createRpcClient>>(async (resolve) => {
-      const ws = createRpcClient({
+    const ws = await new Promise<ReturnType<typeof createWsClient>>(async (resolve) => {
+      const ws = createWsClient({
         endpoint: server.url,
         callbacks: {
           onReconnection: () => {
@@ -59,14 +57,10 @@ describe('Client', () => {
 
       setTimeout(() => {
         server.wsServer.connections.map((c) => c.drop(1000, 'test'))
-      }, 20)
+      }, 100)
     })
 
-    ws.send({
-      jsonrpc: '2.0',
-      method: 'test',
-      params: [],
-    })
+    ws.send(mockMessage)
     await new Promise((resolve) => setTimeout(resolve, 100))
 
     ws.close()
@@ -77,8 +71,8 @@ describe('Client', () => {
   it('should be able to recover from a connection close', async () => {
     const reconnectInterval = 1_000
 
-    const ws = await new Promise<ReturnType<typeof createRpcClient>>(async (resolve) => {
-      const ws = createRpcClient({
+    const ws = await new Promise<ReturnType<typeof createWsClient>>(async (resolve) => {
+      const ws = createWsClient({
         endpoint: server.url,
         callbacks: {
           onReconnection: () => {
@@ -90,14 +84,10 @@ describe('Client', () => {
 
       setTimeout(() => {
         server.wsServer.connections.map((c) => c.close())
-      }, 20)
+      }, 100)
     })
 
-    ws.send({
-      jsonrpc: '2.0',
-      method: 'test',
-      params: [],
-    })
+    ws.send(mockMessage)
     await new Promise((resolve) => setTimeout(resolve, 100))
 
     ws.close()
@@ -106,26 +96,17 @@ describe('Client', () => {
   })
 
   it('should send a message and receive a response', async () => {
-    const ws = createRpcClient({
+    const ws = createWsClient({
       endpoint: server.url,
       callbacks: {
         onOpen: () => {
-          ws.send({
-            jsonrpc: '2.0',
-            method: 'echo',
-            params: ['Hello, World!'],
-          })
+          ws.send(mockMessage)
         },
       },
     })
 
     ws.on((message) => {
-      expect(message).toEqual({
-        jsonrpc: '2.0',
-        method: 'echo',
-        params: ['Hello, World!'],
-        id: expect.any(Number),
-      })
+      expect(message).toEqual(mockMessage)
     })
 
     await new Promise((resolve) => setTimeout(resolve, 100))
@@ -133,7 +114,7 @@ describe('Client', () => {
   })
 
   it('should handle errors gracefully', async () => {
-    const ws = createRpcClient({
+    const ws = createWsClient({
       endpoint: server.url,
       callbacks: {
         onError: (error) => {
@@ -153,7 +134,7 @@ describe('Client', () => {
   })
 
   it('should be able to close connection', async () => {
-    const ws = createRpcClient({
+    const ws = createWsClient({
       endpoint: server.url,
       callbacks: {},
       reconnectInterval: 10_000,

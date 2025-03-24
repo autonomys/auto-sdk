@@ -1,12 +1,11 @@
 import http from 'http'
 import Websocket from 'websocket'
 
-export const TEST_PORT = 12345
+export const TEST_PORT = 1234
 
-export const createTestServer = () => {
+export const createTestServer = async () => {
   const mock = jest.fn()
-  const httpServer = http.createServer()
-  httpServer.listen(TEST_PORT)
+  const httpServer = await createBaseHttpServer()
   const wsServer = new Websocket.server({
     httpServer,
   })
@@ -30,4 +29,11 @@ export const createTestServer = () => {
     mock,
     url,
   }
+}
+
+export const createBaseHttpServer = async () => {
+  const httpServer = http.createServer()
+  httpServer.listen(TEST_PORT)
+  await new Promise((resolve) => httpServer.once('listening', resolve))
+  return httpServer
 }

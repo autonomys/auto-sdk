@@ -4,11 +4,13 @@
   "version": "1.4.1",
   "private": true,
   "dependencies": {
-    "websocket": "^1.0.35"
+    "websocket": "^1.0.35",
+    "ws": "^8.18.1"
   },
   "devDependencies": {
     "@types/jest": "^29.5.12",
     "@types/websocket": "^1.0.10",
+    "@types/ws": "^8.18.0",
     "jest": "^29.7.0",
     "ts-jest": "^29.1.4",
     "typescript": "^5.4.5"

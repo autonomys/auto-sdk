@@ -1,0 +1,98 @@
+import Websocket from 'websocket'
+import { ClientRPC } from '../models/client'
+import { Message, MessageQuery, messageSchema } from '../models/common'
+import { schedule, unresolvablePromise } from '../utils'
+import { parseData, parseMessage } from '../utils/websocket'
+import { createWsClient } from '../ws/client'
+import { WsClient } from '../ws/types'
+import { RpcCallback, RpcClientResponder } from './types'
+
+export const createRpcClient = ({
+  endpoint,
+  callbacks,
+  reconnectInterval = 10_000,
+}: {
+  endpoint: string
+  callbacks: {
+    onOpen?: () => void
+    onReconnection?: () => void
+    onError?: (error: Error) => void
+    onClose?: (event: Websocket.ICloseEvent) => void
+    onWrongMessage?: (responder: (message: string) => void) => void
+  }
+  reconnectInterval?: number | null
+}): ClientRPC => {
+  let ws: WsClient = createWsClient({
+    endpoint,
+    callbacks: {
+      onOpen: callbacks.onOpen,
+      onReconnection: callbacks.onReconnection,
+      onError: callbacks.onError,
+      onClose: callbacks.onClose,
+    },
+    reconnectInterval,
+  })
+
+  const connectionMessager = (connection: (message: Websocket.Message) => void) => {
+    return (message: string) => connection({ type: 'utf8', utf8Data: message })
+  }
+
+  let onMessageCallbacks: RpcCallback[] = []
+  let connected: Promise<void> = unresolvablePromise
+  let closed = false
+
+  const send = async (message: MessageQuery) => {
+    await connected
+
+    const id = message.id ?? Math.floor(Math.random() * 65546)
+    const messageWithID = { ...message, id }
+
+    return new Promise<Message>((resolve, reject) => {
+      const cb = (event: Message) => {
+        try {
+          if (event.id === id) {
+            off(cb)
+            resolve(event)
+          }
+        } catch (error) {
+          reject(error)
+        }
+      }
+      on(cb)
+
+      ws.send(JSON.stringify(messageWithID))
+    })
+  }
+
+  const on = (callback: (event: Message) => void) => {
+    onMessageCallbacks.push(callback)
+  }
+
+  const off = (callback: (event: Message) => void) => {
+    onMessageCallbacks = onMessageCallbacks.filter((cb) => cb !== callback)
+  }
+
+  ws.on((message, responder) => {
+    const rpcResponder = connectionMessager(responder)
+    try {
+      const messageObj = JSON.parse(parseData(message))
+      const parsedMessage = messageSchema.safeParse(messageObj)
+      if (!parsedMessage.success) {
+        callbacks.onWrongMessage?.(rpcResponder)
+        return
+      }
+
+      onMessageCallbacks.forEach((callback) => callback(parsedMessage.data, rpcResponder))
+    } catch (error) {
+      callbacks.onWrongMessage?.(rpcResponder)
+    }
+  })
+
+  const close = () => {
+    if (closed) return
+    closed = true
+    ws.close()
+  }
+
+  return { send, on, off, close }
+}
