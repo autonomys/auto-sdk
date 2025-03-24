@@ -1,7 +1,7 @@
-import { Message } from './common'
+import { Message, MessageQuery } from './common'
 
 export type ClientRPC = {
-  send: (message: Omit<Message, 'id'>) => Promise<Message>
+  send: (message: MessageQuery) => Promise<Message>
   on: (callback: (event: Message) => void) => void
   off: (callback: (event: Message) => void) => void
   close: () => void

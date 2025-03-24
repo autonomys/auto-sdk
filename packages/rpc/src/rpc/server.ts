@@ -1,4 +1,4 @@
-import { messageSchema } from '../models/common'
+import { Message, MessageQuery, MessageResponse, messageSchema } from '../models/common'
 import { WsServer } from '../models/server'
 import { safeParseJson } from '../utils/json'
 import { parseMessage } from '../utils/websocket'
@@ -9,13 +9,15 @@ const isWsServer = (server: any): server is WsServer => {
   return 'broadcastMessage' in server
 }
 
-export const createRpcServer = (
-  server: WsServer | Parameters<typeof createWsServer>[0],
-  handlers_: RpcHandler[] = [],
-) => {
+export const createRpcServer = ({
+  server,
+  initialHandlers,
+}: {
+  server: WsServer | Parameters<typeof createWsServer>[0]
+  initialHandlers?: RpcHandler[]
+}) => {
   const wsServer = isWsServer(server) ? server : createWsServer(server)
-  const handlers = handlers_ ?? []
-
+  const handlers = initialHandlers ?? []
   wsServer.onMessage((msg, { connection }) => {
     try {
       const utf8Data = parseMessage(msg)
@@ -31,13 +33,23 @@ export const createRpcServer = (
         connection.sendUTF(JSON.stringify({ error: 'JSON message does not match RPC base schema' }))
         return
       }
+      const wrapResponse = (message: Omit<MessageResponse, 'id'>) => {
+        return { ...message, id: parsedMessage.data.id }
+      }
 
       // Find the handler for the message
       const handler = handlers.find(
         (handler) => parsedMessage.data.method === handler.method,
       )?.handler
       if (!handler) {
-        connection.sendUTF(JSON.stringify({ error: 'Method not found' }))
+        connection.sendUTF(
+          JSON.stringify(
+            wrapResponse({
+              error: { code: 404, message: 'Method not found' },
+              jsonrpc: '2.0',
+            }),
+          ),
+        )
         return
       }
 
@@ -45,11 +57,11 @@ export const createRpcServer = (
       const response = handler(parsedMessage.data, (message) => {
         connection.sendUTF(JSON.stringify(message))
       })
-      if (response) {
+      if (parsedMessage.data.id && response) {
         connection.sendUTF(JSON.stringify(response))
       }
     } catch (error) {
-      connection.sendUTF(JSON.stringify({ error: 'Invalid message' }))
+      connection.sendUTF(JSON.stringify({ error: 'Unknown error' }))
       return
     }
   })
@@ -58,7 +70,12 @@ export const createRpcServer = (
     handlers.push(handler)
   }
 
+  const close = () => {
+    return wsServer.close()
+  }
+
   return {
     addRpcHandler,
+    close,
   }
 }

@@ -36,7 +36,7 @@ describe('Server', () => {
 
     expect(mock).toHaveBeenCalledTimes(0)
 
-    server.shutDown()
+    server.close()
     client.close()
   })
 
@@ -67,7 +67,7 @@ describe('Server', () => {
 
     expect(messageReceived).toHaveBeenCalledTimes(1)
 
-    server.shutDown()
+    server.close()
     client.close()
   })
 })

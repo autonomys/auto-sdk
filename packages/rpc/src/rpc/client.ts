@@ -1,11 +1,11 @@
 import Websocket from 'websocket'
 import { ClientRPC } from '../models/client'
 import { Message, MessageQuery, messageSchema } from '../models/common'
-import { schedule, unresolvablePromise } from '../utils'
-import { parseData, parseMessage } from '../utils/websocket'
+import { unresolvablePromise } from '../utils'
+import { parseData } from '../utils/websocket'
 import { createWsClient } from '../ws/client'
 import { WsClient } from '../ws/types'
-import { RpcCallback, RpcClientResponder } from './types'
+import { RpcCallback } from './types'
 
 export const createRpcClient = ({
   endpoint,
@@ -38,12 +38,8 @@ export const createRpcClient = ({
   }
 
   let onMessageCallbacks: RpcCallback[] = []
-  let connected: Promise<void> = unresolvablePromise
-  let closed = false
 
   const send = async (message: MessageQuery) => {
-    await connected
-
     const id = message.id ?? Math.floor(Math.random() * 65546)
     const messageWithID = { ...message, id }
 
@@ -76,21 +72,13 @@ export const createRpcClient = ({
     const rpcResponder = connectionMessager(responder)
     try {
       const messageObj = JSON.parse(parseData(message))
-      const parsedMessage = messageSchema.safeParse(messageObj)
-      if (!parsedMessage.success) {
-        callbacks.onWrongMessage?.(rpcResponder)
-        return
-      }
-
-      onMessageCallbacks.forEach((callback) => callback(parsedMessage.data, rpcResponder))
+      onMessageCallbacks.forEach((callback) => callback(messageObj, rpcResponder))
     } catch (error) {
       callbacks.onWrongMessage?.(rpcResponder)
     }
   })
 
-  const close = () => {
-    if (closed) return
-    closed = true
+  const close = (): void => {
     ws.close()
   }
 

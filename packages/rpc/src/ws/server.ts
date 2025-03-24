@@ -56,11 +56,10 @@ export const createWsServer = ({
 
   ws.mount({ httpServer })
 
-  const shutDown = () => {
+  const close = (): void => {
     ws.unmount()
     ws.shutDown()
     ws.closeAllConnections()
-
     httpServer.close()
     httpServer.closeAllConnections()
   }
@@ -68,6 +67,6 @@ export const createWsServer = ({
   return {
     broadcastMessage,
     onMessage,
-    shutDown,
+    close,
   }
 }

@@ -11,7 +11,7 @@ export const parseMessage = (message: Websocket.Message): string => {
   if (message.type === 'utf8') {
     return parseData(message.utf8Data)
   } else {
-    return parseData(message.binaryData)
+    return message.binaryData.toString('utf-8')
   }
 }
 
