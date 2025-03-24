@@ -9,7 +9,7 @@ export const createDomainsChainIdType = (api: ApiPromise, domainId?: string | nu
   createType(
     api.registry,
     'SpDomainsChainId',
-    domainId ? { Domain: domainId } : { Consensus: null },
+    domainId !== undefined ? { Domain: domainId } : { Consensus: null },
   )
 
 export const createAccountId20Type = (api: ApiPromise, address: string) =>
