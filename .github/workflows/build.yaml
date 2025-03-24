@@ -24,7 +24,7 @@ jobs:
         run: corepack enable
 
       - name: Set Yarn version to Berry
-        run: corepack prepare yarn@4.2.2 --activate
+        run: corepack prepare yarn@4.7.0 --activate
 
       - name: Install dependencies
         run: yarn install
