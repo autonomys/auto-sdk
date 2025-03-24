@@ -35,6 +35,8 @@ export const createWsServer = ({
   }
 
   ws.on('connect', (connection) => {
+    onConnection?.(connection)
+
     connection.on('error', (error) => {
       onConnectionError?.(error)
     })
