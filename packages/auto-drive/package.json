@@ -42,7 +42,7 @@
     "typescript": "^5.6.3"
   },
   "dependencies": {
-    "@autonomys/asynchronous": "workspace:*",
+    "@autonomys/asynchronous": "1.4.2",
     "@autonomys/auto-dag-data": "^1.4.2",
     "@autonomys/auto-utils": "^1.4.2",
     "jszip": "^3.10.1",
@@ -51,5 +51,5 @@
     "stream": "^0.0.3",
     "zod": "^3.24.2"
   },
-  "gitHead": "53cf74430ba08ed3b8f38ccc2fcee7b373a7934c"
+  "gitHead": "9121de95bb17b50dcf0e452f0e6544cbf4fb0f74"
 }
