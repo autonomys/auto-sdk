@@ -1,7 +1,6 @@
 import Websocket from 'websocket'
 import { ClientRPC } from '../models/client'
-import { Message, MessageQuery, messageSchema } from '../models/common'
-import { unresolvablePromise } from '../utils'
+import { Message, MessageQuery } from '../models/common'
 import { parseData } from '../utils/websocket'
 import { createWsClient } from '../ws/client'
 import { WsClient } from '../ws/types'
@@ -22,7 +21,7 @@ export const createRpcClient = ({
   }
   reconnectInterval?: number | null
 }): ClientRPC => {
-  let ws: WsClient = createWsClient({
+  const ws: WsClient = createWsClient({
     endpoint,
     callbacks: {
       onOpen: callbacks.onOpen,
