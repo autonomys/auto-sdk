@@ -18,7 +18,7 @@ export const createRpcServer = ({
 }) => {
   const wsServer = isWsServer(server) ? server : createWsServer(server)
   const handlers = initialHandlers ?? []
-  wsServer.onMessage((msg, { connection }) => {
+  wsServer.onMessage(async (msg, { connection }) => {
     try {
       const utf8Data = parseMessage(msg)
       const object = safeParseJson(utf8Data)
@@ -33,8 +33,8 @@ export const createRpcServer = ({
         connection.sendUTF(JSON.stringify({ error: 'JSON message does not match RPC base schema' }))
         return
       }
-      const wrapResponse = (message: Omit<MessageResponse, 'id'>) => {
-        return { ...message, id: parsedMessage.data.id }
+      const wrapResponse = (message: MessageResponseQuery) => {
+        return { ...message, id: parsedMessage.data.id, jsonrpc: '2.0' }
       }
 
       const sendMessageWithId = (message: MessageResponseQuery) => {
@@ -58,8 +58,9 @@ export const createRpcServer = ({
       }
 
       // Handle the message and send the response if it exists
-      const response = handler(parsedMessage.data, (message: MessageResponseQuery) => {
-        sendMessageWithId(message)
+      const response = await handler(parsedMessage.data, {
+        connection,
+        messageId: parsedMessage.data.id,
       })
       if (parsedMessage.data.id && response) {
         sendMessageWithId(response)

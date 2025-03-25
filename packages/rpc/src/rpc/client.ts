@@ -4,7 +4,7 @@ import { Message, MessageQuery, MessageResponseQuery } from '../models/common'
 import { parseData } from '../utils/websocket'
 import { createWsClient } from '../ws/client'
 import { WsClient } from '../ws/types'
-import { RpcCallback } from './types'
+import { ClientRPCListener } from './types'
 
 export const createRpcClient = ({
   endpoint,
@@ -37,7 +37,7 @@ export const createRpcClient = ({
       connection({ type: 'utf8', utf8Data: JSON.stringify(message) })
   }
 
-  let onMessageCallbacks: RpcCallback[] = []
+  let onMessageCallbacks: ClientRPCListener[] = []
 
   const send = async (message: MessageQuery) => {
     const id = message.id ?? Math.floor(Math.random() * 65546)
@@ -60,11 +60,11 @@ export const createRpcClient = ({
     })
   }
 
-  const on = (callback: (event: Message) => void) => {
+  const on = (callback: ClientRPCListener) => {
     onMessageCallbacks.push(callback)
   }
 
-  const off = (callback: (event: Message) => void) => {
+  const off = (callback: ClientRPCListener) => {
     onMessageCallbacks = onMessageCallbacks.filter((cb) => cb !== callback)
   }
 
@@ -72,7 +72,7 @@ export const createRpcClient = ({
     const rpcResponder = connectionMessager(responder)
     try {
       const messageObj = JSON.parse(parseData(message))
-      onMessageCallbacks.forEach((callback) => callback(messageObj, rpcResponder))
+      onMessageCallbacks.forEach((callback) => callback(messageObj))
     } catch (error) {
       callbacks.onWrongMessage?.(rpcResponder)
     }

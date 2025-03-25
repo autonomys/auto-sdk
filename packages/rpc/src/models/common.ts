@@ -24,4 +24,7 @@ export type MessageResponse = {
   id: number
 }
 
-export type MessageResponseQuery = Omit<MessageResponse, 'id'> & { id?: number }
+export type MessageResponseQuery = Omit<MessageResponse, 'id' | 'jsonrpc'> & {
+  id?: number
+  jsonrpc?: string
+}
