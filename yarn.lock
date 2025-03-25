@@ -153,12 +153,11 @@ __metadata:
   dependencies:
     "@types/jest": "npm:^29.5.12"
     "@types/websocket": "npm:^1.0.10"
-    "@types/ws": "npm:^8.18.0"
     jest: "npm:^29.7.0"
     ts-jest: "npm:^29.1.4"
     typescript: "npm:^5.4.5"
     websocket: "npm:^1.0.35"
-    ws: "npm:^8.18.1"
+    zod: "npm:^3.24.2"
   languageName: unknown
   linkType: soft
 
@@ -3391,15 +3390,6 @@ __metadata:
   dependencies:
     "@types/node": "npm:*"
   checksum: 10c0/5950b8d01d1178c67c049f482fcab182085c59c2f98edda5980721f6eb512439ff91534e50ca7262720d75fc42ea6c8f8e5e7739442feea8f3cc0e320ebe2c74
-  languageName: node
-  linkType: hard
-
-"@types/ws@npm:^8.18.0":
-  version: 8.18.0
-  resolution: "@types/ws@npm:8.18.0"
-  dependencies:
-    "@types/node": "npm:*"
-  checksum: 10c0/a56d2e0d1da7411a1f3548ce02b51a50cbe9e23f025677d03df48f87e4a3c72e1342fbf1d12e487d7eafa8dc670c605152b61bbf9165891ec0e9694b0d3ea8d4
   languageName: node
   linkType: hard
 
@@ -13973,7 +13963,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ws@npm:^8.18.0, ws@npm:^8.18.1, ws@npm:^8.8.1":
+"ws@npm:^8.18.0, ws@npm:^8.8.1":
   version: 8.18.1
   resolution: "ws@npm:8.18.1"
   peerDependencies:
