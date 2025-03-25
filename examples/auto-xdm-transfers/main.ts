@@ -1,24 +1,50 @@
-import { activateDomain, NetworkId, setupWallet } from '@autonomys/auto-utils'
-import { transferToConsensus } from '@autonomys/auto-xdm'
+import { activateWallet, NetworkId } from '@autonomys/auto-utils'
+import { transferToConsensus, transferToDomainAccount20Type } from '@autonomys/auto-xdm'
 
 const mnemonic = 'test test test test test test test test test test test junk'
 
-const api = await activateDomain({
-  domainId: '0',
+const {
+  api: consensusApi,
+  accounts: [consensusWallet],
+  address: consensusAddress,
+} = await activateWallet({
   networkId: NetworkId.TAURUS,
+  mnemonic,
+  type: 'sr25519',
 })
+console.log('consensusAddress', consensusAddress)
 
-const consensusWallet = setupWallet({ mnemonic, type: 'sr25519' })
-console.log('consensusWallet', consensusWallet.address)
-const autoEvmWallet = setupWallet({ mnemonic, type: 'ethereum' })
-console.log('autoEvmWallet', autoEvmWallet.address)
+const {
+  api: autoEvmApi,
+  accounts: [autoEvmWallet],
+  address: autoEvmAddress,
+} = await activateWallet({
+  networkId: NetworkId.TAURUS,
+  mnemonic,
+  type: 'sr25519',
+})
+console.log('autoEvmAddress', autoEvmAddress)
 
-if (!autoEvmWallet.keyringPair) throw new Error('EVM wallet not found')
+const transferToDomainTx = await transferToDomainAccount20Type(
+  consensusApi,
+  0,
+  autoEvmAddress,
+  '1000000000000000000',
+)
+console.log('transferToDomainTx', transferToDomainTx.hash.toHex())
 
-const transfer = await transferToConsensus(api, consensusWallet.address, '1000000000000000000')
-console.log('transfer', transfer.hash.toHex())
+const transferToDomainResult = await transferToDomainTx.signAndSend(consensusWallet)
+console.log('transferToDomainResult', transferToDomainResult)
 
-const transferResult = await transfer.signAndSend(autoEvmWallet.keyringPair)
-console.log('transferResult', transferResult)
+const transferToConsensusTx = await transferToConsensus(
+  autoEvmApi,
+  consensusAddress,
+  '1000000000000000000',
+)
+console.log('transferToConsensusTx', transferToConsensusTx.hash.toHex())
 
-await api.disconnect()
+const transferToConsensusResult = await transferToConsensusTx.signAndSend(autoEvmWallet)
+console.log('transferToConsensusResult', transferToConsensusResult)
+
+await consensusApi.disconnect()
+await autoEvmApi.disconnect()
