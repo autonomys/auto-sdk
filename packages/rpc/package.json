@@ -3,6 +3,10 @@
   "packageManager": "yarn@4.7.0",
   "version": "1.4.1",
   "private": true,
+  "scripts": {
+    "test": "jest --runInBand",
+    "build": "tsc --incremental"
+  },
   "dependencies": {
     "websocket": "^1.0.35",
     "ws": "^8.18.1"
