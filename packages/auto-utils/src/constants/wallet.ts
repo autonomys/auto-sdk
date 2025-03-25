@@ -13,4 +13,7 @@ export const mockURIs = [
   '//Jacob',
 ]
 
-export const DEFAULT_SS58_FORMAT = 2254
+export const MAINNET_SS58_FORMAT = 6094
+export const GEMINI_3H_SS58_FORMAT = 2254
+
+export const DEFAULT_SS58_FORMAT = MAINNET_SS58_FORMAT
