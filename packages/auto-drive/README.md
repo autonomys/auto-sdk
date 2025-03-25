@@ -89,7 +89,7 @@ For more info about asynn generator visit [this website](https://developer.mozil
 You could upload any file that could be represented in that way. For example, uploading a file as a `Buffer`
 
 ```typescript
-import { createAutoDriveApi, uploadFile } from '@autonomys/auto-drive'
+import { createAutoDriveApi } from '@autonomys/auto-drive'
 import { NetworkId } from '@autonomys/auto-utils'
 
 const api = createAutoDriveApi({ apiKey: 'your-api-key', network: NetworkId.TAURUS }) // Initialize your API instance with API key
