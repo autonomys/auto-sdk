@@ -2,6 +2,17 @@
   "name": "@autonomys/rpc",
   "packageManager": "yarn@4.7.0",
   "version": "1.4.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/autonomys/auto-sdk"
+  },
+  "author": {
+    "name": "Autonomys",
+    "url": "https://www.autonomys.xyz"
+  },
+  "bugs": {
+    "url": "https://github.com/autonomys/auto-sdk/issues"
+  },
   "scripts": {
     "test": "jest --runInBand",
     "build": "tsc --incremental"
