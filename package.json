@@ -27,6 +27,18 @@
     "name": "Autonomys",
     "url": "https://www.autonomys.net"
   },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.js",
+      "import": "./dist/index.js"
+    },
+    "./ws": {
+      "types": "./dist/ws/index.d.ts",
+      "require": "./dist/ws/index.js",
+      "import": "./dist/ws/index.js"
+    }
+  },
   "devDependencies": {
     "@types/jest": "^29.5.14",
     "eslint": "^9.22.0",
