@@ -13,12 +13,15 @@ import type {
   ActivateWalletParams,
   ApiPromise,
   GeneratedWallet,
+  KeypairType,
+  SetupWalletParams,
   Wallet,
   WalletActivated,
 } from './types/wallet'
 
-export const setupWallet = (params: MnemonicOrURI): Wallet => {
-  const keyring = new Keyring({ type: 'sr25519' })
+export const setupWallet = (params: SetupWalletParams): Wallet => {
+  const type = params.type || 'sr25519'
+  const keyring = new Keyring({ type })
 
   let keyringPair: Wallet['keyringPair']
   if ((params as URI).uri) {
@@ -31,14 +34,14 @@ export const setupWallet = (params: MnemonicOrURI): Wallet => {
 
   return {
     keyringPair,
-    address: address(keyringPair.address),
+    address: type === 'sr25519' ? address(keyringPair.address) : keyringPair.address,
     commonAddress: keyringPair.address,
   }
 }
 
-export const generateWallet = (): GeneratedWallet => {
+export const generateWallet = (type: KeypairType = 'sr25519'): GeneratedWallet => {
   const mnemonic = mnemonicGenerate()
-  const { keyringPair, address, commonAddress } = setupWallet({ mnemonic })
+  const { keyringPair, address, commonAddress } = setupWallet({ mnemonic, type })
 
   return {
     mnemonic,
@@ -75,19 +78,29 @@ export const activateWallet = async (params: ActivateWalletParams): Promise<Wall
     if (allAccounts.length === 0) console.warn('No accounts found in the Polkadot.js extension')
   } else throw new Error('No wallet provided')
 
-  return { api: params.api, accounts, address: address(accounts[0].address) }
+  return {
+    api: params.api,
+    accounts,
+    address:
+      params.type && params.type === 'ethereum'
+        ? accounts[0].address
+        : address(accounts[0].address),
+  }
 }
 
 export const mockWallets = async (
   network: NetworkParams | DomainParams = { networkId: defaultNetwork.id },
   api?: ApiPromise,
+  type?: KeypairType,
 ): Promise<WalletActivated[]> => {
+  if (!type) type = 'sr25519'
   const wallets: WalletActivated[] = []
   for (const uri of mockURIs) {
     const wallet = await activateWallet({
       ...network,
       uri,
       api,
+      type,
     } as ActivateWalletParams)
     wallets.push(wallet)
   }
