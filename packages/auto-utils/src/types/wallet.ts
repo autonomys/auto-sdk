@@ -4,6 +4,7 @@ import type { ApiPromise, Keyring } from '@polkadot/api'
 import type { AddressOrPair, ApiDecoration, Signer, SignerResult } from '@polkadot/api/types'
 import type { InjectedAccountWithMeta } from '@polkadot/extension-inject/types'
 import type { KeyringPair } from '@polkadot/keyring/types'
+import type { KeypairType } from '@polkadot/util-crypto/types'
 import type { DomainParams, NetworkParams } from './network'
 
 export type Mnemonic = {
@@ -21,6 +22,12 @@ export type ExtraActivationOptions = {
 
 export type MnemonicOrURI = Mnemonic | URI
 
+export type WalletType = {
+  type?: KeypairType
+}
+
+export type SetupWalletParams = MnemonicOrURI & WalletType
+
 export type Wallet = {
   keyringPair?: KeyringPair
   injectedAccount?: InjectedAccountWithMeta
@@ -34,7 +41,8 @@ export interface GeneratedWallet extends Wallet {
 
 export type ActivateWalletParams = (NetworkParams | DomainParams) &
   MnemonicOrURI &
-  ExtraActivationOptions
+  ExtraActivationOptions &
+  WalletType
 
 export type WalletActivated = {
   api: ApiPromise
@@ -51,6 +59,7 @@ export type {
   ApiDecoration,
   ApiPromise,
   InjectedAccountWithMeta,
+  KeypairType,
   KeyringPair,
   Signer,
   SignerResult,
