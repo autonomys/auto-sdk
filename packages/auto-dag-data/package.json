@@ -1,7 +1,7 @@
 {
   "name": "@autonomys/auto-dag-data",
   "packageManager": "yarn@4.7.0",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "license": "MIT",
   "main": "dist/index.js",
   "type": "module",
@@ -40,7 +40,7 @@
     "typescript": "^5.6.2"
   },
   "dependencies": {
-    "@autonomys/asynchronous": "workspace:*",
+    "@autonomys/asynchronous": "1.4.2",
     "@ipld/dag-pb": "^4.1.3",
     "@peculiar/webcrypto": "^1.5.0",
     "@webbuf/blake3": "^3.0.26",
@@ -52,5 +52,5 @@
     "protons": "^7.6.0",
     "protons-runtime": "^5.5.0"
   },
-  "gitHead": "53cf74430ba08ed3b8f38ccc2fcee7b373a7934c"
+  "gitHead": "9121de95bb17b50dcf0e452f0e6544cbf4fb0f74"
 }
