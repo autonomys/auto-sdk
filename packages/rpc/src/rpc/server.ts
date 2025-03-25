@@ -1,4 +1,4 @@
-import { Message, MessageQuery, MessageResponse, messageSchema } from '../models/common'
+import { MessageResponse, MessageResponseQuery, messageSchema } from '../models/common'
 import { WsServer } from '../models/server'
 import { safeParseJson } from '../utils/json'
 import { parseMessage } from '../utils/websocket'
@@ -37,6 +37,10 @@ export const createRpcServer = ({
         return { ...message, id: parsedMessage.data.id }
       }
 
+      const sendMessageWithId = (message: MessageResponseQuery) => {
+        connection.sendUTF(JSON.stringify(wrapResponse(message)))
+      }
+
       // Find the handler for the message
       const handler = handlers.find(
         (handler) => parsedMessage.data.method === handler.method,
@@ -54,11 +58,11 @@ export const createRpcServer = ({
       }
 
       // Handle the message and send the response if it exists
-      const response = handler(parsedMessage.data, (message) => {
-        connection.sendUTF(JSON.stringify(message))
+      const response = handler(parsedMessage.data, (message: MessageResponseQuery) => {
+        sendMessageWithId(message)
       })
       if (parsedMessage.data.id && response) {
-        connection.sendUTF(JSON.stringify(response))
+        sendMessageWithId(response)
       }
     } catch (error) {
       connection.sendUTF(JSON.stringify({ error: 'Unknown error' }))

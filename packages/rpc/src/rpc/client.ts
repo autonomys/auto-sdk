@@ -1,6 +1,6 @@
 import Websocket from 'websocket'
 import { ClientRPC } from '../models/client'
-import { Message, MessageQuery } from '../models/common'
+import { Message, MessageQuery, MessageResponseQuery } from '../models/common'
 import { parseData } from '../utils/websocket'
 import { createWsClient } from '../ws/client'
 import { WsClient } from '../ws/types'
@@ -17,7 +17,7 @@ export const createRpcClient = ({
     onReconnection?: () => void
     onError?: (error: Error) => void
     onClose?: (event: Websocket.ICloseEvent) => void
-    onWrongMessage?: (responder: (message: string) => void) => void
+    onWrongMessage?: (responder: (message: MessageResponseQuery) => void) => void
   }
   reconnectInterval?: number | null
 }): ClientRPC => {
@@ -33,7 +33,8 @@ export const createRpcClient = ({
   })
 
   const connectionMessager = (connection: (message: Websocket.Message) => void) => {
-    return (message: string) => connection({ type: 'utf8', utf8Data: message })
+    return (message: MessageResponseQuery) =>
+      connection({ type: 'utf8', utf8Data: JSON.stringify(message) })
   }
 
   let onMessageCallbacks: RpcCallback[] = []

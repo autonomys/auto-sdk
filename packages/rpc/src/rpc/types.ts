@@ -1,8 +1,8 @@
-import { Message, MessageResponse } from '../models/common'
+import { Message, MessageResponse, MessageResponseQuery } from '../models/common'
 
 type RpcResponse = MessageResponse | void
 
-export type RpcClientResponder = (message: string) => void
+export type RpcClientResponder = (message: MessageResponseQuery) => void
 
 export type RpcCallback = (
   message: Message,

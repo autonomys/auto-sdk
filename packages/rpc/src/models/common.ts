@@ -11,6 +11,8 @@ export const messageSchema = z.object({
 
 export type Message = z.infer<typeof messageSchema>
 
+export type MessageQuery = Omit<Message, 'id'> & { id?: number }
+
 export type MessageResponse = {
   jsonrpc: string
   error?: {
@@ -22,4 +24,4 @@ export type MessageResponse = {
   id: number
 }
 
-export type MessageQuery = Omit<Message, 'id'> & { id?: number }
+export type MessageResponseQuery = Omit<MessageResponse, 'id'> & { id?: number }
