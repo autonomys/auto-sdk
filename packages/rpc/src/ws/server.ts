@@ -17,8 +17,9 @@ export const createWsServer = ({
 }): WsServer => {
   const messageCallbacks: WsMessageCallback[] = []
 
+  const internalHttpServer = http.createServer(httpServer)
   const ws = new Websocket.server({
-    httpServer: http.createServer(httpServer),
+    httpServer: internalHttpServer,
     autoAcceptConnections: false,
   })
 
@@ -64,9 +65,14 @@ export const createWsServer = ({
     httpServer.closeAllConnections()
   }
 
+  const listen = (port: number, cb?: () => void) => {
+    internalHttpServer.listen(port, cb)
+  }
+
   return {
     broadcastMessage,
     onMessage,
     close,
+    listen,
   }
 }

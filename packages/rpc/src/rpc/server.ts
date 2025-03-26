@@ -18,6 +18,7 @@ export const createRpcServer = ({
 }) => {
   const wsServer = isWsServer(server) ? server : createWsServer(server)
   const handlers = initialHandlers ?? []
+
   wsServer.onMessage(async (msg, { connection }) => {
     try {
       const utf8Data = parseMessage(msg)
@@ -58,7 +59,7 @@ export const createRpcServer = ({
       }
 
       // Handle the message and send the response if it exists
-      const response = await handler(parsedMessage.data, {
+      const response = await handler(parsedMessage.data.params, {
         connection,
         messageId: parsedMessage.data.id,
       })
@@ -79,8 +80,13 @@ export const createRpcServer = ({
     return wsServer.close()
   }
 
+  const listen = (port: number, cb?: () => void) => {
+    return wsServer.listen(port, cb)
+  }
+
   return {
     addRpcHandler,
     close,
+    listen,
   }
 }
