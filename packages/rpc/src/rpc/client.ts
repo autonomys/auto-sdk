@@ -1,10 +1,10 @@
 import Websocket from 'websocket'
 import { ClientRPC } from '../models/client'
-import { Message, MessageQuery } from '../models/common'
+import { Message, MessageQuery, MessageResponseQuery } from '../models/common'
 import { parseData } from '../utils/websocket'
 import { createWsClient } from '../ws/client'
 import { WsClient } from '../ws/types'
-import { RpcCallback } from './types'
+import { ClientRPCListener } from './types'
 
 export const createRpcClient = ({
   endpoint,
@@ -17,7 +17,7 @@ export const createRpcClient = ({
     onReconnection?: () => void
     onError?: (error: Error) => void
     onClose?: (event: Websocket.ICloseEvent) => void
-    onWrongMessage?: (responder: (message: string) => void) => void
+    onWrongMessage?: (responder: (message: MessageResponseQuery) => void) => void
   }
   reconnectInterval?: number | null
 }): ClientRPC => {
@@ -33,10 +33,11 @@ export const createRpcClient = ({
   })
 
   const connectionMessager = (connection: (message: Websocket.Message) => void) => {
-    return (message: string) => connection({ type: 'utf8', utf8Data: message })
+    return (message: MessageResponseQuery) =>
+      connection({ type: 'utf8', utf8Data: JSON.stringify(message) })
   }
 
-  let onMessageCallbacks: RpcCallback[] = []
+  let onMessageCallbacks: ClientRPCListener[] = []
 
   const send = async (message: MessageQuery) => {
     const id = message.id ?? Math.floor(Math.random() * 65546)
@@ -59,11 +60,11 @@ export const createRpcClient = ({
     })
   }
 
-  const on = (callback: (event: Message) => void) => {
+  const on = (callback: ClientRPCListener) => {
     onMessageCallbacks.push(callback)
   }
 
-  const off = (callback: (event: Message) => void) => {
+  const off = (callback: ClientRPCListener) => {
     onMessageCallbacks = onMessageCallbacks.filter((cb) => cb !== callback)
   }
 
@@ -71,7 +72,7 @@ export const createRpcClient = ({
     const rpcResponder = connectionMessager(responder)
     try {
       const messageObj = JSON.parse(parseData(message))
-      onMessageCallbacks.forEach((callback) => callback(messageObj, rpcResponder))
+      onMessageCallbacks.forEach((callback) => callback(messageObj))
     } catch (error) {
       callbacks.onWrongMessage?.(rpcResponder)
     }
