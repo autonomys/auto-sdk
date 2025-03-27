@@ -41,8 +41,8 @@ describe('RPC', () => {
 
     rpcServer.addRpcHandler({
       method: 'test',
-      handler: (msg) =>
-        msg.id
+      handler: (msg, { messageId }) =>
+        messageId
           ? {
               jsonrpc: '2.0',
               result: 'success',
@@ -71,8 +71,8 @@ describe('RPC', () => {
   it('should handle messages with missing parameters', async () => {
     rpcServer.addRpcHandler({
       method: 'test',
-      handler: (msg) => {
-        return msg.id ? { jsonrpc: '2.0', id: msg.id, result: 'success' } : undefined
+      handler: (_, { messageId }) => {
+        return messageId ? { jsonrpc: '2.0', id: messageId, result: 'success' } : undefined
       },
     })
 

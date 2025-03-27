@@ -8,8 +8,8 @@ export type RpcClientResponder = (message: MessageResponseQuery) => void
 export type ClientRPCListener = (message: Message) => void
 
 export type RpcCallback = (
-  message: Message,
-  params: { connection: connection; messageId?: number },
+  params: Message['params'],
+  rpcParams: { connection: connection; messageId?: number },
 ) => RpcResponse | undefined
 
 export type RpcHandler = {
