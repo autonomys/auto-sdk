@@ -1,7 +1,7 @@
 {
   "name": "@autonomys/auto-drive",
   "packageManager": "yarn@4.7.0",
-  "version": "1.4.6",
+  "version": "1.4.7",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -42,9 +42,9 @@
     "typescript": "^5.6.3"
   },
   "dependencies": {
-    "@autonomys/asynchronous": "^1.4.6",
-    "@autonomys/auto-dag-data": "^1.4.6",
-    "@autonomys/auto-utils": "^1.4.6",
+    "@autonomys/asynchronous": "^1.4.7",
+    "@autonomys/auto-dag-data": "^1.4.7",
+    "@autonomys/auto-utils": "^1.4.7",
     "blockstore-core": "^5.0.2",
     "jszip": "^3.10.1",
     "mime-types": "^2.1.35",
