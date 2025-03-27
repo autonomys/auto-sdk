@@ -3,15 +3,13 @@ import { createRpcServer } from '../server'
 import { RpcError } from '../utils'
 import {
   ApiClientType,
+  ApiDefinition,
   ApiServerHandlers,
   DefinitionTypeOutput,
   isZodType,
-  MethodDefinition,
 } from './typing'
 
-export const createApiDefinition = <S extends Record<string, MethodDefinition>>(
-  serverDefinition: S,
-) => {
+export const createApiDefinition = <S extends ApiDefinition>(serverDefinition: S) => {
   const createClient = <Client extends ApiClientType<S>>(
     clientParams: Parameters<typeof createRpcClient>[0],
   ): { api: Client; close: () => void } => {

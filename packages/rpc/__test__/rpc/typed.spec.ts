@@ -20,7 +20,7 @@ describe('rpc/definition', () => {
       params: z.void(),
       returns: z.void(),
     },
-  } as const)
+  })
   let client: ReturnType<typeof createClient>
   let server: ReturnType<typeof createServer>
 

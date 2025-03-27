@@ -12,7 +12,16 @@ describe('RPC', () => {
         httpServer,
         callbacks: {},
       }),
-      initialHandlers: [],
+      initialHandlers: [
+        {
+          method: 'test',
+          handler: () => ({
+            jsonrpc: '2.0',
+            result: 'success',
+            id: 1,
+          }),
+        },
+      ],
     })
 
     rpcClient = createRpcClient({
