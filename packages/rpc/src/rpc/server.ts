@@ -1,9 +1,11 @@
 import { MessageResponseQuery, messageSchema } from '../models/common'
 import { WsServer } from '../models/server'
+import { safeExecute } from '../utils/error'
 import { safeParseJson } from '../utils/json'
 import { parseMessage } from '../utils/websocket'
 import { createWsServer } from '../ws/server'
 import { RpcHandler, RpcHandlerList, RpcResponse } from './types'
+import { errorResponse, RpcError, wrapResponse } from './utils'
 
 const isWsServer = (server: any): server is WsServer => {
   return 'broadcastMessage' in server
@@ -34,12 +36,9 @@ export const createRpcServer = ({
         connection.sendUTF(JSON.stringify({ error: 'JSON message does not match RPC base schema' }))
         return
       }
-      const wrapResponse = (message: MessageResponseQuery) => {
-        return { ...message, id: parsedMessage.data.id, jsonrpc: '2.0' }
-      }
 
       const sendMessageWithId = (message: MessageResponseQuery) => {
-        connection.sendUTF(JSON.stringify(wrapResponse(message)))
+        connection.sendUTF(JSON.stringify(wrapResponse(message, parsedMessage.data.id)))
       }
 
       // Find the handler for the message
@@ -49,20 +48,35 @@ export const createRpcServer = ({
       if (!handler) {
         connection.sendUTF(
           JSON.stringify(
-            wrapResponse({
-              error: { code: 404, message: 'Method not found' },
-              jsonrpc: '2.0',
-            }),
+            wrapResponse(
+              {
+                error: { code: 404, message: 'Method not found' },
+                jsonrpc: '2.0',
+              },
+              parsedMessage.data.id,
+            ),
           ),
         )
         return
       }
 
+      const catchError = (error: Error): MessageResponseQuery => {
+        if (error instanceof RpcError) {
+          return errorResponse(error.code, error.message)
+        } else {
+          return errorResponse(RpcError.Code.InternalError, error?.message ?? 'Unknown error')
+        }
+      }
+
       // Handle the message and send the response if it exists
-      const response = await handler(parsedMessage.data.params, {
-        connection,
-        messageId: parsedMessage.data.id,
-      })
+      const response = await safeExecute(
+        async () =>
+          await handler(parsedMessage.data.params, {
+            connection,
+            messageId: parsedMessage.data.id,
+          }),
+      ).catch(catchError)
+
       if (parsedMessage.data.id && response) {
         sendMessageWithId(response)
       }

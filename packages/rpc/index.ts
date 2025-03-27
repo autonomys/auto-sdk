@@ -1,13 +1,12 @@
 import http from 'http'
 import { z } from 'zod'
 import { createApiDefinition } from './src/rpc/api/definition'
+import { defineUnvalidatedType } from './src/rpc/api/typing'
 import { createWsServer } from './src/ws/server'
 
 const server = createApiDefinition({
   test: {
-    params: z.object({
-      name: z.string(),
-    }),
+    params: defineUnvalidatedType<{ name: string }>(),
     returns: z.object({
       name: z.string(),
     }),
@@ -23,7 +22,7 @@ server
       },
     },
   })
-  .test({ name: 'test' })
+  .api.test({ name: 'test' })
 
 server.createServer(
   {

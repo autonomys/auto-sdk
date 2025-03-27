@@ -1,23 +1,18 @@
-import { z } from 'zod'
 import { createRpcClient } from '../client'
 import { createRpcServer } from '../server'
-import { RpcCallback } from '../types'
 import { RpcError } from '../utils'
-
-type MethodDefinition = {
-  params: z.ZodType
-  returns: z.ZodType
-}
+import {
+  ApiClientType,
+  ApiServerHandlers,
+  DefinitionTypeOutput,
+  isZodType,
+  MethodDefinition,
+} from './typing'
 
 export const createApiDefinition = <S extends Record<string, MethodDefinition>>(
   serverDefinition: S,
 ) => {
-  const createClient = <
-    Client extends Record<
-      keyof S,
-      (params: S[keyof S]['params']['_output']) => Promise<S[keyof S]['returns']['_output']>
-    >,
-  >(
+  const createClient = <Client extends ApiClientType<S>>(
     clientParams: Parameters<typeof createRpcClient>[0],
   ): { api: Client; close: () => void } => {
     const client = createRpcClient(clientParams)
@@ -25,7 +20,7 @@ export const createApiDefinition = <S extends Record<string, MethodDefinition>>(
     const apiMethods = Object.entries(serverDefinition).map(([method, handler]) => {
       return [
         method,
-        async (params: Parameters<(typeof handler.params)['_output']>[0]) => {
+        async (params: Parameters<DefinitionTypeOutput<typeof handler.params>>[0]) => {
           const result = await client.send({
             jsonrpc: '2.0',
             method,
@@ -47,20 +42,25 @@ export const createApiDefinition = <S extends Record<string, MethodDefinition>>(
     }
   }
 
-  const createServer = <
-    Handlers extends Record<
-      keyof S,
-      RpcCallback<S[keyof S]['params']['_output'], S[keyof S]['returns']['_output']>
-    >,
-  >(
+  const createServer = <Handlers extends ApiServerHandlers<S>>(
     handlers: Handlers,
     serverParams: Parameters<typeof createRpcServer>[0],
   ) => {
     const server = createRpcServer(serverParams)
 
-    for (const [method, handler] of Object.entries(handlers)) {
-      const mappedHandler: typeof handler = async (params, rpcParams) => {
-        const result = await handler(params, rpcParams)
+    for (const [method, internalHandler] of Object.entries(handlers)) {
+      const handler = async (
+        params: Parameters<Handlers[keyof Handlers]>[0],
+        rpcParams: Parameters<Handlers[keyof Handlers]>[1],
+      ) => {
+        if (isZodType(serverDefinition[method].params)) {
+          const result = serverDefinition[method].params.safeParse(params)
+          if (!result.success) {
+            throw new RpcError(result.error.message, RpcError.Code.InvalidParams)
+          }
+        }
+
+        const result = await internalHandler(params, rpcParams)
         if (result) {
           return {
             jsonrpc: '2.0',
@@ -71,7 +71,7 @@ export const createApiDefinition = <S extends Record<string, MethodDefinition>>(
       }
       server.addRpcHandler({
         method,
-        handler: mappedHandler,
+        handler,
       })
     }
 
