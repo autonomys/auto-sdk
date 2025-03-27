@@ -45,6 +45,7 @@
     "@autonomys/asynchronous": "^1.4.6",
     "@autonomys/auto-dag-data": "^1.4.6",
     "@autonomys/auto-utils": "^1.4.6",
+    "blockstore-core": "^5.0.2",
     "jszip": "^3.10.1",
     "mime-types": "^2.1.35",
     "process": "^0.11.10",
