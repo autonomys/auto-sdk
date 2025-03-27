@@ -1,6 +1,6 @@
 import Websocket from 'websocket'
 import { ClientRPC } from '../models/client'
-import { Message, MessageQuery, MessageResponseQuery } from '../models/common'
+import { MessageQuery, MessageResponse, MessageResponseQuery } from '../models/common'
 import { parseData } from '../utils/websocket'
 import { createWsClient } from '../ws/client'
 import { WsClient } from '../ws/types'
@@ -43,8 +43,8 @@ export const createRpcClient = ({
     const id = message.id ?? Math.floor(Math.random() * 65546)
     const messageWithID = { ...message, id }
 
-    return new Promise<Message>((resolve, reject) => {
-      const cb = (event: Message) => {
+    return new Promise<MessageResponse>((resolve, reject) => {
+      const cb = (event: MessageResponse) => {
         try {
           if (event.id === id) {
             off(cb)

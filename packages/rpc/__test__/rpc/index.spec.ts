@@ -12,7 +12,16 @@ describe('RPC', () => {
         httpServer,
         callbacks: {},
       }),
-      initialHandlers: [],
+      initialHandlers: [
+        {
+          method: 'test',
+          handler: () => ({
+            jsonrpc: '2.0',
+            result: 'success',
+            id: 1,
+          }),
+        },
+      ],
     })
 
     rpcClient = createRpcClient({
@@ -41,12 +50,12 @@ describe('RPC', () => {
 
     rpcServer.addRpcHandler({
       method: 'test',
-      handler: (msg, { messageId }) =>
+      handler: (_, { messageId }) =>
         messageId
           ? {
               jsonrpc: '2.0',
               result: 'success',
-              id: msg.id,
+              id: messageId,
             }
           : undefined,
     })
