@@ -1,32 +1,6 @@
 import { bufferToAsyncIterable, fileToIterable } from '@autonomys/asynchronous'
 import { GenericFile } from '../api/models/file'
 
-const getFileAsync = async (file: File | GenericFile | Buffer) => {
-  if (file instanceof File) {
-    return await file.arrayBuffer()
-  }
-  return file
-}
-
-// export const precomputeCid = async (file: File | GenericFile | Buffer, name?: string) => {
-//   const { processFileToIPLDFormat } = await import('@autonomys/auto-dag-data')
-//   const { MemoryBlockstore } = await import('blockstore-core')
-
-//   const blockstore = new MemoryBlockstore()
-//   if (file instanceof Buffer) {
-//     return processFileToIPLDFormat(
-//       blockstore,
-//       bufferToAsyncIterable(file),
-//       BigInt(file.byteLength),
-//       name,
-//     )
-//   } else if (isGenericFile(file)) {
-//     return processFileToIPLDFormat(blockstore, fileToIterable(file), BigInt(file.size), name)
-//   } else {
-//     return processFileToIPLDFormat(blockstore, fileToIterable(file), BigInt(file.size), name)
-//   }
-// }
-
 const precomputeCidFromGenericFile = async (file: GenericFile) => {
   const { processFileToIPLDFormat } = await import('@autonomys/auto-dag-data')
   const { MemoryBlockstore } = await import('blockstore-core')
