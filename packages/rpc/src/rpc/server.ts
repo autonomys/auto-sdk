@@ -3,7 +3,7 @@ import { WsServer } from '../models/server'
 import { safeParseJson } from '../utils/json'
 import { parseMessage } from '../utils/websocket'
 import { createWsServer } from '../ws/server'
-import { RpcHandler } from './types'
+import { RpcHandler, RpcHandlerList, RpcResponse } from './types'
 
 const isWsServer = (server: any): server is WsServer => {
   return 'broadcastMessage' in server
@@ -14,7 +14,7 @@ export const createRpcServer = ({
   initialHandlers,
 }: {
   server: WsServer | Parameters<typeof createWsServer>[0]
-  initialHandlers?: RpcHandler[]
+  initialHandlers?: RpcHandlerList
 }) => {
   const wsServer = isWsServer(server) ? server : createWsServer(server)
   const handlers = initialHandlers ?? []
@@ -72,7 +72,7 @@ export const createRpcServer = ({
     }
   })
 
-  const addRpcHandler = (handler: RpcHandler) => {
+  const addRpcHandler = <I, O extends RpcResponse>(handler: RpcHandler<I, O>) => {
     handlers.push(handler)
   }
 
