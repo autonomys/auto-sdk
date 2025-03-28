@@ -1,4 +1,4 @@
-import { MessageResponseQuery } from '../models/common'
+import { MessageResponseQuery } from './types'
 
 export const wrapResponse = (message: MessageResponseQuery, id: number | undefined) => {
   return { ...message, id, jsonrpc: '2.0' }

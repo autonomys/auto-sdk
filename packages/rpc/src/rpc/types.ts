@@ -1,6 +1,40 @@
 import { connection } from 'websocket'
-import { Message, MessageResponse, MessageResponseQuery } from '../models/common'
+import { z } from 'zod'
 import { PromiseOr } from '../utils/types'
+
+export type ClientRPC = {
+  send: (message: MessageQuery) => Promise<MessageResponse>
+  on: (callback: ClientRPCListener) => void
+  off: (callback: ClientRPCListener) => void
+  close: () => void
+}
+
+export const messageSchema = z.object({
+  jsonrpc: z.string(),
+  method: z.string(),
+  params: z.any(),
+  id: z.number().optional(),
+})
+
+export type Message = z.infer<typeof messageSchema>
+
+export type MessageQuery = Omit<Message, 'id'> & { id?: number }
+
+export type MessageResponse = {
+  jsonrpc: string
+  error?: {
+    code: number
+    message: string
+    data?: any
+  }
+  result?: any
+  id: number
+}
+
+export type MessageResponseQuery = Omit<MessageResponse, 'id' | 'jsonrpc'> & {
+  id?: number
+  jsonrpc?: string
+}
 
 type SuccessResponse<T> = {
   jsonrpc: string

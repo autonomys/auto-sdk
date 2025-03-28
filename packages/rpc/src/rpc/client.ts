@@ -1,10 +1,14 @@
 import Websocket from 'websocket'
-import { ClientRPC } from '../models/client'
-import { MessageQuery, MessageResponse, MessageResponseQuery } from '../models/common'
 import { parseData } from '../utils/websocket'
 import { createWsClient } from '../ws/client'
 import { WsClient } from '../ws/types'
-import { ClientRPCListener } from './types'
+import {
+  ClientRPC,
+  ClientRPCListener,
+  MessageQuery,
+  MessageResponse,
+  MessageResponseQuery,
+} from './types'
 
 export const createRpcClient = ({
   endpoint,

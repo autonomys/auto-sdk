@@ -1,10 +1,15 @@
-import { MessageResponseQuery, messageSchema } from '../models/common'
-import { WsServer } from '../models/server'
 import { safeExecute } from '../utils/error'
 import { safeParseJson } from '../utils/json'
 import { parseMessage } from '../utils/websocket'
+import { WsServer } from '../ws'
 import { createWsServer } from '../ws/server'
-import { RpcHandler, RpcHandlerList, RpcResponse } from './types'
+import {
+  MessageResponseQuery,
+  messageSchema,
+  RpcHandler,
+  RpcHandlerList,
+  RpcResponse,
+} from './types'
 import { errorResponse, RpcError, wrapResponse } from './utils'
 
 const isWsServer = (server: any): server is WsServer => {
