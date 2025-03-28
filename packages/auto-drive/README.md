@@ -32,7 +32,7 @@ To interact with the Auto-Drive API, you'll need to create an API key. Follow th
 Here is an example of how to use the `fs.uploadFileFromFilepath` method to upload a file with optional encryption and compression:
 
 ```typescript
-import { fs,createAutoDriveApi } from '@autonomys/auto-drive'
+import { fs, createAutoDriveApi } from '@autonomys/auto-drive'
 import { NetworkId } from '@autonomys/auto-utils'
 
 const api = createAutoDriveApi({ apiKey: 'your-api-key', network: NetworkId.TAURUS }) // Initialize your API instance with API key
@@ -54,7 +54,7 @@ console.log(`The file is uploaded and its cid is ${cid}`)
 ### How to upload [File](https://developer.mozilla.org/en-US/docs/Web/API/File) interface
 
 ```typescript
-import { uploadFileFromInput, createAutoDriveApi } from '@autonomys/auto-drive'
+import { createAutoDriveApi } from '@autonomys/auto-drive'
 import { NetworkId } from '@autonomys/auto-utils'
 
 const api = createAutoDriveApi({ apiKey: 'your-api-key', network: NetworkId.TAURUS }) // Initialize your API instance with API key
