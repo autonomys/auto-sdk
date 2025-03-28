@@ -1,9 +1,11 @@
-import { Message, MessageQuery, MessageResponse, messageSchema } from '../models/common'
+import { MessageResponseQuery, messageSchema } from '../models/common'
 import { WsServer } from '../models/server'
+import { safeExecute } from '../utils/error'
 import { safeParseJson } from '../utils/json'
 import { parseMessage } from '../utils/websocket'
 import { createWsServer } from '../ws/server'
-import { RpcHandler } from './types'
+import { RpcHandler, RpcHandlerList, RpcResponse } from './types'
+import { errorResponse, RpcError, wrapResponse } from './utils'
 
 const isWsServer = (server: any): server is WsServer => {
   return 'broadcastMessage' in server
@@ -14,11 +16,12 @@ export const createRpcServer = ({
   initialHandlers,
 }: {
   server: WsServer | Parameters<typeof createWsServer>[0]
-  initialHandlers?: RpcHandler[]
+  initialHandlers?: RpcHandlerList
 }) => {
   const wsServer = isWsServer(server) ? server : createWsServer(server)
   const handlers = initialHandlers ?? []
-  wsServer.onMessage((msg, { connection }) => {
+
+  wsServer.onMessage(async (msg, { connection }) => {
     try {
       const utf8Data = parseMessage(msg)
       const object = safeParseJson(utf8Data)
@@ -33,8 +36,9 @@ export const createRpcServer = ({
         connection.sendUTF(JSON.stringify({ error: 'JSON message does not match RPC base schema' }))
         return
       }
-      const wrapResponse = (message: Omit<MessageResponse, 'id'>) => {
-        return { ...message, id: parsedMessage.data.id }
+
+      const sendMessageWithId = (message: MessageResponseQuery) => {
+        connection.sendUTF(JSON.stringify(wrapResponse(message, parsedMessage.data.id)))
       }
 
       // Find the handler for the message
@@ -44,21 +48,37 @@ export const createRpcServer = ({
       if (!handler) {
         connection.sendUTF(
           JSON.stringify(
-            wrapResponse({
-              error: { code: 404, message: 'Method not found' },
-              jsonrpc: '2.0',
-            }),
+            wrapResponse(
+              {
+                error: { code: 404, message: 'Method not found' },
+                jsonrpc: '2.0',
+              },
+              parsedMessage.data.id,
+            ),
           ),
         )
         return
       }
 
+      const catchError = (error: Error): MessageResponseQuery => {
+        if (error instanceof RpcError) {
+          return errorResponse(error.code, error.message)
+        } else {
+          return errorResponse(RpcError.Code.InternalError, error?.message ?? 'Unknown error')
+        }
+      }
+
       // Handle the message and send the response if it exists
-      const response = handler(parsedMessage.data, (message) => {
-        connection.sendUTF(JSON.stringify(message))
-      })
+      const response = await safeExecute(
+        async () =>
+          await handler(parsedMessage.data.params, {
+            connection,
+            messageId: parsedMessage.data.id,
+          }),
+      ).catch(catchError)
+
       if (parsedMessage.data.id && response) {
-        connection.sendUTF(JSON.stringify(response))
+        sendMessageWithId(response)
       }
     } catch (error) {
       connection.sendUTF(JSON.stringify({ error: 'Unknown error' }))
@@ -66,7 +86,7 @@ export const createRpcServer = ({
     }
   })
 
-  const addRpcHandler = (handler: RpcHandler) => {
+  const addRpcHandler = <I, O extends RpcResponse>(handler: RpcHandler<I, O>) => {
     handlers.push(handler)
   }
 
@@ -74,8 +94,13 @@ export const createRpcServer = ({
     return wsServer.close()
   }
 
+  const listen = (port: number, cb?: () => void) => {
+    return wsServer.listen(port, cb)
+  }
+
   return {
     addRpcHandler,
     close,
+    listen,
   }
 }
