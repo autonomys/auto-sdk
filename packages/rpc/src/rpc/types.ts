@@ -1,7 +1,23 @@
 import { connection } from 'websocket'
 import { Message, MessageResponse, MessageResponseQuery } from '../models/common'
+import { PromiseOr } from '../utils/types'
 
-export type RpcResponse = MessageResponseQuery | void | Promise<MessageResponseQuery | void>
+type SuccessResponse<T> = {
+  jsonrpc: string
+  id: number
+  result: T
+}
+
+type ErrorResponse = {
+  jsonrpc: string
+  id: number
+  error: {
+    code: number
+    message: string
+  }
+}
+
+export type RpcResponse<T = any> = PromiseOr<SuccessResponse<T> | ErrorResponse>
 
 export type RpcClientResponder = (message: MessageResponseQuery) => void
 
