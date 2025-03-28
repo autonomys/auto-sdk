@@ -1,5 +1,4 @@
 import { bufferToAsyncIterable, fileToIterable } from '@autonomys/asynchronous'
-import { cidToString } from '@autonomys/auto-dag-data'
 import { GenericFile } from '../api/models/file'
 
 const precomputeCidFromGenericFile = async (file: GenericFile) => {
@@ -46,6 +45,8 @@ const isBuffer = (file: File | GenericFile | Buffer): file is Buffer => {
  * @returns The CID of the file
  */
 export const precomputeCid = async (file: File | GenericFile | Buffer, name?: string) => {
+  const { cidToString } = await import('@autonomys/auto-dag-data')
+
   if (isGenericFile(file)) {
     return cidToString(await precomputeCidFromGenericFile(file))
   } else if (isBuffer(file)) {
@@ -59,4 +60,10 @@ export const blake3Hash = async (cid: string) => {
   const { blake3HashFromCid, stringToCid } = await import('@autonomys/auto-dag-data')
 
   return Buffer.from(blake3HashFromCid(stringToCid(cid)))
+}
+
+export const cidStringFromBlake3Hash = async (hash: Buffer) => {
+  const { cidToString, cidFromBlakeHash } = await import('@autonomys/auto-dag-data')
+
+  return cidToString(cidFromBlakeHash(hash))
 }
