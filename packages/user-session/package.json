@@ -15,7 +15,8 @@
     "url": "https://github.com/autonomys/auto-sdk/issues"
   },
   "scripts": {
-    "build": "ts-node scripts/index.ts && tsc",
+    "build": "tsc",
+    "generate-abi": "ts-node scripts/index.ts",
     "clean": "rm -rf dist",
     "format": "prettier --write \"src/**/*.ts\"",
     "test": "jest"
