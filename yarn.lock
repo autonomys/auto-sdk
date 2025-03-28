@@ -190,6 +190,18 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@autonomys/user-session@workspace:packages/user-session":
+  version: 0.0.0-use.local
+  resolution: "@autonomys/user-session@workspace:packages/user-session"
+  dependencies:
+    eslint: "npm:^9.22.0"
+    prettier: "npm:^3.5.3"
+    ts-jest: "npm:^29.2.6"
+    ts-node: "npm:^10.9.2"
+    typescript: "npm:^5.4.5"
+  languageName: unknown
+  linkType: soft
+
 "@babel/code-frame@npm:^7.0.0, @babel/code-frame@npm:^7.12.13, @babel/code-frame@npm:^7.26.2":
   version: 7.26.2
   resolution: "@babel/code-frame@npm:7.26.2"
