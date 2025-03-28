@@ -79,6 +79,8 @@ export const createRpcServer = ({
 
       if (parsedMessage.data.id && response) {
         sendMessageWithId(response)
+      } else if (response) {
+        connection.sendUTF(JSON.stringify(wrapResponse(response, undefined)))
       }
     } catch (error) {
       connection.sendUTF(JSON.stringify({ error: 'Unknown error' }))
