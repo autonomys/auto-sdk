@@ -1,4 +1,5 @@
 import { bufferToAsyncIterable, fileToIterable } from '@autonomys/asynchronous'
+import { cidToString } from '@autonomys/auto-dag-data'
 import { GenericFile } from '../api/models/file'
 
 const precomputeCidFromGenericFile = async (file: GenericFile) => {
@@ -46,11 +47,11 @@ const isBuffer = (file: File | GenericFile | Buffer): file is Buffer => {
  */
 export const precomputeCid = async (file: File | GenericFile | Buffer, name?: string) => {
   if (isGenericFile(file)) {
-    return precomputeCidFromGenericFile(file)
+    return cidToString(await precomputeCidFromGenericFile(file))
   } else if (isBuffer(file)) {
-    return precomputeCidFromBuffer(file, name)
+    return cidToString(await precomputeCidFromBuffer(file, name))
   } else {
-    return precomputeCidFromFile(file, name)
+    return cidToString(await precomputeCidFromFile(file, name))
   }
 }
 
