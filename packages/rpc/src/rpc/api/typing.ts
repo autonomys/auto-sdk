@@ -1,4 +1,5 @@
-import { ZodType, ZodTypeDef } from 'zod'
+import { ZodType } from 'zod'
+import { PromiseOr } from '../../utils/types'
 import { RpcCallback } from '../types'
 
 export interface UnvalidatedType<T> {
@@ -32,7 +33,7 @@ export type ApiClientType<S extends ApiDefinition> = {
 export type ApiServerHandlers<S extends ApiDefinition> = {
   [K in keyof S]: RpcCallback<
     DefinitionTypeOutput<S[K]['params']>,
-    DefinitionTypeOutput<S[K]['returns']>
+    PromiseOr<DefinitionTypeOutput<S[K]['returns']>>
   >
 }
 

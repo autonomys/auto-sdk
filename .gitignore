@@ -27,6 +27,7 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+*.debug.ts
 
 # IDE/editor files
 .idea/

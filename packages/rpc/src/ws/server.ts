@@ -1,6 +1,6 @@
 import http from 'http'
 import Websocket from 'websocket'
-import { WsMessageCallback, WsServer } from '../models/server'
+import { WsMessageCallback, WsServer } from './types'
 
 export const createWsServer = ({
   httpServer,
