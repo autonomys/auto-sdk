@@ -8,6 +8,7 @@
     "examples/*"
   ],
   "scripts": {
+    "preinstall": "git submodule update --init --recursive || echo 'Warning: Unable to initialize git submodules. If you are not in a git repository, you can ignore this.'",
     "build": "lerna run build",
     "clean": "lerna run clean",
     "format": "lerna run format",
