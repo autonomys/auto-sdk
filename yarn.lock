@@ -180,7 +180,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@autonomys/rpc@workspace:packages/rpc"
   dependencies:
-    "@types/jest": "npm:^29.5.12"
+    "@types/jest": "npm:^29.5.14"
     "@types/websocket": "npm:^1.0.10"
     jest: "npm:^29.7.0"
     ts-jest: "npm:^29.1.4"
@@ -3290,7 +3290,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/jest@npm:^29.5.12, @types/jest@npm:^29.5.14":
+"@types/jest@npm:^29.5.14":
   version: 29.5.14
   resolution: "@types/jest@npm:29.5.14"
   dependencies:
