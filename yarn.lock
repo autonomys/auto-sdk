@@ -120,7 +120,7 @@ __metadata:
   dependencies:
     "@polkadot/api": "npm:^15.8.1"
     "@polkadot/extension-dapp": "npm:^0.58.5"
-    "@polkadot/extension-inject": "npm:^0.58.5"
+    "@polkadot/extension-inject": "npm:^0.58.6"
     "@polkadot/types": "npm:^15.8.1"
     "@polkadot/types-codec": "npm:^15.8.1"
     "@types/jest": "npm:^29.5.14"
@@ -2367,7 +2367,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/extension-inject@npm:0.58.6, @polkadot/extension-inject@npm:^0.58.5":
+"@polkadot/extension-inject@npm:0.58.6, @polkadot/extension-inject@npm:^0.58.6":
   version: 0.58.6
   resolution: "@polkadot/extension-inject@npm:0.58.6"
   dependencies:
