@@ -30,7 +30,7 @@
     "fs": "^0.0.1-security"
   },
   "devDependencies": {
-    "@polkadot/extension-inject": "^0.58.5",
+    "@polkadot/extension-inject": "^0.58.6",
     "@polkadot/types": "^15.8.1",
     "@polkadot/types-codec": "^15.8.1",
     "@types/jest": "^29.5.14",
