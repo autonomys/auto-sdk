@@ -34,11 +34,11 @@ __metadata:
   resolution: "@autonomys/asynchronous@workspace:packages/asynchronous"
   dependencies:
     "@types/jest": "npm:^29.5.14"
-    eslint: "npm:^9.22.0"
+    eslint: "npm:^9.23.0"
     interface-store: "npm:^6.0.2"
     jest: "npm:^29.7.0"
     prettier: "npm:^3.5.3"
-    ts-jest: "npm:^29.1.4"
+    ts-jest: "npm:^29.3.0"
     typescript: "npm:^5.4.5"
   languageName: unknown
   linkType: soft
@@ -49,10 +49,10 @@ __metadata:
   dependencies:
     "@autonomys/auto-utils": "npm:^1.4.7"
     "@types/jest": "npm:^29.5.14"
-    eslint: "npm:^9.22.0"
+    eslint: "npm:^9.23.0"
     jest: "npm:^29.7.0"
     prettier: "npm:^3.5.3"
-    ts-jest: "npm:^29.2.6"
+    ts-jest: "npm:^29.3.0"
     typescript: "npm:^5.4.5"
   languageName: unknown
   linkType: soft
@@ -76,7 +76,7 @@ __metadata:
     protobufjs: "npm:^7.4.0"
     protons: "npm:^7.6.0"
     protons-runtime: "npm:^5.5.0"
-    ts-jest: "npm:^29.2.6"
+    ts-jest: "npm:^29.3.0"
     typescript: "npm:^5.6.2"
   languageName: unknown
   linkType: soft
@@ -112,11 +112,11 @@ __metadata:
   resolution: "@autonomys/auto-sdk@workspace:."
   dependencies:
     "@types/jest": "npm:^29.5.14"
-    eslint: "npm:^9.22.0"
+    eslint: "npm:^9.23.0"
     jest: "npm:^29.7.0"
     lerna: "npm:^8.2.1"
     prettier: "npm:^3.5.3"
-    ts-jest: "npm:^29.2.6"
+    ts-jest: "npm:^29.3.0"
     typescript: "npm:^5.4.5"
   languageName: unknown
   linkType: soft
@@ -126,16 +126,16 @@ __metadata:
   resolution: "@autonomys/auto-utils@workspace:packages/auto-utils"
   dependencies:
     "@polkadot/api": "npm:^15.8.1"
-    "@polkadot/extension-dapp": "npm:^0.58.5"
-    "@polkadot/extension-inject": "npm:^0.58.5"
+    "@polkadot/extension-dapp": "npm:^0.58.6"
+    "@polkadot/extension-inject": "npm:^0.58.6"
     "@polkadot/types": "npm:^15.8.1"
     "@polkadot/types-codec": "npm:^15.8.1"
     "@types/jest": "npm:^29.5.14"
-    eslint: "npm:^9.22.0"
+    eslint: "npm:^9.23.0"
     fs: "npm:^0.0.1-security"
     jest: "npm:^29.7.0"
     prettier: "npm:^3.5.3"
-    ts-jest: "npm:^29.2.6"
+    ts-jest: "npm:^29.3.0"
     typescript: "npm:^5.4.5"
   languageName: unknown
   linkType: soft
@@ -147,10 +147,10 @@ __metadata:
     "@autonomys/auto-consensus": "npm:^1.4.7"
     "@autonomys/auto-utils": "npm:^1.4.7"
     "@types/jest": "npm:^29.5.14"
-    eslint: "npm:^9.22.0"
+    eslint: "npm:^9.23.0"
     jest: "npm:^29.7.0"
     prettier: "npm:^3.5.3"
-    ts-jest: "npm:^29.2.6"
+    ts-jest: "npm:^29.3.0"
     typescript: "npm:^5.4.5"
   languageName: unknown
   linkType: soft
@@ -187,10 +187,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@autonomys/rpc@workspace:packages/rpc"
   dependencies:
-    "@types/jest": "npm:^29.5.12"
+    "@types/jest": "npm:^29.5.14"
     "@types/websocket": "npm:^1.0.10"
     jest: "npm:^29.7.0"
-    ts-jest: "npm:^29.1.4"
+    ts-jest: "npm:^29.3.0"
     typescript: "npm:^5.4.5"
     websocket: "npm:^1.0.35"
     zod: "npm:^3.24.2"
@@ -2389,7 +2389,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/extension-dapp@npm:^0.58.5":
+"@polkadot/extension-dapp@npm:^0.58.6":
   version: 0.58.6
   resolution: "@polkadot/extension-dapp@npm:0.58.6"
   dependencies:
@@ -2405,7 +2405,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/extension-inject@npm:0.58.6, @polkadot/extension-inject@npm:^0.58.5":
+"@polkadot/extension-inject@npm:0.58.6, @polkadot/extension-inject@npm:^0.58.6":
   version: 0.58.6
   resolution: "@polkadot/extension-inject@npm:0.58.6"
   dependencies:
@@ -3328,7 +3328,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/jest@npm:^29.5.12, @types/jest@npm:^29.5.14":
+"@types/jest@npm:^29.5.14":
   version: 29.5.14
   resolution: "@types/jest@npm:29.5.14"
   dependencies:
@@ -6315,7 +6315,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint@npm:^9, eslint@npm:^9.22.0":
+"eslint@npm:^9, eslint@npm:^9.23.0":
   version: 9.23.0
   resolution: "eslint@npm:9.23.0"
   dependencies:
@@ -13301,7 +13301,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ts-jest@npm:^29.1.4, ts-jest@npm:^29.2.6":
+"ts-jest@npm:^29.3.0":
   version: 29.3.0
   resolution: "ts-jest@npm:29.3.0"
   dependencies:
