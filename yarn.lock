@@ -119,7 +119,7 @@ __metadata:
   resolution: "@autonomys/auto-utils@workspace:packages/auto-utils"
   dependencies:
     "@polkadot/api": "npm:^15.8.1"
-    "@polkadot/extension-dapp": "npm:^0.58.5"
+    "@polkadot/extension-dapp": "npm:^0.58.6"
     "@polkadot/extension-inject": "npm:^0.58.6"
     "@polkadot/types": "npm:^15.8.1"
     "@polkadot/types-codec": "npm:^15.8.1"
@@ -2351,7 +2351,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/extension-dapp@npm:^0.58.5":
+"@polkadot/extension-dapp@npm:^0.58.6":
   version: 0.58.6
   resolution: "@polkadot/extension-dapp@npm:0.58.6"
   dependencies:
