@@ -31,5 +31,10 @@
     "ts-jest": "^29.2.6",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "@autonomys/auto-dag-data": "^1.4.7",
+    "@autonomys/auto-drive": "^1.4.7",
+    "ethers": "6.13.5"
   }
 }
