@@ -7,10 +7,18 @@ export const UserSession = <T>(options: UsersSessionOptions) => {
   const contract = UserSessionContract(options)
   const autoDriveApi = createAutoDriveApi(options)
 
-  const findUserByID = async (userId: string) => await get<T>(autoDriveApi, contract, userId)
+  const findUserByID = async (userId: string) =>
+    await get<T>({ autoDriveApi, contract, userId, password: options.password })
 
   const saveUser = async (userId: string, user: T) =>
-    await save<T>(autoDriveApi, contract, userId, user)
+    await save<T>({
+      autoDriveApi,
+      contract,
+      userId,
+      data: user,
+      fileName: options.fileName,
+      password: options.password,
+    })
 
   return {
     findUserByID,
