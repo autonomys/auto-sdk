@@ -1,7 +1,6 @@
 import Websocket from 'websocket'
-import { schedule, unresolvablePromise } from '../utils'
-import { encodeMessage } from '../utils/websocket'
-import { WsClient, WsMessageCallback } from './types'
+import { schedule, unresolvablePromise } from '../utils/misc'
+import { WsClient, WsMessageResponseCallback } from './types'
 
 export const createWsClient = ({
   endpoint,
@@ -18,7 +17,7 @@ export const createWsClient = ({
   reconnectInterval?: number | null
 }): WsClient => {
   let ws: Websocket.w3cwebsocket
-  let onMessageCallbacks: WsMessageCallback[] = []
+  let onMessageCallbacks: WsMessageResponseCallback[] = []
   let connected: Promise<void> = unresolvablePromise
   let closed = false
 
@@ -70,11 +69,11 @@ export const createWsClient = ({
     ws.send(message)
   }
 
-  const on = (callback: WsMessageCallback) => {
+  const on = (callback: WsMessageResponseCallback) => {
     onMessageCallbacks.push(callback)
   }
 
-  const off = (callback: WsMessageCallback) => {
+  const off = (callback: WsMessageResponseCallback) => {
     onMessageCallbacks = onMessageCallbacks.filter((cb) => cb !== callback)
   }
 

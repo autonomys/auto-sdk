@@ -1,6 +1,6 @@
 import http from 'http'
 import { z } from 'zod'
-import { createWsServer } from '../../src'
+import { createRpcClient, createWsClient, createWsServer } from '../../src'
 import { createApiDefinition } from '../../src/rpc/api/definition'
 import { RpcError } from '../../src/rpc/utils'
 import { createBaseHttpServer, TEST_PORT } from '../utils'
@@ -104,5 +104,34 @@ describe('rpc/definition', () => {
         expect(error.message).toEqual('Custom error')
       }
     }
+  })
+
+  it('should send error response if message id is not provided', async () => {
+    const client = createWsClient({
+      endpoint: `ws://localhost:${TEST_PORT}`,
+      callbacks: {
+        onOpen: async () => {
+          await client.send(
+            JSON.stringify({
+              jsonrpc: '2.0',
+              method: 'test',
+              params: { name: 'test' },
+            }),
+          )
+        },
+      },
+    })
+    const mock = jest.fn()
+    client.on((message) => {
+      mock(message)
+    })
+
+    await new Promise((resolve) => setTimeout(resolve, 100))
+    expect(JSON.parse(mock.mock.calls[0][0])).toEqual({
+      jsonrpc: '2.0',
+      error: { code: RpcError.Code.InvalidRequest, message: 'Message ID is required' },
+    })
+
+    client.close()
   })
 })

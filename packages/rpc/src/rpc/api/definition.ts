@@ -51,6 +51,10 @@ export const createApiDefinition = <S extends ApiDefinition>(serverDefinition: S
         params: Parameters<Handlers[keyof Handlers]>[0],
         rpcParams: Parameters<Handlers[keyof Handlers]>[1],
       ) => {
+        if (!rpcParams.messageId) {
+          throw new RpcError('Message ID is required', RpcError.Code.InvalidRequest)
+        }
+
         if (isZodType(serverDefinition[method].params)) {
           const result = serverDefinition[method].params.safeParse(params)
           if (!result.success) {
@@ -59,14 +63,14 @@ export const createApiDefinition = <S extends ApiDefinition>(serverDefinition: S
         }
 
         const result = await internalHandler(params, rpcParams)
-        if (result) {
-          return {
-            jsonrpc: '2.0',
-            id: rpcParams.messageId,
-            result,
-          }
+
+        return {
+          jsonrpc: '2.0',
+          id: rpcParams.messageId,
+          result,
         }
       }
+
       server.addRpcHandler({
         method,
         handler,
