@@ -90,7 +90,7 @@ __metadata:
     "@types/mime-types": "npm:^2.1.4"
     blockstore-core: "npm:^5.0.2"
     jszip: "npm:^3.10.1"
-    mime-types: "npm:^3.0.0"
+    mime-types: "npm:^3.0.1"
     process: "npm:^0.11.10"
     rollup-plugin-jscc: "npm:^2.0.0"
     stream: "npm:^0.0.3"
@@ -166,7 +166,7 @@ __metadata:
     cache-manager: "npm:^6.4.1"
     jszip: "npm:^3.10.1"
     keyv: "npm:^5.3.2"
-    mime-types: "npm:^3.0.0"
+    mime-types: "npm:^3.0.1"
     process: "npm:^0.11.10"
     rollup-plugin-jscc: "npm:^2.0.0"
     stream: "npm:^0.0.3"
@@ -9639,7 +9639,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mime-types@npm:^3.0.0":
+"mime-types@npm:^3.0.1":
   version: 3.0.1
   resolution: "mime-types@npm:3.0.1"
   dependencies:
