@@ -29,9 +29,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@autonomys/asynchronous@npm:^1.4.11, @autonomys/asynchronous@workspace:packages/asynchronous":
+"@autonomys/asynchronous@npm:^1.4.11, @autonomys/asynchronous@workspace:packages/utility/asynchronous":
   version: 0.0.0-use.local
-  resolution: "@autonomys/asynchronous@workspace:packages/asynchronous"
+  resolution: "@autonomys/asynchronous@workspace:packages/utility/asynchronous"
   dependencies:
     "@types/jest": "npm:^29.5.14"
     eslint: "npm:^9.23.0"
@@ -155,9 +155,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@autonomys/file-caching@workspace:packages/file-caching":
+"@autonomys/file-caching@workspace:packages/utility/file-caching":
   version: 0.0.0-use.local
-  resolution: "@autonomys/file-caching@workspace:packages/file-caching"
+  resolution: "@autonomys/file-caching@workspace:packages/utility/file-caching"
   dependencies:
     "@autonomys/asynchronous": "npm:^1.4.11"
     "@autonomys/auto-dag-data": "npm:^1.4.11"
@@ -183,9 +183,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@autonomys/rpc@workspace:packages/rpc":
+"@autonomys/rpc@workspace:packages/utility/rpc":
   version: 0.0.0-use.local
-  resolution: "@autonomys/rpc@workspace:packages/rpc"
+  resolution: "@autonomys/rpc@workspace:packages/utility/rpc"
   dependencies:
     "@types/jest": "npm:^29.5.14"
     "@types/websocket": "npm:^1.0.10"
@@ -197,9 +197,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@autonomys/user-session@workspace:packages/user-session":
+"@autonomys/user-session@workspace:packages/utility/user-session":
   version: 0.0.0-use.local
-  resolution: "@autonomys/user-session@workspace:packages/user-session"
+  resolution: "@autonomys/user-session@workspace:packages/utility/user-session"
   dependencies:
     "@autonomys/auto-dag-data": "npm:^1.4.11"
     "@autonomys/auto-drive": "npm:^1.4.11"
