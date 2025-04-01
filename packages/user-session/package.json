@@ -18,8 +18,7 @@
     "build": "tsc",
     "generate-abi": "ts-node scripts/index.ts",
     "clean": "rm -rf dist",
-    "format": "prettier --write \"src/**/*.ts\"",
-    "test": "jest"
+    "format": "prettier --write \"src/**/*.ts\""
   },
   "files": [
     "dist",
@@ -28,7 +27,6 @@
   "devDependencies": {
     "eslint": "^9.22.0",
     "prettier": "^3.5.3",
-    "ts-jest": "^29.2.6",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5"
   },
