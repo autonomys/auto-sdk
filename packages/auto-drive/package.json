@@ -47,7 +47,7 @@
     "@autonomys/auto-utils": "^1.4.10",
     "blockstore-core": "^5.0.2",
     "jszip": "^3.10.1",
-    "mime-types": "^3.0.0",
+    "mime-types": "^3.0.1",
     "process": "^0.11.10",
     "stream": "^0.0.3",
     "zod": "^3.24.2"
