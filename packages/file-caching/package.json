@@ -1,6 +1,6 @@
 {
   "name": "@autonomys/file-caching",
-  "packageManager": "yarn@4.7.0",
+  "packageManager": "yarn@4.8.0",
   "version": "1.4.11",
   "license": "MIT",
   "repository": {

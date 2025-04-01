@@ -16,7 +16,7 @@
     "prepublish": "yarn build && yarn test",
     "publish": "yarn prepublish && lerna publish --no-private"
   },
-  "packageManager": "yarn@4.7.0",
+  "packageManager": "yarn@4.8.0",
   "engines": {
     "node": ">=18.0.0"
   },
