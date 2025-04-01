@@ -1,6 +1,7 @@
 import { connection } from 'websocket'
 import { z } from 'zod'
 import { PromiseOr } from '../utils/types'
+import { ApiDefinition, ApiServerNotifications } from './api'
 
 export type ClientRPC = {
   send: (message: MessageQuery) => Promise<MessageResponse>
@@ -57,9 +58,14 @@ export type RpcClientResponder = (message: MessageResponseQuery) => void
 
 export type ClientRPCListener = ((message: Message) => void) | ((message: MessageResponse) => void)
 
+export type RpcParams = {
+  connection: connection
+  messageId?: number
+}
+
 export type RpcCallback<I, O extends RpcResponse> = (
   params: I,
-  rpcParams: { connection: connection; messageId?: number },
+  rpcParams: RpcParams,
 ) => O | undefined
 
 export type RpcHandler<I, O extends RpcResponse> = {
@@ -67,4 +73,24 @@ export type RpcHandler<I, O extends RpcResponse> = {
   handler: RpcCallback<I, O>
 }
 
+export type TypedRpcParams<S extends ApiDefinition> = {
+  connection: connection
+  messageId?: number
+  notificationClient: ApiServerNotifications<S>
+}
+
+export type TypedRpcCallback<I, O extends RpcResponse, S extends ApiDefinition> = (
+  params: I,
+  rpcParams: TypedRpcParams<S>,
+) => O | undefined
+
+export type TypedRPCHandler<I, O extends RpcResponse, S extends ApiDefinition> = {
+  method: string
+  handler: TypedRpcCallback<I, O, S>
+}
+
+export type TypedRpcNotificationHandler<I> = (connection: connection, params: I) => void
+
 export type RpcHandlerList = RpcHandler<any, RpcResponse>[]
+
+export type TypedRpcHandlerList<S extends ApiDefinition> = TypedRPCHandler<any, RpcResponse, S>[]

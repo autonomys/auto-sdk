@@ -1,6 +1,6 @@
 import { ZodType } from 'zod'
 import { PromiseOr } from '../../utils/types'
-import { RpcCallback } from '../types'
+import { RpcCallback, TypedRpcCallback, TypedRpcNotificationHandler } from '../types'
 
 export interface UnvalidatedType<T> {
   _type?: T
@@ -17,23 +17,37 @@ export type MethodDefinition = {
   returns: DefinitionType
 }
 
+export type MessageDefinition = {
+  content: DefinitionType
+}
+
 export type DefinitionType = ZodType | UnvalidatedType<any>
 
 export type DefinitionTypeOutput<T extends DefinitionType> =
   T extends ZodType<any> ? T['_output'] : T extends UnvalidatedType<infer U> ? U : never
 
-export type ApiDefinition = Record<string, MethodDefinition>
+export type ApiDefinition = {
+  methods: Record<string, MethodDefinition>
+  notifications: Record<string, MessageDefinition>
+}
 
 export type ApiClientType<S extends ApiDefinition> = {
-  [K in keyof S]: (
-    params: DefinitionTypeOutput<S[K]['params']>,
-  ) => Promise<DefinitionTypeOutput<S[K]['returns']>>
+  [K in keyof S['methods']]: (
+    params: DefinitionTypeOutput<S['methods'][K]['params']>,
+  ) => Promise<DefinitionTypeOutput<S['methods'][K]['returns']>>
 }
 
 export type ApiServerHandlers<S extends ApiDefinition> = {
-  [K in keyof S]: RpcCallback<
-    DefinitionTypeOutput<S[K]['params']>,
-    PromiseOr<DefinitionTypeOutput<S[K]['returns']>>
+  [K in keyof S['methods']]: TypedRpcCallback<
+    DefinitionTypeOutput<S['methods'][K]['params']>,
+    PromiseOr<DefinitionTypeOutput<S['methods'][K]['returns']>>,
+    S
+  >
+}
+
+export type ApiServerNotifications<S extends ApiDefinition> = {
+  [K in keyof S['notifications']]: TypedRpcNotificationHandler<
+    DefinitionTypeOutput<S['notifications'][K]['content']>
   >
 }
 

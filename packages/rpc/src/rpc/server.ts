@@ -3,12 +3,14 @@ import { safeParseJson } from '../utils/json'
 import { parseMessage } from '../utils/websocket'
 import { WsServer } from '../ws'
 import { createWsServer } from '../ws/server'
+import { ApiDefinition } from './api'
 import {
   MessageResponseQuery,
   messageSchema,
   RpcHandler,
   RpcHandlerList,
   RpcResponse,
+  TypedRPCHandler,
 } from './types'
 import { errorResponse, RpcError, wrapResponse } from './utils'
 
