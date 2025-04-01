@@ -76,7 +76,7 @@ export type RpcHandler<I, O extends RpcResponse> = {
 export type TypedRpcParams<S extends ApiDefinition> = {
   connection: connection
   messageId?: number
-  notificationService?: ApiServerNotifications<S>
+  notificationClient: ApiServerNotifications<S>
 }
 
 export type TypedRpcCallback<I, O extends RpcResponse, S extends ApiDefinition> = (
@@ -92,3 +92,5 @@ export type TypedRPCHandler<I, O extends RpcResponse, S extends ApiDefinition> =
 export type TypedRpcNotificationHandler<I> = (connection: connection, params: I) => void
 
 export type RpcHandlerList = RpcHandler<any, RpcResponse>[]
+
+export type TypedRpcHandlerList<S extends ApiDefinition> = TypedRPCHandler<any, RpcResponse, S>[]

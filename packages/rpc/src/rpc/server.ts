@@ -95,9 +95,7 @@ export const createRpcServer = ({
     }
   })
 
-  const addRpcHandler = <I, O extends RpcResponse, S extends ApiDefinition>(
-    handler: TypedRPCHandler<I, O, S>,
-  ) => {
+  const addRpcHandler = <I, O extends RpcResponse>(handler: RpcHandler<I, O>) => {
     handlers.push(handler)
   }
 

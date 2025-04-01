@@ -1,21 +1,12 @@
 import Websocket from 'websocket'
-import { PromiseOr } from '../../utils/types'
 import { createRpcClient } from '../client'
 import { createRpcServer } from '../server'
-import {
-  Message,
-  MessageQuery,
-  RpcParams,
-  TypedRpcCallback,
-  TypedRpcNotificationHandler,
-  TypedRpcParams,
-} from '../types'
+import { Message, MessageQuery, RpcParams, TypedRpcNotificationHandler } from '../types'
 import { RpcError } from '../utils'
 import {
   ApiClientType,
   ApiDefinition,
   ApiServerHandlers,
-  ApiServerNotifications,
   DefinitionTypeOutput,
   isZodType,
 } from './typing'
@@ -78,10 +69,28 @@ export const createApiDefinition = <S extends ApiDefinition>(serverDefinition: S
   ) => {
     const server = createRpcServer(serverParams)
 
+    const notificationClient = Object.fromEntries(
+      Object.entries(serverDefinition.notifications).map(([notificationName, handler]) => {
+        return [
+          notificationName,
+          ((
+            connection: Websocket.connection,
+            params: Parameters<DefinitionTypeOutput<typeof handler.content>>[0],
+          ) => {
+            sendMessage(connection, {
+              jsonrpc: '2.0',
+              method: notificationName,
+              params,
+            })
+          }) as TypedRpcNotificationHandler<DefinitionTypeOutput<typeof handler.content>>,
+        ]
+      }),
+    )
+
     for (const [method, internalHandler] of Object.entries(handlers)) {
       const handler = async (
         params: Parameters<Handlers[keyof Handlers]>[0],
-        rpcParams: TypedRpcParams<S>,
+        rpcParams: RpcParams,
       ) => {
         if (!rpcParams.messageId) {
           throw new RpcError('Message ID is required', RpcError.Code.InvalidRequest)
@@ -94,7 +103,8 @@ export const createApiDefinition = <S extends ApiDefinition>(serverDefinition: S
           }
         }
 
-        const result = await internalHandler(params, rpcParams)
+        // Inject the notification client into the handler
+        const result = await internalHandler(params, { ...rpcParams, notificationClient })
 
         return {
           jsonrpc: '2.0',
@@ -113,26 +123,9 @@ export const createApiDefinition = <S extends ApiDefinition>(serverDefinition: S
       connection.send(JSON.stringify(message))
     }
 
-    const notificationClient = Object.entries(serverDefinition.notifications).map(
-      ([notificationName, handler]) => {
-        return [
-          notificationName,
-          ((
-            connection: Websocket.connection,
-            params: Parameters<DefinitionTypeOutput<typeof handler.content>>[0],
-          ) => {
-            sendMessage(connection, {
-              jsonrpc: '2.0',
-              method: notificationName,
-              params,
-            })
-          }) as TypedRpcNotificationHandler<DefinitionTypeOutput<typeof handler.content>>,
-        ]
-      },
-    )
     return {
       ...server,
-      notificationClient: Object.fromEntries(notificationClient) as ApiServerNotifications<S>,
+      notificationClient,
     }
   }
 

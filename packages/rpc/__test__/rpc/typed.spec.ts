@@ -1,7 +1,7 @@
 import http from 'http'
 import { connection } from 'websocket'
 import { z } from 'zod'
-import { createRpcClient, createWsClient, createWsServer } from '../../src'
+import { createRpcClient, createWsClient, createWsServer, defineUnvalidatedType } from '../../src'
 import { createApiDefinition } from '../../src/rpc/api/definition'
 import { RpcError } from '../../src/rpc/utils'
 import { createBaseHttpServer, TEST_PORT } from '../utils'
@@ -23,6 +23,10 @@ describe('rpc/definition', () => {
       rpc_error: {
         params: z.void(),
         returns: z.void(),
+      },
+      test_notification_client: {
+        params: defineUnvalidatedType<void>(),
+        returns: defineUnvalidatedType<void>(),
       },
     },
     notifications: {
@@ -52,6 +56,9 @@ describe('rpc/definition', () => {
         },
         rpc_error: () => {
           throw new RpcError('Custom error', RpcError.Code.Custom)
+        },
+        test_notification_client: (_, { notificationClient }) => {
+          notificationClient.test(connection, { name: 'test' })
         },
       },
       {
@@ -156,6 +163,19 @@ describe('rpc/definition', () => {
     })
 
     server.notificationClient.test(connection, { name: 'test' })
+
+    await new Promise((resolve) => setTimeout(resolve, 100))
+    expect(mock.mock.calls[0][0]).toEqual('test')
+  })
+
+  it('server should be able to send notifications using the notification service injected into the handler', async () => {
+    const mock = jest.fn()
+
+    client.onNotification('test', (params) => {
+      mock(params.name)
+    })
+
+    await client.api.test_notification_client()
 
     await new Promise((resolve) => setTimeout(resolve, 100))
     expect(mock.mock.calls[0][0]).toEqual('test')
