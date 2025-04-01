@@ -1,0 +1,38 @@
+{
+  "name": "@autonomys/user-session",
+  "version": "1.4.7",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/autonomys/auto-sdk"
+  },
+  "author": {
+    "name": "Autonomys",
+    "url": "https://www.autonomys.xyz"
+  },
+  "bugs": {
+    "url": "https://github.com/autonomys/auto-sdk/issues"
+  },
+  "scripts": {
+    "build": "tsc",
+    "generate-abi": "ts-node scripts/index.ts",
+    "clean": "rm -rf dist",
+    "format": "prettier --write \"src/**/*.ts\""
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "devDependencies": {
+    "eslint": "^9.22.0",
+    "prettier": "^3.5.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "@autonomys/auto-dag-data": "^1.4.10",
+    "@autonomys/auto-drive": "^1.4.10",
+    "ethers": "6.13.5"
+  }
+}
