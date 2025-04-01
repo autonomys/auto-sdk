@@ -8,7 +8,13 @@ export const UserSession = <T>(options: UsersSessionOptions) => {
   const autoDriveApi = createAutoDriveApi(options)
 
   const findUserByID = async (userId: string) =>
-    await get<T>({ autoDriveApi, contract, userId, password: options.password })
+    await get<T>({
+      autoDriveApi,
+      contract,
+      userId,
+      password: options.password,
+      showLogs: options.showLogs,
+    })
 
   const saveUser = async (userId: string, user: T) =>
     await save<T>({
@@ -18,6 +24,7 @@ export const UserSession = <T>(options: UsersSessionOptions) => {
       data: user,
       fileName: options.fileName,
       password: options.password,
+      showLogs: options.showLogs,
     })
 
   return {

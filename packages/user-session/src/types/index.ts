@@ -10,6 +10,7 @@ export type ContractOptions = {
 export type DataOptions = {
   fileName?: string
   password?: string
+  showLogs?: boolean
 }
 
 export type UsersSessionOptions = ConnectionOptions & ContractOptions & DataOptions
@@ -19,6 +20,7 @@ export type GetDataParams = {
   contract: Contract
   userId: string
   password?: string
+  showLogs?: boolean
 }
 
 export type GetDataResult<T> = {
@@ -33,6 +35,7 @@ export type SaveDataParams<T> = {
   data: T
   fileName?: string
   password?: string
+  showLogs?: boolean
 }
 
 export type SaveDataResult = {
