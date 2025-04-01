@@ -81,7 +81,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@autonomys/auto-drive@npm:^1.4.10, @autonomys/auto-drive@workspace:*, @autonomys/auto-drive@workspace:packages/auto-drive":
+"@autonomys/auto-drive@npm:^1.4.11, @autonomys/auto-drive@workspace:*, @autonomys/auto-drive@workspace:packages/auto-drive":
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-drive@workspace:packages/auto-drive"
   dependencies:
@@ -201,8 +201,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@autonomys/user-session@workspace:packages/user-session"
   dependencies:
-    "@autonomys/auto-dag-data": "npm:^1.4.10"
-    "@autonomys/auto-drive": "npm:^1.4.10"
+    "@autonomys/auto-dag-data": "npm:^1.4.11"
+    "@autonomys/auto-drive": "npm:^1.4.11"
     eslint: "npm:^9.22.0"
     ethers: "npm:6.13.5"
     prettier: "npm:^3.5.3"

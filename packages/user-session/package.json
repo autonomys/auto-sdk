@@ -31,8 +31,8 @@
     "typescript": "^5.4.5"
   },
   "dependencies": {
-    "@autonomys/auto-dag-data": "^1.4.10",
-    "@autonomys/auto-drive": "^1.4.10",
+    "@autonomys/auto-dag-data": "^1.4.11",
+    "@autonomys/auto-drive": "^1.4.11",
     "ethers": "6.13.5"
   }
 }
