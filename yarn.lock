@@ -29,14 +29,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@autonomys/asynchronous@npm:^1.4.11":
-  version: 1.4.11
-  resolution: "@autonomys/asynchronous@npm:1.4.11"
-  checksum: 10c0/b79facce0a4c91b06d4f60ebab07cb07d9be301fdcac0fe67d10dc063bc7f073dfafc07c562b659d445ed714ff1210d26c5903786a804b314de916b871734008
-  languageName: node
-  linkType: hard
-
-"@autonomys/asynchronous@workspace:packages/utility/asynchronous":
+"@autonomys/asynchronous@npm:^1.4.11, @autonomys/asynchronous@workspace:packages/utility/asynchronous":
   version: 0.0.0-use.local
   resolution: "@autonomys/asynchronous@workspace:packages/utility/asynchronous"
   dependencies:
