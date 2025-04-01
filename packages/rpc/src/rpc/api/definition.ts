@@ -7,6 +7,7 @@ import {
   ApiClientType,
   ApiDefinition,
   ApiServerHandlers,
+  ApiServerNotifications,
   DefinitionTypeOutput,
   isZodType,
 } from './typing'
@@ -85,7 +86,7 @@ export const createApiDefinition = <S extends ApiDefinition>(serverDefinition: S
           }) as TypedRpcNotificationHandler<DefinitionTypeOutput<typeof handler.content>>,
         ]
       }),
-    )
+    ) as ApiServerNotifications<S>
 
     for (const [method, internalHandler] of Object.entries(handlers)) {
       const handler = async (
