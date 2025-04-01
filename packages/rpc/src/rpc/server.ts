@@ -3,12 +3,14 @@ import { safeParseJson } from '../utils/json'
 import { parseMessage } from '../utils/websocket'
 import { WsServer } from '../ws'
 import { createWsServer } from '../ws/server'
+import { ApiDefinition } from './api'
 import {
   MessageResponseQuery,
   messageSchema,
   RpcHandler,
   RpcHandlerList,
   RpcResponse,
+  TypedRPCHandler,
 } from './types'
 import { errorResponse, RpcError, wrapResponse } from './utils'
 
@@ -93,7 +95,9 @@ export const createRpcServer = ({
     }
   })
 
-  const addRpcHandler = <I, O extends RpcResponse>(handler: RpcHandler<I, O>) => {
+  const addRpcHandler = <I, O extends RpcResponse, S extends ApiDefinition>(
+    handler: TypedRPCHandler<I, O, S>,
+  ) => {
     handlers.push(handler)
   }
 
