@@ -129,7 +129,7 @@ __metadata:
     "@polkadot/extension-dapp": "npm:^0.58.6"
     "@polkadot/extension-inject": "npm:^0.58.6"
     "@polkadot/types": "npm:^15.8.1"
-    "@polkadot/types-codec": "npm:^15.8.1"
+    "@polkadot/types-codec": "npm:^15.9.1"
     "@types/jest": "npm:^29.5.14"
     eslint: "npm:^9.23.0"
     fs: "npm:^0.0.1-security"
@@ -2510,7 +2510,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/types-codec@npm:15.8.1, @polkadot/types-codec@npm:^15.8.1":
+"@polkadot/types-codec@npm:15.8.1":
   version: 15.8.1
   resolution: "@polkadot/types-codec@npm:15.8.1"
   dependencies:
@@ -2518,6 +2518,17 @@ __metadata:
     "@polkadot/x-bigint": "npm:^13.4.3"
     tslib: "npm:^2.8.1"
   checksum: 10c0/79a809d6676f2d223b1c785e0ed45b718155b638941888ffd9e4d9db7d996370598b3568a9f10b0373b92c5d7f5de116c086ece568c0ba315516f4f4cef699ae
+  languageName: node
+  linkType: hard
+
+"@polkadot/types-codec@npm:^15.9.1":
+  version: 15.9.1
+  resolution: "@polkadot/types-codec@npm:15.9.1"
+  dependencies:
+    "@polkadot/util": "npm:^13.4.3"
+    "@polkadot/x-bigint": "npm:^13.4.3"
+    tslib: "npm:^2.8.1"
+  checksum: 10c0/e170f277a17dfc1176467a3f163d33a5be0b96eebf66a6600086d7132190de6fd236f7c84dfa171d1df121439913f5f5b1a9eab6731fbce4578de2d54aec944f
   languageName: node
   linkType: hard
 
