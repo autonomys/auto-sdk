@@ -4,8 +4,7 @@
   "private": true,
   "license": "MIT",
   "workspaces": [
-    "packages/*",
-    "packages/utility/*",
+    "packages/**/*",
     "examples/*"
   ],
   "scripts": {
