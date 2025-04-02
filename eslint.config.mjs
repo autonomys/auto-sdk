@@ -23,6 +23,7 @@ export default defineConfig([
     '**/scripts',
     '**/jest.config.js',
     '**/jest.config.ts',
+    '**/examples',
     '**/__test__/',
     '**/.next/',
     '**/out/',

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useApi } from '@/hooks/useApi'
 import { useWallets } from '@/hooks/useWallet'
 import { signAndSendTx } from '@autonomys/auto-utils'

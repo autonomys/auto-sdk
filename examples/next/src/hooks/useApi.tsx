@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-expressions */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { activate } from '@autonomys/auto-utils'
 import type { ApiPromise } from '@polkadot/api'
 import { useCallback, useEffect, useState } from 'react'
