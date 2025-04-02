@@ -34,5 +34,6 @@
     "@autonomys/auto-dag-data": "^1.4.12",
     "@autonomys/auto-drive": "^1.4.12",
     "ethers": "6.13.5"
-  }
+  },
+  "gitHead": "ed3fab7fc9ba68f905c7608c498e947ca6bedc50"
 }
