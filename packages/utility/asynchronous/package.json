@@ -1,7 +1,7 @@
 {
   "name": "@autonomys/asynchronous",
   "packageManager": "yarn@4.7.0",
-  "version": "1.4.11",
+  "version": "1.4.12",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -29,5 +29,5 @@
     "ts-jest": "^29.3.0",
     "typescript": "^5.4.5"
   },
-  "gitHead": "9121de95bb17b50dcf0e452f0e6544cbf4fb0f74"
+  "gitHead": "ed3fab7fc9ba68f905c7608c498e947ca6bedc50"
 }
