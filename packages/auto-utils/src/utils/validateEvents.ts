@@ -16,7 +16,7 @@ export const validateEvents = (
       : eventsExpected.map((e: string | string[]) => (typeof e === 'string' ? [e] : e)).flat()
   const found: Events = []
 
-  events.forEach(({ event: { data, method, section } }) => {
+  events.forEach(({ event: { method, section } }) => {
     const index = _eventsExpected.indexOf(`${section}.${method}`)
     if (index > -1) {
       _eventsExpected.splice(index, 1)

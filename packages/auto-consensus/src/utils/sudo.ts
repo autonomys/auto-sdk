@@ -1,13 +1,14 @@
 // file: src/utils/sudo.ts
 
-import type {
+import {
   AddressOrPair,
   ApiPromise,
+  Events,
   ISubmittableResult,
+  signAndSendTx,
   SignerOptions,
   SubmittableExtrinsic,
 } from '@autonomys/auto-utils'
-import { Events, signAndSendTx } from '@autonomys/auto-utils'
 import { expectSuccessfulTxEvent } from './events'
 
 export const sudo = async (

@@ -1,6 +1,6 @@
 // file: src/utils/signAndSendTx.ts
 
-import type { ApiPromise, SubmittableResult } from '@polkadot/api'
+import type { SubmittableResult } from '@polkadot/api'
 import { KeyringPair } from '@polkadot/keyring/types'
 import type {
   AddressOrPair,
@@ -28,7 +28,7 @@ export const signAndSendTx = async <TError>(
   let success = false
   let txHashHex: string | undefined = undefined
   let blockHash: string | undefined = undefined
-  let eventsValidated: EventsValidated = { expected: [], found: [] }
+  const eventsValidated: EventsValidated = { expected: [], found: [] }
   let identifier: string | null = null
 
   const receipt: SubmittableResult = await new Promise((resolve, reject) => {
@@ -63,8 +63,12 @@ export const signAndSendTx = async <TError>(
               }
             })
             resolve(result)
-          } catch (err: any) {
-            reject(new Error(`Failed to retrieve block information: ${err.message}`))
+          } catch (err: unknown) {
+            reject(
+              new Error(
+                `Failed to retrieve block information: ${err instanceof Error ? err.message : String(err)}`,
+              ),
+            )
           }
         }
       } else if (

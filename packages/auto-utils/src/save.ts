@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // file: src/save.ts
 
 export const save = async (key: string, value: any) => {

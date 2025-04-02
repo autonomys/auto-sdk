@@ -1,3 +1,4 @@
+/* eslint-disable no-async-promise-executor */
 import {
   asyncByChunk,
   asyncFromStream,
@@ -49,7 +50,7 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
     uploadChunkSize?: number,
   ): Promise<string> => {
     const { password = undefined, compression = true } = options
-    return new Promise(async (resolve, reject) => {
+    return new Promise(async (resolve) => {
       const { compressFile, CompressionAlgorithm, encryptFile, EncryptionAlgorithm } = await import(
         '@autonomys/auto-dag-data'
       )
@@ -168,7 +169,7 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
         options,
         uploadChunkSize,
       )
-    } catch (e) {
+    } catch {
       throw new Error('Failed to serialize object to JSON')
     }
   }

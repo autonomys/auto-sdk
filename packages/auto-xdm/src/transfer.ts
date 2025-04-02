@@ -1,8 +1,9 @@
 // file: src/transfer.ts
 
 import type { StringNumberOrBigInt } from '@autonomys/auto-consensus'
-import type { ApiPromise, Codec } from '@autonomys/auto-utils'
 import {
+  ApiPromise,
+  Codec,
   createTransporterToConsensusType,
   createTransporterToDomainAccount20Type,
   createTransporterToDomainAccount32Type,

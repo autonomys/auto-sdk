@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { AnyTuple, BN, Codec, SignedBlock, StorageKey } from '@autonomys/auto-utils'
 import type { BalanceData, RawBalanceData } from '../types/balance'
 import { DomainRegistry } from '../types/domain'

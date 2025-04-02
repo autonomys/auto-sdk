@@ -29,7 +29,7 @@ export const ReceiverInput: FC<InputProps> = ({ id = 'to', value, set }) => {
           >
             {mockURIs[index].slice(2)}
           </button>
-          {` `}
+          {' '}
         </>
       ))}
     </div>

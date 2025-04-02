@@ -18,7 +18,7 @@ export const NetworkDropdown: FC<DropdownProps> = ({
   isOpen,
   toggleDropdown,
 }) => {
-  const { handleNetworkChange } = useNetwork()
+  useNetwork()
   const params = useParams()
   const packageName = params.package
   const action = params.action

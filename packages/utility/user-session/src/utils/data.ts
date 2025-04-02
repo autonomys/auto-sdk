@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { GetDataParams, GetDataResult, SaveDataParams, SaveDataResult } from '../types'
 import { userIdHash, userSessionCIDFromHash, userSessionCIDHash } from './hash'
 

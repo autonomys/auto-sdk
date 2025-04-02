@@ -31,12 +31,9 @@ export const createTestServer = async () => {
   }
 }
 
-let baseHttpServer: http.Server
-
 export const createBaseHttpServer = async () => {
   const httpServer = http.createServer()
   httpServer.listen(TEST_PORT)
   await new Promise((resolve) => httpServer.once('listening', resolve))
-  baseHttpServer = httpServer
   return httpServer
 }

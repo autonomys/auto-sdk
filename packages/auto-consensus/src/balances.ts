@@ -1,7 +1,4 @@
-// file: src/balances.ts
-
-import type { Api, BN } from '@autonomys/auto-utils'
-import { activate } from '@autonomys/auto-utils'
+import { activate, Api } from '@autonomys/auto-utils'
 import { account } from './account'
 import type { BalanceData } from './types/balance'
 

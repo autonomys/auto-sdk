@@ -124,7 +124,7 @@ const processBufferToIPLDFormat = async (
 
   const bufferChunks = chunkBuffer(buffer, { maxChunkSize: maxNodeSize - NODE_METADATA_SIZE })
 
-  let CIDs: CID[] = []
+  const CIDs: CID[] = []
   for await (const chunk of bufferChunks) {
     const node = builders.chunk(chunk)
     const cid = cidOfNode(node)
@@ -162,11 +162,9 @@ export const processBufferToIPLDFormatFromChunks = async (
     throw new Error(`Filename is too long: ${filename.length} > ${MAX_NAME_SIZE}`)
   }
 
-  let chunkCount = 0
   let CIDs: CID[] = []
   for await (const chunk of chunks) {
     CIDs.push(chunk)
-    chunkCount++
   }
 
   if (CIDs.length === 1) {
