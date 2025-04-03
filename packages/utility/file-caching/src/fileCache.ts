@@ -21,13 +21,13 @@ export const createFileCache = (config: BaseCacheConfig) => {
       filePath = path.join(filePath, `${head.slice(-CHARS_PER_PARTITION)}/`)
       head = head.slice(0, -CHARS_PER_PARTITION)
     }
-    filePath = path.join(filePath, head)
-
+    filePath = path.join(filePath, head, cid)
     return path.join(config.cacheDir, filePath)
   }
 
   const filepathCache = createCache({
     stores: config.stores,
+    nonBlocking: false,
   })
 
   const deserialize = (data: Omit<FileResponse, 'data'> | null) => {
