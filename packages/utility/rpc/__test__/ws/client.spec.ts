@@ -1,6 +1,6 @@
-import Websocket from 'websocket'
 import { createWsClient } from '../../src'
 import { createTestServer } from '../utils'
+
 describe('Client', () => {
   let server: Awaited<ReturnType<typeof createTestServer>>
 
@@ -44,7 +44,7 @@ describe('Client', () => {
   it('should be able to recover from a connection error', async () => {
     const reconnectInterval = 500
 
-    const ws = await new Promise<ReturnType<typeof createWsClient>>(async (resolve) => {
+    const ws = await new Promise<ReturnType<typeof createWsClient>>((resolve) => {
       const ws = createWsClient({
         endpoint: server.url,
         callbacks: {
@@ -71,7 +71,7 @@ describe('Client', () => {
   it('should be able to recover from a connection close', async () => {
     const reconnectInterval = 1_000
 
-    const ws = await new Promise<ReturnType<typeof createWsClient>>(async (resolve) => {
+    const ws = await new Promise<ReturnType<typeof createWsClient>>((resolve) => {
       const ws = createWsClient({
         endpoint: server.url,
         callbacks: {

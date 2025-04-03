@@ -20,7 +20,7 @@ export const getNetworkRpcUrls = (input?: NetworkParams) => {
   // Get the network details
   const network = getNetworkDetails(input)
 
-  if (!network.rpcUrls || network.rpcUrls.length === 0) throw new Error(`Network has no rpcUrls`)
+  if (!network.rpcUrls || network.rpcUrls.length === 0) throw new Error('Network has no rpcUrls')
 
   return network.rpcUrls
 }
@@ -42,7 +42,7 @@ export const getNetworkDomainDetails = (params: DomainParams) => {
 export const getNetworkDomainRpcUrls = (params: DomainParams) => {
   // Get the network details
   const domain = getNetworkDomainDetails(params)
-  if (!domain.rpcUrls || domain.rpcUrls.length === 0) throw new Error(`Domain has no rpcUrls`)
+  if (!domain.rpcUrls || domain.rpcUrls.length === 0) throw new Error('Domain has no rpcUrls')
 
   return domain.rpcUrls
 }

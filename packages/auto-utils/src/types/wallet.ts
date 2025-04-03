@@ -1,6 +1,6 @@
 // file: src/types/wallet.ts
 
-import type { ApiPromise, Keyring } from '@polkadot/api'
+import type { ApiPromise } from '@polkadot/api'
 import type { AddressOrPair, ApiDecoration, Signer, SignerResult } from '@polkadot/api/types'
 import type { InjectedAccountWithMeta } from '@polkadot/extension-inject/types'
 import type { KeyringPair } from '@polkadot/keyring/types'

@@ -27,6 +27,7 @@ export const createApiDefinition = <S extends ApiDefinition>(serverDefinition: S
   } => {
     const client = createRpcClient(clientParams)
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const apiMethods = Object.entries(serverDefinition.methods).map(([method, handler]) => {
       return [
         method,
@@ -71,6 +72,7 @@ export const createApiDefinition = <S extends ApiDefinition>(serverDefinition: S
     const server = createRpcServer(serverParams)
 
     const notificationClient = Object.fromEntries(
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       Object.entries(serverDefinition.notifications).map(([notificationName, handler]) => {
         return [
           notificationName,

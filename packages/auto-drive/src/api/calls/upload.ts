@@ -32,7 +32,7 @@ export const createFileUpload = async (
   }>,
 ): Promise<FileUpload> => {
   const response = await api.sendRequest(
-    `/uploads/file`,
+    '/uploads/file',
     {
       method: 'POST',
       headers: new Headers({
@@ -67,7 +67,7 @@ export const createFolderUpload = async (
   }: ArgsWithoutPagination<{ fileTree: FolderTree; uploadOptions?: FileUploadOptions }>,
 ): Promise<FolderUpload> => {
   const response = await api.sendRequest(
-    `/uploads/folder`,
+    '/uploads/folder',
     {
       method: 'POST',
       headers: new Headers({

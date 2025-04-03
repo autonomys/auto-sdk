@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ZodType } from 'zod'
 import { PromiseOr } from '../../utils/types'
-import { RpcCallback, TypedRpcCallback, TypedRpcNotificationHandler } from '../types'
+import { TypedRpcCallback, TypedRpcNotificationHandler } from '../types'
 
 export interface UnvalidatedType<T> {
   _type?: T

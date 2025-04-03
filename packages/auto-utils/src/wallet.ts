@@ -8,7 +8,7 @@ import { address } from './address'
 import { activate, activateDomain } from './api'
 import { defaultNetwork } from './constants/network'
 import { mockURIs } from './constants/wallet'
-import type { DomainParams, Mnemonic, MnemonicOrURI, NetworkParams, URI } from './types'
+import type { DomainParams, Mnemonic, NetworkParams, URI } from './types'
 import type {
   ActivateWalletParams,
   ApiPromise,

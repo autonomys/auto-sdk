@@ -1,6 +1,6 @@
-export type ArgsWithPagination<T = {}> = T & {
+export type ArgsWithPagination<T = object> = T & {
   limit: number
   offset: number
 }
 
-export type ArgsWithoutPagination<T = {}> = T
+export type ArgsWithoutPagination<T = object> = T

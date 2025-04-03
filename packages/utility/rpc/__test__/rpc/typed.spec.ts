@@ -1,7 +1,8 @@
+/* eslint-disable camelcase */
 import http from 'http'
 import { connection } from 'websocket'
 import { z } from 'zod'
-import { createRpcClient, createWsClient, createWsServer, defineUnvalidatedType } from '../../src'
+import { createWsClient, createWsServer, defineUnvalidatedType } from '../../src'
 import { createApiDefinition } from '../../src/rpc/api/definition'
 import { RpcError } from '../../src/rpc/utils'
 import { createBaseHttpServer, TEST_PORT } from '../utils'
@@ -90,6 +91,7 @@ describe('rpc/definition', () => {
 
   it('should handle invalid params', async () => {
     try {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-expect-error
       await client.api.test({ name: 1 })
     } catch (error) {

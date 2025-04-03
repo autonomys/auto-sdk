@@ -7,7 +7,7 @@ export const chunkBuffer = async function* (
   { maxChunkSize, ignoreLastChunk = false }: { maxChunkSize: number; ignoreLastChunk?: boolean },
 ): AsyncIterable<Buffer> {
   let target = Buffer.alloc(0)
-  for await (let chunk of buffer) {
+  for await (const chunk of buffer) {
     target = Buffer.concat([target, chunk])
     while (target.length >= maxChunkSize) {
       yield target.subarray(0, maxChunkSize)

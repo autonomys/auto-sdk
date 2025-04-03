@@ -34,7 +34,7 @@ export const AmountInput: FC<InputProps> = ({
           >
             {option}
           </button>
-          {` `}
+          {' '}
         </>
       ))}
   </div>

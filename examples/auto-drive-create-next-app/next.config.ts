@@ -1,10 +1,10 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   /* config options here */
-  output: "export",
-  assetPrefix: "./",
-  basePath: "",
+  output: 'export',
+  assetPrefix: './',
+  basePath: '',
   trailingSlash: true,
 };
 

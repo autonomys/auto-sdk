@@ -3,18 +3,18 @@ import { safeParseJson } from '../utils/json'
 import { parseMessage } from '../utils/websocket'
 import { WsServer } from '../ws'
 import { createWsServer } from '../ws/server'
-import { ApiDefinition } from './api'
 import {
   MessageResponseQuery,
   messageSchema,
   RpcHandler,
   RpcHandlerList,
   RpcResponse,
-  TypedRPCHandler,
 } from './types'
 import { errorResponse, RpcError, wrapResponse } from './utils'
 
-const isWsServer = (server: any): server is WsServer => {
+const isWsServer = (
+  server: WsServer | Parameters<typeof createWsServer>[0],
+): server is WsServer => {
   return 'broadcastMessage' in server
 }
 
@@ -89,7 +89,7 @@ export const createRpcServer = ({
       } else if (response) {
         connection.sendUTF(JSON.stringify(wrapResponse(response, undefined)))
       }
-    } catch (error) {
+    } catch {
       connection.sendUTF(JSON.stringify({ error: 'Unknown error' }))
       return
     }
