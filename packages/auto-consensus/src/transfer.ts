@@ -2,7 +2,7 @@
 
 import type { ApiPromise } from '@autonomys/auto-utils'
 
-export type Amount = BigInt | number | string
+export type Amount = bigint | number | string
 
 export const transfer = (
   api: ApiPromise,

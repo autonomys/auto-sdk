@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { connection } from 'websocket'
 import { z } from 'zod'
 import { PromiseOr } from '../utils/types'

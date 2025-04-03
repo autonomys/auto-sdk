@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Api } from '@autonomys/auto-utils'
 
 export const queryMethodPath = async <T>(

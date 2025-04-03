@@ -43,7 +43,7 @@ describe('chunker', () => {
       const decoded = IPLDNodeData.decode(node?.Data ?? new Uint8Array())
       expect(decoded.data).toBeDefined()
 
-      /// Check the metadata
+      // / Check the metadata
       expect(decoded.name).toBe(name)
       expect(decoded.type).toBe(MetadataType.File)
       const data = decoded.data ? Buffer.from(decoded.data) : Buffer.from('')
@@ -51,7 +51,7 @@ describe('chunker', () => {
       expect(decoded.linkDepth).toBe(0)
       expect(decoded.size?.toString()).toBe(text.length.toString())
 
-      /// Check no links
+      // / Check no links
       expect(node?.Links.length).toBe(0)
     })
 
@@ -63,7 +63,7 @@ describe('chunker', () => {
       const size = text.length
 
       const name = 'test.txt'
-      /// 1 chunk + root
+      // / 1 chunk + root
       const EXPECTED_NODE_COUNT = 2
 
       const blockstore = new MemoryBlockstore()
@@ -124,7 +124,7 @@ describe('chunker', () => {
       const text = chunk.repeat(chunkNum)
       const size = text.length
 
-      /// 1 chunks + 2 inlinks + root
+      // / 1 chunks + 2 inlinks + root
       const EXPECTED_NODE_COUNT = 4
 
       const blockstore = new MemoryBlockstore()
@@ -194,7 +194,7 @@ describe('chunker', () => {
       const name = 'folder'
       const size = 1000
 
-      /// 3 inlinks + root
+      // / 3 inlinks + root
       const EXPECTED_NODE_COUNT = 4
 
       const blockstore = new MemoryBlockstore()

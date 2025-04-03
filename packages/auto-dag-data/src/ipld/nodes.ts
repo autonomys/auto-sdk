@@ -5,7 +5,7 @@ import { stringifyMetadata } from '../utils/metadata.js'
 import { DEFAULT_NODE_MAX_SIZE, ensureNodeMaxSize } from './chunker.js'
 import { createNode, PBNode } from './index.js'
 
-/// Creates a file chunk ipld node
+// / Creates a file chunk ipld node
 export const createFileChunkIpldNode = (
   data: Buffer,
   maxNodeSize: number = DEFAULT_NODE_MAX_SIZE,
@@ -204,7 +204,7 @@ export const createFolderInlinkIpldNode = (
     maxNodeSize,
   )
 
-/// Creates a metadata ipld node
+// / Creates a metadata ipld node
 export const createMetadataNode = (
   metadata: OffchainMetadata,
   maxNodeSize: number = DEFAULT_NODE_MAX_SIZE,

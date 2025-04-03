@@ -1,5 +1,6 @@
 // file: src/string.ts
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const stringify = (value: any) =>
   JSON.stringify(value, (_, value) => (typeof value === 'bigint' ? value.toString() : value))
 

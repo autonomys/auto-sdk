@@ -1,4 +1,4 @@
-import type { ApiPromise, KeyringPair } from '@autonomys/auto-utils'
+import type { ApiPromise } from '@autonomys/auto-utils'
 
 export type RawOperatorId = string[]
 

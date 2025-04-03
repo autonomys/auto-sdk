@@ -1,7 +1,8 @@
 // file: src/staking.ts
 
-import type { Api, Codec } from '@autonomys/auto-utils'
 import {
+  Api,
+  Codec,
   createWithdrawStakeAll,
   createWithdrawStakeByPercent,
   createWithdrawStakeByShares,

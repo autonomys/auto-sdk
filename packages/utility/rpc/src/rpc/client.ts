@@ -77,7 +77,7 @@ export const createRpcClient = ({
     try {
       const messageObj = JSON.parse(parseData(message))
       onMessageCallbacks.forEach((callback) => callback(messageObj))
-    } catch (error) {
+    } catch {
       callbacks.onWrongMessage?.(rpcResponder)
     }
   })
