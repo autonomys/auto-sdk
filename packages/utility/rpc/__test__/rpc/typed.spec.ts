@@ -132,7 +132,7 @@ describe('rpc/definition', () => {
     const client = createWsClient({
       endpoint: `ws://localhost:${TEST_PORT}`,
       callbacks: {
-        onOpen: async () => {
+        onEveryOpen: async () => {
           await client.send(
             JSON.stringify({
               jsonrpc: '2.0',

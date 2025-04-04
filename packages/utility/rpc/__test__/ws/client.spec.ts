@@ -71,12 +71,20 @@ describe('Client', () => {
   it('should be able to recover from a connection close', async () => {
     const reconnectInterval = 1_000
 
+    const onEveryOpen = jest.fn()
+    const onFirstOpen = jest.fn()
     const ws = await new Promise<ReturnType<typeof createWsClient>>((resolve) => {
       const ws = createWsClient({
         endpoint: server.url,
         callbacks: {
           onReconnection: () => {
             resolve(ws)
+          },
+          onEveryOpen: () => {
+            onEveryOpen(ws)
+          },
+          onFirstOpen: () => {
+            onFirstOpen(ws)
           },
         },
         reconnectInterval,
@@ -93,13 +101,15 @@ describe('Client', () => {
     ws.close()
 
     expect(server.mock).toHaveBeenCalledTimes(1)
+    expect(onEveryOpen).toHaveBeenCalledTimes(2)
+    expect(onFirstOpen).toHaveBeenCalledTimes(1)
   })
 
   it('should send a message and receive a response', async () => {
     const ws = createWsClient({
       endpoint: server.url,
       callbacks: {
-        onOpen: () => {
+        onEveryOpen: () => {
           ws.send(mockMessage)
         },
       },

@@ -14,26 +14,31 @@ export const createRpcClient = ({
   endpoint,
   callbacks,
   reconnectInterval = 10_000,
+  debug = false,
 }: {
   endpoint: string
   callbacks: {
-    onOpen?: () => void
+    onEveryOpen?: () => void
+    onFirstOpen?: () => void
     onReconnection?: () => void
     onError?: (error: Error) => void
     onClose?: (event: Websocket.ICloseEvent) => void
     onWrongMessage?: (responder: (message: MessageResponseQuery) => void) => void
   }
   reconnectInterval?: number | null
+  debug?: boolean
 }): ClientRPC => {
   const ws: WsClient = createWsClient({
     endpoint,
     callbacks: {
-      onOpen: callbacks.onOpen,
+      onEveryOpen: callbacks.onEveryOpen,
+      onFirstOpen: callbacks.onFirstOpen,
       onReconnection: callbacks.onReconnection,
       onError: callbacks.onError,
       onClose: callbacks.onClose,
     },
     reconnectInterval,
+    debug,
   })
 
   const connectionMessager = (connection: (message: Websocket.Message) => void) => {
