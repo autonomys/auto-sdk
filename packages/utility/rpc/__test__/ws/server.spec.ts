@@ -55,7 +55,7 @@ describe('Server', () => {
       const client = createWsClient({
         endpoint: `ws://localhost:${TEST_PORT}`,
         callbacks: {
-          onOpen: async () => {
+          onEveryOpen: async () => {
             resolve(client)
             client.send(encodeMessage('test'))
           },

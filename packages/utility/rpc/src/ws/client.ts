@@ -6,26 +6,34 @@ export const createWsClient = ({
   endpoint,
   callbacks,
   reconnectInterval = 10_000,
+  debug = false,
 }: {
   endpoint: string
   callbacks: {
-    onOpen?: () => void
+    onEveryOpen?: () => void
+    onFirstOpen?: () => void
     onReconnection?: () => void
     onError?: (error: Error) => void
     onClose?: (event: Websocket.ICloseEvent) => void
   }
   reconnectInterval?: number | null
+  debug?: boolean
 }): WsClient => {
   let ws: Websocket.w3cwebsocket
   let onMessageCallbacks: WsMessageResponseCallback[] = []
   let connected: Promise<void> = unresolvablePromise
+  let firstOpen = true
   let closed = false
 
   const handleConnection = () => {
     ws = new Websocket.w3cwebsocket(endpoint)
     connected = new Promise<void>((resolve) => {
       ws.onopen = () => {
-        callbacks.onOpen?.()
+        callbacks.onEveryOpen?.()
+        if (firstOpen) {
+          callbacks.onFirstOpen?.()
+          firstOpen = false
+        }
         resolve()
       }
     })
@@ -34,6 +42,9 @@ export const createWsClient = ({
       // If reconnectInterval is null, we don't want to reconnect
       if (reconnectInterval === null) return
 
+      if (debug) {
+        console.log('Scheduling reconnection in', reconnectInterval)
+      }
       schedule(() => {
         handleConnection()
         callbacks.onReconnection?.()
@@ -41,10 +52,12 @@ export const createWsClient = ({
     }
 
     ws.onerror = (event) => {
-      // connected = unresolvablePromise
       callbacks.onError?.(event)
       if (!closed) {
         handleErrorOrClose()
+      }
+      if (debug) {
+        console.log('onerror', event)
       }
     }
 
@@ -53,7 +66,9 @@ export const createWsClient = ({
     }
 
     ws.onclose = (event) => {
-      // connected = unresolvablePromise
+      if (debug) {
+        console.log('handling onclose', event)
+      }
       callbacks.onClose?.(event)
       if (!closed) {
         handleErrorOrClose()
