@@ -1,6 +1,6 @@
 {
   "name": "@autonomys/rpc",
-  "packageManager": "yarn@4.7.0",
+  "packageManager": "yarn@4.8.1",
   "version": "1.4.13",
   "repository": {
     "type": "git",
