@@ -10,7 +10,7 @@ export const writeFile = async (
   const tempFilePath = `${filepath}.tmp`
 
   if (ensureDirectoryExistance) {
-    await fsPromises.mkdir(path.dirname(tempFilePath), { recursive: true })
+    await asyncEnsureDirectoryExists(path.dirname(tempFilePath))
   }
 
   await fsPromises.writeFile(tempFilePath, data)
@@ -18,6 +18,20 @@ export const writeFile = async (
 }
 
 export const ensureDirectoryExists = (dir: string) => {
-  fs.mkdirSync(dir, { recursive: true })
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true })
+  }
+  return dir
+}
+
+export const asyncEnsureDirectoryExists = async (dir: string) => {
+  const exists = await fsPromises
+    .access(dir)
+    .then(() => true)
+    .catch(() => false)
+
+  if (!exists) {
+    await fsPromises.mkdir(dir, { recursive: true })
+  }
   return dir
 }
