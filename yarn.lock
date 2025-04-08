@@ -157,6 +157,20 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@autonomys/contracts@workspace:packages/utility/contracts":
+  version: 0.0.0-use.local
+  resolution: "@autonomys/contracts@workspace:packages/utility/contracts"
+  dependencies:
+    "@autonomys/auto-dag-data": "npm:^1.4.14"
+    "@autonomys/auto-drive": "npm:^1.4.14"
+    eslint: "npm:^9.23.0"
+    ethers: "npm:6.13.5"
+    prettier: "npm:^3.5.3"
+    ts-node: "npm:^10.9.2"
+    typescript: "npm:^5.4.5"
+  languageName: unknown
+  linkType: soft
+
 "@autonomys/file-caching@workspace:packages/utility/file-caching":
   version: 0.0.0-use.local
   resolution: "@autonomys/file-caching@workspace:packages/utility/file-caching"
