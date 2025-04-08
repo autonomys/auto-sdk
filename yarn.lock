@@ -128,7 +128,7 @@ __metadata:
   resolution: "@autonomys/auto-utils@workspace:packages/auto-utils"
   dependencies:
     "@polkadot/api": "npm:^15.8.1"
-    "@polkadot/extension-dapp": "npm:^0.58.6"
+    "@polkadot/extension-dapp": "npm:^0.58.7"
     "@polkadot/extension-inject": "npm:^0.58.6"
     "@polkadot/types": "npm:^15.8.1"
     "@polkadot/types-codec": "npm:^15.8.1"
@@ -2381,7 +2381,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/api@npm:15.9.1, @polkadot/api@npm:^15.8.1":
+"@polkadot/api@npm:15.9.1, @polkadot/api@npm:^15.8.1, @polkadot/api@npm:^15.9.1":
   version: 15.9.1
   resolution: "@polkadot/api@npm:15.9.1"
   dependencies:
@@ -2406,11 +2406,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/extension-dapp@npm:^0.58.6":
-  version: 0.58.6
-  resolution: "@polkadot/extension-dapp@npm:0.58.6"
+"@polkadot/extension-dapp@npm:^0.58.7":
+  version: 0.58.7
+  resolution: "@polkadot/extension-dapp@npm:0.58.7"
   dependencies:
-    "@polkadot/extension-inject": "npm:0.58.6"
+    "@polkadot/extension-inject": "npm:0.58.7"
     "@polkadot/util": "npm:^13.4.3"
     "@polkadot/util-crypto": "npm:^13.4.3"
     tslib: "npm:^2.8.1"
@@ -2418,11 +2418,29 @@ __metadata:
     "@polkadot/api": "*"
     "@polkadot/util": "*"
     "@polkadot/util-crypto": "*"
-  checksum: 10c0/2accb7c2194752c114c623f0c55f4e17d59d13b154cb16f5353c7db644400a06702a4cb9d9ce43718012a7d0f631fabd8cdc566e72eb0db1a77c82d4aadcc645
+  checksum: 10c0/7ccf09727aec0938dd6b8215bff19acd8e49a6b0b24c0352b53f39076e770ea74155ab4a6f262084fa54862b422b1cc7890e487920536dbeee0e8d1caab737bf
   languageName: node
   linkType: hard
 
-"@polkadot/extension-inject@npm:0.58.6, @polkadot/extension-inject@npm:^0.58.6":
+"@polkadot/extension-inject@npm:0.58.7":
+  version: 0.58.7
+  resolution: "@polkadot/extension-inject@npm:0.58.7"
+  dependencies:
+    "@polkadot/api": "npm:^15.9.1"
+    "@polkadot/rpc-provider": "npm:^15.9.1"
+    "@polkadot/types": "npm:^15.9.1"
+    "@polkadot/util": "npm:^13.4.3"
+    "@polkadot/util-crypto": "npm:^13.4.3"
+    "@polkadot/x-global": "npm:^13.4.3"
+    tslib: "npm:^2.8.1"
+  peerDependencies:
+    "@polkadot/api": "*"
+    "@polkadot/util": "*"
+  checksum: 10c0/cd47043bc972c0c59ae1dcf81c532b53804d7c31a95aa6fa600fa64ce68763499e7aabe814cee53f921b49dfcd424e67620f49f04e99a03506bb531a85042f81
+  languageName: node
+  linkType: hard
+
+"@polkadot/extension-inject@npm:^0.58.6":
   version: 0.58.6
   resolution: "@polkadot/extension-inject@npm:0.58.6"
   dependencies:
@@ -2492,7 +2510,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/rpc-provider@npm:15.9.1, @polkadot/rpc-provider@npm:^15.8.1":
+"@polkadot/rpc-provider@npm:15.9.1, @polkadot/rpc-provider@npm:^15.8.1, @polkadot/rpc-provider@npm:^15.9.1":
   version: 15.9.1
   resolution: "@polkadot/rpc-provider@npm:15.9.1"
   dependencies:
@@ -2574,7 +2592,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/types@npm:15.9.1, @polkadot/types@npm:^15.8.1":
+"@polkadot/types@npm:15.9.1, @polkadot/types@npm:^15.8.1, @polkadot/types@npm:^15.9.1":
   version: 15.9.1
   resolution: "@polkadot/types@npm:15.9.1"
   dependencies:
