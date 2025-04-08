@@ -10,4 +10,10 @@
 
 The **Autonomys Contracts** (`@autonomys/contracts`) provides a few basic Smart Contracts, ABI and helper functions to use them.
 
-**Work in Progress**
+## Autonomys Taurus Testnet
+
+### WAI3 (Equivalent of WETH)
+
+> 0x205E735a2C73228fA13EeB70720C7841BDf65EDB
+
+https://blockscout.taurus.autonomys.xyz/address/0x205E735a2C73228fA13EeB70720C7841BDf65EDB?tab=contract
