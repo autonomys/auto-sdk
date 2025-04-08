@@ -45,3 +45,6 @@ executables/
 downloads/
 
 install-state.gz
+
+# Forge std
+lib/
