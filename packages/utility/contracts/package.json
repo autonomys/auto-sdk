@@ -1,0 +1,37 @@
+{
+  "name": "@autonomys/contracts",
+  "version": "1.4.14",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/autonomys/auto-sdk"
+  },
+  "author": {
+    "name": "Autonomys",
+    "url": "https://www.autonomys.xyz"
+  },
+  "bugs": {
+    "url": "https://github.com/autonomys/auto-sdk/issues"
+  },
+  "scripts": {
+    "build": "tsc",
+    "generate-abi": "ts-node scripts/index.ts",
+    "clean": "rm -rf dist",
+    "format": "prettier --write \"src/**/*.ts\""
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "devDependencies": {
+    "eslint": "^9.23.0",
+    "prettier": "^3.5.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "ethers": "6.13.5"
+  },
+  "gitHead": "ed3fab7fc9ba68f905c7608c498e947ca6bedc50"
+}
