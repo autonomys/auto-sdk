@@ -36,7 +36,7 @@
     "interface-store": "^6.0.2",
     "jest": "^29.7.0",
     "protobufjs": "^7.4.0",
-    "ts-jest": "^29.3.0",
+    "ts-jest": "^29.3.1",
     "typescript": "^5.6.2"
   },
   "dependencies": {

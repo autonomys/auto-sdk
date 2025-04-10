@@ -38,7 +38,7 @@ __metadata:
     interface-store: "npm:^6.0.2"
     jest: "npm:^29.7.0"
     prettier: "npm:^3.5.3"
-    ts-jest: "npm:^29.3.0"
+    ts-jest: "npm:^29.3.1"
     typescript: "npm:^5.4.5"
   languageName: unknown
   linkType: soft
@@ -52,7 +52,7 @@ __metadata:
     eslint: "npm:^9.23.0"
     jest: "npm:^29.7.0"
     prettier: "npm:^3.5.3"
-    ts-jest: "npm:^29.3.0"
+    ts-jest: "npm:^29.3.1"
     typescript: "npm:^5.4.5"
   languageName: unknown
   linkType: soft
@@ -76,7 +76,7 @@ __metadata:
     protobufjs: "npm:^7.4.0"
     protons: "npm:^7.6.0"
     protons-runtime: "npm:^5.5.0"
-    ts-jest: "npm:^29.3.0"
+    ts-jest: "npm:^29.3.1"
     typescript: "npm:^5.6.2"
   languageName: unknown
   linkType: soft
@@ -118,7 +118,7 @@ __metadata:
     jest: "npm:^29.7.0"
     lerna: "npm:^8.2.1"
     prettier: "npm:^3.5.3"
-    ts-jest: "npm:^29.3.0"
+    ts-jest: "npm:^29.3.1"
     typescript: "npm:^5.4.5"
   languageName: unknown
   linkType: soft
@@ -137,7 +137,7 @@ __metadata:
     fs: "npm:^0.0.1-security"
     jest: "npm:^29.7.0"
     prettier: "npm:^3.5.3"
-    ts-jest: "npm:^29.3.0"
+    ts-jest: "npm:^29.3.1"
     typescript: "npm:^5.4.5"
   languageName: unknown
   linkType: soft
@@ -152,7 +152,7 @@ __metadata:
     eslint: "npm:^9.23.0"
     jest: "npm:^29.7.0"
     prettier: "npm:^3.5.3"
-    ts-jest: "npm:^29.3.0"
+    ts-jest: "npm:^29.3.1"
     typescript: "npm:^5.4.5"
   languageName: unknown
   linkType: soft
@@ -204,7 +204,7 @@ __metadata:
     "@types/jest": "npm:^29.5.14"
     "@types/websocket": "npm:^1.0.10"
     jest: "npm:^29.7.0"
-    ts-jest: "npm:^29.3.0"
+    ts-jest: "npm:^29.3.1"
     typescript: "npm:^5.4.5"
     websocket: "npm:^1.0.35"
     zod: "npm:^3.24.2"
@@ -13377,7 +13377,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ts-jest@npm:^29.3.0":
+"ts-jest@npm:^29.3.1":
   version: 29.3.1
   resolution: "ts-jest@npm:29.3.1"
   dependencies:
