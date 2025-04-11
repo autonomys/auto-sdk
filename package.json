@@ -50,5 +50,8 @@
     "prettier": "^3.5.3",
     "ts-jest": "^29.3.0",
     "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "uuid": "^11.1.0"
   }
 }
