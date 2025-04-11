@@ -120,7 +120,6 @@ __metadata:
     prettier: "npm:^3.5.3"
     ts-jest: "npm:^29.3.0"
     typescript: "npm:^5.4.5"
-    uuid: "npm:^11.1.0"
   languageName: unknown
   linkType: soft
 
@@ -182,6 +181,7 @@ __metadata:
     stream: "npm:^0.0.3"
     tslib: "npm:^2.8.1"
     typescript: "npm:^5.6.3"
+    uuid: "npm:^11.1.0"
     zod: "npm:^3.24.2"
   languageName: unknown
   linkType: soft
