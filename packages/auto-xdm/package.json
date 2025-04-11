@@ -1,6 +1,6 @@
 {
   "name": "@autonomys/auto-xdm",
-  "version": "1.4.14",
+  "version": "1.4.15",
   "license": "MIT",
   "main": "dist/index.js",
   "repository": {
@@ -25,15 +25,15 @@
     "README.md"
   ],
   "dependencies": {
-    "@autonomys/auto-consensus": "^1.4.14",
-    "@autonomys/auto-utils": "^1.4.14"
+    "@autonomys/auto-consensus": "^1.4.15",
+    "@autonomys/auto-utils": "^1.4.15"
   },
   "devDependencies": {
     "@types/jest": "^29.5.14",
     "eslint": "^9.23.0",
     "jest": "^29.7.0",
     "prettier": "^3.5.3",
-    "ts-jest": "^29.3.0",
+    "ts-jest": "^29.3.1",
     "typescript": "^5.4.5"
   },
   "gitHead": "ed3fab7fc9ba68f905c7608c498e947ca6bedc50"
