@@ -129,7 +129,7 @@ __metadata:
   dependencies:
     "@polkadot/api": "npm:^15.8.1"
     "@polkadot/extension-dapp": "npm:^0.58.6"
-    "@polkadot/extension-inject": "npm:^0.58.6"
+    "@polkadot/extension-inject": "npm:^0.58.7"
     "@polkadot/types": "npm:^15.8.1"
     "@polkadot/types-codec": "npm:^15.8.1"
     "@types/jest": "npm:^29.5.14"
@@ -2394,7 +2394,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/api@npm:15.9.1, @polkadot/api@npm:^15.8.1":
+"@polkadot/api@npm:15.9.1, @polkadot/api@npm:^15.8.1, @polkadot/api@npm:^15.9.1":
   version: 15.9.1
   resolution: "@polkadot/api@npm:15.9.1"
   dependencies:
@@ -2435,7 +2435,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/extension-inject@npm:0.58.6, @polkadot/extension-inject@npm:^0.58.6":
+"@polkadot/extension-inject@npm:0.58.6":
   version: 0.58.6
   resolution: "@polkadot/extension-inject@npm:0.58.6"
   dependencies:
@@ -2450,6 +2450,24 @@ __metadata:
     "@polkadot/api": "*"
     "@polkadot/util": "*"
   checksum: 10c0/5fac31ae7c42e9e6c31b56787df02feef31f14968a50dc3605e6ec55c6522f2295c366790178e73ede22e754c629ce670732fb89d16dc80204ce3909d23f2f65
+  languageName: node
+  linkType: hard
+
+"@polkadot/extension-inject@npm:^0.58.7":
+  version: 0.58.7
+  resolution: "@polkadot/extension-inject@npm:0.58.7"
+  dependencies:
+    "@polkadot/api": "npm:^15.9.1"
+    "@polkadot/rpc-provider": "npm:^15.9.1"
+    "@polkadot/types": "npm:^15.9.1"
+    "@polkadot/util": "npm:^13.4.3"
+    "@polkadot/util-crypto": "npm:^13.4.3"
+    "@polkadot/x-global": "npm:^13.4.3"
+    tslib: "npm:^2.8.1"
+  peerDependencies:
+    "@polkadot/api": "*"
+    "@polkadot/util": "*"
+  checksum: 10c0/cd47043bc972c0c59ae1dcf81c532b53804d7c31a95aa6fa600fa64ce68763499e7aabe814cee53f921b49dfcd424e67620f49f04e99a03506bb531a85042f81
   languageName: node
   linkType: hard
 
@@ -2505,7 +2523,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/rpc-provider@npm:15.9.1, @polkadot/rpc-provider@npm:^15.8.1":
+"@polkadot/rpc-provider@npm:15.9.1, @polkadot/rpc-provider@npm:^15.8.1, @polkadot/rpc-provider@npm:^15.9.1":
   version: 15.9.1
   resolution: "@polkadot/rpc-provider@npm:15.9.1"
   dependencies:
@@ -2587,7 +2605,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/types@npm:15.9.1, @polkadot/types@npm:^15.8.1":
+"@polkadot/types@npm:15.9.1, @polkadot/types@npm:^15.8.1, @polkadot/types@npm:^15.9.1":
   version: 15.9.1
   resolution: "@polkadot/types@npm:15.9.1"
   dependencies:
