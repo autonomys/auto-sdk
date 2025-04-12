@@ -1,6 +1,6 @@
 {
   "name": "@autonomys/auto-utils",
-  "version": "1.4.15",
+  "version": "1.4.16",
   "license": "MIT",
   "main": "dist/index.js",
   "repository": {

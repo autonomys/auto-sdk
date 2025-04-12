@@ -1,6 +1,6 @@
 {
   "name": "@autonomys/user-session",
-  "version": "1.4.15",
+  "version": "1.4.16",
   "license": "MIT",
   "main": "dist/index.js",
   "repository": {
@@ -31,8 +31,8 @@
     "typescript": "^5.4.5"
   },
   "dependencies": {
-    "@autonomys/auto-dag-data": "^1.4.15",
-    "@autonomys/auto-drive": "^1.4.15",
+    "@autonomys/auto-dag-data": "^1.4.16",
+    "@autonomys/auto-drive": "^1.4.16",
     "ethers": "6.13.5"
   },
   "gitHead": "ed3fab7fc9ba68f905c7608c498e947ca6bedc50"
