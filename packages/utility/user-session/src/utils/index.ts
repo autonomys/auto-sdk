@@ -25,6 +25,7 @@ export const UserSession = <T>(options: UsersSessionOptions) => {
       fileName: options.fileName,
       password: options.password,
       showLogs: options.showLogs,
+      waitReceipt: options.waitReceipt,
     })
 
   return {
