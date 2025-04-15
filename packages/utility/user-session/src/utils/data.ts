@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { asyncIterableToBuffer } from '@autonomys/asynchronous'
 import { GetDataParams, GetDataResult, SaveDataParams, SaveDataResult } from '../types'
 import { userIdHash, userSessionCIDFromHash, userSessionCIDHash } from './hash'
 
@@ -29,20 +30,8 @@ export const get = async <T>(params: GetDataParams): Promise<GetDataResult<T>> =
 
     logger(params, `Downloading file: ${cid}`)
     const stream = await autoDriveApi.downloadFile(cid, params.password)
-
-    const chunks: Uint8Array[] = []
-    for await (const chunk of stream) {
-      chunks.push(chunk)
-    }
-
-    const allChunks = new Uint8Array(chunks.reduce((acc, chunk) => acc + chunk.length, 0))
-    let position = 0
-    for (const chunk of chunks) {
-      allChunks.set(chunk, position)
-      position += chunk.length
-    }
-
-    const jsonString = new TextDecoder().decode(allChunks)
+    const buffer = await asyncIterableToBuffer(stream)
+    const jsonString = new TextDecoder().decode(buffer)
     const data = JSON.parse(jsonString)
     logger(params, 'data-decoded:', data)
 

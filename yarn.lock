@@ -215,6 +215,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@autonomys/user-session@workspace:packages/utility/user-session"
   dependencies:
+    "@autonomys/asynchronous": "npm:^1.4.16"
     "@autonomys/auto-dag-data": "npm:^1.4.16"
     "@autonomys/auto-drive": "npm:^1.4.16"
     eslint: "npm:^9.23.0"
