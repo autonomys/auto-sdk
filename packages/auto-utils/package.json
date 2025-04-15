@@ -26,8 +26,7 @@
   ],
   "dependencies": {
     "@polkadot/api": "^15.8.1",
-    "@polkadot/extension-dapp": "^0.58.6",
-    "fs": "^0.0.1-security"
+    "@polkadot/extension-dapp": "^0.58.6"
   },
   "devDependencies": {
     "@polkadot/extension-inject": "^0.58.6",
