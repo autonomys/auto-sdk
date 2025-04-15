@@ -263,29 +263,7 @@ import { activateDomain } from '@autonomys/auto-utils'
 
 ---
 
-### 5. Data Storage
-
-#### **Save and Read Data**
-
-Save data to local storage or the file system and read it back:
-
-```typescript
-import { save, read } from '@autonomys/auto-utils'
-
-const key = 'myData'
-const value = { message: 'Hello, Autonomys!' }
-
-// Save data
-save(key, value)
-
-// Read data
-const retrievedValue = read(key)
-console.log(retrievedValue) // Outputs: { message: 'Hello, Autonomys!' }
-```
-
----
-
-### 6. Address Utilities
+### 5. Address Utilities
 
 #### **Convert Address Formats**
 
