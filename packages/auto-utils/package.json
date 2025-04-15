@@ -26,8 +26,7 @@
   ],
   "dependencies": {
     "@polkadot/api": "^15.8.1",
-    "@polkadot/extension-dapp": "^0.58.6",
-    "fs": "^0.0.1-security"
+    "@polkadot/extension-dapp": "^0.58.6"
   },
   "devDependencies": {
     "@polkadot/extension-inject": "^0.58.6",
@@ -39,9 +38,6 @@
     "prettier": "^3.5.3",
     "ts-jest": "^29.3.1",
     "typescript": "^5.4.5"
-  },
-  "browser": {
-    "fs": false
   },
   "gitHead": "e987dc2a244ce6097f0fa5c4803066c95a7985e3"
 }
