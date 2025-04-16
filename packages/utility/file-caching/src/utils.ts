@@ -1,13 +1,14 @@
 import fs from 'fs'
 import fsPromises from 'fs/promises'
 import path from 'path'
+import { v4 } from 'uuid'
 
 export const writeFile = async (
   filepath: string,
   data: AsyncIterable<Buffer>,
   ensureDirectoryExistance: boolean = true,
 ) => {
-  const tempFilePath = `${filepath}.tmp`
+  const tempFilePath = path.join(path.dirname(filepath), `${v4()}.tmp`)
 
   if (ensureDirectoryExistance) {
     await asyncEnsureDirectoryExists(path.dirname(tempFilePath))
