@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { asyncIterableToBuffer } from '@autonomys/asynchronous'
 import { GetDataParams, GetDataResult, SaveDataParams, SaveDataResult } from '../types'
 import { userIdHash, userSessionCIDFromHash, userSessionCIDHash } from './hash'
 
@@ -13,7 +14,10 @@ const logger = (
 export const get = async <T>(params: GetDataParams): Promise<GetDataResult<T>> => {
   const { autoDriveApi, contract, userId } = params
   try {
-    const userSession = await contract.getUserSession(userIdHash(userId))
+    logger(params, 'userId:', userId)
+    const hash = userIdHash(userId)
+    logger(params, 'hash:', hash)
+    const userSession = await contract.getUserSession(hash)
     logger(params, 'userSession:', userSession)
 
     if (!userSession || userSession === '0x') {
@@ -26,20 +30,8 @@ export const get = async <T>(params: GetDataParams): Promise<GetDataResult<T>> =
 
     logger(params, `Downloading file: ${cid}`)
     const stream = await autoDriveApi.downloadFile(cid, params.password)
-
-    const chunks: Uint8Array[] = []
-    for await (const chunk of stream) {
-      chunks.push(chunk)
-    }
-
-    const allChunks = new Uint8Array(chunks.reduce((acc, chunk) => acc + chunk.length, 0))
-    let position = 0
-    for (const chunk of chunks) {
-      allChunks.set(chunk, position)
-      position += chunk.length
-    }
-
-    const jsonString = new TextDecoder().decode(allChunks)
+    const buffer = await asyncIterableToBuffer(stream)
+    const jsonString = new TextDecoder().decode(buffer)
     const data = JSON.parse(jsonString)
     logger(params, 'data-decoded:', data)
 
@@ -54,17 +46,28 @@ export const get = async <T>(params: GetDataParams): Promise<GetDataResult<T>> =
 }
 
 export const save = async <T>(params: SaveDataParams<T>): Promise<SaveDataResult> => {
-  const { autoDriveApi, contract, userId, data } = params
+  const { autoDriveApi, contract, userId, data, waitReceipt } = params
 
   const options = params.password ? { password: params.password } : undefined
   const cid = await autoDriveApi.uploadObjectAsJSON(data, params.fileName, options)
   logger(params, 'CID:', cid)
 
-  const tx = await contract.setUserSession(userIdHash(userId), userSessionCIDHash(cid))
+  logger(params, 'userId:', userId)
+  const hash = userIdHash(userId)
+  logger(params, 'hash:', hash)
+
+  const cidHash = userSessionCIDHash(cid)
+  logger(params, 'cidHash:', cidHash)
+
+  const tx = await contract.setUserSession(hash, cidHash)
   logger(params, 'userSession:', tx)
 
-  const txHash = await tx.wait()
-  logger(params, 'txHash:', txHash)
+  let txHash = tx.hash
+  if (waitReceipt) {
+    const txReceipt = await tx.wait()
+    logger(params, 'txReceipt:', txReceipt)
+    txHash = txReceipt.transactionHash
+  }
 
   return {
     cid,

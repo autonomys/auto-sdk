@@ -5,6 +5,7 @@ export type ContractOptions = {
   address: string
   privateKey: string
   rpcUrl: string
+  waitReceipt?: boolean
 }
 
 export type DataOptions = {
@@ -36,6 +37,7 @@ export type SaveDataParams<T> = {
   fileName?: string
   password?: string
   showLogs?: boolean
+  waitReceipt?: boolean
 }
 
 export type SaveDataResult = {
