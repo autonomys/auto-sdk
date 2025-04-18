@@ -1,7 +1,7 @@
 {
   "name": "@autonomys/auto-mcp-servers",
   "packageManager": "yarn@4.7.0",
-  "version": "0.1.0",
+  "version": "0.1.1-alpha.2",
   "description": "Autonomys Network MCP servers",
   "repository": {
     "type": "git",
@@ -18,10 +18,12 @@
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "auto-drive-server": "./dist/bin/auto-drive.js"
+    "auto-drive-server": "./dist/bin/auto-drive.js",
+    "auto-mcp-servers": "./dist/bin/main.js"
   },
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "prepublishOnly": "npm run build && chmod +x ./dist/bin/*.js"
   },
   "keywords": [
     "mcp",
