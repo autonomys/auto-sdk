@@ -18,8 +18,8 @@
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "auto-mcp-servers": "./dist/bin/main.js",
-    "auto-drive-server": "./dist/bin/auto-drive.js"
+    "auto-drive-server": "./dist/bin/auto-drive.js",
+    "auto-mcp-servers": "./dist/bin/main.js"
   },
   "scripts": {
     "build": "tsc",

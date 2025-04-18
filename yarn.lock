@@ -119,6 +119,7 @@ __metadata:
     zod: "npm:^3.24.2"
   bin:
     auto-drive-server: ./dist/bin/auto-drive.js
+    auto-mcp-servers: ./dist/bin/main.js
   languageName: unknown
   linkType: soft
 
