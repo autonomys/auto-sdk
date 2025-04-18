@@ -37,7 +37,7 @@
     "jest": "^29.7.0",
     "protobufjs": "^7.4.0",
     "ts-jest": "^29.3.1",
-    "typescript": "^5.6.2"
+    "typescript": "^5.8.3"
   },
   "dependencies": {
     "@autonomys/asynchronous": "^1.4.18",
