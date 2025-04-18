@@ -199,7 +199,7 @@ __metadata:
     "@rollup/plugin-terser": "npm:^0.4.4"
     "@rollup/plugin-typescript": "npm:^12.1.2"
     "@types/mime-types": "npm:^2.1.4"
-    cache-manager: "npm:^6.4.1"
+    cache-manager: "npm:^6.4.2"
     jszip: "npm:^3.10.1"
     keyv: "npm:^5.3.2"
     mime-types: "npm:^3.0.1"
@@ -4814,12 +4814,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cache-manager@npm:^6.4.1":
-  version: 6.4.1
-  resolution: "cache-manager@npm:6.4.1"
+"cache-manager@npm:^6.4.2":
+  version: 6.4.2
+  resolution: "cache-manager@npm:6.4.2"
   dependencies:
-    keyv: "npm:^5.3.1"
-  checksum: 10c0/abed9b208ae466117b6cd5b943b68701da0d3894b13500e6579473f501158840d42d20334ece3bd2e692755ad0fb98897b203e92d6f73046b346d48ce077d223
+    keyv: "npm:^5.3.2"
+  checksum: 10c0/18f65665a15b890d150976c1c320134b21629343cad553d7e3c89f3d395c535617da005383fb4429d71a1a03924208549d10d92d63a7062a8562326ce597e85b
   languageName: node
   linkType: hard
 
@@ -9376,7 +9376,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"keyv@npm:^5.3.1, keyv@npm:^5.3.2":
+"keyv@npm:^5.3.2":
   version: 5.3.2
   resolution: "keyv@npm:5.3.2"
   dependencies:
