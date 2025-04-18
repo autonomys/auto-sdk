@@ -21,22 +21,14 @@ More servers and tools will be coming soon!
 ### With Claude Desktop
 
 1. Install Claude Desktop
-2. Install the Auto Drive server globally:
-
-```bash
-npm install -g @autonomys/auto-mcp-servers
-# or
-yarn global add @autonomys/auto-mcp-servers
-```
-
-3. Edit your `claude_desktop_config.json` file:
+2. Edit your `claude_desktop_config.json` file:
 
 ```json
 {
   "mcpServers": {
     "auto-drive": {
       "command": "npx",
-      "args": ["auto-drive-server"],
+      "args": ["-y", "@autonomys/auto-mcp-servers", "auto-drive"],
       "env": { "AUTO_DRIVE_API_KEY": "your-api-key" }
     }
   }
