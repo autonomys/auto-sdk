@@ -11,11 +11,6 @@ const uploadOptions: UploadFileOptions | undefined = ENCRYPTION_PASSWORD
 
 const autoDriveApi = createAutoDriveApi({ network: NETWORK, apiKey: AUTO_DRIVE_API_KEY })
 
-const uploadObject = async (filename: string, data: unknown) => {
-  const cid = await autoDriveApi.uploadObjectAsJSON({ data }, filename, uploadOptions)
-  return cid
-}
-
 export const autoDriveServer = new McpServer({ name: 'Auto Drive', version: '0.1.0' })
 
 autoDriveServer.tool(
@@ -35,7 +30,7 @@ autoDriveServer.tool(
     if (!AUTO_DRIVE_API_KEY) {
       throw new Error('AUTO_DRIVE_API_KEY environment variable is not set')
     }
-    const cid = await uploadObject(filename, data)
+    const cid = await autoDriveApi.uploadObjectAsJSON({ data }, filename, uploadOptions)
     return { content: [{ type: 'text', text: `Object uploaded successfully with ${cid}` }] }
   },
 )
