@@ -95,10 +95,15 @@ export const createAutoDriveHandlers = (
     },
     searchObjectsHandler: async ({ query }: { query: string }): Promise<CallToolResult> => {
       const summaries = await autoDriveApi.searchByNameOrCID(query)
+      const results = summaries.map((s) => ({
+        name: s.name,
+        cid: s.headCid,
+        type: s.type,
+        size: s.size,
+        ...(s.type === 'file' && { mimeType: s.mimeType }),
+      }))
       return {
-        content: [
-          { type: 'text', text: `Objects found: ${summaries.map((s) => s.name).join(', ')}` },
-        ],
+        content: [{ type: 'text', text: JSON.stringify({ results }, null, 2) }],
       }
     },
   }
