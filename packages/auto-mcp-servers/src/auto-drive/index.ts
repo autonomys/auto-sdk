@@ -14,7 +14,7 @@ const ENCRYPTION_PASSWORD = process.env.ENCRYPTION_PASSWORD
 const { uploadObjectHandler, downloadObjectHandler, searchObjectsHandler } =
   createAutoDriveHandlers(AUTO_DRIVE_API_KEY, NETWORK, ENCRYPTION_PASSWORD)
 
-export const autoDriveServer = new McpServer({ name: 'Auto Drive', version: '0.1.1' })
+export const autoDriveServer = new McpServer({ name: 'Auto Drive', version: '0.1.2' })
 
 autoDriveServer.tool(
   'upload-object',
