@@ -16,7 +16,7 @@ export const autoDriveServer = new McpServer({ name: 'Auto Drive', version: '0.1
 
 autoDriveServer.tool(
   'upload-object',
-  'Upload an object permanently to Auto Drive, any objects uploaded here will be permanently available onchain. This is useful for storing data that you want to keep forever.',
+  'Upload an object permanently to the Autonomys Network using Auto Drive, any objects uploaded here will be permanently available onchain. This is useful for storing data that you want to keep forever.',
   {
     filename: z.string().describe('The filename to save the object as.'),
     data: z.record(z.string(), z.any()).describe(
@@ -38,7 +38,7 @@ autoDriveServer.tool(
 
 autoDriveServer.tool(
   'download-object',
-  'Download a text-based object (text/*, application/json) from Auto Drive using its Content Identifier (CID).',
+  'Download a text-based object (text/*, application/json) from the Autonomys Network using Auto Drive using its Content Identifier (CID).',
   {
     cid: z.string().describe('The Content Identifier (CID) of the object to download.'),
   } as any,
@@ -116,6 +116,46 @@ autoDriveServer.tool(
       return {
         isError: true,
         content: [{ type: 'text', text: `Error downloading object: ${errorMessage}` }],
+      }
+    }
+  },
+)
+
+autoDriveServer.tool(
+  'search-objects',
+  'Search for objects on the Autonomys Network using Auto Drive by name or CID.',
+  {
+    query: z.string().describe('The name or CID fragment to search for.'),
+  } as any,
+  async ({ query }, _extra) => {
+    if (!AUTO_DRIVE_API_KEY) {
+      throw new Error('AUTO_DRIVE_API_KEY environment variable is not set')
+    }
+    try {
+      const results = await autoDriveApi.searchByNameOrCID(query)
+
+      if (results.length === 0) {
+        return {
+          content: [{ type: 'text', text: `No objects found matching query: "${query}"` }],
+        }
+      }
+
+      const resultText = results
+        .map(
+          (summary) =>
+            `- Name: ${summary.name || 'N/A'}\n  CID: ${summary.headCid}\n  Type: ${summary.type}\n  Size: ${summary.size} bytes`,
+        )
+        .join('\n\n')
+
+      return {
+        content: [{ type: 'text', text: `Found ${results.length} object(s):\n\n${resultText}` }],
+      }
+    } catch (error: any) {
+      console.error(`Failed to search objects with query "${query}":`, error)
+      const errorMessage = error.message || 'Unknown error occurred during search.'
+      return {
+        isError: true,
+        content: [{ type: 'text', text: `Error searching objects: ${errorMessage}` }],
       }
     }
   },
