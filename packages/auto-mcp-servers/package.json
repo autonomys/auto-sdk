@@ -1,7 +1,7 @@
 {
   "name": "@autonomys/auto-mcp-servers",
   "packageManager": "yarn@4.7.0",
-  "version": "0.1.1-alpha.2",
+  "version": "0.1.2",
   "description": "Autonomys Network MCP servers",
   "repository": {
     "type": "git",
@@ -23,7 +23,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "prepublishOnly": "npm run build && chmod +x ./dist/bin/*.js"
+    "prepublishOnly": "npm run build"
   },
   "keywords": [
     "mcp",

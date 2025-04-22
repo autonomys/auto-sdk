@@ -1,26 +1,24 @@
-import { createAutoDriveApi, UploadFileOptions } from '@autonomys/auto-drive'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
+import { CallToolResult } from '@modelcontextprotocol/sdk/types.js'
 import { z } from 'zod'
+import { createAutoDriveHandlers } from './handlers.js'
 
-const AUTO_DRIVE_API_KEY = process.env.AUTO_DRIVE_API_KEY
+const AUTO_DRIVE_API_KEY =
+  process.env.AUTO_DRIVE_API_KEY ??
+  (() => {
+    throw new Error('AUTO_DRIVE_API_KEY environment variable is not set')
+  })()
 const NETWORK = process.env.NETWORK === 'taurus' ? 'taurus' : 'mainnet'
 const ENCRYPTION_PASSWORD = process.env.ENCRYPTION_PASSWORD
-const uploadOptions: UploadFileOptions | undefined = ENCRYPTION_PASSWORD
-  ? { password: ENCRYPTION_PASSWORD }
-  : undefined
 
-const autoDriveApi = createAutoDriveApi({ network: NETWORK, apiKey: AUTO_DRIVE_API_KEY })
+const { uploadObjectHandler, downloadObjectHandler, searchObjectsHandler } =
+  createAutoDriveHandlers(AUTO_DRIVE_API_KEY, NETWORK, ENCRYPTION_PASSWORD)
 
-const uploadObject = async (filename: string, data: unknown) => {
-  const cid = await autoDriveApi.uploadObjectAsJSON({ data }, filename, uploadOptions)
-  return cid
-}
-
-export const autoDriveServer = new McpServer({ name: 'Auto Drive', version: '0.1.0' })
+export const autoDriveServer = new McpServer({ name: 'Auto Drive', version: '0.1.2' })
 
 autoDriveServer.tool(
   'upload-object',
-  'Upload an object permanently to Auto Drive, any objects uploaded here will be permanently available onchain. This is useful for storing data that you want to keep forever.',
+  'Upload an object permanently to the Autonomys Network using Auto Drive, any objects uploaded here will be permanently available onchain. This is useful for storing data that you want to keep forever.',
   {
     filename: z.string().describe('The filename to save the object as.'),
     data: z.record(z.string(), z.any()).describe(
@@ -31,11 +29,29 @@ autoDriveServer.tool(
       `,
     ),
   } as any,
-  async ({ filename, data }, extra) => {
-    if (!AUTO_DRIVE_API_KEY) {
-      throw new Error('AUTO_DRIVE_API_KEY environment variable is not set')
-    }
-    const cid = await uploadObject(filename, data)
-    return { content: [{ type: 'text', text: `Object uploaded successfully with ${cid}` }] }
+  async ({ filename, data }, _extra): Promise<CallToolResult> => {
+    return await uploadObjectHandler({ filename, data })
+  },
+)
+
+autoDriveServer.tool(
+  'download-object',
+  'Download a text-based object (text/*, application/json) from the Autonomys Network using Auto Drive using its Content Identifier (CID).',
+  {
+    cid: z.string().describe('The Content Identifier (CID) of the object to download.'),
+  } as any,
+  async ({ cid }, _extra): Promise<CallToolResult> => {
+    return await downloadObjectHandler({ cid })
+  },
+)
+
+autoDriveServer.tool(
+  'search-objects',
+  'Search for objects on the Autonomys Network using Auto Drive by name or CID.',
+  {
+    query: z.string().describe('The name or CID fragment to search for.'),
+  } as any,
+  async ({ query }, _extra): Promise<CallToolResult> => {
+    return await searchObjectsHandler({ query })
   },
 )

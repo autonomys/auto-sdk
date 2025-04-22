@@ -12,7 +12,9 @@ The Auto Drive server exposes functionality from the `@autonomys/auto-drive` pac
 
 The Auto Drive server provides the following tools:
 
-- `uploadObject`: Upload an object to the Autonomys network.
+- `upload-object`: Upload an object (as JSON data) to the Autonomys network.
+- `download-object`: Download a text-based object (`text/*` or `application/json`) from the Autonomys network using its CID.
+- `search-objects`: Search for objects on the Autonomys network by name or CID fragment. Returns a JSON object containing an array of results, each including the object's name, CID, type, size, and mimeType (for files).
 
 More servers and tools will be coming soon!
 
@@ -29,7 +31,11 @@ More servers and tools will be coming soon!
     "auto-drive": {
       "command": "npx",
       "args": ["-y", "@autonomys/auto-mcp-servers", "auto-drive"],
-      "env": { "AUTO_DRIVE_API_KEY": "your-api-key" }
+      "env": {
+        "AUTO_DRIVE_API_KEY": "your-api-key",
+        "ENCRYPTION_PASSWORD": "my-password (optional)",
+        "NETWORK": "mainnet or taurus (optional, defaults to mainnet)"
+      }
     }
   }
 }
