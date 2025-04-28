@@ -24,7 +24,7 @@ export const createExperienceManager = async ({
 }: ExperienceManagerOptions): Promise<ExperienceManager> => {
   const autoDriveApi = createAutoDriveApi(autoDriveApiOptions)
   const wallet = new ethers.Wallet(walletOptions.privateKey)
-  const cidManager = await createCidManager(agentOptions.agentPath, walletOptions)
+  const cidManager = await createCidManager(agentOptions, walletOptions)
 
   /**
    * Saves the provided agent experience data.

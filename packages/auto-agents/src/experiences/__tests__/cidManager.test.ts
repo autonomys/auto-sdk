@@ -133,7 +133,10 @@ describe('createCidManager', () => {
     mockEthers.JsonRpcProvider.mockReturnValue(currentMockProvider)
 
     // Act
-    const cidManager = await createCidManager(agentPath, walletOptions)
+    const cidManager = await createCidManager(
+      { agentPath: agentPath, agentName: 'TestAgent' },
+      walletOptions,
+    )
 
     // Assert
     expect(mockEthers.JsonRpcProvider).toHaveBeenCalledWith(walletOptions.rpcUrl)
@@ -200,7 +203,10 @@ describe('createCidManager', () => {
     currentMockContract.queryFilter.mockResolvedValue([mockEvent])
 
     // Act
-    const cidManager = await createCidManager(agentPath, walletOptions)
+    const cidManager = await createCidManager(
+      { agentPath: agentPath, agentName: 'TestAgent' },
+      walletOptions,
+    )
 
     // Assert
     // Verify validation steps were called
@@ -241,7 +247,10 @@ describe('createCidManager', () => {
     currentMockContract.queryFilter.mockResolvedValue([])
 
     // Act
-    const cidManager = await createCidManager(agentPath, walletOptions)
+    const cidManager = await createCidManager(
+      { agentPath: agentPath, agentName: 'TestAgent' },
+      walletOptions,
+    )
 
     // Assert
     // Verify validation steps were called
@@ -273,7 +282,10 @@ describe('createCidManager', () => {
     currentMockContract.queryFilter.mockResolvedValue([])
 
     // Act
-    const cidManager = await createCidManager(agentPath, walletOptions)
+    const cidManager = await createCidManager(
+      { agentPath: agentPath, agentName: 'TestAgent' },
+      walletOptions,
+    )
 
     // Assert
     // Verify validation steps were called (or relevant parts)
@@ -307,7 +319,10 @@ describe('createCidManager', () => {
     currentMockContract.queryFilter.mockRejectedValue(validationError)
 
     // Act
-    const cidManager = await createCidManager(agentPath, walletOptions)
+    const cidManager = await createCidManager(
+      { agentPath: agentPath, agentName: 'TestAgent' },
+      walletOptions,
+    )
 
     // Assert
     // Verify validation steps were attempted
@@ -339,7 +354,10 @@ describe('createCidManager', () => {
   it('getLastMemoryCid (online) should return CID from local file if it exists', async () => {
     // Arrange
     // Standard online initialization (local file exists and is valid by default setup)
-    const cidManager = await createCidManager(agentPath, walletOptions)
+    const cidManager = await createCidManager(
+      { agentPath: agentPath, agentName: 'TestAgent' },
+      walletOptions,
+    )
     // Reset calls from initialization
     jest.clearAllMocks()
     // Re-apply mocks for fs read if cleared
@@ -366,7 +384,10 @@ describe('createCidManager', () => {
 
   it('getLastMemoryCid (online) should fetch from blockchain if local file missing, save locally, and return CID', async () => {
     // Arrange
-    const cidManager = await createCidManager(agentPath, walletOptions)
+    const cidManager = await createCidManager(
+      { agentPath: agentPath, agentName: 'TestAgent' },
+      walletOptions,
+    )
     jest.clearAllMocks()
 
     // 1. Mock local file does NOT exist
@@ -406,7 +427,10 @@ describe('createCidManager', () => {
 
   it('getLastMemoryCid (online) should return undefined if no local or blockchain hash exists', async () => {
     // Arrange
-    const cidManager = await createCidManager(agentPath, walletOptions)
+    const cidManager = await createCidManager(
+      { agentPath: agentPath, agentName: 'TestAgent' },
+      walletOptions,
+    )
     jest.clearAllMocks()
 
     // 1. Mock local file does NOT exist
@@ -437,7 +461,10 @@ describe('createCidManager', () => {
 
   it('getLastMemoryCid (online) should return undefined if blockchain fetch fails', async () => {
     // Arrange
-    const cidManager = await createCidManager(agentPath, walletOptions)
+    const cidManager = await createCidManager(
+      { agentPath: agentPath, agentName: 'TestAgent' },
+      walletOptions,
+    )
     jest.clearAllMocks()
     const fetchError = new Error('Contract read error')
 
@@ -471,7 +498,10 @@ describe('createCidManager', () => {
 
   it('saveLastMemoryCid (online) should save locally, call contract, and return receipt on success', async () => {
     // Arrange
-    const cidManager = await createCidManager(agentPath, walletOptions)
+    const cidManager = await createCidManager(
+      { agentPath: agentPath, agentName: 'TestAgent' },
+      walletOptions,
+    )
     jest.clearAllMocks()
 
     // Re-apply mocks potentially cleared if setupMockEthers changes
@@ -515,7 +545,10 @@ describe('createCidManager', () => {
 
   it('saveLastMemoryCid (online) should save locally but return undefined if contract call fails', async () => {
     // Arrange
-    const cidManager = await createCidManager(agentPath, walletOptions)
+    const cidManager = await createCidManager(
+      { agentPath: agentPath, agentName: 'TestAgent' },
+      walletOptions,
+    )
     jest.clearAllMocks()
     const contractError = new Error('Transaction failed')
 

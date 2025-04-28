@@ -95,6 +95,10 @@ export type AgentOptions = {
   agentName: string
   /** The file system path where the agent's data (like the last CID file) is stored. */
   agentPath: string
+  /** The directory in the agent's path where the agent's memories are stored. */
+  memoriesDirectory?: string
+  /** The filename of the file in the agent's memories directory where the last CID is stored. */
+  lastMemoryCidFilename?: string
   /** The version identifier for the agent software. Defaults if not provided. */
   agentVersion?: string
 }
