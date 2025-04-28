@@ -58,6 +58,8 @@ const options: ExperienceManagerOptions = {
   agentOptions: {
     agentName: 'MyCoolAgent',
     agentPath: '/path/to/agent/storage', // Directory to store local cache (e.g., './agent-data')
+    memoriesDirectory: 'memories', // Directory to store memories (e.g., './memories')
+    lastMemoryCidFilename: 'last-memory-cid.json', // Filename to store the last memory CID (e.g., './last-memory-cid.json')
     agentVersion: '1.0.0',
   },
 }
@@ -86,14 +88,25 @@ initializeManager()
 ```typescript
 // Assuming 'experienceManager' is initialized as above
 
-const currentAgentState = {
-  memory: ['thought 1', 'thought 2'],
-  lastAction: 'calculated optimal route',
+const currentAgentExperience = {
+  coolActionTaken:
+    'calculated optimal route to the moon, mars, and jupiter including a stop at saturn',
+  interestingThoughts: [
+    'I should probably check the weather on the moon before I go',
+    'I wonder if the moon is made of cheese',
+  ],
+  usefulData: {
+    moonTemperature: 100,
+    marsTemperature: 200,
+    jupiterTemperature: 300,
+    saturnTemperature: 400,
+  },
+  intelligentReasoning: 'The moon is made of cheese because it is a delicious food.',
 }
 
-const saveState = async () => {
+const saveExperience = async () => {
   try {
-    const result = await experienceManager.saveExperience(currentAgentState)
+    const result = await experienceManager.saveExperience(currentAgentExperience)
     console.log('Experience saved successfully!')
     console.log('New CID:', result.cid)
     console.log('Previous CID:', result.previousCid)
@@ -103,7 +116,7 @@ const saveState = async () => {
   }
 }
 
-saveState()
+saveExperience()
 ```
 
 ### Retrieving an Experience
@@ -113,7 +126,7 @@ You can retrieve the latest experience by first getting its CID from the `CidMan
 ```typescript
 // Assuming 'experienceManager' is initialized
 
-const retrieveLatestState = async () => {
+const retrieveLatestExperience = async () => {
   try {
     // Get the CID of the latest saved experience
     const latestCid = await experienceManager.cidManager.getLastMemoryCid()
@@ -128,14 +141,16 @@ const retrieveLatestState = async () => {
 
     console.log('Experience retrieved successfully:')
     console.log('Header:', experience.header)
+    console.log('Previous Experience CID:', experience.header.previousCid) // This could be used to create a chain of experiences
     console.log('Data:', experience.data)
+
     // TODO: Verify signature: experience.signature
   } catch (error) {
     console.error('Failed to retrieve experience:', error)
   }
 }
 
-retrieveLatestState()
+retrieveLatestExperience()
 ```
 
 You can also retrieve any specific experience if you know its CID.
