@@ -47,6 +47,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-agents@workspace:packages/auto-agents"
   dependencies:
+    "@autonomys/auto-dag-data": "npm:^1.4.18"
     "@autonomys/auto-drive": "npm:^1.4.18"
     "@types/jest": "npm:^29.5.14"
     eslint: "npm:^9.23.0"
