@@ -42,14 +42,14 @@
     "@types/mime-types": "^2.1.4",
     "rollup-plugin-jscc": "^2.0.0",
     "tslib": "^2.8.1",
-    "typescript": "^5.6.3"
+    "typescript": "^5.8.3"
   },
   "dependencies": {
     "@autonomys/asynchronous": "^1.4.18",
     "@autonomys/auto-dag-data": "^1.4.18",
     "@autonomys/auto-utils": "^1.4.18",
     "@keyvhq/sqlite": "^2.1.7",
-    "cache-manager": "^6.4.1",
+    "cache-manager": "^6.4.2",
     "jszip": "^3.10.1",
     "keyv": "^5.3.2",
     "mime-types": "^3.0.1",
