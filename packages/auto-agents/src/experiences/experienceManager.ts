@@ -2,12 +2,7 @@ import { createAutoDriveApi } from '@autonomys/auto-drive'
 import { ethers } from 'ethers'
 import { createCidManager } from './cidManager.js'
 import { downloadExperience, uploadExperience } from './experienceStorage.js'
-import {
-  ExperienceHeader,
-  ExperienceManager,
-  ExperienceManagerOptions,
-  ExperienceSaveResult,
-} from './types.js'
+import { ExperienceManager, ExperienceManagerOptions, ExperienceSaveResult } from './types.js'
 import { retryWithBackoff } from './utils.js'
 
 /**
