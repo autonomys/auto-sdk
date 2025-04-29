@@ -1,9 +1,9 @@
 import { createAutoDriveApi } from '@autonomys/auto-drive'
 import { ethers } from 'ethers'
-import { createCidManager } from './cidManager.js'
-import { downloadExperience, uploadExperience } from './experienceStorage.js'
-import { ExperienceManager, ExperienceManagerOptions, ExperienceSaveResult } from './types.js'
-import { retryWithBackoff } from './utils.js'
+import { createCidManager } from './cidManager'
+import { downloadExperience, uploadExperience } from './experienceStorage'
+import { ExperienceManager, ExperienceManagerOptions, ExperienceSaveResult } from './types'
+import { retryWithBackoff } from './utils'
 
 /**
  * Creates an ExperienceManager instance for saving and retrieving agent experiences.

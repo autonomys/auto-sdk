@@ -7,7 +7,7 @@ import {
 import { ethers } from 'ethers'
 import * as fs from 'fs'
 import { createCidManager } from '../cidManager'
-import * as utils from '../utils' // Assuming utils.ts exports retryWithBackoff
+import * as utils from '../utils'
 
 // Mock dependencies
 jest.mock('ethers')

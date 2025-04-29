@@ -1,6 +1,6 @@
 import { AutoDriveApi } from '@autonomys/auto-drive'
 import { ethers } from 'ethers'
-import { AgentExperience, ExperienceHeader, ExperienceUploadOptions } from './types.js'
+import { AgentExperience, ExperienceHeader, ExperienceUploadOptions } from './types'
 
 export const uploadExperience = async (
   autoDriveApi: AutoDriveApi,

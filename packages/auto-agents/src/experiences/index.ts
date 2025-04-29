@@ -1,5 +1,5 @@
 // Re-export the main factory function
-export { createExperienceManager } from './experienceManager.js'
+export { createExperienceManager } from './experienceManager'
 
 // Re-export relevant types for consumers of this package
 export type {
