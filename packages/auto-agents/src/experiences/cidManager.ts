@@ -7,9 +7,9 @@ import {
 import { ethers } from 'ethers'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
-import { MEMORY_ABI } from './abi/memory'
-import type { AgentOptions, CidManager, EvmOptions, StoredHash } from './types'
-import { retryWithBackoff } from './utils'
+import { MEMORY_ABI } from './abi/memory.js'
+import type { AgentOptions, CidManager, EvmOptions, StoredHash } from './types.js'
+import { retryWithBackoff } from './utils.js'
 
 /**
  * Converts a bytes32 hex string (presumed Blake3 hash) from the contract to a CID string.

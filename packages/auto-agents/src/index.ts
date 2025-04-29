@@ -1,1 +1,1 @@
-export * from './experiences'
+export * from './experiences/index.js'
