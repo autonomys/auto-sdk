@@ -1,9 +1,9 @@
 import { createAutoDriveApi } from '@autonomys/auto-drive'
 import { ethers } from 'ethers'
-import { createCidManager } from './cidManager'
-import { downloadExperience, uploadExperience } from './experienceStorage'
-import { ExperienceManager, ExperienceManagerOptions, ExperienceSaveResult } from './types'
-import { retryWithBackoff } from './utils'
+import { createCidManager } from './cidManager.js'
+import { downloadExperience, uploadExperience } from './experienceStorage.js'
+import { ExperienceManager, ExperienceManagerOptions, ExperienceSaveResult } from './types.js'
+import { retryWithBackoff } from './utils.js'
 
 /**
  * Creates an ExperienceManager instance for saving and retrieving agent experiences.
@@ -70,7 +70,7 @@ export const createExperienceManager = async ({
         return experience
       },
       {
-        shouldRetry: (error) => {
+        shouldRetry: (error: unknown) => {
           const errorMessage = error instanceof Error ? error.message : String(error)
           return !(
             errorMessage.includes('Not Found') || errorMessage.includes('incorrect header check')
