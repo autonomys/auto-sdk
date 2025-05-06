@@ -2,7 +2,7 @@ import { Keyv } from 'keyv'
 import { Stream } from 'stream'
 
 export type FileResponse = {
-  data: AsyncIterable<Buffer>
+  data: Stream
   mimeType?: string
   filename?: string
   size?: bigint
