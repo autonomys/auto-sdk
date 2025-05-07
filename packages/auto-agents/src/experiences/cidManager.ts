@@ -162,14 +162,10 @@ export const createCidManager = async (
     mkdirSync(memoriesPath, { recursive: true })
   }
 
-  let provider
-  try {
-    provider = new ethers.JsonRpcProvider(walletOptions.rpcUrl)
-    await provider.getNetwork() // Test connection
-  } catch {
-    // Return offline-only implementation if provider fails
+  // Helper function to create offline-only implementation
+  const createOfflineImplementation = (message: string): CidManager => {
     return {
-      localHashStatus: { message: 'Using local storage only' },
+      localHashStatus: { message },
       getLastMemoryCid: async () => {
         const localHash = getLocalHash(localHashLocation)
         return localHash ? hashToCid(localHash) : undefined
@@ -183,8 +179,26 @@ export const createCidManager = async (
     }
   }
 
+  // Return offline-only implementation if contractInfo is undefined
+  if (!walletOptions.contractInfo) {
+    return createOfflineImplementation('Using local storage only - No contract info provided')
+  }
+
+  let provider
+  try {
+    provider = new ethers.JsonRpcProvider(walletOptions.contractInfo.rpcUrl)
+    await provider.getNetwork() // Test connection
+  } catch {
+    // Return offline-only implementation if provider fails
+    return createOfflineImplementation('Using local storage only - Provider connection failed')
+  }
+
   const wallet = new ethers.Wallet(walletOptions.privateKey, provider)
-  const contract = new ethers.Contract(walletOptions.contractAddress, MEMORY_ABI, wallet)
+  const contract = new ethers.Contract(
+    walletOptions.contractInfo.contractAddress,
+    MEMORY_ABI,
+    wallet,
+  )
 
   const localHashStatus = await validateLocalHash(
     provider,

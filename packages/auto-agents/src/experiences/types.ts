@@ -81,10 +81,13 @@ export type ExperienceUploadOptions = {
 export type EvmOptions = {
   /** The private key of the wallet used for signing or transactions. */
   privateKey: string
-  /** The URL of the EVM-compatible JSON-RPC endpoint. */
-  rpcUrl: string
-  /** The address of the smart contract to interact with (e.g., for storing CIDs). */
-  contractAddress: string
+  /** Information about the smart contract to interact with (e.g., for storing CIDs). */
+  contractInfo?: {
+    /** The URL of the EVM-compatible JSON-RPC endpoint. */
+    rpcUrl: string
+    /** The address of the smart contract to interact with (e.g., for storing CIDs). */
+    contractAddress: string
+  }
 }
 
 /**
