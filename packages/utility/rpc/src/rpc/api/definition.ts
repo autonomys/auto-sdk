@@ -132,5 +132,48 @@ export const createApiDefinition = <S extends ApiDefinition>(serverDefinition: S
     }
   }
 
-  return { createClient, createServer }
+  const createHttpClient = <Client extends ApiClientType<S>>(baseUrl: string) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const apiMethods = Object.entries(serverDefinition.methods).map(([method, handler]) => {
+      return [
+        method,
+        async (params: Parameters<DefinitionTypeOutput<typeof handler.params>>[0]) => {
+          const result = await fetch(`${baseUrl}/${method}`, {
+            method: 'POST',
+            body: JSON.stringify({
+              jsonrpc: '2.0',
+              method,
+              params,
+              id: Math.floor(Math.random() * 65535),
+            }),
+          })
+
+          if (!result.ok) {
+            throw new Error(`HTTP error! status: ${result.status} (${result.statusText})`)
+          }
+
+          const body = await result.json()
+
+          if (body.error) {
+            throw new RpcError(body.error.message, body.error.code)
+          }
+
+          if (isZodType(serverDefinition.methods[method].returns)) {
+            const result = serverDefinition.methods[method].returns.safeParse(body.result)
+            if (!result.success) {
+              throw new RpcError(result.error.message, RpcError.Code.InvalidParams)
+            }
+
+            return result.data
+          } else {
+            return body.result
+          }
+        },
+      ]
+    })
+
+    return Object.fromEntries(apiMethods) as Client
+  }
+
+  return { createClient, createServer, createHttpClient }
 }

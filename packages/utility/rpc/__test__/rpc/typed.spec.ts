@@ -11,7 +11,7 @@ describe('rpc/definition', () => {
   let httpServer: http.Server
   let connection: connection
 
-  const { createClient, createServer } = createApiDefinition({
+  const { createClient, createServer, createHttpClient } = createApiDefinition({
     methods: {
       test: {
         params: z.object({ name: z.string() }),
@@ -187,11 +187,8 @@ describe('rpc/definition', () => {
   })
 
   it('should handle a fetch http request', async () => {
-    const response = await fetch(`http://localhost:${TEST_PORT}`, {
-      method: 'POST',
-      body: JSON.stringify({ jsonrpc: '2.0', method: 'test', params: { name: 'test' }, id: 1 }),
-    })
-    const body = await response.json()
-    expect(body).toEqual({ jsonrpc: '2.0', id: 1, result: { name: 'test' } })
+    const client = createHttpClient(`http://localhost:${TEST_PORT}`)
+    const result = await client.test({ name: 'test' })
+    expect(result).toEqual({ name: 'test' })
   })
 })
