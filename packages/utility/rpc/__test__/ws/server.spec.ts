@@ -1,6 +1,6 @@
 import http from 'http'
 import { createWsClient, WsClient } from '../../src'
-import { encodeMessage } from '../../src/utils/websocket'
+import { encodeMessageData } from '../../src/utils/websocket'
 import { createWsServer } from '../../src/ws/server'
 import { createBaseHttpServer, TEST_PORT } from '../utils'
 
@@ -57,7 +57,7 @@ describe('Server', () => {
         callbacks: {
           onEveryOpen: async () => {
             resolve(client)
-            client.send(encodeMessage('test'))
+            client.send(encodeMessageData('test'))
           },
         },
       })

@@ -60,7 +60,8 @@ export type RpcClientResponder = (message: MessageResponseQuery) => void
 export type ClientRPCListener = ((message: Message) => void) | ((message: MessageResponse) => void)
 
 export type RpcParams = {
-  connection: connection
+  send: (msg: string) => void
+  connection?: connection
   messageId?: number
 }
 
@@ -75,7 +76,8 @@ export type RpcHandler<I, O extends RpcResponse> = {
 }
 
 export type TypedRpcParams<S extends ApiDefinition> = {
-  connection: connection
+  send: (msg: string) => void
+  connection?: connection
   messageId?: number
   notificationClient: ApiServerNotifications<S>
 }

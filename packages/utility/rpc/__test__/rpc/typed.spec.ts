@@ -47,7 +47,10 @@ describe('rpc/definition', () => {
         test: (params, { connection: _connection }) => {
           // Workaround to get the connection object
           // for the notification test
-          connection = _connection
+          if (_connection) {
+            connection = _connection
+          }
+
           return {
             name: params.name,
           }
@@ -181,5 +184,14 @@ describe('rpc/definition', () => {
 
     await new Promise((resolve) => setTimeout(resolve, 100))
     expect(mock.mock.calls[0][0]).toEqual('test')
+  })
+
+  it('should handle a fetch http request', async () => {
+    const response = await fetch(`http://localhost:${TEST_PORT}`, {
+      method: 'POST',
+      body: JSON.stringify({ jsonrpc: '2.0', method: 'test', params: { name: 'test' }, id: 1 }),
+    })
+    const body = await response.json()
+    expect(body).toEqual({ jsonrpc: '2.0', id: 1, result: { name: 'test' } })
   })
 })

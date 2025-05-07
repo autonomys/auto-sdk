@@ -69,10 +69,15 @@ export const createWsServer = ({
     internalHttpServer.listen(port, cb)
   }
 
+  const onHttpRequest = (fn: (req: http.IncomingMessage, res: http.ServerResponse) => void) => {
+    httpServer.on('request', fn)
+  }
+
   return {
     broadcastMessage,
     onMessage,
     close,
     listen,
+    onHttpRequest,
   }
 }

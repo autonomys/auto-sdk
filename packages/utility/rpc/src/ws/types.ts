@@ -1,3 +1,4 @@
+import http from 'http'
 import Websocket from 'websocket'
 
 export interface WsServer {
@@ -5,6 +6,7 @@ export interface WsServer {
   onMessage: (cb: WsMessageCallback) => void
   close: () => void
   listen: (port: number, cb?: () => void) => void
+  onHttpRequest: (fn: (req: http.IncomingMessage, res: http.ServerResponse) => void) => void
 }
 
 export type WsMessageCallback = (
