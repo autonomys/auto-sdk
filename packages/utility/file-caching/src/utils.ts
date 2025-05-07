@@ -1,11 +1,12 @@
 import fs from 'fs'
 import fsPromises from 'fs/promises'
 import path from 'path'
+import { Stream } from 'stream'
 import { v4 } from 'uuid'
 
 export const writeFile = async (
   filepath: string,
-  data: AsyncIterable<Buffer>,
+  data: Stream,
   ensureDirectoryExistance: boolean = true,
 ) => {
   const tempFilePath = path.join(path.dirname(filepath), `${v4()}.tmp`)
