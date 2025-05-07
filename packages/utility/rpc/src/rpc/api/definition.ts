@@ -1,4 +1,5 @@
 import Websocket from 'websocket'
+import { randomId } from '../../utils'
 import { createRpcClient } from '../client'
 import { createRpcServer } from '../server'
 import { Message, MessageQuery, RpcParams, TypedRpcNotificationHandler } from '../types'
@@ -144,7 +145,7 @@ export const createApiDefinition = <S extends ApiDefinition>(serverDefinition: S
               jsonrpc: '2.0',
               method,
               params,
-              id: Math.floor(Math.random() * 65535),
+              id: randomId(),
             }),
           })
 
