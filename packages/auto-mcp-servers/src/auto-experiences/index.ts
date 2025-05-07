@@ -1,8 +1,7 @@
 import { ExperienceManagerOptions } from '@autonomys/auto-agents'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
-import { CallToolResult } from '@modelcontextprotocol/sdk/types.js'
 import { z } from 'zod'
-import { createExperienceHandlers } from './handlers'
+import { createExperienceHandlers } from './handlers.js'
 
 // AutoDrive Config
 const AUTO_DRIVE_API_KEY =
@@ -72,60 +71,98 @@ if (!RPC_URL || !CONTRACT_ADDRESS) {
   )
 }
 
-// --- Initialize Handlers ---
-let experienceHandlers: Awaited<ReturnType<typeof createExperienceHandlers>>
+// Create MCP Server
+export const autoExperiencesServer = new McpServer({ name: 'Auto Experiences', version: '0.1.0' })
 
-const initializeHandlers = async () => {
-  experienceHandlers = await createExperienceHandlers(experienceManagerOptions)
-}
+// Initialize handlers - now fully synchronous with internal async management
+console.error('Initializing Auto Experiences Handlers...')
+const { saveExperienceHandler, retrieveExperienceHandler } =
+  createExperienceHandlers(experienceManagerOptions)
 
-// --- Create MCP Server ---
-export const autoExperiencesServer = new McpServer({ name: 'Auto Experiences', version: '0.2.0' })
+// Define a schema that accepts different formats
+const dataSchema = z
+  .union([
+    z.record(z.string(), z.any()),
+    z.array(z.any()),
+    z.string().transform((str) => {
+      try {
+        return JSON.parse(str)
+      } catch (error) {
+        // Log the parsing error and re-throw as a Zod error
+        console.error('Failed to parse JSON string:', error)
+        throw new Error(
+          'Failed to parse data string as JSON. Please provide valid JSON string, object, or array.',
+        )
+      }
+    }),
+  ])
+  .describe(
+    'The agent experience data to save (JSON object, array, or string containing valid JSON)',
+  )
 
-// --- Define and Register Tools ---
-initializeHandlers()
-  .then(() => {
-    console.log('Auto Experiences Handlers Initialized.')
+// Register save-experience tool
+autoExperiencesServer.tool(
+  'save-experience',
+  'Saves the provided agent experience data. Uploads to AutoDrive and updates the last experience CID.',
+  {
+    data: dataSchema,
+  },
+  async (args: { data?: unknown }) => {
+    try {
+      // Make sure data exists
+      if (!args.data) {
+        return {
+          isError: true,
+          content: [{ type: 'text', text: 'Error: Missing required data parameter' }],
+        }
+      }
 
-    // Register save-experience tool
-    autoExperiencesServer.tool(
-      'save-experience', // name: string
-      'Saves the provided agent experience data. Uploads to AutoDrive and updates the last experience CID.', // description: string
-      {
-        // paramsSchema: ZodRawShape
-        data: z
-          .union([z.record(z.string(), z.any()), z.array(z.any())])
-          .describe('The agent experience data to save (JSON object or array).'),
-      },
+      // Handle string input
+      let processedData: Record<string, unknown> | unknown[]
+      if (typeof args.data === 'string') {
+        try {
+          processedData = JSON.parse(args.data)
+        } catch (error) {
+          return {
+            isError: true,
+            content: [
+              { type: 'text', text: `Error parsing JSON string: ${(error as Error).message}` },
+            ],
+          }
+        }
+      } else {
+        processedData = args.data as Record<string, unknown> | unknown[]
+      }
 
-      async (args: { data: Record<string, unknown> | unknown[] }): Promise<CallToolResult> => {
-        if (!experienceHandlers) throw new Error('Handlers not initialized')
-        // Access data via args.data
-        return await experienceHandlers.saveExperienceHandler({ data: args.data })
-      },
-    )
+      return await saveExperienceHandler({ data: processedData })
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      console.error('Error in save-experience tool:', errorMessage)
+      return {
+        isError: true,
+        content: [{ type: 'text', text: `Error processing save request: ${errorMessage}` }],
+      }
+    }
+  },
+)
 
-    // Register retrieve-experience tool
-    autoExperiencesServer.tool(
-      'retrieve-experience', // name: string
-      'Retrieves an agent experience from AutoDrive using its CID.', // description: string
-      {
-        // paramsSchema: ZodRawShape
-        cid: z
-          .string()
-          .describe('The Content Identifier (CID) string of the experience to retrieve.'),
-      },
-      // cb: (args, extra) => Promise<CallToolResult>
-      async (args: { cid: string }): Promise<CallToolResult> => {
-        if (!experienceHandlers) throw new Error('Handlers not initialized')
-        // Access cid via args.cid
-        return await experienceHandlers.retrieveExperienceHandler({ cid: args.cid })
-      },
-    )
+// Register retrieve-experience tool
+autoExperiencesServer.tool(
+  'retrieve-experience',
+  'Retrieves an agent experience from AutoDrive using its CID.',
+  {
+    cid: z.string().describe('The Content Identifier (CID) string of the experience to retrieve.'),
+  },
+  async (args: { cid?: string }) => {
+    if (!args.cid) {
+      return {
+        isError: true,
+        content: [{ type: 'text', text: 'Error: Missing required cid parameter' }],
+      }
+    }
 
-    console.log('Auto Experiences MCP tools registered.')
-  })
-  .catch((error) => {
-    console.error('Failed to initialize Auto Experiences handlers:', error)
-    process.exit(1)
-  })
+    return await retrieveExperienceHandler({ cid: args.cid })
+  },
+)
+
+console.error('Auto Experiences MCP tools registered.')
