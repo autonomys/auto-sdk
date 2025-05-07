@@ -31,7 +31,7 @@
     "server"
   ],
   "dependencies": {
-    "@autonomys/auto-agents": "^0.1.0",
+    "@autonomys/auto-agents": "^1.4.18",
     "@autonomys/auto-drive": "^1.4.18",
     "@modelcontextprotocol/sdk": "^1.9.0",
     "zod": "^3.24.2"

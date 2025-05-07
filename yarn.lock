@@ -43,7 +43,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@autonomys/auto-agents@workspace:packages/auto-agents":
+"@autonomys/auto-agents@npm:^1.4.18, @autonomys/auto-agents@workspace:packages/auto-agents":
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-agents@workspace:packages/auto-agents"
   dependencies:
@@ -127,6 +127,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-mcp-servers@workspace:packages/auto-mcp-servers"
   dependencies:
+    "@autonomys/auto-agents": "npm:^1.4.18"
     "@autonomys/auto-drive": "npm:^1.4.18"
     "@modelcontextprotocol/sdk": "npm:^1.9.0"
     "@types/node": "npm:22.14.0"
@@ -135,6 +136,7 @@ __metadata:
     zod: "npm:^3.24.2"
   bin:
     auto-drive-server: ./dist/bin/auto-drive.js
+    auto-experiences-server: ./dist/bin/auto-experiences.js
     auto-mcp-servers: ./dist/bin/main.js
   languageName: unknown
   linkType: soft
