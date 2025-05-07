@@ -21,13 +21,14 @@ export const createExperienceHandlers = async (options: ExperienceManagerOptions
     saveExperienceHandler: async ({
       data,
     }: {
-      data: Record<string, any> | any[] // Allow object or array data
+      data: Record<string, unknown> | unknown[] // Allow object or array data
     }): Promise<CallToolResult> => {
       try {
         // saveExperience handles header creation, upload, and saving the latest CID
         const result: ExperienceSaveResult = await experienceManager.saveExperience(data)
         const responseText = `Experience saved successfully. CID: ${result.cid}${result.previousCid ? `, Previous CID: ${result.previousCid}` : ''}${result.evmHash ? `, EVM Tx: ${result.evmHash}` : ', EVM save skipped/failed.'}`
         return { content: [{ type: 'text', text: responseText }] }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
         console.error('Failed to save experience:', error)
         return {
@@ -48,6 +49,7 @@ export const createExperienceHandlers = async (options: ExperienceManagerOptions
           await experienceManager.retrieveExperience(cid)
         // Return the full experience object (header + data or V0 structure) as JSON string
         return { content: [{ type: 'text', text: JSON.stringify(experience, null, 2) }] }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
         console.error(`Failed to retrieve experience for CID ${cid}:`, error)
         // Provide more specific error if possible (e.g., Not Found)

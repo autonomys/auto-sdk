@@ -98,7 +98,7 @@ initializeHandlers()
           .describe('The agent experience data to save (JSON object or array).'),
       },
 
-      async (args: { data: Record<string, any> | any[] }, _extra): Promise<CallToolResult> => {
+      async (args: { data: Record<string, unknown> | unknown[] }): Promise<CallToolResult> => {
         if (!experienceHandlers) throw new Error('Handlers not initialized')
         // Access data via args.data
         return await experienceHandlers.saveExperienceHandler({ data: args.data })
@@ -116,7 +116,7 @@ initializeHandlers()
           .describe('The Content Identifier (CID) string of the experience to retrieve.'),
       },
       // cb: (args, extra) => Promise<CallToolResult>
-      async (args: { cid: string }, _extra): Promise<CallToolResult> => {
+      async (args: { cid: string }): Promise<CallToolResult> => {
         if (!experienceHandlers) throw new Error('Handlers not initialized')
         // Access cid via args.cid
         return await experienceHandlers.retrieveExperienceHandler({ cid: args.cid })
