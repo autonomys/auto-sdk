@@ -79,64 +79,32 @@ console.error('Initializing Auto Experiences Handlers...')
 const { saveExperienceHandler, retrieveExperienceHandler } =
   createExperienceHandlers(experienceManagerOptions)
 
-// Define a schema that accepts different formats
-const dataSchema = z
-  .union([
-    z.record(z.string(), z.any()),
-    z.array(z.any()),
-    z.string().transform((str) => {
-      try {
-        return JSON.parse(str)
-      } catch (error) {
-        // Log the parsing error and re-throw as a Zod error
-        console.error('Failed to parse JSON string:', error)
-        throw new Error(
-          'Failed to parse data string as JSON. Please provide valid JSON string, object, or array.',
-        )
-      }
-    }),
-  ])
-  .describe(
-    'The agent experience data to save (JSON object, array, or string containing valid JSON)',
-  )
-
-// Register save-experience tool
+// Register save-experience tool with a simpler, more permissive schema
 autoExperiencesServer.tool(
   'save-experience',
   'Saves the provided agent experience data. Uploads to AutoDrive and updates the last experience CID.',
   {
-    data: dataSchema,
+    // Using a simpler schema that's more compatible across clients
+    data: z
+      .object({})
+      .passthrough()
+      .optional()
+      .describe(
+        'The experience data to save. Can be any JSON object with fields like title, description, etc.',
+      ),
   },
-  async (args: { data?: unknown }) => {
+  async (args) => {
     try {
-      // Make sure data exists
-      if (!args.data) {
-        return {
-          isError: true,
-          content: [{ type: 'text', text: 'Error: Missing required data parameter' }],
-        }
-      }
+      console.error('save-experience received args:', JSON.stringify(args))
 
-      // Handle string input
-      let processedData: Record<string, unknown> | unknown[]
-      if (typeof args.data === 'string') {
-        try {
-          processedData = JSON.parse(args.data)
-        } catch (error) {
-          return {
-            isError: true,
-            content: [
-              { type: 'text', text: `Error parsing JSON string: ${(error as Error).message}` },
-            ],
-          }
-        }
-      } else {
-        processedData = args.data as Record<string, unknown> | unknown[]
-      }
+      // If data is missing entirely, use empty object
+      const inputData = args?.data || {}
 
-      return await saveExperienceHandler({ data: processedData })
+      console.error('Processed data for save:', JSON.stringify(inputData))
+
+      return await saveExperienceHandler({ data: inputData })
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      const errorMessage = error instanceof Error ? error.message : String(error)
       console.error('Error in save-experience tool:', errorMessage)
       return {
         isError: true,
