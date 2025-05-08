@@ -2,7 +2,7 @@
 
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 // Import directly from the root index file
-import { autoExperiencesServer } from '../index.js'
+import { autoExperiencesServer } from '../auto-experiences/index.js'
 
 // Main function with improved error handling and process management
 const main = async () => {
