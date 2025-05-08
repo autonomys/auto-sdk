@@ -1,11 +1,23 @@
 {
   "name": "@autonomys/design-tokens",
-  "version": "0.0.1",
+  "version": "1.4.18",
   "description": "Auto Design Tokens",
   "type": "module",
+  "license": "MIT",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/autonomys/auto-sdk"
+  },
+  "author": {
+    "name": "Autonomys",
+    "url": "https://www.autonomys.xyz"
+  },
+  "bugs": {
+    "url": "https://github.com/autonomys/auto-sdk/issues"
+  },
   "files": [
     "dist",
     "README.md"
