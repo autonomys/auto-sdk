@@ -28,7 +28,6 @@ export type AgentExperience = {
 
 /**
  * Represents the structure of an older version (V0) of the agent experience.
- * @deprecated Use AgentExperience for new implementations.
  */
 export type AgentExperienceV0 = {
   /** Timestamp of the experience generation. */
