@@ -1,0 +1,17 @@
+/**
+ * Tailwind CSS entry point for the design tokens system
+ */
+
+/* Import Tailwind directives */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Optional: Add custom styles that use design tokens */
+@layer base {
+  body {
+    @apply font-sans text-base;
+    color: var(--color-textPrimary);
+    background-color: var(--color-backgroundPrimary);
+  }
+}
