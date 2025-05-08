@@ -15,10 +15,17 @@ export const parseMessage = (message: Websocket.Message): string => {
   }
 }
 
-export const encodeMessage = (message: Websocket.IMessageEvent['data']): Buffer => {
+export const encodeMessageData = (message: Websocket.IMessageEvent['data']): Buffer => {
   if (typeof message === 'string') {
     return Buffer.from(message)
   } else {
     return Buffer.from(message)
+  }
+}
+
+export const encodeMessage = (message: Websocket.IMessageEvent['data']): Websocket.Message => {
+  return {
+    type: 'utf8',
+    utf8Data: encodeMessageData(message).toString('utf8'),
   }
 }

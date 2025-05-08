@@ -11,7 +11,7 @@ describe('rpc/definition', () => {
   let httpServer: http.Server
   let connection: connection
 
-  const { createClient, createServer } = createApiDefinition({
+  const { createClient, createServer, createHttpClient } = createApiDefinition({
     methods: {
       test: {
         params: z.object({ name: z.string() }),
@@ -47,7 +47,10 @@ describe('rpc/definition', () => {
         test: (params, { connection: _connection }) => {
           // Workaround to get the connection object
           // for the notification test
-          connection = _connection
+          if (_connection) {
+            connection = _connection
+          }
+
           return {
             name: params.name,
           }
@@ -181,5 +184,11 @@ describe('rpc/definition', () => {
 
     await new Promise((resolve) => setTimeout(resolve, 100))
     expect(mock.mock.calls[0][0]).toEqual('test')
+  })
+
+  it('should handle a fetch http request', async () => {
+    const client = createHttpClient(`http://localhost:${TEST_PORT}`)
+    const result = await client.test({ name: 'test' })
+    expect(result).toEqual({ name: 'test' })
   })
 })
