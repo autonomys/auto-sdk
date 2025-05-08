@@ -28,8 +28,8 @@ autoDriveServer.tool(
       The values are the actual data being stored.
       `,
     ),
-  } as any,
-  async ({ filename, data }, _extra): Promise<CallToolResult> => {
+  },
+  async ({ filename, data }): Promise<CallToolResult> => {
     return await uploadObjectHandler({ filename, data })
   },
 )
@@ -39,8 +39,8 @@ autoDriveServer.tool(
   'Download a text-based object (text/*, application/json) from the Autonomys Network using Auto Drive using its Content Identifier (CID).',
   {
     cid: z.string().describe('The Content Identifier (CID) of the object to download.'),
-  } as any,
-  async ({ cid }, _extra): Promise<CallToolResult> => {
+  },
+  async ({ cid }): Promise<CallToolResult> => {
     return await downloadObjectHandler({ cid })
   },
 )
@@ -50,8 +50,8 @@ autoDriveServer.tool(
   'Search for objects on the Autonomys Network using Auto Drive by name or CID.',
   {
     query: z.string().describe('The name or CID fragment to search for.'),
-  } as any,
-  async ({ query }, _extra): Promise<CallToolResult> => {
+  },
+  async ({ query }): Promise<CallToolResult> => {
     return await searchObjectsHandler({ query })
   },
 )
