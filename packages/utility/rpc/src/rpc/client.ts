@@ -1,4 +1,5 @@
 import Websocket from 'websocket'
+import { randomId } from '../utils'
 import { parseData } from '../utils/websocket'
 import { createWsClient } from '../ws/client'
 import { WsClient } from '../ws/types'
@@ -49,7 +50,7 @@ export const createRpcClient = ({
   let onMessageCallbacks: ClientRPCListener[] = []
 
   const send = async (message: MessageQuery) => {
-    const id = message.id ?? Math.floor(Math.random() * 65546)
+    const id = message.id ?? randomId()
     const messageWithID = { ...message, id }
 
     return new Promise<MessageResponse>((resolve, reject) => {
