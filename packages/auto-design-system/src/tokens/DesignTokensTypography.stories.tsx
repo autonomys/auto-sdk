@@ -69,7 +69,7 @@ export const FontSize = () => {
   ))
 
   return (
-    <div className='m-auto-4'>
+    <div className='auto-m-4'>
       <TokenSection title='Font Sizes' tokens={fontSizes} />
     </div>
   )
