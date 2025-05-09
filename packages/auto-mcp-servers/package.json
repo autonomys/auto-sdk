@@ -19,6 +19,7 @@
   "main": "dist/index.js",
   "bin": {
     "auto-drive-server": "./dist/bin/auto-drive.js",
+    "auto-experiences-server": "./dist/bin/auto-experiences.js",
     "auto-mcp-servers": "./dist/bin/main.js"
   },
   "scripts": {
@@ -30,7 +31,8 @@
     "server"
   ],
   "dependencies": {
-    "@autonomys/auto-drive": "^1.4.20",
+    "@autonomys/auto-agents": "^1.4.18",
+    "@autonomys/auto-drive": "^1.4.18",
     "@modelcontextprotocol/sdk": "^1.9.0",
     "zod": "^3.24.2"
   },

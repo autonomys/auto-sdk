@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
-import { autoDriveServer } from '../index.js'
+import { autoDriveServer } from '../auto-drive/index.js'
 
 const main = async () => {
   const transport = new StdioServerTransport()

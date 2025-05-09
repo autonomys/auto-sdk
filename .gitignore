@@ -48,3 +48,5 @@ install-state.gz
 
 # Forge std
 lib/
+
+.cursor/rules/

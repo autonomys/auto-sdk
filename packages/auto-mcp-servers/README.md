@@ -16,6 +16,17 @@ The Auto Drive server provides the following tools:
 - `download-object`: Download a text-based object (`text/*` or `application/json`) from the Autonomys network using its CID.
 - `search-objects`: Search for objects on the Autonomys network by name or CID fragment. Returns a JSON object containing an array of results, each including the object's name, CID, type, size, and mimeType (for files).
 
+### Auto Experiences Server
+
+The Auto Experiences server exposes functionality from the `@autonomys/auto-agents` package as MCP tools, specifically for managing agent experiences.
+
+#### Tools
+
+The Auto Experiences server provides the following tools:
+
+- `save-experience`: Saves agent experience data to the Autonomys network, uploads the data to AutoDrive, and updates the last experience CID. Returns the new CID, previous CID (if any), and EVM transaction hash (if available).
+- `retrieve-experience`: Retrieves an agent experience from the Autonomys network using its CID. Returns the full experience object including headers and data.
+
 More servers and tools will be coming soon!
 
 ## Usage
@@ -36,6 +47,21 @@ More servers and tools will be coming soon!
         "ENCRYPTION_PASSWORD": "my-password (optional)",
         "NETWORK": "mainnet or taurus (optional, defaults to mainnet)"
       }
+    },
+    "auto-experiences": {
+      "command": "npx",
+      "args": ["-y", "@autonomys/auto-mcp-servers", "auto-experiences"],
+      "env": {
+        "AUTO_DRIVE_API_KEY": "your-api-key",
+        "AGENT_PATH": "your-agent-path",
+        "AGENT_NAME": "your-agent-name",
+        "PRIVATE_KEY": "your-wallet-private-key",
+        "NETWORK": "mainnet or taurus (optional, defaults to mainnet)",
+        "UPLOAD_ENCRYPTION_PASSWORD": "my-password (optional)",
+        "AGENT_VERSION": "your-agent-version (optional)",
+        "RPC_URL": "your-evm-rpc-url (optional)",
+        "CONTRACT_ADDRESS": "your-contract-address (optional)"
+      }
     }
   }
 }
@@ -47,7 +73,7 @@ More servers and tools will be coming soon!
 
 You can use these MCP servers as tools with agent frameworks such as LangChain.
 
-1. Install the Auto Drive server into your project:
+1. Install the Auto MCP servers into your project:
 
 ```bash
 npm install @autonomys/auto-mcp-servers
@@ -94,6 +120,34 @@ const result = await model
   .bindTools(tools)
   .invoke('Upload a profound thought to the Autonomys network')
 console.log(result)
+```
+
+3. Use the Auto Experiences server in a similar way:
+
+```typescript
+// Create Auto Experiences tools
+const createAutoExperiencesTools = async (config: {
+  apiKey: string
+  agentPath: string
+  agentName: string
+  privateKey: string
+}): Promise<StructuredToolInterface[]> => {
+  const transport = new StdioClientTransport({
+    command: process.execPath,
+    args: ['node_modules/.bin/auto-experiences-server'],
+    env: {
+      AUTO_DRIVE_API_KEY: config.apiKey,
+      AGENT_PATH: config.agentPath,
+      AGENT_NAME: config.agentName,
+      PRIVATE_KEY: config.privateKey,
+    },
+  })
+
+  const client = new Client({ name: 'auto-experiences', version: '0.0.1' })
+  client.connect(transport)
+
+  return await loadMcpTools('auto-experiences', client)
+}
 ```
 
 ## License
