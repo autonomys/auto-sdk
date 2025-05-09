@@ -4,11 +4,10 @@ A comprehensive design token system for Auto, providing consistent styling acros
 
 ## Features
 
-- CSS custom properties (variables) for colors, typography, spacing, and more
-- Utility classes with an `auto-` prefix for easy styling
+- Design tokens prefixed with `auto-` for consistent naming
 - Tailwind CSS integration
 - Dark theme support
-- Explorer-specific styles
+- Drive and Explorer specific styles
 
 ## Installation
 
@@ -18,23 +17,79 @@ npm install @autonomys/design-tokens
 yarn add @autonomys/design-tokens
 ```
 
-## Usage
-
-### Import All Styles
+## Usage with CSS
 
 ```js
-// Import all styles (variables + utility classes)
+// global.css
+
 import '@autonomys/design-tokens/dist/index.css'
 ```
 
-### Import Specific Style Categories
+## Usage with Tailwind CSS
+
+In your `tailwind.config.js` or `tailwind.config.ts` file:
 
 ```js
-// Import only CSS variables without utility classes
-import '@autonomys/design-tokens/dist/css/variables.css'
+// JavaScript (CommonJS)
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  theme: {
+    extend: require('@autonomys/design-tokens').autoTokens,
+  },
+}
+```
 
-// Import only utility classes without variables
-import '@autonomys/design-tokens/dist/css/utilities.css'
+```ts
+// TypeScript (ESM)
+import type { Config } from 'tailwindcss'
+import { autoTokens } from '@autonomys/design-tokens'
+
+const config: Config = {
+  theme: {
+    extend: autoTokens,
+  },
+}
+
+export default config
+```
+
+## Available Tokens
+
+### Color Tokens
+
+- Drive colors: `auto-drive-primary`, `auto-drive-accent`, etc.
+- Explorer colors: `auto-explorer-grayDark`, `auto-explorer-blueAccent`, etc.
+
+### Typography Tokens
+
+- Font families: `auto-sans`, `auto-mono`, `auto-display`, etc.
+- Font sizes: `auto-xs`, `auto-sm`, `auto-base`, etc.
+- Font weights: `auto-light`, `auto-normal`, `auto-bold`, etc.
+- Line heights: `auto-tight`, `auto-normal`, `auto-relaxed`, etc.
+- Letter spacings: `auto-tight`, `auto-normal`, `auto-wide`, etc.
+
+### Shadow Tokens
+
+- Box shadows: `auto-sm`, `auto-md`, `auto-lg`, etc.
+- Component shadows: `auto-button`, `auto-card`, `auto-modal`, etc.
+
+### Spacing Tokens
+
+- Spacing scale: `auto-1`, `auto-2`, `auto-4`, etc.
+- Border radius: `auto-none`, `auto-sm`, `auto-md`, etc.
+- Breakpoints: `auto-sm`, `auto-md`, `auto-lg`, etc.
+
+## Using Tokens in Components
+
+```jsx
+// Example React component using Tailwind with Auto tokens
+function Button({ children }) {
+  return (
+    <button className='bg-auto-drive-primary text-white hover:bg-auto-drive-primaryHover font-auto-semibold py-2 px-4 rounded-auto-lg shadow-auto-button'>
+      {children}
+    </button>
+  )
+}
 ```
 
 ## Building the Tokens
@@ -45,53 +100,4 @@ To build the design tokens:
 npm run build
 ```
 
-This will:
-
-1. Compile TypeScript tokens to JavaScript
-2. Generate CSS files:
-   - `index.css`: Complete bundle with all variables and utility classes
-   - `css/variables.css`: Only CSS custom properties
-   - `css/utilities.css`: Only utility classes
-3. Output everything to the `dist` folder
-
-## Available Classes
-
-### Color Classes
-
-- Text colors: `auto-text-primary`, `auto-text-secondary`, etc.
-- Background colors: `auto-bg-primary`, `auto-bg-secondary`, etc.
-- Border colors: `auto-border-primary`, `auto-border-secondary`, etc.
-- Button styles: `auto-button-primary`, `auto-button-secondary`, etc.
-
-### Typography Classes
-
-- Headings: `auto-heading-1`, `auto-heading-2`, etc.
-- Body text: `auto-body-default`, `auto-body-small`, etc.
-- Font sizes: `auto-text-xs`, `auto-text-sm`, etc.
-- Font weights: `auto-font-light`, `auto-font-bold`, etc.
-
-### Spacing Classes
-
-- Margin: `auto-m-1`, `auto-mt-2`, `auto-mx-4`, etc.
-- Padding: `auto-p-1`, `auto-pt-2`, `auto-px-4`, etc.
-- Border radius: `auto-rounded`, `auto-rounded-lg`, etc.
-
-### Shadow Classes
-
-- Shadows: `auto-shadow-sm`, `auto-shadow-lg`, etc.
-
-### Explorer-Specific Classes
-
-- Explorer background colors: `auto-explorer-bg-*`
-- Explorer text colors: `auto-explorer-text-*`
-- Explorer gradients: `auto-explorer-bg-gradient-*`, `auto-explorer-button-gradient-*`, etc.
-
-## Theme Support
-
-Apply dark theme by adding the `auto-theme-dark` class to a container:
-
-```html
-<div class="auto-theme-dark">
-  <!-- Content will use dark theme styles -->
-</div>
-```
+This will compile the TypeScript tokens and generate a distribution bundle that can be used in your project.
