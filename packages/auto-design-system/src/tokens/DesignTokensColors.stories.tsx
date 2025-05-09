@@ -44,7 +44,7 @@ const ColorSection = ({ title, colors }: ColorSectionProps) => (
     <h2 className='mb-4 auto-x-1 text-auto-2xl'>{title}</h2>
     <table className='w-full border-collapse'>
       <thead>
-        <tr className='a'>
+        <tr className='table-header-row'>
           <th className='p-2 text-left'>Token Name</th>
           <th className='p-2 text-left'>Hex Value</th>
           <th className='p-2 text-left'>Preview</th>
