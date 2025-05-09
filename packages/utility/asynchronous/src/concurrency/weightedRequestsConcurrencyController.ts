@@ -53,6 +53,13 @@ export const weightedRequestConcurrencyController = (
   }
 
   const runJob = async <T>(job: Job<T>, concurrency: number): Promise<T> => {
+    if (concurrency < 0) {
+      throw new Error('Concurrency must be greater than 0')
+    }
+    if (concurrency > maxConcurrency) {
+      throw new Error('Concurrency must be less than or equal to max concurrency')
+    }
+
     const exceededMaxConcurrency = active + concurrency > maxConcurrency
     const shouldRespectOrder = ensureOrder && queue.length > 0
     if (exceededMaxConcurrency || shouldRespectOrder) {

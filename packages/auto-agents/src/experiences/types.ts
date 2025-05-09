@@ -28,7 +28,6 @@ export type AgentExperience = {
 
 /**
  * Represents the structure of an older version (V0) of the agent experience.
- * @deprecated Use AgentExperience for new implementations.
  */
 export type AgentExperienceV0 = {
   /** Timestamp of the experience generation. */
@@ -81,10 +80,13 @@ export type ExperienceUploadOptions = {
 export type EvmOptions = {
   /** The private key of the wallet used for signing or transactions. */
   privateKey: string
-  /** The URL of the EVM-compatible JSON-RPC endpoint. */
-  rpcUrl: string
-  /** The address of the smart contract to interact with (e.g., for storing CIDs). */
-  contractAddress: string
+  /** Information about the smart contract to interact with (e.g., for storing CIDs). */
+  contractInfo?: {
+    /** The URL of the EVM-compatible JSON-RPC endpoint. */
+    rpcUrl: string
+    /** The address of the smart contract to interact with (e.g., for storing CIDs). */
+    contractAddress: string
+  }
 }
 
 /**

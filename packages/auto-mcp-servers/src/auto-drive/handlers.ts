@@ -18,7 +18,7 @@ export const createAutoDriveHandlers = (
       data,
     }: {
       filename: string
-      data: Record<string, any>
+      data: Record<string, unknown>
     }): Promise<CallToolResult> => {
       const cid = await autoDriveApi.uploadObjectAsJSON({ data }, filename, uploadOptions)
       return { content: [{ type: 'text', text: `Object uploaded successfully with ${cid}` }] }
@@ -80,10 +80,11 @@ export const createAutoDriveHandlers = (
           content: [
             {
               type: 'text',
-              text: `Error: File type \'${mimeType}\' is not supported for direct download in this client. Only text/* and application/json are supported.`,
+              text: `Error: File type '${mimeType}' is not supported for direct download in this client. Only text/* and application/json are supported.`,
             },
           ],
         }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
         console.error(`Failed to download object with CID ${cid}:`, error)
         const errorMessage = error.message || 'Unknown error occurred during download.'
