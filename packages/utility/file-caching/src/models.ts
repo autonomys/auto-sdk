@@ -1,8 +1,8 @@
 import { Keyv } from 'keyv'
-import { Stream } from 'stream'
+import { Readable } from 'stream'
 
 export type FileResponse = {
-  data: Stream
+  data: Readable
   mimeType?: string
   filename?: string
   size?: bigint
@@ -16,7 +16,7 @@ export interface BaseCacheConfig {
 }
 
 export interface FileCache {
-  get: (cid: string) => Promise<Buffer | Stream | null>
-  set: (cid: string, data: Buffer | Stream) => Promise<void>
+  get: (cid: string) => Promise<Buffer | Readable | null>
+  set: (cid: string, data: Buffer | Readable) => Promise<void>
   remove: (cid: string) => Promise<void>
 }
