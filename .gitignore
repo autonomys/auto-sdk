@@ -11,6 +11,9 @@ packages/*/node_modules/
 dist/
 packages/*/dist/
 
+# Storybook build outputs
+storybook-static/
+
 # Yarn lock file (if not desired to be versioned)
 .yarn-integrity
 

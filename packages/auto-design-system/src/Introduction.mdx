@@ -1,0 +1,43 @@
+import { Meta } from '@storybook/blocks'
+
+<Meta title='Introduction' />
+
+# Auto Design System
+
+The Auto Design System is a collection of reusable UI components built with React, styled with Tailwind CSS, and leveraging design tokens from the `@autonomys/design-tokens` package.
+
+## Getting Started
+
+To use the design system in your project, install the package:
+
+```bash
+yarn add @autonomys/design-system
+```
+
+Then import the components and styles in your application:
+
+```jsx
+// Import components
+import { Button, Dropdown } from '@autonomys/design-system'
+
+// Import styles
+import '@autonomys/design-system/dist/styles.css'
+```
+
+## Design Principles
+
+- **Consistency**: All components follow the same design language
+- **Accessibility**: Built with a11y best practices in mind
+- **Flexibility**: Components can be customized through props
+- **Simplicity**: Easy to use and understand
+
+## Design Tokens
+
+This design system uses design tokens from `@autonomys/design-tokens` for colors, typography, spacing, and more. These tokens are used to style components through Tailwind CSS classes.
+
+## Available Components
+
+- **Button**: A versatile button component with various styles and states
+- **Dropdown**: A dropdown select component with customizable options
+
+More components will be added in future releases.

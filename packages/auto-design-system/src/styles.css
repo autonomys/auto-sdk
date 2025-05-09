@@ -1,0 +1,6 @@
+@import '@autonomys/design-tokens/dist/index.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Using auto- prefixed classes directly from design-tokens package */
