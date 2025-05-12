@@ -139,7 +139,7 @@ export const createApiDefinition = <S extends ApiDefinition>(serverDefinition: S
       return [
         method,
         async (params: Parameters<DefinitionTypeOutput<typeof handler.params>>[0]) => {
-          const result = await fetch(`${baseUrl}/${method}`, {
+          const result = await fetch(`${baseUrl}`, {
             method: 'POST',
             body: JSON.stringify({
               jsonrpc: '2.0',
