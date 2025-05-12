@@ -101,7 +101,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-design-system@workspace:packages/auto-design-system"
   dependencies:
-    "@autonomys/design-tokens": "workspace:*"
+    "@autonomys/design-tokens": "npm:1.4.22"
     "@babel/core": "npm:^7.27.1"
     "@babel/preset-env": "npm:^7.27.2"
     "@babel/preset-react": "npm:^7.27.1"
@@ -246,7 +246,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@autonomys/design-tokens@workspace:*, @autonomys/design-tokens@workspace:packages/utility/design-tokens":
+"@autonomys/design-tokens@npm:1.4.22, @autonomys/design-tokens@workspace:packages/utility/design-tokens":
   version: 0.0.0-use.local
   resolution: "@autonomys/design-tokens@workspace:packages/utility/design-tokens"
   dependencies:
