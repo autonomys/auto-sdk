@@ -27,6 +27,23 @@ export const createWsServer = ({
     ws.on('close', onClose)
   }
 
+  const wrapRequestListener = (
+    fn: (req: http.IncomingMessage, res: http.ServerResponse) => void,
+  ) => {
+    return (req: http.IncomingMessage, res: http.ServerResponse) => {
+      if (req.method === 'POST' && req.url === '/ws') {
+        return
+      }
+      fn(req, res)
+    }
+  }
+
+  const listeners = httpServer.listeners('request') as http.RequestListener[]
+  listeners.forEach((listener) => {
+    httpServer.removeListener('request', listener)
+    httpServer.on('request', wrapRequestListener(listener))
+  })
+
   if (connectionAcceptance) {
     ws.on('request', connectionAcceptance)
   } else {
