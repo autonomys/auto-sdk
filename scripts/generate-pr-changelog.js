@@ -8,7 +8,13 @@
  * export GITHUB_TOKEN=your_github_personal_access_token
  */
 
-const { Octokit } = require('@octokit/rest')
+// Replace require with dynamic import at the top level
+let Octokit
+import('@octokit/rest').then((module) => {
+  Octokit = module.Octokit
+  updateChangelog()
+})
+
 const fs = require('fs')
 const path = require('path')
 const { execSync } = require('child_process')
@@ -58,10 +64,8 @@ if (!process.env.GITHUB_TOKEN) {
   process.exit(1)
 }
 
-// Create Octokit instance with auth token
-const octokit = new Octokit({
-  auth: process.env.GITHUB_TOKEN,
-})
+// Create Octokit instance with auth token - moved to updateChangelog function
+let octokit
 
 /**
  * Get all tags sorted by date
@@ -288,6 +292,10 @@ async function generateChangelogBetweenTags(startTag, endTag, version) {
  */
 async function updateChangelog() {
   try {
+    octokit = new Octokit({
+      auth: process.env.GITHUB_TOKEN,
+    })
+
     // Get all tags
     console.log('Fetching tags...')
     const tags = await getTags()
@@ -400,6 +408,3 @@ async function updateChangelog() {
     process.exit(1)
   }
 }
-
-// Run the script
-updateChangelog()
