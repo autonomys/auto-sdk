@@ -40,5 +40,6 @@
     "@types/node": "22.14.0",
     "ts-node": "^10.9.1",
     "typescript": "^5.8.3"
-  }
+  },
+  "gitHead": "ef4c21d683cad697f7015e52becd399a8ca2ed84"
 }
