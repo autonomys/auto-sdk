@@ -36,6 +36,8 @@ For example:
 - `fix(auto-drive): resolve file upload timeout issue`
 - `docs: update installation instructions in README`
 
+> **Note**: PR titles are automatically checked by our GitHub Action workflow to ensure they follow this format. Non-compliant PR titles will be flagged.
+
 ### PR Labels
 
 You can also use labels on PRs to help categorize changes:
