@@ -1,0 +1,93 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      releaseType:
+        description: 'Release type (major, minor, patch)'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+      dryRun:
+        description: 'Dry run (no publish)'
+        required: false
+        default: false
+        type: boolean
+      prerelease:
+        description: 'Pre-release'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Set Yarn version to Berry
+        run: corepack prepare yarn@4.7.0 --activate
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "GitHub Actions Bot"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Build packages
+        run: yarn build
+
+      - name: Run tests
+        run: yarn test
+
+      - name: Generate PR-based changelog
+        run: BUMP_TYPE=${{ inputs.releaseType }} yarn changelog
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Version bump and publish
+        if: ${{ !inputs.dryRun }}
+        run: |
+          if ${{ inputs.prerelease }}; then
+            PRERELEASE_FLAG="--preid beta"
+          else 
+            PRERELEASE_FLAG=""
+          fi
+
+          yarn lerna version ${{ inputs.releaseType }} --yes --no-push $PRERELEASE_FLAG
+          git add CHANGELOG.md
+          git commit -m "docs: update CHANGELOG.md for release" || echo "No changes to commit"
+          git push --follow-tags
+          yarn publish
+
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create GitHub Release
+        if: ${{ !inputs.dryRun }}
+        uses: softprops/action-gh-release@v1
+        with:
+          body_path: CHANGELOG.md
+          tag_name: v$(node -p "require('./lerna.json').version")
+          prerelease: ${{ inputs.prerelease }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
