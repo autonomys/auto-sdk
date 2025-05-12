@@ -87,7 +87,11 @@ export const createWsServer = ({
   }
 
   const onHttpRequest = (fn: (req: http.IncomingMessage, res: http.ServerResponse) => void) => {
-    httpServer.on('request', fn)
+    httpServer.on('request', (req, res) => {
+      if (req.method === 'POST' && req.url === '/ws') {
+        fn(req, res)
+      }
+    })
   }
 
   return {
