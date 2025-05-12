@@ -1,0 +1,49 @@
+{
+  "name": "@autonomys/design-tokens",
+  "packageManager": "yarn@4.7.0",
+  "version": "1.4.18",
+  "description": "Auto Design Tokens",
+  "type": "module",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/autonomys/auto-sdk"
+  },
+  "author": {
+    "name": "Autonomys",
+    "url": "https://www.autonomys.xyz"
+  },
+  "bugs": {
+    "url": "https://github.com/autonomys/auto-sdk/issues"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "node build-tokens.js && rollup -c",
+    "prebuild": "rm -rf dist",
+    "dev": "npm run build -- --watch",
+    "tsc": "tsc"
+  },
+  "dependencies": {
+    "@tailwindcss/forms": "^0.5.7",
+    "tailwindcss": "^3.3.5"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.4",
+    "@rollup/plugin-node-resolve": "^15.2.1",
+    "@rollup/plugin-typescript": "^11.1.5",
+    "autoprefixer": "^10.4.16",
+    "cssnano": "^6.0.1",
+    "fs-extra": "^11.1.1",
+    "postcss": "^8.4.31",
+    "postcss-import": "^15.1.0",
+    "rollup": "^4.1.4",
+    "typescript": "^5.3.3"
+  },
+  "gitHead": "d921e7787652cf71e47a9785303a41c7f4f8d0fd"
+}

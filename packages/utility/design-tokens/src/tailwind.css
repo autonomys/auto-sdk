@@ -1,0 +1,8 @@
+/**
+ * Tailwind CSS entry point for the design tokens system
+ */
+
+/* Import Tailwind directives */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
