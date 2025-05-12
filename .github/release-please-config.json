@@ -1,0 +1,65 @@
+{
+  "packages": {
+    ".": {
+      "release-type": "node",
+      "draft": false,
+      "prerelease": false,
+      "changelog-path": "CHANGELOG.md",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": true,
+      "include-component-in-tag": false,
+      "include-v-in-tag": true,
+      "pull-request-title-pattern": "chore${scope}: release${component} ${version}",
+      "extra-files": ["package.json", "lerna.json"]
+    },
+    "packages/auto-utils": {
+      "release-type": "node",
+      "package-name": "@autonomys/auto-utils"
+    },
+    "packages/auto-consensus": {
+      "release-type": "node",
+      "package-name": "@autonomys/auto-consensus"
+    },
+    "packages/auto-dag-data": {
+      "release-type": "node",
+      "package-name": "@autonomys/auto-dag-data"
+    },
+    "packages/auto-drive": {
+      "release-type": "node",
+      "package-name": "@autonomys/auto-drive"
+    },
+    "packages/auto-xdm": {
+      "release-type": "node",
+      "package-name": "@autonomys/auto-xdm"
+    },
+    "packages/auto-agents": {
+      "release-type": "node",
+      "package-name": "@autonomys/auto-agents"
+    },
+    "packages/utility/user-session": {
+      "release-type": "node",
+      "package-name": "@autonomys/user-session"
+    },
+    "packages/utility/contracts": {
+      "release-type": "node",
+      "package-name": "@autonomys/contracts"
+    },
+    "packages/utility/file-caching": {
+      "release-type": "node",
+      "package-name": "@autonomys/file-caching"
+    },
+    "packages/utility/rpc": {
+      "release-type": "node",
+      "package-name": "@autonomys/rpc"
+    },
+    "packages/utility/asynchronous": {
+      "release-type": "node",
+      "package-name": "@autonomys/asynchronous"
+    },
+    "packages/utility/design-tokens": {
+      "release-type": "node",
+      "package-name": "@autonomys/design-tokens"
+    }
+  },
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json"
+}

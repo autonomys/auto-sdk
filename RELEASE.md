@@ -6,7 +6,7 @@ This document describes the release process for the Autonomys Auto SDK.
 
 The Autonomys Auto SDK follows a structured release process that includes version management, changelog generation, and package publishing. We use:
 
-- **Lerna**: For managing versioning and publishing in our monorepo
+- **Release Please**: Google's automated release tool for version management and PR creation
 - **Conventional Commits**: For structured commit messages and PR titles
 - **GitHub Actions**: For automating the release workflow
 - **PR-Based Changelog**: We generate changelogs exclusively based on merged Pull Requests
@@ -14,13 +14,29 @@ The Autonomys Auto SDK follows a structured release process that includes versio
 ## Release Cycle
 
 1. **Development Phase**: Features, fixes, and improvements are developed and merged into the main branch
-2. **Pre-release Testing**: Code is thoroughly tested in preparation for release
-3. **Release Preparation**: Changelog is updated and version is bumped
-4. **Publishing**: Packages are published to npm and a GitHub release is created
+2. **Automated Release PR**: Release-please automatically creates a release PR when conventional commits are detected
+3. **Release PR Review**: The team reviews the generated changelog and version bumps
+4. **Publishing**: Once the Release PR is merged, packages are published to npm and a GitHub release is created automatically
+
+## How Release Please Works
+
+Release-please automates our release process by:
+
+1. Monitoring commits to the main branch
+2. Creating and maintaining a release PR when it detects conventional commits
+3. Automatically determining which version to bump based on commit types:
+   - `feat:` triggers a minor version bump
+   - `fix:` triggers a patch version bump
+   - `feat!:` or `fix!:` or any commit with `BREAKING CHANGE:` in the footer triggers a major version bump
+4. Generating a changelog based on conventional commits
+5. When the release PR is merged, it automatically:
+   - Creates a GitHub release with the changelog
+   - Tags the repository with the new version
+   - Triggers the npm publishing workflow
 
 ## Pull Request Requirements
 
-Since our changelog is exclusively generated from merged Pull Requests, it's important that all changes are submitted through PRs rather than direct commits to the main branch.
+Since our changelog is exclusively generated from conventional commits, it's important that all changes follow the conventional commit format.
 
 ### Pull Request Title Format
 
@@ -57,7 +73,7 @@ You can also use labels on PRs to help categorize changes:
 
 ### Commit Message Format
 
-While individual commits don't directly appear in the changelog, we still follow the conventional commits format for all commits:
+We strictly follow the conventional commits format for all commits:
 
 ```
 <type>(<scope>): <subject>
@@ -82,85 +98,44 @@ Where `<type>` is one of:
 
 The `<scope>` is optional and should be the name of the affected package or component.
 
-## Github Token Requirement
-
-The changelog generator requires a GitHub Personal Access Token to fetch PR data via the GitHub API. Set this up using:
-
-```
-./scripts/setup-github-token.sh
-```
-
-Follow the instructions to create and set up a token with the `repo` scope.
-
 ## Making a Release
 
-### Manual Release
+### Automated Release Process
 
-1. Ensure all changes are properly tested and merged into the main branch through Pull Requests
-2. Run the following command to generate the PR-based changelog with the next version:
-   ```
-   BUMP_TYPE=patch yarn changelog  # For patch release (default)
-   BUMP_TYPE=minor yarn changelog  # For minor release
-   BUMP_TYPE=major yarn changelog  # For major release
-   ```
-3. Review and edit the CHANGELOG.md file if necessary (the next version will be at the top)
-4. Commit the changelog
-5. Run the following command to create a new version (should match the bump type used above):
-   ```
-   yarn lerna version [major|minor|patch]
-   ```
-6. Push the tags:
-   ```
-   git push --follow-tags
-   ```
-7. Publish to npm:
-   ```
-   yarn publish
-   ```
+1. Make changes using conventional commit messages
+2. Push or merge these changes to the main branch
+3. Release-please will automatically create or update a release PR
+4. Review the release PR and its generated changelog
+5. Merge the release PR when ready to release
+6. Release-please will automatically create a GitHub release and tag
+7. The workflow will publish packages to npm
 
-### Automated Release
+### Manual Release (if needed)
 
-1. Go to the GitHub Actions tab in the repository
-2. Select the "Release" workflow
-3. Click "Run workflow"
-4. Select the release type (major, minor, patch)
-5. Choose whether it should be a pre-release
-6. Click "Run workflow"
+In rare cases where you need to manually trigger a release:
 
-The GitHub Action will:
-
-- Build and test the code
-- Generate the PR-based changelog with the next version at the top
-- Bump the version according to the release type
-- Publish the packages to npm
-- Create a GitHub release with the changelog
+1. Ensure all changes are properly committed with conventional commit messages
+2. Create a PR titled "chore: release X.Y.Z" where X.Y.Z is the version you want to release
+3. Include all the changelog entries in the PR description
+4. Review and merge the PR
+5. Create a GitHub release and tag manually
 
 ## Changelog Format
 
-Our changelog follows a specific format:
+Our automatically generated changelog follows a specific format:
 
-1. The next version appears at the top of the changelog
-2. Each release includes grouped changes (features, bug fixes, etc.)
-3. Each entry links to the PR and credits the contributor
-4. An "Unreleased" section is maintained for future changes
-
-The format makes it easy to see what's included in each release and who contributed to it.
-
-## After Release
-
-After a release is made:
-
-1. Verify the npm packages are correctly published
-2. Check the GitHub release was created with the correct changelog
-3. Announce the release to users as needed
+1. Changes are grouped by type (Features, Bug Fixes, etc.)
+2. Each entry shows the commit message and PR number
+3. Breaking changes are highlighted at the top
+4. Each release has its own section with a version number and date
 
 ## Troubleshooting
 
-If you encounter issues during the release process:
+If you encounter issues with the release process:
 
-1. Check the GitHub Actions logs for any errors
-2. Ensure you have proper permissions for npm publishing
-3. Verify your Git configuration is correct
-4. For changelog generation issues, ensure your GITHUB_TOKEN has adequate permissions
+1. Check that your commits follow the conventional commit format
+2. Verify that the release-please workflow has the necessary permissions
+3. Check GitHub Actions logs for any errors
+4. Ensure npm authentication is correctly set up
 
 For more assistance, contact the core development team.

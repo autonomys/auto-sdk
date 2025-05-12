@@ -1,0 +1,59 @@
+name: Release Please
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: google-github-actions/release-please-action@v3
+        id: release
+        with:
+          command: manifest
+          token: ${{ secrets.GITHUB_TOKEN }}
+          config-file: .github/release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+      # Only run the remaining steps if releases were created
+      - name: Checkout
+        if: ${{ steps.release.outputs.releases_created }}
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        if: ${{ steps.release.outputs.releases_created }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Enable Corepack
+        if: ${{ steps.release.outputs.releases_created }}
+        run: corepack enable
+
+      - name: Set Yarn version to Berry
+        if: ${{ steps.release.outputs.releases_created }}
+        run: corepack prepare yarn@4.7.0 --activate
+
+      - name: Install dependencies
+        if: ${{ steps.release.outputs.releases_created }}
+        run: yarn install
+
+      - name: Build packages
+        if: ${{ steps.release.outputs.releases_created }}
+        run: yarn build
+
+      # Publish to npm
+      - name: Publish to npm
+        if: ${{ steps.release.outputs.releases_created }}
+        run: yarn publish --no-git-tag-version
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

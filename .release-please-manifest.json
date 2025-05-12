@@ -1,0 +1,15 @@
+{
+  ".": "1.4.20",
+  "packages/auto-utils": "1.4.20",
+  "packages/auto-consensus": "1.4.20",
+  "packages/auto-dag-data": "1.4.20",
+  "packages/auto-drive": "1.4.20",
+  "packages/auto-xdm": "1.4.20",
+  "packages/auto-agents": "1.4.20",
+  "packages/utility/user-session": "1.4.20",
+  "packages/utility/contracts": "1.4.20",
+  "packages/utility/file-caching": "1.4.20",
+  "packages/utility/rpc": "1.4.20",
+  "packages/utility/asynchronous": "1.4.20",
+  "packages/utility/design-tokens": "1.4.18"
+}
