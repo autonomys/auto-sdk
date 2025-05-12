@@ -52,7 +52,7 @@ fi
 # Check if token already exists in the config file
 if grep -q "export GITHUB_TOKEN=" "$shell_config"; then
   # Update existing token
-  sed -i.bak "s/export GITHUB_TOKEN=.*/export GITHUB_TOKEN=$github_token/" "$shell_config"
+  sed -i.bak "s|export GITHUB_TOKEN=.*|export GITHUB_TOKEN=\"$github_token\"|" "$shell_config"
   echo "Updated existing GITHUB_TOKEN in $shell_config"
 else
   # Add new token
