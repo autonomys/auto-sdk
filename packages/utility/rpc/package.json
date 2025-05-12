@@ -1,7 +1,7 @@
 {
   "name": "@autonomys/rpc",
   "packageManager": "yarn@4.7.0",
-  "version": "1.4.21",
+  "version": "1.4.22",
   "repository": {
     "type": "git",
     "url": "https://github.com/autonomys/auto-sdk"
@@ -41,5 +41,5 @@
     "ts-jest": "^29.3.1",
     "typescript": "^5.8.3"
   },
-  "gitHead": "d921e7787652cf71e47a9785303a41c7f4f8d0fd"
+  "gitHead": "ef4c21d683cad697f7015e52becd399a8ca2ed84"
 }
