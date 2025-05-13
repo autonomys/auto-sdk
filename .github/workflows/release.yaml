@@ -23,6 +23,10 @@ on:
         default: false
         type: boolean
 
+permissions:
+  contents: write
+  pull-requests: read
+
 jobs:
   release:
     runs-on: ubuntu-latest
