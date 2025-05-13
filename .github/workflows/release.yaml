@@ -65,6 +65,9 @@ jobs:
 
       - name: Version bump and publish
         if: ${{ !inputs.dryRun }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if ${{ inputs.prerelease }}; then
             PRERELEASE_FLAG="--preid beta"
@@ -81,10 +84,6 @@ jobs:
           npm config set @autonomys:registry https://registry.npmjs.org/
 
           yarn lerna publish ${{ inputs.releaseType }} --yes $PRERELEASE_FLAG
-
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Get Version
         id: get_version
