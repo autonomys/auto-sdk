@@ -58,6 +58,11 @@ jobs:
       - name: Install dependencies
         run: yarn install
 
+      - name: Generate PR-based changelog
+        run: BUMP_TYPE=${{ inputs.releaseType }} yarn changelog
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Get Version
         id: get_version
         run: echo "version=$(node -p "require('./lerna.json').version")" >> $GITHUB_OUTPUT
@@ -77,6 +82,9 @@ jobs:
           # Ensure npm config has auth token for @autonomys scope
           npm config set //registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}
           npm config set @autonomys:registry https://registry.npmjs.org/
+
+          git add CHANGELOG.md
+          git commit -m "docs: update CHANGELOG.md for release" || echo "No changes to commit"
 
           yarn lerna version ${{ inputs.releaseType }} --yes --no-push --force-publish $PRERELEASE_FLAG
           git push --follow-tags --force-with-lease
