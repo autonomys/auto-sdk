@@ -42,6 +42,7 @@ jobs:
         with:
           node-version: '18'
           registry-url: 'https://registry.npmjs.org'
+          scope: '@autonomys'
 
       - name: Enable Corepack
         run: corepack enable
@@ -74,6 +75,10 @@ jobs:
           # Commit the CHANGELOG.md before running lerna version
           git add CHANGELOG.md
           git commit -m "docs: update CHANGELOG.md for release" || echo "No changes to commit"
+
+          # Ensure npm config has auth token for @autonomys scope
+          npm config set //registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}
+          npm config set @autonomys:registry https://registry.npmjs.org/
 
           yarn lerna publish ${{ inputs.releaseType }} --yes $PRERELEASE_FLAG
 
