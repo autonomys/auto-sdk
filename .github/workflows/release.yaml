@@ -58,20 +58,8 @@ jobs:
       - name: Install dependencies
         run: yarn install
 
-      - name: Generate PR-based changelog
-        run: BUMP_TYPE=${{ inputs.releaseType }} yarn changelog
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Get Version
-        id: get_version
-        run: echo "version=$(node -p "require('./lerna.json').version")" >> $GITHUB_OUTPUT
-
-      - name: Version bump and publish
+      - name: Version bump
         if: ${{ !inputs.dryRun }}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if ${{ inputs.prerelease }}; then
             PRERELEASE_FLAG="--preid beta"
@@ -79,15 +67,36 @@ jobs:
             PRERELEASE_FLAG=""
           fi
 
+          # Bump version numbers in package.json and lerna.json without git commit/tag
+          yarn lerna version ${{ inputs.releaseType }} --yes --no-push --no-git-tag-version --force-publish $PRERELEASE_FLAG
+
+      - name: Get new version
+        id: get_version
+        run: echo "version=$(node -p "require('./lerna.json').version")" >> $GITHUB_OUTPUT
+
+      - name: Generate PR-based changelog
+        run: BUMP_TYPE=${{ inputs.releaseType }} yarn changelog
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Commit changes and tag
+        if: ${{ !inputs.dryRun }}
+        run: |
+          git add CHANGELOG.md lerna.json '**/package.json'
+          git commit -m "chore(release): publish v${{ steps.get_version.outputs.version }}"
+          git tag -a "v${{ steps.get_version.outputs.version }}" -m "v${{ steps.get_version.outputs.version }}"
+          git push --follow-tags --force-with-lease
+
+      - name: Publish to npm
+        if: ${{ !inputs.dryRun }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
           # Ensure npm config has auth token for @autonomys scope
           npm config set //registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}
           npm config set @autonomys:registry https://registry.npmjs.org/
 
-          git add CHANGELOG.md
-          git commit -m "docs: update CHANGELOG.md for release" || echo "No changes to commit"
-
-          yarn lerna version ${{ inputs.releaseType }} --yes --no-push --force-publish $PRERELEASE_FLAG
-          git push --follow-tags --force-with-lease
           yarn lerna publish from-package --yes --force-publish
 
       - name: Create GitHub Release
