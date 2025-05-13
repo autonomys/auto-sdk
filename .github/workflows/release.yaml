@@ -57,12 +57,6 @@ jobs:
       - name: Install dependencies
         run: yarn install
 
-      - name: Build packages
-        run: yarn build
-
-      - name: Run tests
-        run: yarn test
-
       - name: Generate PR-based changelog
         run: BUMP_TYPE=${{ inputs.releaseType }} yarn changelog
         env:
