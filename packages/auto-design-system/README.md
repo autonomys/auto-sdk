@@ -1,6 +1,6 @@
 # Auto Design System
 
-This package contains React components for the Auto Design System. These components utilize the design tokens from `@autonomys/design-tokens` package to ensure consistent styling across all applications.
+This package contains React components for the Auto Design System. These components utilize the design tokens from `@autonomys/design-tokens` package to ensure consistent styling across all application.
 
 ## Installation
 
