@@ -1,6 +1,6 @@
 {
   "name": "@autonomys/contracts",
-  "version": "1.4.26",
+  "version": "1.4.27",
   "license": "MIT",
   "main": "dist/index.js",
   "repository": {
