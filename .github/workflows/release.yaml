@@ -26,7 +26,6 @@ on:
 permissions:
   contents: write
   pull-requests: read
-  workflows: write
 
 jobs:
   release:
@@ -85,9 +84,14 @@ jobs:
           npm config set @autonomys:registry https://registry.npmjs.org/
 
           yarn lerna version ${{ inputs.releaseType }} --yes --no-push $PRERELEASE_FLAG
-          git pull --rebase origin $(git rev-parse --abbrev-ref HEAD)
-          git push --follow-tags
-          yarn lerna publish from-package --yes
+
+          # Fetch latest changes and ensure we're up to date
+          git fetch origin
+          git pull origin $(git rev-parse --abbrev-ref HEAD) --no-rebase || true
+
+          # Force push with tags to ensure our changes go through
+          git push --follow-tags --force-with-lease
+          yarn lerna publish from-package --yes --access public
 
       - name: Get Version
         id: get_version
