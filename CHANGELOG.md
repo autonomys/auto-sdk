@@ -4,6 +4,11 @@
 
 - Fix b5 ([#408](https://github.com/autonomys/auto-sdk/pull/408)) [@iamnamananand996](https://github.com/iamnamananand996)
 
+## [1.4.29] - 2025-05-13
+
+No changes in this version.
+
+
 ## [Unreleased]
 
 Future changes will appear here.
