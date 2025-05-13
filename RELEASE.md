@@ -163,4 +163,4 @@ If you encounter issues during the release process:
 3. Verify your Git configuration is correct
 4. For changelog generation issues, ensure your GITHUB_TOKEN has adequate permissions
 
-For more assistance, contact the core development team.
+For more assistance, contact core development team.
