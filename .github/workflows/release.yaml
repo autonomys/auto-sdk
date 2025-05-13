@@ -85,7 +85,7 @@ jobs:
 
           yarn lerna version ${{ inputs.releaseType }} --yes --no-push $PRERELEASE_FLAG
           git push --follow-tags --force-with-lease
-          yarn lerna publish from-package --yes
+          yarn lerna publish from-git --yes
 
       - name: Get Version
         id: get_version
