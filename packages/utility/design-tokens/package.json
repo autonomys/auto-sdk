@@ -19,9 +19,6 @@
   "bugs": {
     "url": "https://github.com/autonomys/auto-sdk/issues"
   },
-  "publishConfig": {
-    "access": "public"
-  },
   "files": [
     "dist",
     "README.md"

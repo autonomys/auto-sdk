@@ -14,9 +14,6 @@
   "bugs": {
     "url": "https://github.com/autonomys/auto-sdk/issues"
   },
-  "publishConfig": {
-    "access": "public"
-  },
   "scripts": {
     "build": "tsc",
     "generate-abi": "ts-node scripts/index.ts",

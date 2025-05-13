@@ -16,9 +16,6 @@
   "bugs": {
     "url": "https://github.com/autonomys/auto-sdk/issues"
   },
-  "publishConfig": {
-    "access": "public"
-  },
   "scripts": {
     "build": "tsc",
     "pb": "yarn protons src/metadata/onchain/protobuf/OnchainMetadata.proto -o src/metadata/onchain/protobuf",

@@ -13,9 +13,6 @@
   "bugs": {
     "url": "https://github.com/autonomys/auto-sdk/issues"
   },
-  "publishConfig": {
-    "access": "public"
-  },
   "scripts": {
     "test": "jest --runInBand",
     "build": "tsc --incremental"

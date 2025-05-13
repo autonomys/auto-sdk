@@ -22,9 +22,6 @@
     "auto-experiences-server": "./dist/bin/auto-experiences.js",
     "auto-mcp-servers": "./dist/bin/main.js"
   },
-  "publishConfig": {
-    "access": "public"
-  },
   "scripts": {
     "build": "tsc",
     "prepublishOnly": "npm run build"
