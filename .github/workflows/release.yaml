@@ -83,7 +83,9 @@ jobs:
           npm config set //registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}
           npm config set @autonomys:registry https://registry.npmjs.org/
 
-          yarn lerna publish ${{ inputs.releaseType }} --yes $PRERELEASE_FLAG
+          yarn lerna version ${{ inputs.releaseType }} --yes --no-push $PRERELEASE_FLAG
+          git push --follow-tags
+          yarn lerna publish from-package --yes --access public
 
       - name: Get Version
         id: get_version
