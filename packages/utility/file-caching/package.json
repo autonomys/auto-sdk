@@ -17,6 +17,9 @@
   "engines": {
     "node": ">=20.8.0"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "yarn tsc"
   },

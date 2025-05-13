@@ -26,6 +26,7 @@ on:
 permissions:
   contents: write
   pull-requests: read
+  workflows: write
 
 jobs:
   release:
