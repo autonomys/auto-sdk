@@ -186,8 +186,8 @@ describe('rpc/definition', () => {
     expect(mock.mock.calls[0][0]).toEqual('test')
   })
 
-  it('should handle a fetch http request', async () => {
-    const client = createHttpClient(`http://localhost:${TEST_PORT}`)
+  it('should handle a fetch http request with route /ws', async () => {
+    const client = createHttpClient(`http://localhost:${TEST_PORT}/ws`)
     const result = await client.test({ name: 'test' })
     expect(result).toEqual({ name: 'test' })
   })

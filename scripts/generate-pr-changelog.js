@@ -408,5 +408,3 @@ async function updateChangelog() {
     process.exit(1)
   }
 }
-
-// Don't immediately call updateChangelog() here anymore since we call it after importing Octokit

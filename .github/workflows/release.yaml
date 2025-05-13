@@ -73,9 +73,11 @@ jobs:
             PRERELEASE_FLAG=""
           fi
 
-          yarn lerna version ${{ inputs.releaseType }} --yes --no-push $PRERELEASE_FLAG
+          # Commit the CHANGELOG.md before running lerna version
           git add CHANGELOG.md
           git commit -m "docs: update CHANGELOG.md for release" || echo "No changes to commit"
+
+          yarn lerna version ${{ inputs.releaseType }} --yes --no-push $PRERELEASE_FLAG
           git push --follow-tags
           yarn publish
 
