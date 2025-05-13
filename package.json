@@ -18,7 +18,7 @@
     "publish": "yarn prepublish && lerna publish --no-private",
     "changelog": "node scripts/generate-pr-changelog.js",
     "changelog:commit": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0 --commit-path . --pkg ./lerna.json --release-count 0 --skip-unreleased",
-    "version": "yarn changelog && git add CHANGELOG.md"
+    "version": "echo 'Skipping changelog in version script"
   },
   "packageManager": "yarn@4.7.0",
   "engines": {
