@@ -1,7 +1,7 @@
 {
   "name": "@autonomys/auto-design-system",
   "packageManager": "yarn@4.7.0",
-  "version": "1.4.28",
+  "version": "1.4.27",
   "license": "MIT",
   "description": "Autonomys Design System",
   "type": "module",
@@ -33,7 +33,7 @@
     "build-storybook": "storybook build"
   },
   "dependencies": {
-    "@autonomys/design-tokens": "^1.4.28"
+    "@autonomys/design-tokens": "^1.4.27"
   },
   "devDependencies": {
     "@babel/core": "^7.27.1",
