@@ -197,7 +197,7 @@ __metadata:
     eslint: "npm:^9.25.1"
     eslint-config-prettier: "npm:^10.1.1"
     eslint-plugin-prettier: "npm:^5.2.5"
-    husky: "npm:^9.0.11"
+    husky: "npm:^9.1.7"
     jest: "npm:^29.7.0"
     lerna: "npm:^8.2.1"
     prettier: "npm:^3.5.3"
@@ -13974,7 +13974,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"husky@npm:^9.0.11":
+"husky@npm:^9.1.7":
   version: 9.1.7
   resolution: "husky@npm:9.1.7"
   bin:
