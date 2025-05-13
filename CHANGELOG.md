@@ -15,12 +15,6 @@
 - Fix missing wrap of RPC handler http request ([#397](https://github.com/autonomys/auto-sdk/pull/397)) [@clostao](https://github.com/clostao)
 - Chore v1.4.22 ([#396](https://github.com/autonomys/auto-sdk/pull/396)) [@clostao](https://github.com/clostao)
 
-
-## [1.4.24] - 2025-05-13
-
-No changes in this version.
-
-
 ## [Unreleased]
 
 Future changes will appear here.
@@ -29,8 +23,8 @@ Future changes will appear here.
 
 ### Features
 
-- ✨  add auto-design-system sdk ([#393](https://github.com/autonomys/auto-sdk/pull/393)) [@iamnamananand996](https://github.com/iamnamananand996)
-- ✨  add design tokens sdk ([#389](https://github.com/autonomys/auto-sdk/pull/389)) [@iamnamananand996](https://github.com/iamnamananand996)
+- ✨ add auto-design-system sdk ([#393](https://github.com/autonomys/auto-sdk/pull/393)) [@iamnamananand996](https://github.com/iamnamananand996)
+- ✨ add design tokens sdk ([#389](https://github.com/autonomys/auto-sdk/pull/389)) [@iamnamananand996](https://github.com/iamnamananand996)
 
 ### Bug Fixes
 
@@ -39,8 +33,6 @@ Future changes will appear here.
 ### Chores
 
 - v1.4.21 ([#392](https://github.com/autonomys/auto-sdk/pull/392)) [@clostao](https://github.com/clostao)
-
-
 
 [Unreleased]: https://github.com/autonomys/auto-sdk/compare/v1.4.23...HEAD
 [1.4.23]: https://github.com/autonomys/auto-sdk/compare/v1.4.22...v1.4.23
