@@ -1,6 +1,6 @@
 # Auto Design System
 
-This package contains React components for the Auto Design System. These components utilize the design tokens from `@autonomys/design-tokens` package to ensure consistent styling across all applications.
+This package contains React components for the Auto Design System. These components utilize the design tokens from `@autonomys/design-tokens` package to ensure consistent styling across all application.
 
 ## Installation
 
@@ -12,16 +12,16 @@ yarn add @autonomys/design-system
 
 ```jsx
 // Import the components
-import { Button, Dropdown } from '@autonomys/design-system';
+import { Button, Dropdown } from '@autonomys/design-system'
 
 // Import the styles (required)
-import '@autonomys/design-system/dist/styles.css';
+import '@autonomys/design-system/dist/styles.css'
 
 function MyComponent() {
   return (
     <div>
-      <Button variant="primary">Click Me</Button>
-      <Dropdown 
+      <Button variant='primary'>Click Me</Button>
+      <Dropdown
         options={[
           { label: 'Option 1', value: '1' },
           { label: 'Option 2', value: '2' },
@@ -29,7 +29,7 @@ function MyComponent() {
         onChange={(value) => console.log(value)}
       />
     </div>
-  );
+  )
 }
 ```
 
@@ -53,7 +53,7 @@ This design system is built with Tailwind CSS and extends the design tokens from
 
 ```js
 // tailwind.config.js
-import { colors, spacing, typography } from '@autonomys/design-tokens';
+import { colors, spacing, typography } from '@autonomys/design-tokens'
 
 /** @type {import('tailwindcss').Config} */
 export default {
@@ -71,7 +71,7 @@ export default {
     },
   },
   plugins: [],
-};
+}
 ```
 
 ## Available Components
@@ -93,4 +93,4 @@ yarn dev
 
 # Run Storybook
 yarn storybook
-``` 
+```
