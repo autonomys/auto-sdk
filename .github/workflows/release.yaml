@@ -83,12 +83,16 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Get Version
+        id: get_version
+        run: echo "version=$(node -p "require('./lerna.json').version")" >> $GITHUB_OUTPUT
+
       - name: Create GitHub Release
         if: ${{ !inputs.dryRun }}
         uses: softprops/action-gh-release@v1
         with:
           body_path: CHANGELOG.md
-          tag_name: v$(node -p "require('./lerna.json').version")
+          tag_name: v${{ steps.get_version.outputs.version }}
           prerelease: ${{ inputs.prerelease }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
