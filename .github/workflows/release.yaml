@@ -84,9 +84,8 @@ jobs:
           npm config set @autonomys:registry https://registry.npmjs.org/
 
           yarn lerna version ${{ inputs.releaseType }} --yes --no-push $PRERELEASE_FLAG
-          git pull --rebase origin $(git rev-parse --abbrev-ref HEAD)
           git push --follow-tags
-          yarn lerna publish from-package --yes
+          yarn lerna publish from-package --yes --access public
 
       - name: Get Version
         id: get_version
