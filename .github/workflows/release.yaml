@@ -55,6 +55,11 @@ jobs:
           git config --global user.name "GitHub Actions Bot"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
+      name: Generate PR-based changelog
+        run: BUMP_TYPE=${{ inputs.releaseType }} yarn changelog
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}    
+
       - name: Install dependencies
         run: yarn install
 
@@ -73,6 +78,10 @@ jobs:
           else 
             PRERELEASE_FLAG=""
           fi
+
+          # Commit the CHANGELOG.md before running lerna version
+          git add CHANGELOG.md
+          git commit -m "docs: update CHANGELOG.md for release" || echo "No changes to commit"
 
           # Ensure npm config has auth token for @autonomys scope
           npm config set //registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}
