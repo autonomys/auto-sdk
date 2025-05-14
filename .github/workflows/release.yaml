@@ -63,12 +63,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Get Version
-        id: get_version
-        run: echo "version=$(node -p "require('./lerna.json').version")" >> $GITHUB_OUTPUT
-
       - name: Version bump and publish
         if: ${{ !inputs.dryRun }}
+        id: version_bump
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -87,6 +84,11 @@ jobs:
           git commit -m "docs: update CHANGELOG.md for release" || echo "No changes to commit"
 
           yarn lerna version ${{ inputs.releaseType }} --yes --no-push --force-publish $PRERELEASE_FLAG
+
+          # Get the new version after bumping
+          NEW_VERSION=$(node -p "require('./lerna.json').version")
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+
           git push --follow-tags --force-with-lease
           yarn lerna publish from-package --yes --force-publish
 
@@ -95,7 +97,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           body_path: CHANGELOG.md
-          tag_name: v${{ steps.get_version.outputs.version }}
+          tag_name: v${{ steps.version_bump.outputs.version }}
           prerelease: ${{ inputs.prerelease }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
