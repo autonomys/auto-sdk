@@ -30,7 +30,7 @@
   },
   "devDependencies": {
     "@polkadot/extension-inject": "^0.58.6",
-    "@polkadot/types": "^15.8.1",
+    "@polkadot/types": "^15.9.3",
     "@polkadot/types-codec": "^15.8.1",
     "@types/jest": "^29.5.14",
     "eslint": "^9.25.1",
