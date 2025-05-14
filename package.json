@@ -18,7 +18,7 @@
     "publish": "yarn prepublish && lerna publish --no-private",
     "changelog": "node scripts/generate-pr-changelog.js",
     "changelog:commit": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0 --commit-path . --pkg ./lerna.json --release-count 0 --skip-unreleased",
-    "version": "yarn changelog && git add CHANGELOG.md"
+    "version": "echo 'Skipping changelog in version script'"
   },
   "packageManager": "yarn@4.7.0",
   "engines": {
@@ -53,7 +53,7 @@
     "eslint": "^9.25.1",
     "eslint-config-prettier": "^10.1.1",
     "eslint-plugin-prettier": "^5.2.5",
-    "husky": "^9.0.11",
+    "husky": "^9.1.7",
     "jest": "^29.7.0",
     "lerna": "^8.2.1",
     "prettier": "^3.5.3",
