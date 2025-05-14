@@ -20,7 +20,7 @@
     "changelog:commit": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0 --commit-path . --pkg ./lerna.json --release-count 0 --skip-unreleased",
     "version": "echo 'Skipping changelog in version script'"
   },
-  "packageManager": "yarn@4.7.0",
+  "packageManager": "yarn@4.9.1",
   "engines": {
     "node": ">=18.0.0"
   },
