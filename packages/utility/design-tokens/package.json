@@ -1,6 +1,6 @@
 {
   "name": "@autonomys/design-tokens",
-  "packageManager": "yarn@4.7.0",
+  "packageManager": "yarn@4.9.1",
   "version": "1.4.30",
   "description": "Auto Design Tokens",
   "type": "module",
