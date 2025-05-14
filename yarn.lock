@@ -213,7 +213,7 @@ __metadata:
   resolution: "@autonomys/auto-utils@workspace:packages/auto-utils"
   dependencies:
     "@polkadot/api": "npm:^15.8.1"
-    "@polkadot/extension-dapp": "npm:^0.58.6"
+    "@polkadot/extension-dapp": "npm:^0.58.9"
     "@polkadot/extension-inject": "npm:^0.58.6"
     "@polkadot/types": "npm:^15.8.1"
     "@polkadot/types-codec": "npm:^15.8.1"
@@ -4425,11 +4425,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/extension-dapp@npm:^0.58.6":
-  version: 0.58.8
-  resolution: "@polkadot/extension-dapp@npm:0.58.8"
+"@polkadot/extension-dapp@npm:^0.58.9":
+  version: 0.58.9
+  resolution: "@polkadot/extension-dapp@npm:0.58.9"
   dependencies:
-    "@polkadot/extension-inject": "npm:0.58.8"
+    "@polkadot/extension-inject": "npm:0.58.9"
     "@polkadot/util": "npm:^13.4.4"
     "@polkadot/util-crypto": "npm:^13.4.4"
     tslib: "npm:^2.8.1"
@@ -4437,11 +4437,29 @@ __metadata:
     "@polkadot/api": "*"
     "@polkadot/util": "*"
     "@polkadot/util-crypto": "*"
-  checksum: 10c0/58b6fc5f3d06b1dac9da27fe5bd15fcea1b176dbcceded56767aec2788d994ad394063febf0658863128af5677be46c435b896cd9c975b587b007e2b092fe6a6
+  checksum: 10c0/c60cc56b69a7be7e688ff262b360f4dbd97c8942dcd275ed5eca4e66acada418fae23d6e0238c1d76d95c17758070c5a4ef20275eaa132d98f252b42939af4c0
   languageName: node
   linkType: hard
 
-"@polkadot/extension-inject@npm:0.58.8, @polkadot/extension-inject@npm:^0.58.6":
+"@polkadot/extension-inject@npm:0.58.9":
+  version: 0.58.9
+  resolution: "@polkadot/extension-inject@npm:0.58.9"
+  dependencies:
+    "@polkadot/api": "npm:^15.9.2"
+    "@polkadot/rpc-provider": "npm:^15.9.2"
+    "@polkadot/types": "npm:^15.9.2"
+    "@polkadot/util": "npm:^13.4.4"
+    "@polkadot/util-crypto": "npm:^13.4.4"
+    "@polkadot/x-global": "npm:^13.4.4"
+    tslib: "npm:^2.8.1"
+  peerDependencies:
+    "@polkadot/api": "*"
+    "@polkadot/util": "*"
+  checksum: 10c0/29b45e98fa014009d0af442a19cc00aed9089c31c4a2a2138d20257eef6df9410e1cb92acc8124f191caf72651af917dff2fc0be1c6680c079b2d629531bcead
+  languageName: node
+  linkType: hard
+
+"@polkadot/extension-inject@npm:^0.58.6":
   version: 0.58.8
   resolution: "@polkadot/extension-inject@npm:0.58.8"
   dependencies:
