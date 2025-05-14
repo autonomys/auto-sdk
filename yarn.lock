@@ -34,10 +34,12 @@ __metadata:
   resolution: "@autonomys/asynchronous@workspace:packages/utility/asynchronous"
   dependencies:
     "@types/jest": "npm:^29.5.14"
+    "@types/stream-fork": "npm:^1"
     eslint: "npm:^9.25.1"
     interface-store: "npm:^6.0.2"
     jest: "npm:^29.7.0"
     prettier: "npm:^3.5.3"
+    stream-fork: "npm:^1.0.5"
     ts-jest: "npm:^29.3.1"
     typescript: "npm:^5.8.3"
   languageName: unknown
@@ -7765,6 +7767,15 @@ __metadata:
   version: 2.0.3
   resolution: "@types/stack-utils@npm:2.0.3"
   checksum: 10c0/1f4658385ae936330581bcb8aa3a066df03867d90281cdf89cc356d404bd6579be0f11902304e1f775d92df22c6dd761d4451c804b0a4fba973e06211e9bd77c
+  languageName: node
+  linkType: hard
+
+"@types/stream-fork@npm:^1":
+  version: 1.0.5
+  resolution: "@types/stream-fork@npm:1.0.5"
+  dependencies:
+    "@types/node": "npm:*"
+  checksum: 10c0/139d047cccfcbe6ac23be7a7d025b0ffbb885a0075b19248f2b7bed1becc6647180196c50152cafecb6cba52d7d1e4507d2beb2f632500bc426c06d86797fce1
   languageName: node
   linkType: hard
 
@@ -20932,6 +20943,13 @@ __metadata:
     sb: ./index.js
     storybook: ./index.js
   checksum: 10c0/c710019def6053c505ba072da539d873ca06dfbd4210ab63dcde12a1efb78b95af105b7b875571e685f2fc4e77c15462145e59372dbab3ebe176ae073915cd70
+  languageName: node
+  linkType: hard
+
+"stream-fork@npm:^1.0.5":
+  version: 1.0.5
+  resolution: "stream-fork@npm:1.0.5"
+  checksum: 10c0/b13a88550276d80ddaccb17be3e4e47e69f275a86b8f74f763125b02d699293ef41b52b456ed0897c21b38f4e895b7d4606495dc9411ab006050047476933bdf
   languageName: node
   linkType: hard
 
