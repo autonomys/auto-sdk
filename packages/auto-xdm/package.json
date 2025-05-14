@@ -1,6 +1,6 @@
 {
   "name": "@autonomys/auto-xdm",
-  "version": "1.4.29",
+  "version": "1.4.30",
   "license": "MIT",
   "main": "dist/index.js",
   "repository": {
@@ -25,8 +25,8 @@
     "README.md"
   ],
   "dependencies": {
-    "@autonomys/auto-consensus": "^1.4.29",
-    "@autonomys/auto-utils": "^1.4.29"
+    "@autonomys/auto-consensus": "^1.4.30",
+    "@autonomys/auto-utils": "^1.4.30"
   },
   "devDependencies": {
     "@types/jest": "^29.5.14",
