@@ -1,8 +1,8 @@
 'use client'
 
-import { Listbox, Transition } from '@headlessui/react'
-import { CheckIcon, ChevronDownIcon } from '@heroicons/react/20/solid'
-import { FC, Fragment, ReactNode } from 'react'
+import { CaretSortIcon, CheckIcon } from '@radix-ui/react-icons'
+import * as SelectPrimitive from '@radix-ui/react-select'
+import React, { FC, forwardRef, ReactNode } from 'react'
 import { cn } from '../../../utils/cn'
 
 export interface DropdownOption {
@@ -22,6 +22,89 @@ interface DropdownProps {
   showIcon?: boolean
 }
 
+const Select = SelectPrimitive.Root
+const SelectValue = SelectPrimitive.Value
+
+const SelectTrigger = forwardRef<
+  React.ElementRef<typeof SelectPrimitive.Trigger>,
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger> & { showIcon?: boolean }
+>(({ className, children, showIcon = true, ...props }, ref) => (
+  <SelectPrimitive.Trigger
+    ref={ref}
+    className={cn(
+      'flex h-9 w-full items-center justify-between rounded-md border border-input bg-white px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 dark:bg-boxDark',
+      className,
+    )}
+    {...props}
+  >
+    {children}
+    {showIcon && (
+      <SelectPrimitive.Icon asChild>
+        <CaretSortIcon className='h-4 w-4 opacity-50' />
+      </SelectPrimitive.Icon>
+    )}
+  </SelectPrimitive.Trigger>
+))
+SelectTrigger.displayName = SelectPrimitive.Trigger.displayName
+
+const SelectContent = forwardRef<
+  React.ElementRef<typeof SelectPrimitive.Content>,
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content>
+>(({ className, children, position = 'popper', ...props }, ref) => (
+  <SelectPrimitive.Portal>
+    <SelectPrimitive.Content
+      ref={ref}
+      className={cn(
+        'relative z-50 min-w-[8rem] overflow-hidden rounded-md border bg-white text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 dark:bg-auto-explorer-boxDark dark:text-white',
+        position === 'popper' &&
+          'data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1',
+        className,
+      )}
+      position={position}
+      {...props}
+    >
+      <SelectPrimitive.Viewport
+        className={cn(
+          'p-1',
+          position === 'popper' &&
+            'h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]',
+        )}
+      >
+        {children}
+      </SelectPrimitive.Viewport>
+    </SelectPrimitive.Content>
+  </SelectPrimitive.Portal>
+))
+SelectContent.displayName = SelectPrimitive.Content.displayName
+
+const SelectItem = forwardRef<
+  React.ElementRef<typeof SelectPrimitive.Item>,
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Item> & {
+    icon?: ReactNode
+    showIcon?: boolean
+  }
+>(({ className, children, icon, showIcon = true, ...props }, ref) => (
+  <SelectPrimitive.Item
+    ref={ref}
+    className={cn(
+      'relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 hover:bg-gray-100 dark:hover:bg-gray-700',
+      className,
+    )}
+    {...props}
+  >
+    <span className='absolute left-2 flex h-3.5 w-3.5 items-center justify-center'>
+      <SelectPrimitive.ItemIndicator>
+        <CheckIcon className='h-4 w-4 text-auto-explorer-blueAccent dark:text-auto-explorer-blueLight' />
+      </SelectPrimitive.ItemIndicator>
+    </span>
+    <div className='flex items-center'>
+      {icon && showIcon && <span className='mr-2'>{icon}</span>}
+      <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
+    </div>
+  </SelectPrimitive.Item>
+))
+SelectItem.displayName = SelectPrimitive.Item.displayName
+
 export const Dropdown: FC<DropdownProps> = ({
   options,
   value,
@@ -32,70 +115,35 @@ export const Dropdown: FC<DropdownProps> = ({
   placeholder = 'Select an option',
   showIcon = true,
 }) => {
+  const handleValueChange = (selectedValueId: string) => {
+    const selectedOption = options.find((option) => option.id.toString() === selectedValueId)
+    if (selectedOption) {
+      onChange(selectedOption)
+    }
+  }
+
   return (
-    <Listbox value={value} onChange={onChange}>
-      <div className={cn('relative mt-1 w-full', className)}>
-        <Listbox.Button
-          className={cn(
-            'relative w-full cursor-default rounded-lg bg-white py-2 pl-3 pr-10 text-left shadow-md focus:outline-none focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 focus-visible:ring-offset-2 focus-visible:ring-offset-orange-300 dark:bg-boxDark sm:text-sm',
-            buttonClassName,
-          )}
-        >
+    <div className={className}>
+      <Select value={value.id.toString()} onValueChange={handleValueChange}>
+        <SelectTrigger className={cn('w-full', buttonClassName)} showIcon={showIcon}>
           <div className='flex items-center'>
             {value.icon && showIcon && <span className='mr-2'>{value.icon}</span>}
-            <span className='block truncate'>{value.name || placeholder}</span>
-            <span className='pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2'>
-              <ChevronDownIcon
-                className='size-5 text-gray-400 ui-open:rotate-180'
-                aria-hidden='true'
-              />
-            </span>
+            <SelectValue placeholder={placeholder}>{value.name || placeholder}</SelectValue>
           </div>
-        </Listbox.Button>
-        <Transition
-          as={Fragment}
-          leave='transition ease-in duration-100'
-          leaveFrom='opacity-100'
-          leaveTo='opacity-0'
-        >
-          <Listbox.Options
-            className={cn(
-              'absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-auto-explorer-boxDark sm:text-sm',
-              optionsClassName,
-            )}
-          >
-            {options.map((option) => (
-              <Listbox.Option
-                key={option.id}
-                className={({ active }) =>
-                  `relative cursor-default select-none py-2 pl-10 pr-4 text-gray-900 dark:text-white ${
-                    active && 'bg-gray-100 dark:bg-gray-700'
-                  }`
-                }
-                value={option}
-              >
-                {({ selected }) => (
-                  <>
-                    <div className='flex items-center'>
-                      {option.icon && showIcon && <span className='mr-2'>{option.icon}</span>}
-                      <span
-                        className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}
-                      >
-                        {option.name}
-                      </span>
-                    </div>
-                    {selected ? (
-                      <span className='absolute inset-y-0 left-0 flex items-center pl-3 text-auto-explorer-blueAccent dark:text-auto-explorer-blueLight'>
-                        <CheckIcon className='size-5' aria-hidden='true' />
-                      </span>
-                    ) : null}
-                  </>
-                )}
-              </Listbox.Option>
-            ))}
-          </Listbox.Options>
-        </Transition>
-      </div>
-    </Listbox>
+        </SelectTrigger>
+        <SelectContent className={cn('max-h-60', optionsClassName)}>
+          {options.map((option) => (
+            <SelectItem
+              key={option.id}
+              value={option.id.toString()}
+              icon={option.icon}
+              showIcon={showIcon}
+            >
+              {option.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
   )
 }

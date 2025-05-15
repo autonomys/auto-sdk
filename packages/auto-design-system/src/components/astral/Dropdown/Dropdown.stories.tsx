@@ -1,12 +1,19 @@
 import type { Meta, StoryObj } from '@storybook/react'
 import React, { useState } from 'react'
-import { DropdownOption, DropdownStoryWrapper } from './DropdownStoryWrapper'
+import { Dropdown, DropdownOption } from './Dropdown'
 
 // Sample options for the dropdown
 const sampleOptions: DropdownOption[] = [
   { id: 1, name: 'Option 1' },
   { id: 2, name: 'Option 2' },
   { id: 3, name: 'Option 3' },
+  { id: 4, name: 'Option 4' },
+  { id: 5, name: 'Option 5' },
+  { id: 6, name: 'Option 6' },
+  { id: 7, name: 'Option 7' },
+  { id: 8, name: 'Option 8' },
+  { id: 9, name: 'Option 9' },
+  { id: 10, name: 'Option 10' },
 ]
 
 const sampleOptionsWithIcons: DropdownOption[] = [
@@ -15,72 +22,63 @@ const sampleOptionsWithIcons: DropdownOption[] = [
   { id: 3, name: 'Option 3', icon: <span>🟣</span> },
 ]
 
-// Create a proper type for the DropdownWrapper props
-type DropdownWrapperProps = {
-  options: DropdownOption[]
-  value?: DropdownOption
-  placeholder?: string
-  showIcon?: boolean
-  className?: string
-  buttonClassName?: string
-  optionsClassName?: string
-}
-
-// Wrapper component for interactive stories
-const DropdownWrapper = (props: DropdownWrapperProps) => {
-  const [selectedOption, setSelectedOption] = useState(props.value || sampleOptions[0])
-  return (
-    <DropdownStoryWrapper
-      {...props}
-      value={selectedOption}
-      onChange={(option) => setSelectedOption(option)}
-    />
-  )
-}
-
-const meta: Meta<typeof DropdownStoryWrapper> = {
+const meta: Meta<typeof Dropdown> = {
   title: 'Astral/Dropdown',
-  component: DropdownWrapper,
+  component: Dropdown,
   parameters: {
     layout: 'centered',
   },
   tags: ['autodocs'],
-  argTypes: {
-    placeholder: {
-      control: 'text',
-      description: 'Placeholder text shown when no option is selected',
-    },
-    showIcon: {
-      control: 'boolean',
-      description: 'Whether to show icons in the dropdown options',
-    },
-  },
 }
 
 export default meta
-type Story = StoryObj<typeof DropdownWrapper>
+type Story = StoryObj<typeof Dropdown>
 
+// Default story with state management
 export const Default: Story = {
-  args: {
-    options: sampleOptions,
-    value: sampleOptions[0],
+  render: () => {
+    const [selectedOption, setSelectedOption] = useState<DropdownOption>(sampleOptions[0])
+    return (
+      <Dropdown
+        options={sampleOptions}
+        value={selectedOption}
+        onChange={setSelectedOption}
+        placeholder='Select an option'
+      />
+    )
   },
 }
 
+// Story with icons
 export const WithIcons: Story = {
-  args: {
-    options: sampleOptionsWithIcons,
-    value: sampleOptionsWithIcons[0],
-    showIcon: true,
+  render: () => {
+    const [selectedOption, setSelectedOption] = useState<DropdownOption>(sampleOptionsWithIcons[0])
+    return (
+      <Dropdown
+        options={sampleOptionsWithIcons}
+        value={selectedOption}
+        onChange={setSelectedOption}
+        showIcon={true}
+        placeholder='Select an option with icons'
+      />
+    )
   },
 }
 
+// Story with custom styles
 export const WithCustomStyles: Story = {
-  args: {
-    options: sampleOptions,
-    value: sampleOptions[0],
-    className: 'w-64',
-    buttonClassName: 'bg-blue-50 dark:bg-blue-900',
-    optionsClassName: 'bg-blue-50 dark:bg-blue-900',
+  render: () => {
+    const [selectedOption, setSelectedOption] = useState<DropdownOption>(sampleOptions[0])
+    return (
+      <Dropdown
+        options={sampleOptions}
+        value={selectedOption}
+        onChange={setSelectedOption}
+        className='w-64'
+        buttonClassName='bg-blue-50 dark:bg-blue-900'
+        optionsClassName='bg-blue-50 dark:bg-blue-900'
+        placeholder='Custom styled dropdown'
+      />
+    )
   },
 }
