@@ -5,7 +5,7 @@ import { isAddress } from 'ethers'
 import Link from 'next/link'
 import React, { FC } from 'react'
 import useMediaQuery from '../../../hooks/useMediaQuery'
-import { cn } from '../../../lib/cn'
+import { cn } from '../../../utils/cn'
 import { CopyButton } from '../Buttons/CopyButton'
 interface AccountIconProps {
   address: string

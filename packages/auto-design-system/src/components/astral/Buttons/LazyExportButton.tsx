@@ -1,6 +1,6 @@
 import React, { FC, useCallback, useState } from 'react'
-import { sendGAEvent } from '../../../lib/analytics'
-import { exportToExcel } from '../../../lib/exportToExcel'
+import { sendGAEvent } from '../../../utils/analytics'
+import { exportToExcel } from '../../../utils/exportToExcel'
 import { Button, ButtonProps } from './Button'
 
 type LazyExportButtonProps = Omit<ButtonProps, 'variant' | 'onClick' | 'isLoading'> & {

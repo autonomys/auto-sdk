@@ -1,6 +1,6 @@
 import { Check, Copy } from 'lucide-react'
 import React, { FC, useState } from 'react'
-import { cn } from '../../../lib/cn'
+import { cn } from '../../../utils/cn'
 import { Button, ButtonProps } from './Button'
 
 interface CopyButtonProps extends Omit<ButtonProps, 'variant'> {

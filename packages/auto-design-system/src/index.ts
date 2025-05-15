@@ -9,7 +9,7 @@
 import './styles.css'
 
 // Export utility functions
-export { cn } from './lib/cn'
+export { cn } from './utils/cn'
 
 // Export components
 // export { default as Button } from './components/astral/Buttons/Button'
