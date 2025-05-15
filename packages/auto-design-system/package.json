@@ -35,10 +35,16 @@
   },
   "dependencies": {
     "@autonomys/design-tokens": "1.4.30",
+    "@floating-ui/react": "^0.27.8",
+    "@headlessui/react": "^2.2.3",
     "@heroicons/react": "^2.2.0",
+    "@polkadot/react-identicon": "^3.13.1",
     "@radix-ui/react-slot": "^1.0.2",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
+    "next": "^15.3.2",
+    "react-icons": "^5.5.0",
+    "react-is": "^19.1.0",
     "tailwind-merge": "^2.2.1"
   },
   "devDependencies": {
@@ -61,6 +67,7 @@
     "@types/babel__preset-env": "^7",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
+    "@types/react-is": "^19",
     "autoprefixer": "^10.4.16",
     "babel-loader": "^10.0.0",
     "concurrently": "^8.2.0",
