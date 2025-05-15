@@ -1,6 +1,5 @@
 'use client'
 
-import { cn } from '@/utils/cn'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import React, {
   MouseEventHandler,
@@ -10,6 +9,7 @@ import React, {
   useEffect,
   useState,
 } from 'react'
+import { cn } from '../../../utils/cn'
 
 const generateIdFromTitle = (title: string) => {
   return title
@@ -126,7 +126,7 @@ export const Tabs: React.FC<TabsProps> = ({
   tabStyle = 'bg-white border border-slate-100 shadow rounded-lg p-4',
   tabTitleStyle = '',
   pillStyle = 'text-gray-600 bg-white dark:bg-transparent dark:text-white',
-  activePillStyle = 'text-white bg-grayDarker dark:bg-blueAccent',
+  activePillStyle = 'text-white bg-auto-explorer-grayDarker dark:bg-auto-explorer-blueAccent',
 }) => {
   const [selectedTab, setSelectedTab] = useState<number | string>(initialIndex)
   const searchParams = useSearchParams()
