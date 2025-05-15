@@ -26,6 +26,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children?: ReactNode
   className?: string
   loadingLabel?: string
+  classNameIcon?: string
 }
 
 export const Button: FC<ButtonProps> = ({
@@ -39,6 +40,7 @@ export const Button: FC<ButtonProps> = ({
   className,
   loadingLabel = 'Loading...',
   disabled,
+  classNameIcon,
   ...rest
 }) => {
   // Base styles that apply to all buttons
@@ -66,7 +68,7 @@ export const Button: FC<ButtonProps> = ({
     arrow: 'bg-grayDarker text-white text-xs font-light px-5 py-3',
     rounded:
       'bg-white text-gray-800 hover:bg-gray-200 dark:bg-[#1E254E] dark:text-white px-[33px] py-[13px]',
-    copy: 'flex gap-2 border border-auto-explorer-buttonLightFrom',
+    copy: 'flex gap-2',
     export:
       'bg-auto-explorer-buttonLightFrom text-white dark:bg-auto-explorer-buttonDarkTo max-w-fit',
     wallet:
@@ -89,9 +91,9 @@ export const Button: FC<ButtonProps> = ({
 
     return (
       <>
-        {leftIcon && <span className='mr-2'>{leftIcon}</span>}
+        {leftIcon && <span className={cn('mr-2', classNameIcon)}>{leftIcon}</span>}
         {children}
-        {rightIcon && <span className='ml-2'>{rightIcon}</span>}
+        {rightIcon && <span className={cn('ml-2', classNameIcon)}>{rightIcon}</span>}
       </>
     )
   }

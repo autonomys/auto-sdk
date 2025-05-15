@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react'
-import { AccountIconStoryWrapper } from './AccountIconStoryWrapper'
+import { AccountIconWithLink } from './AccountIcon'
 
-const meta: Meta<typeof AccountIconStoryWrapper> = {
-  title: 'Astral/AccountIcon',
-  component: AccountIconStoryWrapper,
+const meta: Meta<typeof AccountIconWithLink> = {
+  title: 'Astral/AccountIconWithLink',
+  component: AccountIconWithLink,
   parameters: {
     layout: 'centered',
   },
@@ -30,17 +30,29 @@ const meta: Meta<typeof AccountIconStoryWrapper> = {
       control: 'boolean',
       description: 'Highlight the icon',
     },
+    className: {
+      control: 'text',
+      description: 'Additional CSS class name',
+    },
+    isCopyable: {
+      control: 'boolean',
+      description: 'Show copy button',
+    },
   },
 }
 
 export default meta
-type Story = StoryObj<typeof AccountIconStoryWrapper>
+type Story = StoryObj<typeof AccountIconWithLink>
 
 export const Default: Story = {
   args: {
-    address: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY',
-    size: 48,
+    address: 'sucGPHK3b4REe2DNRvNaUrmcoXVDDZVasm7zBNtev4zUpLrp4',
+    size: 24,
     theme: 'beachball',
+    network: 'mainnet',
+    section: 'consensus',
+    link: 'https://explorer.autonomys.xyz/mainnet/consensus/accounts/sucGPHK3b4REe2DNRvNaUrmcoXVDDZVasm7zBNtev4zUpLrp4',
+    isCopyable: true,
   },
 }
 
@@ -49,33 +61,44 @@ export const Ethereum: Story = {
     address: '0x1234567890123456789012345678901234567890',
     size: 48,
     theme: 'ethereum',
+    network: 'mainnet',
+    section: 'consensus',
+    link: 'https://explorer.autonomys.xyz/mainnet/consensus/accounts/0x1234567890123456789012345678901234567890',
+    isCopyable: true,
   },
 }
 
-export const Small: Story = {
+export const Polkadot: Story = {
   args: {
     address: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY',
     size: 24,
+    theme: 'polkadot',
+    isCopyable: true,
   },
 }
 
-export const Large: Story = {
+export const Jdenticon: Story = {
   args: {
-    address: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY',
-    size: 96,
+    address: '0x1234567890123456789012345678901234567890',
+    size: 48,
+    theme: 'jdenticon',
+    isCopyable: true,
   },
 }
 
-export const Alternative: Story = {
+export const Substrate: Story = {
   args: {
     address: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY',
-    isAlternative: true,
+    size: 24,
+    theme: 'substrate',
+    isCopyable: true,
   },
 }
 
-export const Highlighted: Story = {
+export const Empty: Story = {
   args: {
     address: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY',
-    isHighlight: true,
+    size: 24,
+    theme: 'empty',
   },
 }
