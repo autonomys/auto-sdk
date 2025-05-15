@@ -4,7 +4,6 @@ import { IconTheme } from '@polkadot/react-identicon/types'
 import { isAddress } from 'ethers'
 import Link from 'next/link'
 import React, { FC } from 'react'
-import { INTERNAL_ROUTES } from '../../../constants/routes'
 import useMediaQuery from '../../../hooks/useMediaQuery'
 import { cn } from '../../../lib/cn'
 import { CopyButton } from '../Buttons/CopyButton'
@@ -40,16 +39,12 @@ export const AccountIcon: FC<AccountIconProps> = ({
 
 export const AccountIconWithLink = ({
   address,
-  network,
-  section,
   link,
   forceShortString = false,
   className,
   isCopyable = false,
   ...props
 }: AccountIconProps & {
-  network: string
-  section: string
   link?: string
   forceShortString?: boolean
   isCopyable?: boolean
@@ -61,10 +56,7 @@ export const AccountIconWithLink = ({
       {!isEthereumAddress ? (
         <>
           <AccountIcon address={address} size={26} theme='beachball' {...props} />
-          <Link
-            href={link ?? INTERNAL_ROUTES.accounts.id.page(network, section, address)}
-            className='hover:text-auto-explorer-primaryAccent'
-          >
+          <Link href={link ?? ''} className='hover:text-auto-explorer-primaryAccent'>
             <div>{!isDesktop || forceShortString ? shortString(address) : address}</div>
           </Link>
           {isCopyable && <CopyButton value={address} className='px-0' />}
