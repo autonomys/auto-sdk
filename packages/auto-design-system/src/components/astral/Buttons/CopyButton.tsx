@@ -21,9 +21,9 @@ export const CopyButton: FC<CopyButtonProps> = ({
 }) => {
   const [copied, setCopied] = useState(false)
 
-  const handleCopyClick = (): void => {
+  const handleCopyClick = async (): Promise<void> => {
     try {
-      navigator.clipboard.writeText(value)
+      await navigator.clipboard.writeText(value)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000) // Reset after 2 seconds
     } catch (error) {
