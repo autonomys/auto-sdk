@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react'
 import { SimpleSpinner } from './SimpleSpinner'
-import { SpinnerSvgStoryWrapper } from './SpinnerSvgStoryWrapper'
+import { SpinnerSvg } from './SpinnerSvg'
 
 // SimpleSpinner stories
 const simpleSpinnerMeta: Meta<typeof SimpleSpinner> = {
@@ -18,9 +18,9 @@ type SimpleSpinnerStory = StoryObj<typeof SimpleSpinner>
 export const Default: SimpleSpinnerStory = {}
 
 // SpinnerSvg stories
-const spinnerSvgMeta: Meta<typeof SpinnerSvgStoryWrapper> = {
+const spinnerSvgMeta: Meta<typeof SpinnerSvg> = {
   title: 'Astral/Spinners/SpinnerSvg',
-  component: SpinnerSvgStoryWrapper,
+  component: SpinnerSvg,
   parameters: {
     layout: 'centered',
   },
@@ -35,18 +35,6 @@ const spinnerSvgMeta: Meta<typeof SpinnerSvgStoryWrapper> = {
 
 // Need to export this separately since we can only have one default export
 export const spinnerSvgStories = spinnerSvgMeta
-type SpinnerSvgStory = StoryObj<typeof SpinnerSvgStoryWrapper>
+type SpinnerSvgStory = StoryObj<typeof SpinnerSvg>
 
 export const DefaultSpinnerSvg: SpinnerSvgStory = {}
-
-export const LargeSpinnerSvg: SpinnerSvgStory = {
-  args: {
-    className: 'h-8 w-8 text-blue-500',
-  },
-}
-
-export const SmallSpinnerSvg: SpinnerSvgStory = {
-  args: {
-    className: 'h-2 w-2 text-red-500',
-  },
-}
