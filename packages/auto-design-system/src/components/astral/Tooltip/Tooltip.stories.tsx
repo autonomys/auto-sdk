@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react'
 import React from 'react'
-import { TooltipStoryWrapper } from './TooltipStoryWrapper'
+import { Tooltip } from './Tooltip'
 
-const meta: Meta<typeof TooltipStoryWrapper> = {
+const meta: Meta<typeof Tooltip> = {
   title: 'Astral/Tooltip',
-  component: TooltipStoryWrapper,
+  component: Tooltip,
   parameters: {
     layout: 'centered',
   },
@@ -27,16 +27,17 @@ const meta: Meta<typeof TooltipStoryWrapper> = {
 }
 
 export default meta
-type Story = StoryObj<typeof TooltipStoryWrapper>
+type Story = StoryObj<typeof Tooltip>
 
 export const Default: Story = {
   args: {
-    text: 'This is a tooltip',
+    text: 'This is a tooltip with a custom style and a custom direction, and a custom text',
     children: (
       <button className='bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded'>
         Hover Me
       </button>
     ),
+    className: 'max-w-xs',
   },
 }
 

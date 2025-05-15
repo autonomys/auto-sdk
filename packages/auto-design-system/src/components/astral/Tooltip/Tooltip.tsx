@@ -1,7 +1,7 @@
 'use client'
 
 import { flip, FloatingPortal, offset, shift, useFloating } from '@floating-ui/react'
-import { FC, useState } from 'react'
+import React, { FC, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { cn } from '../../../utils/cn'
 
