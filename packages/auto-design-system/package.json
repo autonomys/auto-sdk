@@ -30,10 +30,29 @@
     "dev": "concurrently \"npm run build -- --watch\" \"postcss src/styles.css -o dist/styles.css --watch\"",
     "tsc": "tsc",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "shadcn": "npx shadcn-ui@latest add"
   },
   "dependencies": {
-    "@autonomys/design-tokens": "^1.4.31"
+    "@autonomys/design-tokens": "1.4.31",
+    "@floating-ui/react": "^0.27.8",
+    "@headlessui/react": "^2.2.3",
+    "@heroicons/react": "^2.2.0",
+    "@polkadot/react-identicon": "^3.13.1",
+    "@radix-ui/react-accordion": "^1.2.10",
+    "@radix-ui/react-dialog": "^1.1.13",
+    "@radix-ui/react-dismissable-layer": "^1.0.5",
+    "@radix-ui/react-icons": "^1.3.2",
+    "@radix-ui/react-select": "^2.2.4",
+    "@radix-ui/react-slot": "^1.0.2",
+    "@radix-ui/react-use-callback-ref": "^1.1.1",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.1.0",
+    "lucide-react": "^0.510.0",
+    "next": "^15.3.2",
+    "react-icons": "^5.5.0",
+    "react-is": "^19.1.0",
+    "tailwind-merge": "^2.2.1"
   },
   "devDependencies": {
     "@babel/core": "^7.27.1",
@@ -55,6 +74,7 @@
     "@types/babel__preset-env": "^7",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
+    "@types/react-is": "^19",
     "autoprefixer": "^10.4.16",
     "babel-loader": "^10.0.0",
     "concurrently": "^8.2.0",
@@ -67,6 +87,7 @@
     "rollup-plugin-peer-deps-external": "^2.2.4",
     "storybook": "^7.6.10",
     "tailwindcss": "^3.3.5",
+    "tailwindcss-animate": "^1.0.7",
     "typescript": "^5.3.3",
     "webpack": "^5.99.8"
   },
