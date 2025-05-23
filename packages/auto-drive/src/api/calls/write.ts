@@ -17,7 +17,7 @@ export const shareObject = async (
   api: AutoDriveApiHandler,
   query: ArgsWithoutPagination<{ cid: string; publicId: string }>,
 ) => {
-  const response = await api.sendRequest(
+  const response = await api.sendAPIRequest(
     `/objects/${query.cid}/share`,
     {
       method: 'POST',
@@ -51,7 +51,7 @@ export const markObjectAsDeleted = async (
   api: AutoDriveApiHandler,
   query: ArgsWithoutPagination<{ cid: string }>,
 ): Promise<void> => {
-  const response = await api.sendRequest(`/objects/${query.cid}/delete`, {
+  const response = await api.sendAPIRequest(`/objects/${query.cid}/delete`, {
     method: 'POST',
   })
 
@@ -76,7 +76,7 @@ export const restoreObject = async (
   api: AutoDriveApiHandler,
   query: ArgsWithoutPagination<{ cid: string }>,
 ): Promise<void> => {
-  const response = await api.sendRequest(`/objects/${query.cid}/restore`, {
+  const response = await api.sendAPIRequest(`/objects/${query.cid}/restore`, {
     method: 'POST',
   })
 
@@ -103,7 +103,7 @@ export const publishObject = async (
   api: AutoDriveApiHandler,
   query: ArgsWithoutPagination<{ cid: string }>,
 ): Promise<{ result: string }> => {
-  const response = await api.sendRequest(`/objects/${query.cid}/publish`, {
+  const response = await api.sendAPIRequest(`/objects/${query.cid}/publish`, {
     method: 'POST',
   })
 
