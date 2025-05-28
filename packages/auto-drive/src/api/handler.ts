@@ -41,7 +41,7 @@ export const createApiRequestHandler = ({
 
   const api = {
     sendAPIRequest: createSendRequest(baseUrl, provider, apiKey),
-    sendDownloadServiceRequest: createSendRequest(downloadBaseUrl, provider, apiKey),
+    sendDownloadRequest: createSendRequest(downloadBaseUrl, provider, apiKey),
     downloadBaseUrl,
     baseUrl,
   }

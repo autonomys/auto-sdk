@@ -361,6 +361,8 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
     searchByNameOrCIDInMyFiles,
     searchByNameOrCID,
     sendAPIRequest: api.sendAPIRequest,
+    sendDownloadRequest: api.sendDownloadRequest,
     baseUrl: api.baseUrl,
+    downloadBaseUrl: api.downloadBaseUrl,
   }
 }
