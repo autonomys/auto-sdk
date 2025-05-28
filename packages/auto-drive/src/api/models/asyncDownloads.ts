@@ -18,3 +18,8 @@ export interface AsyncDownload {
   createdAt: Date
   updatedAt: Date
 }
+
+export enum DownloadStatus {
+  Cached = 'cached',
+  NotCached = 'not-cached',
+}

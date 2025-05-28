@@ -14,6 +14,14 @@ export interface AutoDriveApi extends AutoDriveApiHandler {
   me: () => Promise<UserInfo>
 
   /**
+   * Checks if a file is cached.
+   *
+   * @param cid {string} - The CID of the file to check.
+   * @returns {Promise<boolean>} - A promise that resolves to true if the file is cached, false otherwise.
+   */
+  isFileCached: (cid: string) => Promise<boolean>
+
+  /**
    * Uploads a file to the server with optional encryption and compression.
    *
    * This function reads a file from the provided input, optionally encrypts it
@@ -200,8 +208,6 @@ export interface AutoDriveApi extends AutoDriveApiHandler {
    * @returns {Promise<void>} - A promise that resolves when the async download is dismissed.
    */
   dismissAsyncDownload: (downloadId: string) => Promise<void>
-
-  
 }
 
 export interface AutoDriveApiHandler {

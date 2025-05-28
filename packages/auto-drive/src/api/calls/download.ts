@@ -1,5 +1,5 @@
 import { ArgsWithoutPagination } from '../../utils/types'
-import { AsyncDownload } from '../models/asyncDownloads'
+import { AsyncDownload, DownloadStatus } from '../models/asyncDownloads'
 import { AutoDriveApiHandler } from '../types'
 
 export const downloadObject = async (
@@ -82,4 +82,19 @@ export const dismissAsyncDownload = async (
 }
 export const publicDownloadUrl = (api: AutoDriveApiHandler, cid: string): string => {
   return `${api.baseUrl}/objects/${cid}/public`
+}
+
+export const downloadStatus = async (
+  api: AutoDriveApiHandler,
+  cid: string,
+): Promise<{ status: DownloadStatus }> => {
+  const response = await api.sendRequest(`/downloads/async/${cid}/status`, {
+    method: 'GET',
+  })
+
+  if (!response.ok) {
+    throw new Error(`Failed to get download status: ${response.statusText}`)
+  }
+
+  return response.json() as Promise<{ status: DownloadStatus }>
 }
