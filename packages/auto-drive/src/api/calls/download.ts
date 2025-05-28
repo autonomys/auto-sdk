@@ -30,7 +30,7 @@ export const createAsyncDownload = async (
   api: AutoDriveApiHandler,
   cid: string,
 ): Promise<AsyncDownload> => {
-  const response = await api.sendRequest(`/downloads/async/${cid}`, {
+  const response = await api.sendDownloadRequest(`/downloads/async/${cid}`, {
     method: 'POST',
   })
 
@@ -45,7 +45,7 @@ export const getAsyncDownload = async (
   api: AutoDriveApiHandler,
   downloadId: string,
 ): Promise<AsyncDownload> => {
-  const response = await api.sendRequest(`/downloads/async/${downloadId}`, {
+  const response = await api.sendDownloadRequest(`/downloads/async/${downloadId}`, {
     method: 'GET',
   })
 
@@ -57,7 +57,7 @@ export const getAsyncDownload = async (
 }
 
 export const getAsyncDownloads = async (api: AutoDriveApiHandler): Promise<AsyncDownload[]> => {
-  const response = await api.sendRequest('/downloads/async/@me', {
+  const response = await api.sendDownloadRequest('/downloads/async/@me', {
     method: 'GET',
   })
 
@@ -72,7 +72,7 @@ export const dismissAsyncDownload = async (
   api: AutoDriveApiHandler,
   downloadId: string,
 ): Promise<void> => {
-  const response = await api.sendRequest(`/downloads/async/${downloadId}/dismiss`, {
+  const response = await api.sendDownloadRequest(`/downloads/async/${downloadId}/dismiss`, {
     method: 'POST',
   })
 
@@ -88,7 +88,7 @@ export const downloadStatus = async (
   api: AutoDriveApiHandler,
   cid: string,
 ): Promise<{ status: DownloadStatus }> => {
-  const response = await api.sendRequest(`/downloads/async/${cid}/status`, {
+  const response = await api.sendDownloadRequest(`/downloads/async/${cid}/status`, {
     method: 'GET',
   })
 
