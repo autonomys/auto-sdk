@@ -55,6 +55,11 @@ export const createFileCache = (config: BaseCacheConfig) => {
     }
   }
 
+  const has = async (cid: string) => {
+    const path = cidToFilePath(cid)
+    return fsPromises.access(path, fs.constants.F_OK)
+  }
+
   const set = async (cid: string, fileResponse: FileResponse) => {
     const filePath = cidToFilePath(cid)
 
@@ -88,6 +93,7 @@ export const createFileCache = (config: BaseCacheConfig) => {
   const cache = {
     get,
     set,
+    has,
     remove,
   }
 

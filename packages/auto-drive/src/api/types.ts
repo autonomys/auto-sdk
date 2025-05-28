@@ -211,11 +211,17 @@ export interface AutoDriveApi extends AutoDriveApiHandler {
 }
 
 export interface AutoDriveApiHandler {
-  sendRequest: (
+  sendAPIRequest: (
     relativeUrl: string,
     request: Partial<Request>,
     body?: BodyInit,
   ) => Promise<Response>
+  sendDownloadRequest: (
+    relativeUrl: string,
+    request: Partial<Request>,
+    body?: BodyInit,
+  ) => Promise<Response>
+  downloadBaseUrl: string
   baseUrl: string
 }
 

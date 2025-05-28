@@ -361,7 +361,8 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
     getMyFiles,
     searchByNameOrCIDInMyFiles,
     searchByNameOrCID,
-    sendRequest: api.sendRequest,
+    sendAPIRequest: api.sendAPIRequest,
+    sendDownloadRequest: api.sendDownloadRequest,
     getAsyncDownloads: () => apiCalls.getAsyncDownloads(api),
     createAsyncDownload: (cid: string) => apiCalls.createAsyncDownload(api, cid),
     getAsyncDownload: (downloadId: string) => apiCalls.getAsyncDownload(api, downloadId),
@@ -369,5 +370,6 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
     isFileCached: (cid: string) =>
       apiCalls.downloadStatus(api, cid).then((e) => e.status === DownloadStatus.Cached),
     baseUrl: api.baseUrl,
+    downloadBaseUrl: api.downloadBaseUrl,
   }
 }

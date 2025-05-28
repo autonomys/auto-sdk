@@ -8,7 +8,7 @@ export const downloadObject = async (
 ): Promise<ReadableStream<Uint8Array>> => {
   const ignoreBackendEncoding = query.ignoreBackendEncoding ?? true
 
-  const response = await api.sendRequest(
+  const response = await api.sendDownloadRequest(
     `/downloads/${query.cid}?ignoreEncoding=${ignoreBackendEncoding}`,
     {
       method: 'GET',
@@ -81,7 +81,7 @@ export const dismissAsyncDownload = async (
   }
 }
 export const publicDownloadUrl = (api: AutoDriveApiHandler, cid: string): string => {
-  return `${api.baseUrl}/objects/${cid}/public`
+  return `${api.downloadBaseUrl}/objects/${cid}/public`
 }
 
 export const downloadStatus = async (

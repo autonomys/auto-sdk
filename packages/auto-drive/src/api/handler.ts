@@ -1,6 +1,25 @@
 import { version } from '../package'
-import { getNetworkUrl } from './networks'
-import { AutoDriveApiHandler, ConnectionOptions } from './types'
+import { getDownloadServiceUrl, getNetworkUrl } from './networks'
+import { AuthProvider, AutoDriveApiHandler, ConnectionOptions } from './types'
+
+const createSendRequest =
+  (baseUrl: string, provider: AuthProvider, apiKey: string) =>
+  async (relativeUrl: string, request: Partial<Request>, body?: BodyInit) => {
+    const headers = new Headers({
+      ...Object.fromEntries(request.headers?.entries() || []),
+      'x-auth-provider': provider,
+      Authorization: `Bearer ${apiKey}`,
+      'x-auto-sdk-version': version,
+      'User-Agent': `AutoDrive/${version}`,
+    })
+    const fullRequest = {
+      ...request,
+      headers: new Headers(headers),
+      body,
+    }
+
+    return fetch(`${baseUrl}${relativeUrl}`, fullRequest)
+  }
 
 export const createApiRequestHandler = ({
   provider = 'apikey',
@@ -9,27 +28,21 @@ export const createApiRequestHandler = ({
   network,
 }: ConnectionOptions): AutoDriveApiHandler => {
   const baseUrl = !network ? url : getNetworkUrl(network)
+  const downloadBaseUrl = !network ? url : getDownloadServiceUrl(network)
   if (!baseUrl) {
     throw new Error('No base URL provided')
   }
+  if (!downloadBaseUrl) {
+    throw new Error('No download base URL provided')
+  }
+  if (!apiKey) {
+    throw new Error('No API key provided')
+  }
 
   const api = {
-    sendRequest: async (relativeUrl: string, request: Partial<Request>, body?: BodyInit) => {
-      const headers = new Headers({
-        ...Object.fromEntries(request.headers?.entries() || []),
-        'x-auth-provider': provider,
-        Authorization: `Bearer ${apiKey}`,
-        'x-auto-sdk-version': version,
-        'User-Agent': `AutoDrive/${version}`,
-      })
-      const fullRequest = {
-        ...request,
-        headers: new Headers(headers),
-        body,
-      }
-
-      return fetch(`${baseUrl}${relativeUrl}`, fullRequest)
-    },
+    sendAPIRequest: createSendRequest(baseUrl, provider, apiKey),
+    sendDownloadRequest: createSendRequest(downloadBaseUrl, provider, apiKey),
+    downloadBaseUrl,
     baseUrl,
   }
 
