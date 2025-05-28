@@ -1,8 +1,6 @@
 #!/usr/bin/env node
 
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
-import { autoDriveServer } from '../auto-drive/index.js'
-import { autoExperiencesServer } from '../auto-experiences/index.js'
 
 const showHelp = () => {
   console.error(`
@@ -38,14 +36,18 @@ const main = async () => {
 
   try {
     switch (serverName) {
-      case 'auto-drive':
+      case 'auto-drive': {
         console.error('Starting Auto Drive MCP server...')
+        const { autoDriveServer } = await import('../auto-drive/index.js')
         await autoDriveServer.connect(transport)
         break
-      case 'auto-experiences':
+      }
+      case 'auto-experiences': {
         console.error('Starting Auto Experiences MCP server...')
+        const { autoExperiencesServer } = await import('../auto-experiences/index.js')
         await autoExperiencesServer.connect(transport)
         break
+      }
       case 'help':
       case '--help':
       case '-h':
