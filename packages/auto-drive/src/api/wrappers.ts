@@ -360,7 +360,9 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
     getMyFiles,
     searchByNameOrCIDInMyFiles,
     searchByNameOrCID,
-    sendRequest: api.sendRequest,
+    sendAPIRequest: api.sendAPIRequest,
+    sendDownloadRequest: api.sendDownloadRequest,
     baseUrl: api.baseUrl,
+    downloadBaseUrl: api.downloadBaseUrl,
   }
 }
