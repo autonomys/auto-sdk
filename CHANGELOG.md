@@ -125,6 +125,17 @@
 - Update dependency cache-manager to ^6.4.2 ([#365](https://github.com/autonomys/auto-sdk/pull/365)) [@renovate[bot]](https://github.com/apps/renovate)
 
 
+## [1.4.33] - 2025-05-28
+
+### Bug Fixes
+
+- remove cross-dependency on env vars ([#415](https://github.com/autonomys/auto-sdk/pull/415)) [@jfrank-summit](https://github.com/jfrank-summit)
+
+### Chores
+
+- v1.4.32 ([#417](https://github.com/autonomys/auto-sdk/pull/417)) [@clostao](https://github.com/clostao)
+
+
 ## [Unreleased]
 
 Future changes will appear here.
