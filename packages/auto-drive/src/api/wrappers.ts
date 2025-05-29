@@ -10,6 +10,7 @@ import { progressToPercentage } from '../utils/misc'
 import { publicDownloadUrl } from './calls/download'
 import { apiCalls } from './calls/index'
 import { ObjectSummary, Scope } from './models'
+import { DownloadStatus } from './models/asyncDownloads'
 import { PaginatedResult } from './models/common'
 import { GenericFile, GenericFileWithinFolder } from './models/file'
 import { constructFromInput, constructZipBlobFromTreeAndPaths } from './models/folderTree'
@@ -362,6 +363,12 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
     searchByNameOrCID,
     sendAPIRequest: api.sendAPIRequest,
     sendDownloadRequest: api.sendDownloadRequest,
+    getAsyncDownloads: () => apiCalls.getAsyncDownloads(api),
+    createAsyncDownload: (cid: string) => apiCalls.createAsyncDownload(api, cid),
+    getAsyncDownload: (downloadId: string) => apiCalls.getAsyncDownload(api, downloadId),
+    dismissAsyncDownload: (downloadId: string) => apiCalls.dismissAsyncDownload(api, downloadId),
+    isFileCached: (cid: string) =>
+      apiCalls.downloadStatus(api, cid).then((e) => e.status === DownloadStatus.Cached),
     baseUrl: api.baseUrl,
     downloadBaseUrl: api.downloadBaseUrl,
   }

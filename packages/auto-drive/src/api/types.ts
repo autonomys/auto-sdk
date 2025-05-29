@@ -1,4 +1,5 @@
 import { ObjectSummary } from './models'
+import { AsyncDownload } from './models/asyncDownloads'
 import { PaginatedResult } from './models/common'
 import { GenericFile, GenericFileWithinFolder } from './models/file'
 import { SubscriptionInfo, UserInfo } from './models/user'
@@ -11,6 +12,14 @@ export interface AutoDriveApi extends AutoDriveApiHandler {
    * @returns {Promise<UserInfo>} A promise that resolves to the user info.
    */
   me: () => Promise<UserInfo>
+
+  /**
+   * Checks if a file is cached.
+   *
+   * @param cid {string} - The CID of the file to check.
+   * @returns {Promise<boolean>} - A promise that resolves to true if the file is cached, false otherwise.
+   */
+  isFileCached: (cid: string) => Promise<boolean>
 
   /**
    * Uploads a file to the server with optional encryption and compression.
@@ -168,6 +177,37 @@ export interface AutoDriveApi extends AutoDriveApiHandler {
    * @returns {Promise<ObjectSummary[]>} - A promise that resolves to the list of files matching the search criteria.
    */
   searchByNameOrCID: (value: string) => Promise<ObjectSummary[]>
+
+  /**
+   * Gets the async downloads for the current user.
+   *
+   * @returns {Promise<AsyncDownload[]>} - A promise that resolves to the list of async downloads.
+   */
+  getAsyncDownloads: () => Promise<AsyncDownload[]>
+
+  /**
+   * Creates an async download for a file.
+   *
+   * @param cid {string} - The CID of the file to create an async download for.
+   * @returns {Promise<AsyncDownload>} - A promise that resolves to the async download.
+   */
+  createAsyncDownload: (cid: string) => Promise<AsyncDownload>
+
+  /**
+   * Gets an async download by ID.
+   *
+   * @param downloadId {string} - The ID of the async download to get.
+   * @returns {Promise<AsyncDownload>} - A promise that resolves to the async download.
+   */
+  getAsyncDownload: (downloadId: string) => Promise<AsyncDownload>
+
+  /**
+   * Dismisses an async download by ID.
+   *
+   * @param downloadId {string} - The ID of the async download to dismiss.
+   * @returns {Promise<void>} - A promise that resolves when the async download is dismissed.
+   */
+  dismissAsyncDownload: (downloadId: string) => Promise<void>
 }
 
 export interface AutoDriveApiHandler {

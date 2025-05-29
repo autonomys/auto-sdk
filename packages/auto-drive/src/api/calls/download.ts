@@ -1,4 +1,5 @@
 import { ArgsWithoutPagination } from '../../utils/types'
+import { AsyncDownload, DownloadStatus } from '../models/asyncDownloads'
 import { AutoDriveApiHandler } from '../types'
 
 export const downloadObject = async (
@@ -8,7 +9,7 @@ export const downloadObject = async (
   const ignoreBackendEncoding = query.ignoreBackendEncoding ?? true
 
   const response = await api.sendDownloadRequest(
-    `/objects/${query.cid}/download?ignoreEncoding=${ignoreBackendEncoding}`,
+    `/downloads/${query.cid}?ignoreEncoding=${ignoreBackendEncoding}`,
     {
       method: 'GET',
     },
@@ -25,6 +26,75 @@ export const downloadObject = async (
   return response.body
 }
 
+export const createAsyncDownload = async (
+  api: AutoDriveApiHandler,
+  cid: string,
+): Promise<AsyncDownload> => {
+  const response = await api.sendDownloadRequest(`/downloads/async/${cid}`, {
+    method: 'POST',
+  })
+
+  if (!response.ok) {
+    throw new Error(`Failed to create async download: ${response.statusText}`)
+  }
+
+  return response.json() as Promise<AsyncDownload>
+}
+
+export const getAsyncDownload = async (
+  api: AutoDriveApiHandler,
+  downloadId: string,
+): Promise<AsyncDownload> => {
+  const response = await api.sendDownloadRequest(`/downloads/async/${downloadId}`, {
+    method: 'GET',
+  })
+
+  if (!response.ok) {
+    throw new Error(`Failed to get async download: ${response.statusText}`)
+  }
+
+  return response.json() as Promise<AsyncDownload>
+}
+
+export const getAsyncDownloads = async (api: AutoDriveApiHandler): Promise<AsyncDownload[]> => {
+  const response = await api.sendDownloadRequest('/downloads/async/@me', {
+    method: 'GET',
+  })
+
+  if (!response.ok) {
+    throw new Error(`Failed to get async downloads: ${response.statusText}`)
+  }
+
+  return response.json() as Promise<AsyncDownload[]>
+}
+
+export const dismissAsyncDownload = async (
+  api: AutoDriveApiHandler,
+  downloadId: string,
+): Promise<void> => {
+  const response = await api.sendDownloadRequest(`/downloads/async/${downloadId}/dismiss`, {
+    method: 'POST',
+  })
+
+  if (!response.ok) {
+    throw new Error(`Failed to dismiss async download: ${response.statusText}`)
+  }
+}
 export const publicDownloadUrl = (api: AutoDriveApiHandler, cid: string): string => {
   return `${api.downloadBaseUrl}/objects/${cid}/public`
+}
+
+export const downloadStatus = async (
+  api: AutoDriveApiHandler,
+  cid: string,
+): Promise<{ status: DownloadStatus }> => {
+  const response = await api.sendDownloadRequest(`/downloads/async/${cid}/status`, {
+    method: 'GET',
+  })
+
+  if (!response.ok) {
+    throw new Error(`Failed to get download status: ${response.statusText}`)
+  }
+
+  return response.json() as Promise<{ status: DownloadStatus }>
 }
