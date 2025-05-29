@@ -136,6 +136,17 @@
 - v1.4.32 ([#417](https://github.com/autonomys/auto-sdk/pull/417)) [@clostao](https://github.com/clostao)
 
 
+## [1.4.34] - 2025-05-29
+
+### Features
+
+- enable to redirect to a separate download service ([#419](https://github.com/autonomys/auto-sdk/pull/419)) [@clostao](https://github.com/clostao)
+
+### Chores
+
+- bump version to v1.4.33 ([#418](https://github.com/autonomys/auto-sdk/pull/418)) [@clostao](https://github.com/clostao)
+
+
 ## [Unreleased]
 
 Future changes will appear here.
