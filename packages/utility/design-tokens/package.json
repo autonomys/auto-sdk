@@ -1,7 +1,7 @@
 {
   "name": "@autonomys/design-tokens",
   "packageManager": "yarn@4.7.0",
-  "version": "1.4.32",
+  "version": "1.4.33",
   "description": "Auto Design Tokens",
   "type": "module",
   "license": "MIT",
