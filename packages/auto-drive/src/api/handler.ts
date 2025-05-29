@@ -24,11 +24,12 @@ const createSendRequest =
 export const createApiRequestHandler = ({
   provider = 'apikey',
   apiKey,
-  url = null,
+  apiUrl = null,
+  downloadServiceUrl = apiUrl,
   network,
 }: ConnectionOptions): AutoDriveApiHandler => {
-  const baseUrl = !network ? url : getNetworkUrl(network)
-  const downloadBaseUrl = !network ? url : getDownloadServiceUrl(network)
+  const baseUrl = !network ? apiUrl : getNetworkUrl(network)
+  const downloadBaseUrl = !network ? downloadServiceUrl : getDownloadServiceUrl(network)
   if (!baseUrl) {
     throw new Error('No base URL provided')
   }
