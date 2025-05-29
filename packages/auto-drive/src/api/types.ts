@@ -203,12 +203,14 @@ export type ConnectionOptions =
   | {
       provider?: AuthProvider
       apiKey?: string
-      url?: null
+      apiUrl?: null
+      downloadServiceUrl?: null
       network: AutoDriveNetwork
     }
   | {
       provider?: AuthProvider
       apiKey?: string
-      url: string
+      apiUrl: string
+      downloadServiceUrl?: string
       network?: null
     }
