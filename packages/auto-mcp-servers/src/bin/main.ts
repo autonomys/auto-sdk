@@ -9,6 +9,7 @@ Usage: auto-mcp-servers [server-name]
 Available servers:
   auto-drive       Start the Auto Drive MCP server
   auto-experiences Start the Auto Experiences MCP server
+  auto-consensus   Start the Auto Consensus MCP server
 
 Environment variables:
   For Auto Drive server:
@@ -26,6 +27,9 @@ Environment variables:
     PRIVATE_KEY            Wallet private key (required)
     RPC_URL                EVM RPC URL (optional)
     CONTRACT_ADDRESS       Contract address (optional)
+
+  For Auto Consensus server:
+    No environment variables required
   `)
   process.exit(1)
 }
@@ -46,6 +50,12 @@ const main = async () => {
         console.error('Starting Auto Experiences MCP server...')
         const { autoExperiencesServer } = await import('../auto-experiences/index.js')
         await autoExperiencesServer.connect(transport)
+        break
+      }
+      case 'auto-consensus': {
+        console.error('Starting Auto Consensus MCP server...')
+        const { autoConsensusServer } = await import('../auto-consensus/index.js')
+        await autoConsensusServer.connect(transport)
         break
       }
       case 'help':

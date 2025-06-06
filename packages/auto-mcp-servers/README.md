@@ -27,6 +27,31 @@ The Auto Experiences server provides the following tools:
 - `save-experience`: Saves agent experience data to the Autonomys network, uploads the data to AutoDrive, and updates the last experience CID. Returns the new CID, previous CID (if any), and EVM transaction hash (if available).
 - `retrieve-experience`: Retrieves an agent experience from the Autonomys network using its CID. Returns the full experience object including headers and data.
 
+### Auto Consensus Server
+
+The Auto Consensus server exposes functionality from the `@autonomys/auto-consensus` package as MCP tools for interacting with the Autonomys consensus chain.
+
+#### Tools
+
+The Auto Consensus server provides the following tools:
+
+**Account Management:**
+
+- `get-account-info`: Retrieve detailed account information including nonce and balance data.
+- `get-balance`: Get account balance with formatted amounts.
+- `get-total-issuance`: Get total token issuance in the network.
+
+**Chain Information:**
+
+- `get-block-info`: Get current block number, hash, and timestamp.
+- `get-network-timestamp`: Get current network timestamp.
+- `get-space-pledged`: Get total space pledged in the network.
+
+**Staking Operations:**
+
+- `get-operator-info`: Get detailed operator information.
+- `get-operators`: List all operators.
+
 More servers and tools will be coming soon!
 
 ## Usage
@@ -61,6 +86,14 @@ More servers and tools will be coming soon!
         "AGENT_VERSION": "your-agent-version (optional)",
         "RPC_URL": "your-evm-rpc-url (optional)",
         "CONTRACT_ADDRESS": "your-contract-address (optional)"
+      }
+    },
+    "auto-consensus": {
+      "command": "npx",
+      "args": ["-y", "@autonomys/auto-mcp-servers", "auto-consensus"],
+      "env": {
+        "NETWORK_ID": "mainnet or taurus or localhost (optional, defaults to mainnet)",
+        "RPC_ENDPOINT": "custom-rpc-endpoint (optional)"
       }
     }
   }
@@ -148,6 +181,37 @@ const createAutoExperiencesTools = async (config: {
 
   return await loadMcpTools('auto-experiences', client)
 }
+```
+
+4. Use the Auto Consensus server:
+
+```typescript
+// Create Auto Consensus tools
+const createAutoConsensusTools = async (
+  networkId: string = 'mainnet',
+): Promise<StructuredToolInterface[]> => {
+  const transport = new StdioClientTransport({
+    command: process.execPath,
+    args: ['node_modules/.bin/auto-consensus-server'],
+    env: {
+      NETWORK_ID: networkId,
+    },
+  })
+
+  const client = new Client({ name: 'auto-consensus', version: '0.1.0' })
+  client.connect(transport)
+
+  return await loadMcpTools('auto-consensus', client)
+}
+
+// Use the tools
+const consensusTools = await createAutoConsensusTools('mainnet')
+
+// Example: Get account balance
+const balanceResult = await model
+  .bindTools(consensusTools)
+  .invoke('Get the balance of account 5GmS1wtCfR4tK5SSgnZbVT4kYw5W8NmxmijcsxCQE6oLW6A8')
+console.log(balanceResult)
 ```
 
 ## License
