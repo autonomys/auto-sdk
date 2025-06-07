@@ -1,7 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { CallToolResult } from '@modelcontextprotocol/sdk/types.js'
 import { z } from 'zod'
-import { createConsensusHandlers } from './handlers.js'
+import { createConsensusHandlers } from './handlers/index.js'
 
 // Create handlers
 const handlers = createConsensusHandlers()

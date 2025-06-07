@@ -4,48 +4,14 @@ import {
   blockchainSize,
   blockHash,
   blockNumber,
-  operator,
-  operators,
   spacePledged,
   totalIssuance,
 } from '@autonomys/auto-consensus'
-import {
-  activate,
-  disconnect,
-  getNetworkDetails,
-  parseTokenAmount,
-  type ApiPromise,
-} from '@autonomys/auto-utils'
+import { parseTokenAmount } from '@autonomys/auto-utils'
 import { CallToolResult } from '@modelcontextprotocol/sdk/types.js'
+import { getApi, getTokenSymbol, handleError } from './utils.js'
 
-// Connection management
-const apiConnections: Map<string, ApiPromise> = new Map()
-
-const getApi = async (networkId?: string): Promise<ApiPromise> => {
-  const network = networkId || 'mainnet'
-
-  if (!apiConnections.has(network)) {
-    const api = await activate({ networkId: network })
-    apiConnections.set(network, api)
-  }
-
-  return apiConnections.get(network)!
-}
-
-const handleError = (error: unknown): string => {
-  if (error instanceof Error) {
-    return error.message
-  }
-  return String(error)
-}
-
-const getTokenSymbol = (networkId?: string): string => {
-  const network = networkId || 'mainnet'
-  const networkDetails = getNetworkDetails({ networkId: network })
-  return networkDetails.token.symbol
-}
-
-export const createConsensusHandlers = () => {
+export const createChainHandlers = () => {
   return {
     // Account handlers
     getAccountInfoHandler: async ({
@@ -286,109 +252,5 @@ export const createConsensusHandlers = () => {
         }
       }
     },
-
-    // Staking handlers
-    getOperatorInfoHandler: async ({
-      operatorId,
-      networkId,
-    }: {
-      operatorId: string
-      networkId?: string
-    }): Promise<CallToolResult> => {
-      try {
-        const api = await getApi(networkId)
-        const operatorInfo = await operator(api, operatorId)
-
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(
-                {
-                  operatorId,
-                  signingKey: operatorInfo.signingKey,
-                  currentDomainId: operatorInfo.currentDomainId.toString(),
-                  currentTotalStake: operatorInfo.currentTotalStake.toString(),
-                  currentTotalShares: operatorInfo.currentTotalShares.toString(),
-                  minimumNominatorStake: operatorInfo.minimumNominatorStake.toString(),
-                  nominationTax: operatorInfo.nominationTax,
-                  totalStorageFeeDeposit: operatorInfo.totalStorageFeeDeposit.toString(),
-                  status: operatorInfo.partialStatus,
-                },
-                null,
-                2,
-              ),
-            },
-          ],
-        }
-      } catch (error) {
-        console.error('Failed to get operator info:', error)
-        return {
-          isError: true,
-          content: [{ type: 'text', text: `Error getting operator info: ${handleError(error)}` }],
-        }
-      }
-    },
-
-    getOperatorsHandler: async ({ networkId }: { networkId?: string }): Promise<CallToolResult> => {
-      try {
-        const api = await getApi(networkId)
-        const operatorList = await operators(api)
-
-        const formattedOperators = operatorList.map((op) => ({
-          operatorId: op.operatorId.toString(),
-          signingKey: op.operatorDetails.signingKey,
-          currentDomainId: op.operatorDetails.currentDomainId.toString(),
-          currentTotalStake: op.operatorDetails.currentTotalStake.toString(),
-          nominationTax: op.operatorDetails.nominationTax,
-        }))
-
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(
-                {
-                  totalOperators: operatorList.length,
-                  operators: formattedOperators,
-                },
-                null,
-                2,
-              ),
-            },
-          ],
-        }
-      } catch (error) {
-        console.error('Failed to get operators:', error)
-        return {
-          isError: true,
-          content: [{ type: 'text', text: `Error getting operators: ${handleError(error)}` }],
-        }
-      }
-    },
   }
 }
-
-// Cleanup function for graceful shutdown
-export const cleanupConnections = async () => {
-  for (const [key, api] of apiConnections.entries()) {
-    try {
-      await disconnect(api)
-      console.error(`Disconnected API connection: ${key}`)
-    } catch (error) {
-      console.error(`Error disconnecting API ${key}:`, error)
-    }
-  }
-  apiConnections.clear()
-}
-
-// Handle process termination
-process.on('SIGINT', async () => {
-  await cleanupConnections()
-  process.exit(0)
-})
-
-process.on('SIGTERM', async () => {
-  await cleanupConnections()
-  process.exit(0)
-})
