@@ -19,21 +19,7 @@ export const createStakingHandlers = () => {
           content: [
             {
               type: 'text',
-              text: JSON.stringify(
-                {
-                  operatorId,
-                  signingKey: operatorInfo.signingKey,
-                  currentDomainId: operatorInfo.currentDomainId.toString(),
-                  currentTotalStake: operatorInfo.currentTotalStake.toString(),
-                  currentTotalShares: operatorInfo.currentTotalShares.toString(),
-                  minimumNominatorStake: operatorInfo.minimumNominatorStake.toString(),
-                  nominationTax: operatorInfo.nominationTax,
-                  totalStorageFeeDeposit: operatorInfo.totalStorageFeeDeposit.toString(),
-                  status: operatorInfo.partialStatus,
-                },
-                null,
-                2,
-              ),
+              text: JSON.stringify(operatorInfo, null, 2),
             },
           ],
         }
@@ -51,14 +37,6 @@ export const createStakingHandlers = () => {
         const api = await getApi(networkId)
         const operatorList = await operators(api)
 
-        const formattedOperators = operatorList.map((op) => ({
-          operatorId: op.operatorId.toString(),
-          signingKey: op.operatorDetails.signingKey,
-          currentDomainId: op.operatorDetails.currentDomainId.toString(),
-          currentTotalStake: op.operatorDetails.currentTotalStake.toString(),
-          nominationTax: op.operatorDetails.nominationTax,
-        }))
-
         return {
           content: [
             {
@@ -66,7 +44,7 @@ export const createStakingHandlers = () => {
               text: JSON.stringify(
                 {
                   totalOperators: operatorList.length,
-                  operators: formattedOperators,
+                  operators: operatorList,
                 },
                 null,
                 2,
