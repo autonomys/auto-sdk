@@ -147,6 +147,17 @@
 - bump version to v1.4.33 ([#418](https://github.com/autonomys/auto-sdk/pull/418)) [@clostao](https://github.com/clostao)
 
 
+## [1.4.35] - 2025-05-29
+
+### Features
+
+- ✨ add async download functionality to AutoDrive API ([#413](https://github.com/autonomys/auto-sdk/pull/413)) [@clostao](https://github.com/clostao)
+
+### Chores
+
+- bump to v1.4.34 ([#420](https://github.com/autonomys/auto-sdk/pull/420)) [@clostao](https://github.com/clostao)
+
+
 ## [Unreleased]
 
 Future changes will appear here.
