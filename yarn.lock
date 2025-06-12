@@ -9868,6 +9868,14 @@ __metadata:
   languageName: node
   linkType: hard
 
+"auto-files@workspace:packages/auto-files":
+  version: 0.0.0-use.local
+  resolution: "auto-files@workspace:packages/auto-files"
+  dependencies:
+    typescript: "npm:^5.5.4"
+  languageName: unknown
+  linkType: soft
+
 "auto-sdk-next-example@workspace:examples/next":
   version: 0.0.0-use.local
   resolution: "auto-sdk-next-example@workspace:examples/next"
@@ -23341,7 +23349,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:>=3 < 6, typescript@npm:^5, typescript@npm:^5.3.3, typescript@npm:^5.8.3":
+"typescript@npm:>=3 < 6, typescript@npm:^5, typescript@npm:^5.3.3, typescript@npm:^5.5.4, typescript@npm:^5.8.3":
   version: 5.8.3
   resolution: "typescript@npm:5.8.3"
   bin:
@@ -23351,7 +23359,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@npm%3A>=3 < 6#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A^5#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A^5.3.3#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A^5.8.3#optional!builtin<compat/typescript>":
+"typescript@patch:typescript@npm%3A>=3 < 6#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A^5#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A^5.3.3#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A^5.5.4#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A^5.8.3#optional!builtin<compat/typescript>":
   version: 5.8.3
   resolution: "typescript@patch:typescript@npm%3A5.8.3#optional!builtin<compat/typescript>::version=5.8.3&hash=5786d5"
   bin:
