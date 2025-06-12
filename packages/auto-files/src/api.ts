@@ -9,12 +9,9 @@ interface FetchedFile {
 
 export const createAutoFilesApi = (baseUrl: string, apiSecret: string) => {
   const authFetch = (url: string, options: RequestInit = {}) => {
-    const urlObj = new URL(url)
-    urlObj.searchParams.set('api_key', apiSecret)
-    console.log('Fetching', urlObj.toString())
-    return fetch(urlObj.toString(), {
+    return fetch(url, {
       ...options,
-      headers: { ...options.headers },
+      headers: { ...options.headers, authorization: `Bearer ${apiSecret}` },
     })
   }
 
