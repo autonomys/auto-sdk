@@ -9877,6 +9877,14 @@ __metadata:
   languageName: node
   linkType: hard
 
+"auto-files@workspace:packages/auto-files":
+  version: 0.0.0-use.local
+  resolution: "auto-files@workspace:packages/auto-files"
+  dependencies:
+    typescript: "npm:^5.5.4"
+  languageName: unknown
+  linkType: soft
+
 "auto-sdk-next-example@workspace:examples/next":
   version: 0.0.0-use.local
   resolution: "auto-sdk-next-example@workspace:examples/next"
