@@ -2,12 +2,18 @@
   "name": "@autonomys/auto-files",
   "version": "1.4.34",
   "packageManager": "yarn@4.7.0",
+  "private": false,
   "scripts": {
     "build": "tsc"
   },
   "devDependencies": {
     "typescript": "^5.5.4"
   },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "exports": {
     ".": {
       "require": "./dist/index.js",
