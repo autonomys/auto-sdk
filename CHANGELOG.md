@@ -158,6 +158,23 @@
 - bump to v1.4.34 ([#420](https://github.com/autonomys/auto-sdk/pull/420)) [@clostao](https://github.com/clostao)
 
 
+## [1.5.0] - 2025-06-13
+
+### Features
+
+- create @autonomys/auto-files pkg ([#425](https://github.com/autonomys/auto-sdk/pull/425)) [@clostao](https://github.com/clostao)
+- add `streamToBuffer` method ([#424](https://github.com/autonomys/auto-sdk/pull/424)) [@clostao](https://github.com/clostao)
+
+### Bug Fixes
+
+- `Cache.has` method was not returning a boolean but throwing if failing ([#423](https://github.com/autonomys/auto-sdk/pull/423)) [@clostao](https://github.com/clostao)
+
+### Chores
+
+- remove Marc-Aurele from codeowners file ([#422](https://github.com/autonomys/auto-sdk/pull/422)) [@marc-aurele-besner](https://github.com/marc-aurele-besner)
+- v1.4.35 ([#421](https://github.com/autonomys/auto-sdk/pull/421)) [@clostao](https://github.com/clostao)
+
+
 ## [Unreleased]
 
 Future changes will appear here.
