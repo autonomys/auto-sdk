@@ -14,5 +14,8 @@
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     }
+  },
+  "dependencies": {
+    "@autonomys/auto-drive": "^1.4.34"
   }
 }
