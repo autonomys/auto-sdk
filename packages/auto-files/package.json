@@ -1,5 +1,5 @@
 {
-  "name": "auto-files",
+  "name": "@autonomys/auto-files",
   "version": "1.4.34",
   "packageManager": "yarn@4.7.0",
   "scripts": {
