@@ -189,6 +189,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@autonomys/auto-files@workspace:packages/auto-files":
+  version: 0.0.0-use.local
+  resolution: "@autonomys/auto-files@workspace:packages/auto-files"
+  dependencies:
+    "@autonomys/auto-drive": "npm:^1.4.34"
+    typescript: "npm:^5.5.4"
+  languageName: unknown
+  linkType: soft
+
 "@autonomys/auto-mcp-servers@workspace:packages/auto-mcp-servers":
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-mcp-servers@workspace:packages/auto-mcp-servers"
@@ -9867,15 +9876,6 @@ __metadata:
   checksum: 10c0/d73e2ddf20c4eb9337e1b3df1a0f6159481050a5de457c55b14ea2e5cb6d90bb69e004c9af54737a5ee0917fcf2c9e25de67777bbe58261847846066ba75bc9d
   languageName: node
   linkType: hard
-
-"auto-files@workspace:packages/auto-files":
-  version: 0.0.0-use.local
-  resolution: "auto-files@workspace:packages/auto-files"
-  dependencies:
-    "@autonomys/auto-drive": "npm:^1.4.34"
-    typescript: "npm:^5.5.4"
-  languageName: unknown
-  linkType: soft
 
 "auto-sdk-next-example@workspace:examples/next":
   version: 0.0.0-use.local
