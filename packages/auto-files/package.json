@@ -1,0 +1,21 @@
+{
+  "name": "@autonomys/auto-files",
+  "version": "1.4.34",
+  "packageManager": "yarn@4.7.0",
+  "scripts": {
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4"
+  },
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "dependencies": {
+    "@autonomys/auto-drive": "^1.4.34"
+  }
+}

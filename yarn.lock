@@ -163,7 +163,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@autonomys/auto-drive@npm:^1.4.35, @autonomys/auto-drive@workspace:*, @autonomys/auto-drive@workspace:packages/auto-drive":
+"@autonomys/auto-drive@npm:^1.4.34, @autonomys/auto-drive@npm:^1.4.35, @autonomys/auto-drive@workspace:*, @autonomys/auto-drive@workspace:packages/auto-drive":
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-drive@workspace:packages/auto-drive"
   dependencies:
@@ -186,6 +186,15 @@ __metadata:
     tslib: "npm:^2.8.1"
     typescript: "npm:^5.8.3"
     zod: "npm:^3.24.2"
+  languageName: unknown
+  linkType: soft
+
+"@autonomys/auto-files@workspace:packages/auto-files":
+  version: 0.0.0-use.local
+  resolution: "@autonomys/auto-files@workspace:packages/auto-files"
+  dependencies:
+    "@autonomys/auto-drive": "npm:^1.4.34"
+    typescript: "npm:^5.5.4"
   languageName: unknown
   linkType: soft
 
@@ -23341,7 +23350,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:>=3 < 6, typescript@npm:^5, typescript@npm:^5.3.3, typescript@npm:^5.8.3":
+"typescript@npm:>=3 < 6, typescript@npm:^5, typescript@npm:^5.3.3, typescript@npm:^5.5.4, typescript@npm:^5.8.3":
   version: 5.8.3
   resolution: "typescript@npm:5.8.3"
   bin:
@@ -23351,7 +23360,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@npm%3A>=3 < 6#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A^5#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A^5.3.3#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A^5.8.3#optional!builtin<compat/typescript>":
+"typescript@patch:typescript@npm%3A>=3 < 6#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A^5#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A^5.3.3#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A^5.5.4#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A^5.8.3#optional!builtin<compat/typescript>":
   version: 5.8.3
   resolution: "typescript@patch:typescript@npm%3A5.8.3#optional!builtin<compat/typescript>::version=5.8.3&hash=5786d5"
   bin:
