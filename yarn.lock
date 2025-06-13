@@ -9872,6 +9872,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "auto-files@workspace:packages/auto-files"
   dependencies:
+    "@autonomys/auto-drive": "npm:^1.4.34"
     typescript: "npm:^5.5.4"
   languageName: unknown
   linkType: soft
