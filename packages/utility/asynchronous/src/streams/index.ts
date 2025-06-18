@@ -19,3 +19,17 @@ export const streamToBuffer = async (stream: Readable): Promise<Buffer> => {
     stream.on('error', (error) => reject(error))
   })
 }
+
+export const httpBodyToStream = (body: ReadableStream): Readable => {
+  const reader = body.getReader()
+  return new Readable({
+    async read() {
+      const { done, value } = await reader.read()
+      if (done) {
+        this.push(null)
+      } else {
+        this.push(value)
+      }
+    },
+  })
+}
