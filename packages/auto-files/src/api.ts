@@ -1,7 +1,7 @@
+import { httpBodyToStream } from '@autonomys/asynchronous'
 import { CompressionOptions, EncryptionOptions } from '@autonomys/auto-drive'
 import { Readable } from 'stream'
 import { withRetries } from './utils'
-
 interface FetchedFile {
   length: bigint
   compression: CompressionOptions | undefined
@@ -40,7 +40,7 @@ export const createAutoFilesApi = (baseUrl: string, apiSecret: string) => {
   const getChunk = async (cid: string, chunk: number): Promise<ArrayBuffer | null> => {
     const response = await authFetch(`${baseUrl}/files/${cid}/partial?chunk=${chunk}`)
     if (!response.ok) {
-      throw new Error('Error fetching chunk')
+      throw new Error(`Error fetching chunk: ${response.status} ${response.statusText}`)
     }
 
     if (response.status === 204) {
@@ -48,7 +48,6 @@ export const createAutoFilesApi = (baseUrl: string, apiSecret: string) => {
     }
 
     const buffer = await response.arrayBuffer()
-    console.log('Chunk download finished:', buffer.byteLength)
     return buffer
   }
 
@@ -61,19 +60,21 @@ export const createAutoFilesApi = (baseUrl: string, apiSecret: string) => {
    * @returns A Promise that resolves to a FetchedFile object containing the file data and metadata
    * @throws Error if the file metadata fetch fails
    */
-  const getFile = async (
+  const getChunkedFile = async (
     cid: string,
     {
       retriesPerFetch = 3,
       onProgress,
     }: { retriesPerFetch?: number; onProgress?: (progress: number) => void } = {},
   ): Promise<FetchedFile> => {
-    const response = await withRetries(
-      () => authFetch(`${baseUrl}/files/${cid}/metadata`),
-      retriesPerFetch,
-    )
+    const response = await withRetries(() => authFetch(`${baseUrl}/files/${cid}/metadata`), {
+      retries: retriesPerFetch,
+      onRetry: (error, pendingRetries) => {
+        console.error(`Error fetching file header, pending retries: ${pendingRetries}`, error)
+      },
+    })
     if (!response.ok) {
-      throw new Error('Error fetching file header')
+      throw new Error(`Error fetching file header: ${response.status} ${response.statusText}`)
     }
 
     const metadata = await response.json()
@@ -90,7 +91,9 @@ export const createAutoFilesApi = (baseUrl: string, apiSecret: string) => {
     return {
       data: new Readable({
         async read() {
-          const chunk = await withRetries(() => getChunk(cid, i++), retriesPerFetch)
+          const chunk = await withRetries(() => getChunk(cid, i++), {
+            retries: retriesPerFetch,
+          })
           this.push(chunk ? Buffer.from(chunk) : null)
           totalDownloaded += BigInt(chunk?.byteLength ?? 0)
           onProgress?.(Number((BigInt(precision) * totalDownloaded) / length) / precision)
@@ -102,5 +105,64 @@ export const createAutoFilesApi = (baseUrl: string, apiSecret: string) => {
     }
   }
 
-  return { getFile }
+  /**
+   * Checks if a file is cached on the gateway
+   * @param cid - The content identifier of the file
+   * @returns A Promise that resolves to true if the file is cached, false otherwise
+   * @throws Error if the file status check fails
+   */
+  const isFileCached = async (cid: string) => {
+    const response = await authFetch(`${baseUrl}/files/${cid}/status`)
+    if (!response.ok) {
+      throw new Error(`Error checking file status: ${response.status} ${response.statusText}`)
+    }
+
+    const status = await response.json()
+
+    return status.isCached
+  }
+
+  const getFileFromCache = async (cid: string): Promise<Readable> => {
+    const response = await authFetch(`${baseUrl}/files/${cid}`)
+    if (!response.ok) {
+      throw new Error(`Error fetching file from cache: ${response.status} ${response.statusText}`)
+    }
+
+    if (!response.body) {
+      throw new Error('No body in response')
+    }
+
+    return httpBodyToStream(response.body)
+  }
+
+  /**
+   * Fetches a complete file from the API with support for progress tracking and retries
+   * @param cid - The content identifier of the file to fetch
+   * @returns A Promise that resolves to a FetchedFile object containing the file data and metadata
+   * @throws Error if the file metadata fetch fails
+   */
+  const getFile = async (
+    cid: string,
+    {
+      retriesPerFetch = 3,
+      onProgress,
+      ignoreCache = false,
+    }: {
+      retriesPerFetch?: number
+      onProgress?: (progress: number) => void
+      ignoreCache?: boolean
+    } = {},
+  ) => {
+    if (!ignoreCache && (await isFileCached(cid))) {
+      return getFileFromCache(cid)
+    }
+
+    const file = await getChunkedFile(cid, {
+      retriesPerFetch,
+      onProgress,
+    })
+    return file.data
+  }
+
+  return { getFile, isFileCached, getChunkedFile }
 }
