@@ -55,6 +55,15 @@ const parseBalance = (balance: bigint): number => {
 }
 
 /**
+ * Parse shares from bigint to number representation
+ * Shares are dimensionless units, but still use 18 decimal places for precision
+ */
+const parseShares = (shares: bigint): number => {
+  const divisor = BigInt('1000000000000000000') // 10^18
+  return Number(shares) / Number(divisor)
+}
+
+/**
  * Parse Perbill format (parts per billion) to decimal
  */
 const parsePerbill = (perbill: bigint): number => {
@@ -68,6 +77,14 @@ const parsePerbill = (perbill: bigint): number => {
 const formatBalance = (balance: bigint): string => {
   const balanceNum = parseBalance(balance)
   return `${balanceNum.toFixed(6)} tokens`
+}
+
+/**
+ * Format shares for display
+ */
+const formatShares = (shares: bigint): string => {
+  const sharesNum = parseShares(shares)
+  return `${sharesNum.toFixed(6)} shares`
 }
 
 /**
@@ -270,7 +287,7 @@ const demonstrateSDKFunctions = async (
     const depositsData = await deposits(api, operatorId, accountId)
     if (depositsData.length > 0) {
       const deposit = depositsData[0]
-      console.log(`   Known shares: ${formatBalance(deposit.known.shares)}`)
+      console.log(`   Known shares: ${formatShares(deposit.known.shares)}`)
       console.log(`   Known storage fee: ${formatBalance(deposit.known.storageFeeDeposit)}`)
       if (deposit.pending) {
         console.log(`   Pending amount: ${formatBalance(deposit.pending.amount)}`)
@@ -312,7 +329,7 @@ const demonstrateSDKFunctions = async (
           console.log(
             `        Domain Epoch: [${withdrawal.withdrawalInShares.domainEpoch.join(', ')}]`,
           )
-          console.log(`        Shares: ${formatBalance(withdrawal.withdrawalInShares.shares)}`)
+          console.log(`        Shares: ${formatShares(withdrawal.withdrawalInShares.shares)}`)
           console.log(
             `        Unlock at block: ${withdrawal.withdrawalInShares.unlockAtConfirmedDomainBlockNumber}`,
           )
@@ -357,7 +374,7 @@ const demonstrateSDKFunctions = async (
     const testPrice = BigInt('1100000000000000000') // 1.1 price
     const convertedStake = shareToStake(testShares, testPrice)
     console.log(
-      `   ${parseBalance(testShares)} shares at price ${parsePerbill(testPrice)} = ${formatBalance(convertedStake)}`,
+      `   ${formatShares(testShares)} at price ${parsePerbill(testPrice)} = ${formatBalance(convertedStake)}`,
     )
   } catch (error) {
     console.error(`   Error demonstrating SDK functions:`, error)
@@ -411,4 +428,12 @@ if (require.main === module) {
   main().catch(console.error)
 }
 
-export { calculatePosition, formatBalance, parseBalance, parsePerbill, printResults }
+export {
+  calculatePosition,
+  formatBalance,
+  formatShares,
+  parseBalance,
+  parsePerbill,
+  parseShares,
+  printResults,
+}
