@@ -35,6 +35,7 @@ export type OperatorDetails = {
   currentTotalStake: bigint
   currentTotalShares: bigint
   partialStatus: object
+  status: object
   depositsInEpoch: bigint
   withdrawalsInEpoch: bigint
   totalStorageFeeDeposit: bigint
@@ -80,18 +81,20 @@ export type RawWithdrawalHeader = [string, string]
 
 export type RawWithdrawal = {
   totalWithdrawalAmount: string
-  withdrawals: {
-    domainId: number
-    unlockAtConfirmedDomainBlockNumber: number
-    amountToUnlock: string
-    storageFeeRefund: string
-  }[]
+  withdrawals:
+    | {
+        domainId: number
+        unlockAtConfirmedDomainBlockNumber: number
+        amountToUnlock: string
+        storageFeeRefund: string
+      }[]
+    | null
   withdrawalInShares: {
     domainEpoch: number[]
     unlockAtConfirmedDomainBlockNumber: number
     shares: string
     storageFeeRefund: string
-  }
+  } | null
 }
 
 export type WithdrawalUnlock = {
