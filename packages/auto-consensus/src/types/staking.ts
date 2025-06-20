@@ -35,7 +35,6 @@ export type OperatorDetails = {
   currentTotalStake: bigint
   currentTotalShares: bigint
   partialStatus: object
-  status: object
   depositsInEpoch: bigint
   withdrawalsInEpoch: bigint
   totalStorageFeeDeposit: bigint

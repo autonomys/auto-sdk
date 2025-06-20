@@ -96,7 +96,6 @@ export const parseOperatorDetails = (operatorDetails: Codec): OperatorDetails =>
     currentTotalStake: BigInt(rawOD.currentTotalStake),
     currentTotalShares: BigInt(rawOD.currentTotalShares),
     partialStatus: rawOD.partialStatus,
-    status: rawOD.partialStatus,
     depositsInEpoch: BigInt(rawOD.depositsInEpoch),
     withdrawalsInEpoch: BigInt(rawOD.withdrawalsInEpoch),
     totalStorageFeeDeposit: BigInt(rawOD.totalStorageFeeDeposit),
