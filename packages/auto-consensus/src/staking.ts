@@ -50,8 +50,15 @@ export const deposits = async (
   account: string | undefined = undefined,
 ) => {
   try {
-    const _deposits = await api.query.domains.deposits.entries(parseString(operatorId), account)
-    return _deposits.map((o) => parseDeposit(o))
+    if (account) {
+      // For specific account, query all deposits for operator and filter
+      const _deposits = await api.query.domains.deposits.entries(parseString(operatorId))
+      return _deposits.map((o) => parseDeposit(o)).filter((deposit) => deposit.account === account)
+    } else {
+      // Query all deposits for operator
+      const _deposits = await api.query.domains.deposits.entries(parseString(operatorId))
+      return _deposits.map((o) => parseDeposit(o))
+    }
   } catch (error) {
     console.error('error', error)
     throw new Error('Error querying deposits list.' + error)
@@ -64,11 +71,17 @@ export const withdrawals = async (
   account: string | undefined = undefined,
 ) => {
   try {
-    const _withdrawals = await api.query.domains.withdrawals.entries(
-      parseString(operatorId),
-      account,
-    )
-    return _withdrawals.map((o) => parseWithdrawal(o))
+    if (account) {
+      // For specific account, query all withdrawals for operator and filter
+      const _withdrawals = await api.query.domains.withdrawals.entries(parseString(operatorId))
+      return _withdrawals
+        .map((o) => parseWithdrawal(o))
+        .filter((withdrawal) => withdrawal.account === account)
+    } else {
+      // Query all withdrawals for operator
+      const _withdrawals = await api.query.domains.withdrawals.entries(parseString(operatorId))
+      return _withdrawals.map((o) => parseWithdrawal(o))
+    }
   } catch (error) {
     console.error('error', error)
     throw new Error('Error querying withdrawals list.' + error)
