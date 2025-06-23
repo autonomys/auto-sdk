@@ -135,7 +135,7 @@ export const parseDeposit = (deposit: [StorageKey<AnyTuple>, Codec]): Deposit =>
 }
 
 export const parseWithdrawalInShares = (
-  withdrawalInShares: RawWithdrawal['withdrawalInShares'],
+  withdrawalInShares: NonNullable<RawWithdrawal['withdrawalInShares']>,
 ): WithdrawalInShares => ({
   domainEpoch: withdrawalInShares.domainEpoch,
   unlockAtConfirmedDomainBlockNumber: withdrawalInShares.unlockAtConfirmedDomainBlockNumber,
@@ -156,13 +156,15 @@ export const parseWithdrawal = (withdrawal: [StorageKey<AnyTuple>, Codec]): With
         : null,
     withdrawals:
       parsedWithdrawal.withdrawals &&
-      parsedWithdrawal.withdrawals.length > 0 &&
-      parsedWithdrawal.withdrawals.map((w) => ({
-        domainId: w.domainId,
-        unlockAtConfirmedDomainBlockNumber: w.unlockAtConfirmedDomainBlockNumber,
-        amountToUnlock: BigInt(w.amountToUnlock),
-        storageFeeRefund: BigInt(w.storageFeeRefund),
-      })),
+      Array.isArray(parsedWithdrawal.withdrawals) &&
+      parsedWithdrawal.withdrawals.length > 0
+        ? parsedWithdrawal.withdrawals.map((w) => ({
+            domainId: w.domainId,
+            unlockAtConfirmedDomainBlockNumber: w.unlockAtConfirmedDomainBlockNumber,
+            amountToUnlock: BigInt(w.amountToUnlock),
+            storageFeeRefund: BigInt(w.storageFeeRefund),
+          }))
+        : [],
   } as Withdrawal
 }
 

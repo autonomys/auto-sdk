@@ -14,10 +14,41 @@ export const domains = async (api: Api): Promise<DomainRegistry[]> => {
   }
 }
 
-export const domainStakingSummary = async (api: Api): Promise<DomainStakingSummary[]> => {
+// Function overloads for domainStakingSummary
+export async function domainStakingSummary(api: Api): Promise<DomainStakingSummary[]>
+export async function domainStakingSummary(
+  api: Api,
+  domainId: string | number | bigint,
+): Promise<DomainStakingSummary | undefined>
+
+// Implementation function
+export async function domainStakingSummary(
+  api: Api,
+  domainId?: string | number | bigint,
+): Promise<DomainStakingSummary[] | DomainStakingSummary | undefined> {
   try {
-    const _domainStakingSummary = await api.query.domains.domainStakingSummary.entries()
-    return _domainStakingSummary.map((domain) => domain[1].toJSON() as DomainStakingSummary)
+    if (domainId !== undefined) {
+      // Query specific domain
+      const _domainStakingSummary = await api.query.domains.domainStakingSummary(
+        domainId.toString(),
+      )
+      if (_domainStakingSummary.isEmpty) {
+        return undefined
+      }
+      return {
+        domainId: domainId.toString(),
+        ...(_domainStakingSummary.toJSON() as Omit<DomainStakingSummary, 'domainId'>),
+      } as DomainStakingSummary
+    } else {
+      const _domainStakingSummary = await api.query.domains.domainStakingSummary.entries()
+      return _domainStakingSummary.map(
+        (domain) =>
+          ({
+            domainId: (domain[0].toHuman() as string[])[0],
+            ...(domain[1].toJSON() as Omit<DomainStakingSummary, 'domainId'>),
+          }) as DomainStakingSummary,
+      )
+    }
   } catch (error) {
     console.error('error', error)
     throw new Error('Error querying domains staking summary list.' + error)
