@@ -122,8 +122,12 @@ export const createAutoFilesApi = (baseUrl: string, apiSecret: string) => {
     return status.isCached
   }
 
-  const getFileFromCache = async (cid: string): Promise<Readable> => {
-    const response = await authFetch(`${baseUrl}/files/${cid}`)
+  const getFileFromCache = async (
+    cid: string,
+    options: { raw?: boolean } = {},
+  ): Promise<Readable> => {
+    const raw = options.raw ?? false
+    const response = await authFetch(`${baseUrl}/files/${cid}?raw=${raw}`)
     if (!response.ok) {
       throw new Error(`Error fetching file from cache: ${response.status} ${response.statusText}`)
     }
@@ -154,7 +158,7 @@ export const createAutoFilesApi = (baseUrl: string, apiSecret: string) => {
     } = {},
   ) => {
     if (!ignoreCache && (await isFileCached(cid))) {
-      return getFileFromCache(cid)
+      return getFileFromCache(cid, { raw: true })
     }
 
     const file = await getChunkedFile(cid, {
