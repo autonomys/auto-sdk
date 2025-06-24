@@ -186,6 +186,17 @@
 - bump to v1.5.0 ([#426](https://github.com/autonomys/auto-sdk/pull/426)) [@clostao](https://github.com/clostao)
 
 
+## [1.5.2] - 2025-06-24
+
+### Features
+
+- advanced staking position tracking ([#429](https://github.com/autonomys/auto-sdk/pull/429)) [@jfrank-summit](https://github.com/jfrank-summit)
+
+### Bug Fixes
+
+- downloads should be perfomed in raw mode ([#430](https://github.com/autonomys/auto-sdk/pull/430)) [@clostao](https://github.com/clostao)
+
+
 ## [Unreleased]
 
 Future changes will appear here.
