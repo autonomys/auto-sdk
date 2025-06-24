@@ -1,5 +1,6 @@
 import path from 'path'
 import { fileURLToPath } from 'url'
+import webpack from 'webpack'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -21,6 +22,16 @@ export default ({ config }) => {
   // Add TypeScript extensions
   config.resolve.extensions.push('.ts', '.tsx')
 
+  // Add Node.js polyfills for browser environment
+  config.resolve.fallback = {
+    ...config.resolve.fallback,
+    stream: 'stream-browserify',
+    buffer: 'buffer',
+    util: 'util',
+    events: 'events',
+    assert: 'assert',
+  }
+
   // Add PostCSS loader for Tailwind CSS
   config.module.rules.push({
     test: /\.css$/,
@@ -36,6 +47,20 @@ export default ({ config }) => {
     ],
     include: path.resolve(__dirname, '../src/styles.css'),
   })
+
+  // Provide Buffer and process globals
+  config.plugins.push(
+    new webpack.ProvidePlugin({
+      Buffer: ['buffer', 'Buffer'],
+      process: 'process/browser',
+    }),
+  )
+
+  // Add alias to mock problematic modules
+  config.resolve.alias = {
+    ...config.resolve.alias,
+    'stream-fork': path.resolve(__dirname, './mocks/stream-fork.js'),
+  }
 
   return config
 }
