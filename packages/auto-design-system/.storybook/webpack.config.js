@@ -1,24 +1,26 @@
-module.exports = ({ config }) => {
+import path from 'path'
+import { fileURLToPath } from 'url'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+export default ({ config }) => {
   // Typescript support
   config.module.rules.push({
     test: /\.(ts|tsx)$/,
     use: [
       {
-        loader: require.resolve('babel-loader'),
+        loader: 'babel-loader',
         options: {
-          presets: [
-            require.resolve('@babel/preset-env'),
-            require.resolve('@babel/preset-react'),
-            require.resolve('@babel/preset-typescript'),
-          ],
+          presets: ['@babel/preset-env', '@babel/preset-react', '@babel/preset-typescript'],
         },
       },
     ],
-  });
-  
+  })
+
   // Add TypeScript extensions
-  config.resolve.extensions.push('.ts', '.tsx');
-  
+  config.resolve.extensions.push('.ts', '.tsx')
+
   // Add PostCSS loader for Tailwind CSS
   config.module.rules.push({
     test: /\.css$/,
@@ -27,16 +29,13 @@ module.exports = ({ config }) => {
         loader: 'postcss-loader',
         options: {
           postcssOptions: {
-            plugins: [
-              require('tailwindcss'),
-              require('autoprefixer'),
-            ],
+            plugins: ['tailwindcss', 'autoprefixer'],
           },
         },
       },
     ],
-    include: require.resolve('../src/styles.css'),
-  });
-  
-  return config;
-}; 
+    include: path.resolve(__dirname, '../src/styles.css'),
+  })
+
+  return config
+}
