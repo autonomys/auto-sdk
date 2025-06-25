@@ -8,18 +8,12 @@ import {
   LockClosedIcon,
   MusicalNoteIcon,
 } from '@heroicons/react/24/outline'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { cn } from '../../../utils/cn'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../astral/Modal/Modal'
 import { Arguments } from './Arguments'
 import { FolderPreview } from './FolderPreview'
 import { NoPreviewAvailable } from './NoPreviewAvailable'
-
-const MAX_FILE_SIZE = BigInt(100 * 1024 * 1024) // 100 MB
-
-export const EXTERNAL_ROUTES = {
-  gatewayObjectDownload: (cid: string) => `https://gateway.autonomys.xyz/file/${cid}`,
-}
 
 const ImageViewer = ({ src, alt }: { src: string; alt?: string }) => {
   return (
@@ -146,19 +140,21 @@ const PasswordModal = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Enter Decryption Password</DialogTitle>
+          <DialogTitle className='text-lg font-normal text-gray-900 dark:text-white'>
+            Enter Decryption Password
+          </DialogTitle>
         </DialogHeader>
         <div className='text-center'>
           <input
             id='password'
             type='password'
             placeholder='Enter Password'
-            className='w-full rounded-lg border p-2 text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white'
+            className='w-full rounded border p-2 text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:outline-auto-explorer-primaryAccent'
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
           <button
-            className='mt-4 rounded-lg bg-blue-600 px-4 py-2 font-semibold leading-4 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600'
+            className='mt-4 rounded-lg text-xs bg-auto-explorer-buttonLightFrom px-4 py-2.5 font-normal leading-4 text-white dark:bg-auto-explorer-buttonDarkFrom'
             onClick={handleConfirm}
           >
             Confirm
@@ -174,6 +170,15 @@ export type FilePreviewProps = {
   isAstral?: boolean
   isAutoDrive?: boolean
   network: NetworkId
+  loading?: boolean
+  file: Blob | null
+  error: string | null
+  isDecrypted?: boolean
+  decryptionError: string | null
+  textContent: string | null
+  gatewayUrl: string | null
+  isFilePreview?: boolean
+  handleDecrypt: (password: string) => void
 }
 
 export const FilePreview = ({
@@ -181,149 +186,37 @@ export const FilePreview = ({
   isAstral = false,
   isAutoDrive = false,
   network,
+  loading,
+  file,
+  error,
+  isDecrypted,
+  decryptionError,
+  textContent,
+  gatewayUrl,
+  isFilePreview,
+  handleDecrypt,
 }: FilePreviewProps) => {
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [isFilePreview, setIsFilePreview] = useState(false)
-  const [file, setFile] = useState<Blob | null>(null)
-  const [textContent, setTextContent] = useState<string | null>(null)
   const [isModalOpen, setModalOpen] = useState(false)
-  const [isDecrypted, setIsDecrypted] = useState(false)
-  const [decryptionError, setDecryptionError] = useState<string | null>(null)
-
-  const gatewayUrl = useMemo(() => {
-    if (metadata.dataCid) {
-      return EXTERNAL_ROUTES.gatewayObjectDownload(
-        'bafkr6ibthdttmf6jjc5pj5wz64sel5zcztdzbpkntvfs3yir37n4thjgl4',
-      )
-    }
-    return null
-  }, [metadata.dataCid])
-
-  const fetchFile = useCallback(
-    async (password?: string) => {
-      if (metadata.totalSize > MAX_FILE_SIZE || !gatewayUrl) {
-        setIsFilePreview(false)
-        setLoading(false)
-        return
-      }
-
-      // If file is encrypted and no password provided, don't fetch
-      if (metadata.uploadOptions?.encryption && !password && !isDecrypted) {
-        setIsFilePreview(false)
-        setLoading(false)
-        return
-      }
-
-      setIsFilePreview(true)
-      setLoading(true)
-      setError(null)
-      setDecryptionError(null)
-
-      try {
-        const response = await fetch(gatewayUrl)
-        if (!response.ok) {
-          throw new Error(`Failed to fetch file: ${response.status} ${response.statusText}`)
-        }
-
-        const blob = await response.blob()
-
-        // Handle decryption if needed
-        if (metadata.uploadOptions?.encryption && password) {
-          try {
-            // Here you would implement the actual decryption logic
-            // For now, we'll simulate decryption by just setting the blob
-            // In a real implementation, you would decrypt the blob with the password
-            console.log('Decrypting file with password:', password)
-
-            // Simulate decryption - replace this with actual decryption logic
-            // const decryptedBlob = await decryptFile(blob, password)
-            // blob = decryptedBlob
-
-            setIsDecrypted(true)
-          } catch (decryptError) {
-            console.error('Decryption failed:', decryptError)
-            setDecryptionError('Invalid password or decryption failed')
-            setLoading(false)
-            return
-          }
-        }
-
-        setFile(blob)
-
-        console.log('blob', blob)
-
-        // For text-based files, also read the content
-        const extension = metadata.name?.split('.').pop()?.toLowerCase() || ''
-        const mimeType =
-          'mimeType' in metadata ? (metadata.mimeType as string)?.toLowerCase() || '' : ''
-
-        if (
-          mimeType.startsWith('text/') ||
-          [
-            'js',
-            'jsx',
-            'ts',
-            'tsx',
-            'html',
-            'css',
-            'py',
-            'java',
-            'rb',
-            'go',
-            'rust',
-            'php',
-            'json',
-            'md',
-            'txt',
-            'csv',
-            'xml',
-          ].includes(extension)
-        ) {
-          try {
-            const text = await blob.text()
-            setTextContent(text)
-          } catch (err) {
-            console.error('Failed to read text from blob:', err)
-          }
-        }
-        setLoading(false)
-      } catch (error) {
-        console.error('Error fetching file:', error)
-        setError(error instanceof Error ? error.message : 'Failed to fetch file')
-        setLoading(false)
-      }
-    },
-    [metadata, gatewayUrl, isDecrypted],
-  )
-
-  useEffect(() => {
-    fetchFile()
-  }, [fetchFile])
-
-  const handleDecrypt = useCallback(
-    (password: string) => {
-      fetchFile(password)
-    },
-    [fetchFile],
-  )
 
   const fileData = useMemo(() => {
-    return (
-      file && {
-        uri: gatewayUrl || URL.createObjectURL(file), // Prefer the direct gateway URL if available
-        fileName: metadata.name,
-        fileType:
-          metadata.type === 'file' && 'mimeType' in metadata
-            ? (metadata.mimeType as string)
-            : undefined,
-      }
-    )
+    if (!file) return null
+
+    const uri = metadata.uploadOptions?.encryption
+      ? URL.createObjectURL(file) // For encrypted files, always use the blob URL (decrypted content)
+      : gatewayUrl || URL.createObjectURL(file) // For non-encrypted files, prefer gateway URL
+
+    const data = {
+      uri,
+      fileName: metadata.name,
+      fileType: metadata.type === 'file' && 'mimeType' in metadata ? metadata.mimeType : undefined,
+    }
+
+    return data
   }, [file, metadata, gatewayUrl])
 
   const preview = useMemo(() => {
     const DirectGatewayLink = () =>
-      gatewayUrl ? (
+      gatewayUrl && !metadata.uploadOptions?.encryption ? (
         <div className='mt-2 flex justify-end text-sm'>
           <a
             href={gatewayUrl}
@@ -377,9 +270,6 @@ export const FilePreview = ({
                 'bg-auto-drive-accent hover:bg-auto-drive-accent/90 dark:bg-auto-drive-accent dark:hover:bg-auto-drive-accent/90',
               isAstral &&
                 'bg-auto-explorer-primaryAccent hover:bg-auto-explorer-primaryAccent/90 dark:bg-auto-explorer-primaryAccent dark:hover:bg-auto-explorer-primaryAccent/90',
-              !isAutoDrive &&
-                !isAstral &&
-                'bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600',
             )}
           >
             Try Again
@@ -394,22 +284,19 @@ export const FilePreview = ({
       return (
         <div className='flex flex-col items-center justify-center rounded-lg border border-gray-200 bg-gray-50 p-6 dark:border-gray-700 dark:bg-gray-800'>
           <div className='flex items-center mb-4'>
-            <LockClosedIcon className='mr-2 h-6 w-6 text-purple-500' />
-            <p className='text-sm font-medium text-gray-900 dark:text-white md:text-lg'>
+            <LockClosedIcon className='mr-2 h-6 w-6 text-auto-explorer-primaryAccent' />
+            <p className='text-sm font-normal text-gray-900 dark:text-white'>
               No preview due to the file being encrypted.
             </p>
           </div>
           <button
             onClick={() => setModalOpen(true)}
             className={cn(
-              'rounded-lg px-4 py-2 text-sm font-semibold text-white',
+              'rounded-lg px-4 py-2.5 text-xs font-semibold text-white',
               isAutoDrive &&
                 'bg-auto-drive-accent hover:bg-auto-drive-accent/90 dark:bg-auto-drive-accent dark:hover:bg-auto-drive-accent/90',
               isAstral &&
-                'bg-auto-explorer-primaryAccent hover:bg-auto-explorer-primaryAccent/90 dark:bg-auto-explorer-primaryAccent dark:hover:bg-auto-explorer-primaryAccent/90',
-              !isAutoDrive &&
-                !isAstral &&
-                'bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600',
+                'bg-auto-explorer-buttonLightFrom hover:bg-auto-explorer-buttonLightFrom/90 dark:bg-auto-explorer-buttonDarkFrom dark:hover:bg-auto-explorer-buttonDarkFrom/90',
             )}
           >
             Decrypt File
