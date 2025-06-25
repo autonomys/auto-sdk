@@ -5,29 +5,29 @@ import { parseString } from '../utils/parse'
 
 /**
  * Retrieves the stored share price for a specific operator at a given domain epoch.
- * 
+ *
  * This function fetches the historical share price that was recorded for an operator
  * at a specific domain epoch. Share prices are stored when staking activity occurs
  * and are used to convert between stake amounts and shares at different points in time.
  * The price is returned in 18-decimal Perbill format.
- * 
+ *
  * @param api - The connected API instance
  * @param operatorId - The ID of the operator to query price for
  * @param domainEpoch - The domain epoch index to query price for
  * @param domainId - The domain ID (default: 0)
  * @returns Promise that resolves to share price in 18-decimal Perbill format, or undefined if no price stored
  * @throws Error if the query fails or operator/epoch not found
- * 
+ *
  * @example
  * ```typescript
  * import { operatorEpochSharePrice } from '@autonomys/auto-consensus'
  * import { activate } from '@autonomys/auto-utils'
- * 
+ *
  * const api = await activate({ networkId: 'gemini-3h' })
- * 
+ *
  * // Get share price for operator 1 at epoch 100
  * const sharePrice = await operatorEpochSharePrice(api, '1', 100, 0)
- * 
+ *
  * if (sharePrice) {
  *   console.log(`Share price at epoch 100: ${sharePrice}`)
  *   // Use for stake/share conversions at that epoch
@@ -80,32 +80,32 @@ export const operatorEpochSharePrice = async (
 
 /**
  * Calculates the current real-time share price for an operator.
- * 
+ *
  * This function computes the current share price by considering the operator's
  * total stake, current epoch rewards (after nomination tax), and total shares.
  * The calculation provides an up-to-date price that reflects recent staking
  * activity and rewards distribution.
- * 
+ *
  * Formula: (currentTotalStake + currentEpochReward * (1 - nominationTax)) / currentTotalShares
- * 
+ *
  * @param api - The connected API instance
  * @param operatorId - The ID of the operator to calculate price for
  * @returns Promise that resolves to current share price in 18-decimal Perbill format
  * @throws Error if operator not found, domain staking summary unavailable, or calculation fails
- * 
+ *
  * @example
  * ```typescript
  * import { instantSharePrice } from '@autonomys/auto-consensus'
  * import { activate } from '@autonomys/auto-utils'
- * 
+ *
  * const api = await activate({ networkId: 'gemini-3h' })
- * 
+ *
  * // Get current share price for operator 1
  * const currentPrice = await instantSharePrice(api, '1')
  * console.log(`Current share price: ${currentPrice}`)
- * 
+ *
  * // Use for real-time stake/share conversions
- * const stakeAmount = BigInt('1000000000000000000') // 1 ATC
+ * const stakeAmount = BigInt('1000000000000000000') // 1 AI3
  * const sharesEquivalent = (stakeAmount * BigInt(10 ** 18)) / currentPrice
  * console.log(`${stakeAmount} stake = ${sharesEquivalent} shares`)
  * ```
