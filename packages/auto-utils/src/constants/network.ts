@@ -7,7 +7,6 @@ import { DEFAULT_TOKEN, TESTNET_TOKEN } from './token'
 export enum NetworkId {
   MAINNET = 'mainnet',
   TAURUS = 'taurus',
-  GEMINI_3H = 'gemini-3h',
   DEVNET = 'devnet',
   LOCALHOST = 'localhost',
 }
@@ -15,7 +14,6 @@ export enum NetworkId {
 export enum NetworkName {
   MAINNET = 'Mainnet',
   TAURUS = 'Testnet - Taurus',
-  GEMINI_3H = 'Testnet - Gemini 3H',
   DEVNET = 'Devnet',
   LOCALHOST = 'Localhost',
 }
@@ -85,31 +83,6 @@ export const networks: Network[] = [
     isTestnet: true,
   },
   {
-    id: NetworkId.GEMINI_3H,
-    name: NetworkName.GEMINI_3H,
-    rpcUrls: ['wss://rpc-0.gemini-3h.subspace.network/ws'],
-    explorer: [
-      {
-        name: NetworkExplorerName.ASTRAL,
-        url: ASTRAL_EXPLORER + 'gemini-3h/consensus/',
-      },
-    ],
-    domains: [
-      {
-        domainId: '0',
-        ...domains[DomainRuntime.AUTO_EVM],
-        rpcUrls: ['wss://nova-0.gemini-3h.subspace.network/ws'],
-      },
-      {
-        domainId: '1',
-        ...domains[DomainRuntime.AUTO_ID],
-        rpcUrls: ['wss://autoid-0.gemini-3h.subspace.network/ws'],
-      },
-    ],
-    token: TESTNET_TOKEN,
-    isTestnet: true,
-  },
-  {
     id: NetworkId.DEVNET,
     name: NetworkName.DEVNET,
     rpcUrls: ['ws://rpc.devnet.subspace.network/ws'],
@@ -164,3 +137,11 @@ export const networks: Network[] = [
 ]
 
 export const defaultNetwork = networks[0]
+
+export const networksMap = networks.reduce<Record<NetworkId, Network>>(
+  (acc, network) => {
+    acc[network.id] = network
+    return acc
+  },
+  {} as Record<NetworkId, Network>,
+)
