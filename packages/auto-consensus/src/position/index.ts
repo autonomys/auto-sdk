@@ -6,7 +6,42 @@ import { instantSharePrice, operatorEpochSharePrice } from './price'
 import { shareToStake, stakeToShare } from './utils'
 
 /**
- * High-level helper that returns the staking/storage position of a nominator inside an operator pool
+ * Retrieves the complete staking position of a nominator for a specific operator.
+ * 
+ * This function calculates the comprehensive staking position of a nominator including
+ * current value, pending deposits, pending withdrawals, and storage fee deposits.
+ * It handles complex calculations involving share prices across different epochs
+ * and provides a complete view of the nominator's stake position.
+ * 
+ * @param api - The connected API instance
+ * @param operatorId - The ID of the operator to query position for
+ * @param nominatorAccountId - The account ID of the nominator
+ * @returns Promise that resolves to NominatorPosition with complete position details
+ * @throws Error if operator not found, domain staking summary unavailable, or calculation fails
+ * 
+ * @example
+ * ```typescript
+ * import { nominatorPosition } from '@autonomys/auto-consensus'
+ * import { activate } from '@autonomys/auto-utils'
+ * 
+ * const api = await activate({ networkId: 'gemini-3h' })
+ * const position = await nominatorPosition(api, '1', 'nominator_account_address')
+ * 
+ * console.log(`Current Value: ${position.knownValue}`)
+ * console.log(`Storage Fee Deposit: ${position.storageFeeDeposit}`)
+ * console.log(`Pending Deposits: ${position.pendingDeposits.length}`)
+ * console.log(`Pending Withdrawals: ${position.pendingWithdrawals.length}`)
+ * 
+ * // Check pending deposits
+ * position.pendingDeposits.forEach(deposit => {
+ *   console.log(`Pending: ${deposit.amount} at epoch ${deposit.effectiveEpoch}`)
+ * })
+ * 
+ * // Check pending withdrawals
+ * position.pendingWithdrawals.forEach(withdrawal => {
+ *   console.log(`Withdrawal: ${withdrawal.amount} unlocks at block ${withdrawal.unlockAtBlock}`)
+ * })
+ * ```
  */
 export const nominatorPosition = async (
   api: Api,
