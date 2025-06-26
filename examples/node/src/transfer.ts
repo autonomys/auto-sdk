@@ -20,7 +20,7 @@ export const transferFunction = async () => {
     'Alice Initial Balance:',
     initialAliceBalance.free.toString(),
     '\x1b[36m',
-    'ATC',
+    'AI3',
     '\x1b[0m',
   )
   const initialBobBalance = await balance(api, bobAddress)
@@ -29,11 +29,11 @@ export const transferFunction = async () => {
     'Bob Initial Balance:',
     initialBobBalance.free.toString(),
     '\x1b[36m',
-    'ATC',
+    'AI3',
     '\x1b[0m\n',
   )
 
-  // Transfer 2x10^18 ATC tokens from Alice to Bob
+  // Transfer 2x10^18 AI3 tokens from Alice to Bob
   const transferAmount = BigInt(2 * 10 ** 18)
   const tx = transfer(api, bob[0].address, transferAmount)
 
@@ -49,7 +49,7 @@ export const transferFunction = async () => {
     'Alice Final Balance:',
     finalAliceBalance.free.toString(),
     '\x1b[36m',
-    'ATC',
+    'AI3',
     '\x1b[0m',
   )
   const finalBobBalance = await balance(api, bobAddress)
@@ -58,7 +58,7 @@ export const transferFunction = async () => {
     'Bob Final Balance:',
     finalBobBalance.free.toString(),
     '\x1b[36m',
-    'ATC',
+    'AI3',
     '\x1b[0m\n',
   )
 }
