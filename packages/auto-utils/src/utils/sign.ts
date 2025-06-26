@@ -73,22 +73,11 @@ export const signMessage = async (signer: Signer, address: string, data: string)
 export const signingKey = (publicKey: Uint8Array) => u8aToHex(publicKey)
 
 /**
- * Re-exported signature verification function from Polkadot.js utilities.
+ * Signature verification utility re-exported from Polkadot.js for convenience.
  * 
- * This function verifies that a signature was created by a specific public key
- * for the given data. It's essential for validating signatures in authentication
- * flows and off-chain verification scenarios.
+ * Verifies that a signature was created by a specific public key for the given data.
+ * Essential for validating signatures in authentication flows and off-chain verification.
  * 
- * @example
- * import { signatureVerify } from '@autonomys/auto-utils'
- * 
- * // Verify a signature
- * const message = 'Hello, Autonomys!'
- * const signature = '0x...' // signature from signMessage
- * const publicKey = '0x...' // or address
- * 
- * const verification = signatureVerify(message, signature, publicKey)
- * console.log('Is valid:', verification.isValid)
- * console.log('Public key:', verification.publicKey)
+ * @see {@link https://polkadot.js.org/docs/ | Polkadot.js Documentation} for complete API details.
  */
 export { signatureVerify }
