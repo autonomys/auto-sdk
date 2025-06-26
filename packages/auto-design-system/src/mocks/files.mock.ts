@@ -94,3 +94,96 @@ export const fileMock2: OffchainMetadata = {
     },
   },
 }
+
+export const fileMock3: OffchainMetadata = {
+  name: 'Full Text Search Hasura.html',
+  type: 'file',
+  chunks: [],
+  dataCid: 'bafkr6iahtm4qol5egxcjpm6pmrj7zcelho2fxk6hlwthde2fr7dhm2qyby',
+  mimeType: 'text/html',
+  totalSize: 1000000n,
+  totalChunks: 1,
+  uploadOptions: {
+    compression: {
+      algorithm: CompressionAlgorithm.ZLIB,
+    },
+  },
+}
+export const fileMock4: OffchainMetadata = {
+  name: 'document copy 4.json',
+  type: 'file',
+  chunks: [],
+  dataCid: 'bafkr6ibi5y7g623pzyecs7deyp4qd4yeluaaemenf7rcg7llizqou66w2e',
+  mimeType: 'application/json',
+  totalSize: 1000000n,
+  totalChunks: 1,
+  uploadOptions: {
+    compression: {
+      algorithm: CompressionAlgorithm.ZLIB,
+    },
+  },
+}
+
+export const fileMock5: OffchainMetadata = {
+  name: '431950369-2c9d1115-482a-4f06-9ac7-6605a21847c7.mp4',
+  type: 'file',
+  chunks: [],
+  dataCid: 'bafkr6if7hu4m3ulx7usg42t54745ofgctsqkgoc6eputnk5cqooqxfgzty',
+  mimeType: 'video/mp4',
+  totalSize: 1000000n,
+  totalChunks: 1,
+  uploadOptions: {
+    compression: {
+      algorithm: CompressionAlgorithm.ZLIB,
+    },
+  },
+}
+
+export const fileMock6: OffchainMetadata = {
+  name: 'test-folder',
+  type: 'folder',
+  dataCid: 'bafkr6if7hu4m3ulx7usg42t54745ofgctsqkgoc6eputnk5cqooqxfgzty',
+  totalSize: 1000000n,
+  totalFiles: 1,
+  children: [
+    { ...fileMock1, cid: 'bafkr6if7hu4m3ulx7usg42t54745ofgctsqkgoc6eputnk5cqooqxfgzty' },
+    { ...fileMock2, cid: 'bafkr6if7hu4m3ulx7usg42t54745ofgctsqkgoc6eputnk5cqooqxfgzty' },
+    { ...fileMock3, cid: 'bafkr6if7hu4m3ulx7usg42t54745ofgctsqkgoc6eputnk5cqooqxfgzty' },
+    { ...fileMock4, cid: 'bafkr6if7hu4m3ulx7usg42t54745ofgctsqkgoc6eputnk5cqooqxfgzty' },
+    { ...fileMock5, cid: 'bafkr6if7hu4m3ulx7usg42t54745ofgctsqkgoc6eputnk5cqooqxfgzty' },
+  ],
+  uploadOptions: {
+    compression: {
+      algorithm: CompressionAlgorithm.ZLIB,
+    },
+  },
+}
+
+export const fileMock7: OffchainMetadata = {
+  name: 'Autonomys One-pager.pdf',
+  type: 'file',
+  chunks: [],
+  dataCid: 'bafkr6ie2hgiwiaimkyt4q6t3wkmigxlqgslu4nqlxb3xuie3ewm7c2uzze',
+  mimeType: 'application/pdf',
+  totalSize: 1000000n,
+  totalChunks: 1,
+  uploadOptions: {
+    compression: {
+      algorithm: CompressionAlgorithm.ZLIB,
+    },
+  },
+}
+export const fileMock8: OffchainMetadata = {
+  name: 'sample-3s.mp3',
+  type: 'file',
+  chunks: [],
+  dataCid: 'bafkr6igltyc3gmgouds66xws3owkuoj53vm3gzyt6q4cq4ntv6szvidor4',
+  mimeType: 'audio/mpeg',
+  totalSize: 1000000n,
+  totalChunks: 1,
+  uploadOptions: {
+    compression: {
+      algorithm: CompressionAlgorithm.ZLIB,
+    },
+  },
+}

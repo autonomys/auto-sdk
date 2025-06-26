@@ -1,6 +1,6 @@
 import { OffchainFolderMetadata } from '@autonomys/auto-dag-data'
 import { NetworkId } from '@autonomys/auto-utils'
-import { useCallback } from 'react'
+import React, { useCallback } from 'react'
 
 export const ROUTES = {
   objectDetails: (networkId: NetworkId, cid: string) => `/${networkId}/drive/metadata/${cid}`,

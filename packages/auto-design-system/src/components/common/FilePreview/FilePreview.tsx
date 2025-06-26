@@ -50,6 +50,17 @@ export const FilePreview = ({
   const [isModalOpen, setModalOpen] = useState(false)
 
   const fileData = useMemo(() => {
+    // For non-encrypted files that can be displayed directly, use gateway URL even without file blob
+    if (!file && !metadata.uploadOptions?.encryption && gatewayUrl) {
+      const data = {
+        uri: gatewayUrl,
+        fileName: metadata.name,
+        fileType:
+          metadata.type === 'file' && 'mimeType' in metadata ? metadata.mimeType : undefined,
+      }
+      return data
+    }
+
     if (!file) return null
 
     const uri = metadata.uploadOptions?.encryption
