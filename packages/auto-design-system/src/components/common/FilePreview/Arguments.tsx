@@ -29,9 +29,18 @@ export const Arguments: FC<Props> = ({ file, collapseAtEntry = 5 }) => {
   const [args, setArgs] = useState<object>()
 
   useEffect(() => {
-    file.text().then((text) => {
-      setArgs(JSON.parse(text))
-    })
+    const loadArgs = async () => {
+      try {
+        const text = await file.text()
+        const parsedArgs = JSON.parse(text)
+        setArgs(parsedArgs)
+      } catch (error) {
+        console.error('Error loading or parsing arguments file:', error)
+        setArgs({})
+      }
+    }
+
+    loadArgs()
   }, [file])
 
   return (

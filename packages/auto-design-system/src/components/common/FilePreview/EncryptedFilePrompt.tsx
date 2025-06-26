@@ -1,17 +1,14 @@
 import { LockClosedIcon } from '@heroicons/react/24/outline'
 import React from 'react'
 import { cn } from '../../../utils/cn'
-import { DirectGatewayLink } from './DirectGatewayLink'
 
 export interface EncryptedFilePromptProps {
-  gatewayUrl: string | null
   isAutoDrive?: boolean
   isAstral?: boolean
   onDecryptClick: () => void
 }
 
 export const EncryptedFilePrompt = ({
-  gatewayUrl,
   isAutoDrive = false,
   isAstral = false,
   onDecryptClick,
@@ -36,7 +33,6 @@ export const EncryptedFilePrompt = ({
       >
         Decrypt File
       </button>
-      <DirectGatewayLink gatewayUrl={gatewayUrl} isAutoDrive={isAutoDrive} isAstral={isAstral} />
     </div>
   )
 }

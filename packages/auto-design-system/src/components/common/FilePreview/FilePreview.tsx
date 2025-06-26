@@ -108,7 +108,6 @@ export const FilePreview = ({
     if (metadata.uploadOptions?.encryption && !isDecrypted) {
       return (
         <EncryptedFilePrompt
-          gatewayUrl={gatewayUrl}
           isAutoDrive={isAutoDrive}
           isAstral={isAstral}
           onDecryptClick={() => setModalOpen(true)}
