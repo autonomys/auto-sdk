@@ -175,6 +175,28 @@
 - v1.4.35 ([#421](https://github.com/autonomys/auto-sdk/pull/421)) [@clostao](https://github.com/clostao)
 
 
+## [1.5.1] - 2025-06-19
+
+### Features
+
+- support conditional fetching from cache or dsn ([#428](https://github.com/autonomys/auto-sdk/pull/428)) [@clostao](https://github.com/clostao)
+
+### Chores
+
+- bump to v1.5.0 ([#426](https://github.com/autonomys/auto-sdk/pull/426)) [@clostao](https://github.com/clostao)
+
+
+## [1.5.2] - 2025-06-24
+
+### Features
+
+- advanced staking position tracking ([#429](https://github.com/autonomys/auto-sdk/pull/429)) [@jfrank-summit](https://github.com/jfrank-summit)
+
+### Bug Fixes
+
+- downloads should be perfomed in raw mode ([#430](https://github.com/autonomys/auto-sdk/pull/430)) [@clostao](https://github.com/clostao)
+
+
 ## [Unreleased]
 
 Future changes will appear here.
