@@ -2,41 +2,160 @@ import type { Api } from '@autonomys/auto-utils'
 import { domainStakingSummary } from '../domain'
 import { deposits, operator, withdrawals } from '../staking'
 import type { NominatorPosition } from '../types/position'
+import type { Deposit, Withdrawal } from '../types/staking'
 import { instantSharePrice, operatorEpochSharePrice } from './price'
 import { shareToStake, stakeToShare } from './utils'
 
 /**
+ * Processes pending deposits to calculate additional shares and storage fees
+ */
+const processPendingDeposits = async (
+  api: Api,
+  operatorId: string | number | bigint,
+  depositData: Deposit,
+  currentEpochIndex: number,
+) => {
+  const zeroAmounts = {
+    additionalShares: BigInt(0),
+    additionalStorageFee: BigInt(0),
+    pendingDeposits: [] as NominatorPosition['pendingDeposits'],
+  }
+
+  if (!depositData.pending) return zeroAmounts
+
+  const {
+    effectiveDomainEpoch,
+    amount,
+    storageFeeDeposit: additionalStorageFee,
+  } = depositData.pending
+
+  // If epoch hasn't passed yet, keep as pending
+  if (effectiveDomainEpoch >= currentEpochIndex) {
+    return {
+      ...zeroAmounts,
+      pendingDeposits: [{ amount, effectiveEpoch: effectiveDomainEpoch }],
+    }
+  }
+
+  // Epoch has passed - convert pending amount to shares
+  try {
+    const epochSharePrice = await operatorEpochSharePrice(api, operatorId, effectiveDomainEpoch, 0)
+    const additionalShares =
+      epochSharePrice !== undefined ? stakeToShare(amount, epochSharePrice) : amount // Fallback: assume 1:1 conversion
+
+    if (epochSharePrice === undefined) {
+      console.warn(
+        `No epoch share price found for epoch ${effectiveDomainEpoch}, using pending amount as is`,
+      )
+    }
+
+    return {
+      additionalShares,
+      additionalStorageFee,
+      pendingDeposits: [],
+    }
+  } catch (error) {
+    console.warn(
+      `Error getting epoch share price for epoch ${effectiveDomainEpoch}, treating as still pending:`,
+      error,
+    )
+    return {
+      ...zeroAmounts,
+      pendingDeposits: [{ amount, effectiveEpoch: effectiveDomainEpoch }],
+    }
+  }
+}
+
+/**
+ * Processes pending withdrawals to calculate withdrawal amounts and unlock blocks
+ */
+const processPendingWithdrawals = async (
+  api: Api,
+  operatorId: string | number | bigint,
+  withdrawalsData: Withdrawal[],
+  currentEpochIndex: number,
+): Promise<NominatorPosition['pendingWithdrawals']> => {
+  const pendingWithdrawals: NominatorPosition['pendingWithdrawals'] = []
+
+  if (withdrawalsData.length === 0) return pendingWithdrawals
+
+  for (const withdrawal of withdrawalsData) {
+    const { withdrawalInShares } = withdrawal
+
+    // Skip if no withdrawalInShares
+    if (!withdrawalInShares) continue
+
+    const { domainEpoch, shares, unlockAtConfirmedDomainBlockNumber } = withdrawalInShares
+
+    // Process regular withdrawals
+    for (const w of withdrawal.withdrawals) {
+      pendingWithdrawals.push({
+        amount: w.amountToUnlock,
+        unlockAtBlock: w.unlockAtConfirmedDomainBlockNumber,
+      })
+    }
+
+    // Process withdrawal in shares if epoch has passed
+    if (domainEpoch[1] < currentEpochIndex) {
+      const sharePrice = await operatorEpochSharePrice(
+        api,
+        operatorId,
+        domainEpoch[1], // epoch index
+        domainEpoch[0], // domain id
+      )
+
+      const withdrawalAmount = sharePrice ? shareToStake(shares, sharePrice) : BigInt(0) // fallback to 0 if no price available
+
+      pendingWithdrawals.push({
+        amount: withdrawalAmount,
+        unlockAtBlock: unlockAtConfirmedDomainBlockNumber,
+      })
+    } else if (domainEpoch[1] >= currentEpochIndex) {
+      const operatorData = await operator(api, operatorId)
+      const lastSharePrice = operatorData.currentTotalStake / operatorData.currentTotalShares
+      const withdrawalAmount = shareToStake(shares, lastSharePrice)
+      pendingWithdrawals.push({
+        amount: withdrawalAmount,
+        unlockAtBlock: unlockAtConfirmedDomainBlockNumber,
+      })
+    }
+  }
+
+  return pendingWithdrawals
+}
+
+/**
  * Retrieves the complete staking position of a nominator for a specific operator.
- * 
+ *
  * This function calculates the comprehensive staking position of a nominator including
  * current value, pending deposits, pending withdrawals, and storage fee deposits.
  * It handles complex calculations involving share prices across different epochs
  * and provides a complete view of the nominator's stake position.
- * 
+ *
  * @param api - The connected API instance
  * @param operatorId - The ID of the operator to query position for
  * @param nominatorAccountId - The account ID of the nominator
  * @returns Promise that resolves to NominatorPosition with complete position details
  * @throws Error if operator not found, domain staking summary unavailable, or calculation fails
- * 
+ *
  * @example
  * ```typescript
  * import { nominatorPosition } from '@autonomys/auto-consensus'
  * import { activate } from '@autonomys/auto-utils'
- * 
+ *
  * const api = await activate({ networkId: 'gemini-3h' })
  * const position = await nominatorPosition(api, '1', 'nominator_account_address')
- * 
+ *
  * console.log(`Current Value: ${position.knownValue}`)
  * console.log(`Storage Fee Deposit: ${position.storageFeeDeposit}`)
  * console.log(`Pending Deposits: ${position.pendingDeposits.length}`)
  * console.log(`Pending Withdrawals: ${position.pendingWithdrawals.length}`)
- * 
+ *
  * // Check pending deposits
  * position.pendingDeposits.forEach(deposit => {
  *   console.log(`Pending: ${deposit.amount} at epoch ${deposit.effectiveEpoch}`)
  * })
- * 
+ *
  * // Check pending withdrawals
  * position.pendingWithdrawals.forEach(withdrawal => {
  *   console.log(`Withdrawal: ${withdrawal.amount} unlocks at block ${withdrawal.unlockAtBlock}`)
@@ -49,6 +168,7 @@ export const nominatorPosition = async (
   nominatorAccountId: string,
 ): Promise<NominatorPosition> => {
   try {
+    // TODO: handle when operator is not found
     const operatorData = await operator(api, operatorId)
 
     // Step 1: Get deposits, withdrawals, and domain staking summary
@@ -62,7 +182,8 @@ export const nominatorPosition = async (
       throw new Error('Domain staking summary not found')
     }
 
-    const depositData = depositsData.length > 0 ? depositsData[0] : null
+    // Find the deposit data for the operator
+    const depositData = depositsData.find((d) => d.operatorId === operatorId)
     if (!depositData) {
       return {
         knownValue: BigInt(0),
@@ -71,104 +192,30 @@ export const nominatorPosition = async (
         storageFeeDeposit: BigInt(0),
       }
     }
-    const currentEpochIndex = stakingSummary.currentEpochIndex
+    const { currentEpochIndex } = stakingSummary
 
-    let totalShares = depositData.known.shares
-    let totalStorageFeeDeposit =
-      depositData.known.storageFeeDeposit + (depositData.pending?.storageFeeDeposit ?? BigInt(0))
+    // Process pending deposits
+    const { additionalShares, additionalStorageFee, pendingDeposits } =
+      await processPendingDeposits(api, operatorId, depositData, currentEpochIndex)
 
-    const pendingDeposits: NominatorPosition['pendingDeposits'] = []
+    // Calculate final totals functionally
+    const totalShares = depositData.known.shares + additionalShares
+    const totalStorageFeeDeposit =
+      depositData.known.storageFeeDeposit +
+      (depositData.pending?.storageFeeDeposit ?? BigInt(0)) +
+      additionalStorageFee
 
-    if (depositData.pending) {
-      const {
-        effectiveDomainEpoch,
-        amount,
-        storageFeeDeposit: pendingStorageFee,
-      } = depositData.pending
-
-      if (effectiveDomainEpoch <= currentEpochIndex) {
-        // Epoch has passed - convert pending amount to shares using epoch share price
-        try {
-          const epochSharePrice = await operatorEpochSharePrice(
-            api,
-            operatorId,
-            effectiveDomainEpoch,
-            0,
-          )
-
-          if (epochSharePrice !== undefined) {
-            // Convert pending amount to shares and add to total
-            const pendingShares = stakeToShare(amount, epochSharePrice)
-            totalShares += pendingShares
-            console.log(
-              `Converted pending deposit: ${amount} tokens at epoch ${effectiveDomainEpoch} (price: ${epochSharePrice}) = ${pendingShares} shares`,
-            )
-          } else {
-            // Fallback: if no epoch price available, assume 1:1 conversion
-            console.warn(
-              `No epoch share price found for epoch ${effectiveDomainEpoch}, using pending amount as shares`,
-            )
-            totalShares += amount
-          }
-
-          // Add pending storage fee to total
-          totalStorageFeeDeposit += pendingStorageFee
-        } catch (error) {
-          console.warn(
-            `Error getting epoch share price for epoch ${effectiveDomainEpoch}, treating as still pending:`,
-            error,
-          )
-          // Keep as pending if we can't get the epoch price
-          pendingDeposits.push({
-            amount: amount,
-            effectiveEpoch: effectiveDomainEpoch,
-          })
-        }
-      } else {
-        // Epoch hasn't passed yet - keep as pending
-        pendingDeposits.push({
-          amount: amount,
-          effectiveEpoch: effectiveDomainEpoch,
-        })
-      }
-    }
-
-    // Step 3: Calculate current position value using instant share price
+    // Calculate current position value
     const currentSharePrice = await instantSharePrice(api, operatorId)
     const knownValue = shareToStake(totalShares, currentSharePrice)
 
-    // Step 4: Process pending withdrawals
-    const pendingWithdrawals: NominatorPosition['pendingWithdrawals'] = []
-    if (withdrawalsData.length > 0) {
-      for (const withdrawal of withdrawalsData) {
-        // Process regular withdrawals
-        for (const w of withdrawal.withdrawals) {
-          pendingWithdrawals.push({
-            amount: w.amountToUnlock,
-            unlockAtBlock: w.unlockAtConfirmedDomainBlockNumber,
-          })
-        }
-
-        // Process withdrawal in shares
-        if (withdrawal.withdrawalInShares) {
-          const sharePrice = await operatorEpochSharePrice(
-            api,
-            operatorId,
-            withdrawal.withdrawalInShares.domainEpoch[1], // epoch index
-            withdrawal.withdrawalInShares.domainEpoch[0], // domain id
-          )
-
-          const withdrawalAmount = sharePrice
-            ? shareToStake(withdrawal.withdrawalInShares.shares, sharePrice)
-            : BigInt(0) // fallback to 0 if no price available
-
-          pendingWithdrawals.push({
-            amount: withdrawalAmount,
-            unlockAtBlock: withdrawal.withdrawalInShares.unlockAtConfirmedDomainBlockNumber,
-          })
-        }
-      }
-    }
+    // Process pending withdrawals
+    const pendingWithdrawals = await processPendingWithdrawals(
+      api,
+      operatorId,
+      withdrawalsData,
+      currentEpochIndex,
+    )
 
     return {
       knownValue,
