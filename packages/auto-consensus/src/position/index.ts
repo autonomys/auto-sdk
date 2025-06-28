@@ -95,30 +95,23 @@ const processPendingWithdrawals = async (
       })
     }
 
-    // Process withdrawal in shares if epoch has passed
-    if (domainEpoch[1] < currentEpochIndex) {
-      const sharePrice = await operatorEpochSharePrice(
-        api,
-        operatorId,
-        domainEpoch[1], // epoch index
-        domainEpoch[0], // domain id
-      )
+    const sharePrice =
+      // If withdrawal epoch has passed, us its share price, otherwise use instant share price
+      domainEpoch[1] < currentEpochIndex
+        ? await operatorEpochSharePrice(
+            api,
+            operatorId,
+            domainEpoch[1], // epoch index
+            domainEpoch[0], // domain id
+          )
+        : await instantSharePrice(api, operatorId)
 
-      const withdrawalAmount = sharePrice ? shareToStake(shares, sharePrice) : BigInt(0) // fallback to 0 if no price available
+    const withdrawalAmount = sharePrice ? shareToStake(shares, sharePrice) : BigInt(0) // fallback to 0 if no price available
 
-      pendingWithdrawals.push({
-        amount: withdrawalAmount,
-        unlockAtDomainBlock: unlockAtConfirmedDomainBlockNumber,
-      })
-    } else if (domainEpoch[1] >= currentEpochIndex) {
-      const operatorData = await operator(api, operatorId)
-      const lastSharePrice = operatorData.currentTotalStake / operatorData.currentTotalShares
-      const withdrawalAmount = shareToStake(shares, lastSharePrice)
-      pendingWithdrawals.push({
-        amount: withdrawalAmount,
-        unlockAtDomainBlock: unlockAtConfirmedDomainBlockNumber,
-      })
-    }
+    pendingWithdrawals.push({
+      amount: withdrawalAmount,
+      unlockAtDomainBlock: unlockAtConfirmedDomainBlockNumber,
+    })
   }
 
   return pendingWithdrawals
