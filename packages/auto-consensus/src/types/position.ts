@@ -6,7 +6,7 @@ export type NominatorPosition = {
   }[]
   pendingWithdrawals: {
     amount: bigint
-    unlockAtBlock: number
+    unlockAtDomainBlock: number
   }[]
   storageFeeDeposit: bigint
 }

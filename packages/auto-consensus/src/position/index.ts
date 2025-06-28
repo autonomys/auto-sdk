@@ -91,7 +91,7 @@ const processPendingWithdrawals = async (
     for (const w of withdrawal.withdrawals) {
       pendingWithdrawals.push({
         amount: w.amountToUnlock,
-        unlockAtBlock: w.unlockAtConfirmedDomainBlockNumber,
+        unlockAtDomainBlock: w.unlockAtConfirmedDomainBlockNumber,
       })
     }
 
@@ -108,7 +108,7 @@ const processPendingWithdrawals = async (
 
       pendingWithdrawals.push({
         amount: withdrawalAmount,
-        unlockAtBlock: unlockAtConfirmedDomainBlockNumber,
+        unlockAtDomainBlock: unlockAtConfirmedDomainBlockNumber,
       })
     } else if (domainEpoch[1] >= currentEpochIndex) {
       const operatorData = await operator(api, operatorId)
@@ -116,7 +116,7 @@ const processPendingWithdrawals = async (
       const withdrawalAmount = shareToStake(shares, lastSharePrice)
       pendingWithdrawals.push({
         amount: withdrawalAmount,
-        unlockAtBlock: unlockAtConfirmedDomainBlockNumber,
+        unlockAtDomainBlock: unlockAtConfirmedDomainBlockNumber,
       })
     }
   }
