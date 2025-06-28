@@ -176,7 +176,7 @@ export const nominatorPosition = async (
     }
 
     // Find the deposit data for the operator
-    const depositData = depositsData.find((d) => d.operatorId === operatorId)
+    const depositData = depositsData.find((d) => String(d.operatorId) === String(operatorId))
     if (!depositData) {
       return {
         knownValue: BigInt(0),
