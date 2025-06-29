@@ -96,7 +96,7 @@ const processPendingWithdrawals = async (
     }
 
     const sharePrice =
-      // If withdrawal epoch has passed, us its share price, otherwise use instant share price
+      // If withdrawal epoch has passed, use its share price, otherwise use instant share price
       domainEpoch[1] < currentEpochIndex
         ? await operatorEpochSharePrice(
             api,
