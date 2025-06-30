@@ -15,6 +15,77 @@ import { detectTxSuccess } from './detectTxSuccess'
 import { expectSuccessfulTxEvent } from './events'
 import { validateEvents } from './validateEvents'
 
+/**
+ * Signs and sends a transaction to the Autonomys Network, with comprehensive error handling and event validation.
+ * 
+ * This function handles the complete transaction lifecycle: signing, sending, monitoring for inclusion,
+ * and validating expected events. It provides detailed error handling and supports custom error mapping
+ * for domain-specific error handling. The function waits for the transaction to be included in a block
+ * and validates that expected events were emitted.
+ * 
+ * @param sender - The account to sign and send the transaction. Can be a KeyringPair, address string, or AddressOrPair.
+ * @param tx - The submittable extrinsic to sign and send.
+ * @param options - Optional signer options including nonce, tip, and other transaction parameters.
+ * @param eventsExpected - Array of expected event names to validate. Defaults to successful transaction events.
+ * @param log - Whether to log transaction progress to console. Defaults to false.
+ * @param mapErrorCodeToEnum - Optional function to map error codes to custom error enums for better error handling.
+ * @returns Promise resolving to transaction results including success status, hashes, events, and receipt.
+ * 
+ * @example
+ * import { signAndSendTx, activate, setupWallet } from '@autonomys/auto-utils'
+ * 
+ * // Basic transaction signing and sending
+ * const api = await activate({ networkId: 'taurus' })
+ * const wallet = setupWallet({ uri: '//Alice' })
+ * 
+ * const tx = api.tx.balances.transfer('5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY', 1000000000000000000n)
+ * 
+ * const result = await signAndSendTx(wallet.keyringPair, tx)
+ * if (result.success) {
+ *   console.log('Transaction successful')
+ *   console.log('Transaction hash:', result.txHash)
+ *   console.log('Block hash:', result.blockHash)
+ * }
+ * 
+ * // With custom options and event validation
+ * const transferTx = api.tx.balances.transfer(receiverAddress, amount)
+ * const transferResult = await signAndSendTx(
+ *   senderKeyringPair,
+ *   transferTx,
+ *   { tip: 1000000000000000n }, // Custom tip
+ *   ['balances.Transfer'], // Expected events
+ *   true // Enable logging
+ * )
+ * 
+ * // With error mapping for custom error handling
+ * const stakingTx = api.tx.domains.nominateOperator(operatorId, amount)
+ * const stakingResult = await signAndSendTx(
+ *   nominatorKeyringPair,
+ *   stakingTx,
+ *   {},
+ *   ['domains.OperatorNominated'],
+ *   false,
+ *   (errorCode) => {
+ *     // Map error codes to custom error types
+ *     switch (errorCode) {
+ *       case '0': return 'InsufficientBalance'
+ *       case '1': return 'OperatorNotFound'
+ *       default: return undefined
+ *     }
+ *   }
+ * )
+ * 
+ * // Handle Auto-ID registration with identifier extraction
+ * const autoIdTx = api.tx.autoId.registerAutoId(autoIdData)
+ * const autoIdResult = await signAndSendTx(sender, autoIdTx)
+ * if (autoIdResult.identifier) {
+ *   console.log('Auto-ID registered with identifier:', autoIdResult.identifier)
+ * }
+ * 
+ * @throws {Error} When the transaction fails, times out, or expected events are not found.
+ * @throws {Error} When the transaction is retracted, dropped, or invalid.
+ * @throws {Error} When custom error mapping indicates a specific error condition.
+ */
 export const signAndSendTx = async <TError>(
   sender: AddressOrPair | KeyringPair,
   tx: SubmittableExtrinsic<'promise', ISubmittableResult>,
