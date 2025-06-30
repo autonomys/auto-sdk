@@ -2,8 +2,8 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import webpack from 'webpack'
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
+const filename = fileURLToPath(import.meta.url)
+const dirname = path.dirname(filename)
 
 export default ({ config }) => {
   // Typescript support
@@ -45,7 +45,7 @@ export default ({ config }) => {
         },
       },
     ],
-    include: path.resolve(__dirname, '../src/styles.css'),
+    include: path.resolve(dirname, '../src/styles.css'),
   })
 
   // Provide Buffer and process globals
@@ -59,7 +59,7 @@ export default ({ config }) => {
   // Add alias to mock problematic modules
   config.resolve.alias = {
     ...config.resolve.alias,
-    'stream-fork': path.resolve(__dirname, './mocks/stream-fork.js'),
+    'stream-fork': path.resolve(dirname, './mocks/stream-fork.js'),
   }
 
   return config
