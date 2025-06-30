@@ -17,22 +17,19 @@ const processPendingDeposits = async (
 ) => {
   const zeroAmounts = {
     additionalShares: BigInt(0),
-    additionalStorageFee: BigInt(0),
+    pendingStorageFee: BigInt(0),
     pendingDeposits: [] as NominatorPosition['pendingDeposits'],
   }
 
   if (!depositData.pending) return zeroAmounts
 
-  const {
-    effectiveDomainEpoch,
-    amount,
-    storageFeeDeposit: additionalStorageFee,
-  } = depositData.pending
+  const { effectiveDomainEpoch, amount, storageFeeDeposit: pendingStorageFee } = depositData.pending
 
   // If epoch hasn't passed yet, keep as pending
   if (effectiveDomainEpoch >= currentEpochIndex) {
     return {
       ...zeroAmounts,
+      pendingStorageFee,
       pendingDeposits: [{ amount, effectiveEpoch: effectiveDomainEpoch }],
     }
   }
@@ -51,8 +48,8 @@ const processPendingDeposits = async (
 
     return {
       additionalShares,
-      additionalStorageFee,
-      pendingDeposits: [],
+      pendingStorageFee, // Storage fee from processed pending deposit
+      pendingDeposits: [], // Empty array indicates pending deposit was processed
     }
   } catch (error) {
     console.warn(
@@ -61,6 +58,7 @@ const processPendingDeposits = async (
     )
     return {
       ...zeroAmounts,
+      pendingStorageFee,
       pendingDeposits: [{ amount, effectiveEpoch: effectiveDomainEpoch }],
     }
   }
@@ -188,15 +186,18 @@ export const nominatorPosition = async (
     const { currentEpochIndex } = stakingSummary
 
     // Process pending deposits
-    const { additionalShares, additionalStorageFee, pendingDeposits } =
-      await processPendingDeposits(api, operatorId, depositData, currentEpochIndex)
+    const { additionalShares, pendingStorageFee, pendingDeposits } = await processPendingDeposits(
+      api,
+      operatorId,
+      depositData,
+      currentEpochIndex,
+    )
 
-    // Calculate final totals functionally
+    // Calculate final totals
     const totalShares = depositData.known.shares + additionalShares
-    const totalStorageFeeDeposit =
-      depositData.known.storageFeeDeposit +
-      (depositData.pending?.storageFeeDeposit ?? BigInt(0)) +
-      additionalStorageFee
+
+    // Calculate total storage fee deposit: known + pending (handled by processPendingDeposits)
+    const totalStorageFeeDeposit = depositData.known.storageFeeDeposit + pendingStorageFee
 
     // Calculate current position value
     const currentSharePrice = await instantSharePrice(api, operatorId)
