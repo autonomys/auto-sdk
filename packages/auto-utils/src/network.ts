@@ -3,6 +3,41 @@
 import { defaultNetwork, networks } from './constants/network'
 import type { DomainParams, NetworkParams } from './types/network'
 
+/**
+ * Retrieves detailed information about a specific Autonomys network.
+ * 
+ * This function provides access to comprehensive network configuration including
+ * RPC endpoints, explorer URLs, domain information, and token details. If no
+ * network ID is specified, it returns the default network (mainnet).
+ * 
+ * @param input - Optional network parameters containing the networkId.
+ * @returns Complete network configuration object with all network details.
+ * 
+ * @example
+ * import { getNetworkDetails } from '@autonomys/auto-utils'
+ * 
+ * // Get default network (mainnet)
+ * const mainnet = getNetworkDetails()
+ * console.log(mainnet.name) // Output: "Mainnet"
+ * console.log(mainnet.token.symbol) // Output: "AI3"
+ * 
+ * // Get specific network details
+ * const taurus = getNetworkDetails({ networkId: 'taurus' })
+ * console.log(taurus.name) // Output: "Testnet - Taurus"
+ * console.log(taurus.isTestnet) // Output: true
+ * console.log(taurus.domains.length) // Output: 1 (Auto-EVM domain)
+ * 
+ * // Access network explorers
+ * const gemini = getNetworkDetails({ networkId: 'gemini-3h' })
+ * console.log(gemini.explorer[0].name) // Output: "Astral"
+ * console.log(gemini.explorer[0].url) // Output: explorer URL
+ * 
+ * // Check if network is for local development
+ * const localhost = getNetworkDetails({ networkId: 'localhost' })
+ * console.log(localhost.isLocalhost) // Output: true
+ * 
+ * @throws {Error} When the specified networkId is not found in the available networks.
+ */
 export const getNetworkDetails = (input?: NetworkParams) => {
   // If no id is provided, return the default network
   if (!input || !input.networkId) return defaultNetwork
@@ -16,6 +51,41 @@ export const getNetworkDetails = (input?: NetworkParams) => {
   return network
 }
 
+/**
+ * Retrieves the RPC endpoint URLs for a specific Autonomys network.
+ * 
+ * This function returns an array of WebSocket RPC URLs that can be used to
+ * connect to the specified network's consensus layer. Multiple URLs provide
+ * redundancy and load balancing capabilities.
+ * 
+ * @param input - Optional network parameters containing the networkId.
+ * @returns Array of WebSocket RPC URLs for the specified network.
+ * 
+ * @example
+ * import { getNetworkRpcUrls } from '@autonomys/auto-utils'
+ * 
+ * // Get mainnet RPC URLs
+ * const mainnetUrls = getNetworkRpcUrls()
+ * console.log(mainnetUrls)
+ * // Output: ['wss://rpc-0.mainnet.subspace.network/ws', 'wss://rpc-1.mainnet.subspace.network/ws', ...]
+ * 
+ * // Get testnet RPC URLs
+ * const taurusUrls = getNetworkRpcUrls({ networkId: 'taurus' })
+ * console.log(taurusUrls)
+ * // Output: ['wss://rpc-0.taurus.autonomys.xyz/ws', 'wss://rpc-1.taurus.autonomys.xyz/ws', ...]
+ * 
+ * // Use with API connection
+ * import { createConnection } from '@autonomys/auto-utils'
+ * const endpoints = getNetworkRpcUrls({ networkId: 'gemini-3h' })
+ * const api = await createConnection(endpoints)
+ * 
+ * // Get localhost URLs for development
+ * const localUrls = getNetworkRpcUrls({ networkId: 'localhost' })
+ * console.log(localUrls) // Output: ['ws://127.0.0.1:9944/ws']
+ * 
+ * @throws {Error} When the specified network is not found.
+ * @throws {Error} When the network has no configured RPC URLs.
+ */
 export const getNetworkRpcUrls = (input?: NetworkParams) => {
   // Get the network details
   const network = getNetworkDetails(input)
@@ -25,6 +95,46 @@ export const getNetworkRpcUrls = (input?: NetworkParams) => {
   return network.rpcUrls
 }
 
+/**
+ * Retrieves detailed information about a specific domain within an Autonomys network.
+ * 
+ * This function provides access to domain-specific configuration including
+ * the domain's runtime type, name, and RPC endpoints. Domains are specialized
+ * execution environments that run on top of the Autonomys consensus layer.
+ * 
+ * @param params - Domain parameters containing both networkId and domainId.
+ * @returns Complete domain configuration object with runtime and connection details.
+ * 
+ * @example
+ * import { getNetworkDomainDetails } from '@autonomys/auto-utils'
+ * 
+ * // Get Auto-EVM domain details on Taurus
+ * const evmDomain = getNetworkDomainDetails({
+ *   networkId: 'taurus',
+ *   domainId: '0'
+ * })
+ * console.log(evmDomain.name) // Output: "Auto-EVM"
+ * console.log(evmDomain.runtime) // Output: "auto-evm"
+ * console.log(evmDomain.rpcUrls.length) // Output: number of available RPC endpoints
+ * 
+ * // Get Auto-ID domain details on Gemini-3H
+ * const autoIdDomain = getNetworkDomainDetails({
+ *   networkId: 'gemini-3h',
+ *   domainId: '1'
+ * })
+ * console.log(autoIdDomain.name) // Output: "Auto-ID"
+ * console.log(autoIdDomain.runtime) // Output: "auto-id"
+ * 
+ * // Use with domain connection
+ * import { activateDomain } from '@autonomys/auto-utils'
+ * const domainApi = await activateDomain({
+ *   networkId: 'taurus',
+ *   domainId: '0'
+ * })
+ * 
+ * @throws {Error} When the specified networkId is not found.
+ * @throws {Error} When the specified domainId is not found within the network.
+ */
 export const getNetworkDomainDetails = (params: DomainParams) => {
   const { networkId, domainId } = params
 
@@ -39,6 +149,46 @@ export const getNetworkDomainDetails = (params: DomainParams) => {
   return domain
 }
 
+/**
+ * Retrieves the RPC endpoint URLs for a specific domain within an Autonomys network.
+ * 
+ * This function returns an array of WebSocket RPC URLs that can be used to
+ * connect to the specified domain. Domain RPC endpoints provide access to
+ * domain-specific functionality and state.
+ * 
+ * @param params - Domain parameters containing both networkId and domainId.
+ * @returns Array of WebSocket RPC URLs for the specified domain.
+ * 
+ * @example
+ * import { getNetworkDomainRpcUrls } from '@autonomys/auto-utils'
+ * 
+ * // Get Auto-EVM domain RPC URLs on Taurus
+ * const evmUrls = getNetworkDomainRpcUrls({
+ *   networkId: 'taurus',
+ *   domainId: '0'
+ * })
+ * console.log(evmUrls)
+ * // Output: ['wss://auto-evm.taurus.autonomys.xyz/ws', 'wss://auto-evm-0.taurus.autonomys.xyz/ws', ...]
+ * 
+ * // Get Auto-ID domain RPC URLs on Gemini-3H
+ * const autoIdUrls = getNetworkDomainRpcUrls({
+ *   networkId: 'gemini-3h',
+ *   domainId: '1'
+ * })
+ * console.log(autoIdUrls)
+ * // Output: ['wss://autoid-0.gemini-3h.subspace.network/ws']
+ * 
+ * // Use with API connection
+ * import { createConnection } from '@autonomys/auto-utils'
+ * const domainEndpoints = getNetworkDomainRpcUrls({
+ *   networkId: 'localhost',
+ *   domainId: '0'
+ * })
+ * const domainApi = await createConnection(domainEndpoints)
+ * 
+ * @throws {Error} When the specified network or domain is not found.
+ * @throws {Error} When the domain has no configured RPC URLs.
+ */
 export const getNetworkDomainRpcUrls = (params: DomainParams) => {
   // Get the network details
   const domain = getNetworkDomainDetails(params)

@@ -34,6 +34,34 @@ export function stringToUint8Array(text: string): Uint8Array {
 
 /**
  * Concatenates two Uint8Array instances into a single Uint8Array.
+ * 
+ * This function efficiently combines two byte arrays into a single array, preserving
+ * the order of the input arrays. It's commonly used for combining data before hashing,
+ * creating composite data structures, or preparing data for cryptographic operations.
+ * 
+ * @param array1 - The first Uint8Array to concatenate.
+ * @param array2 - The second Uint8Array to concatenate.
+ * @returns A new Uint8Array containing all bytes from array1 followed by all bytes from array2.
+ * 
+ * @example
+ * import { stringToUint8Array, concatenateUint8Arrays } from '@autonomys/auto-utils'
+ * 
+ * // Concatenate two strings as byte arrays
+ * const part1 = stringToUint8Array('Hello, ')
+ * const part2 = stringToUint8Array('Autonomys!')
+ * const combined = concatenateUint8Arrays(part1, part2)
+ * 
+ * // Convert back to string to verify
+ * const result = new TextDecoder().decode(combined)
+ * console.log(result) // Output: "Hello, Autonomys!"
+ * console.log(combined.length) // Output: 16 (total length of both arrays)
+ * 
+ * // Concatenate with hash data
+ * const data1 = stringToUint8Array('message1')
+ * const data2 = stringToUint8Array('message2')
+ * const combinedData = concatenateUint8Arrays(data1, data2)
+ * const hash = blake2b_256(combinedData)
+ * console.log(hash) // Output: hash of combined data
  */
 export function concatenateUint8Arrays(array1: Uint8Array, array2: Uint8Array): Uint8Array {
   const combined = new Uint8Array(array1.length + array2.length)
