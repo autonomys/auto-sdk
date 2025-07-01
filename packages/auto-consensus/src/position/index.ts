@@ -88,8 +88,9 @@ const processPendingWithdrawals = async (
     // Process regular withdrawals
     for (const w of withdrawal.withdrawals) {
       pendingWithdrawals.push({
-        amount: w.amountToUnlock,
+        stakeWithdrawalAmount: w.amountToUnlock,
         unlockAtDomainBlock: w.unlockAtConfirmedDomainBlockNumber,
+        storageFeeRefund: w.storageFeeRefund,
       })
     }
 
@@ -107,8 +108,9 @@ const processPendingWithdrawals = async (
     const withdrawalAmount = sharePrice ? shareToStake(shares, sharePrice) : BigInt(0) // fallback to 0 if no price available
 
     pendingWithdrawals.push({
-      amount: withdrawalAmount,
+      stakeWithdrawalAmount: withdrawalAmount,
       unlockAtDomainBlock: unlockAtConfirmedDomainBlockNumber,
+      storageFeeRefund: withdrawalInShares.storageFeeRefund,
     })
   }
 

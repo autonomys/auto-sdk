@@ -5,8 +5,9 @@ export type NominatorPosition = {
     effectiveEpoch: number
   }[]
   pendingWithdrawals: {
-    amount: bigint
+    stakeWithdrawalAmount: bigint
     unlockAtDomainBlock: number
+    storageFeeRefund: bigint
   }[]
   storageFeeDeposit: bigint
 }
