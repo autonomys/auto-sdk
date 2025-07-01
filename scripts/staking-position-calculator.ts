@@ -245,7 +245,7 @@ const calculatePosition = async (
     console.log(`\n   📤 Detailed Pending Withdrawals:`)
     positionData.pendingWithdrawals.forEach((withdrawal, i) => {
       console.log(`      ${i + 1}. Amount: ${formatBalance(withdrawal.amount)}`)
-      console.log(`         Unlock at block: ${withdrawal.unlockAtBlock}`)
+      console.log(`         Unlock at block: ${withdrawal.unlockAtDomainBlock}`)
     })
   }
 
