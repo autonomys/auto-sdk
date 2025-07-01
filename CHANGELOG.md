@@ -218,6 +218,17 @@
 - Chore v1.5.2 ([#431](https://github.com/autonomys/auto-sdk/pull/431)) [@clostao](https://github.com/clostao)
 
 
+## [1.5.4] - 2025-07-01
+
+### Features
+
+- enable passing http options to HttpClient & methods ([#438](https://github.com/autonomys/auto-sdk/pull/438)) [@clostao](https://github.com/clostao)
+
+### Chores
+
+- v1.5.3 ([#437](https://github.com/autonomys/auto-sdk/pull/437)) [@clostao](https://github.com/clostao)
+
+
 ## [Unreleased]
 
 Future changes will appear here.
