@@ -197,6 +197,27 @@
 - downloads should be perfomed in raw mode ([#430](https://github.com/autonomys/auto-sdk/pull/430)) [@clostao](https://github.com/clostao)
 
 
+## [1.5.3] - 2025-07-01
+
+### Features
+
+- improve type infer ([#436](https://github.com/autonomys/auto-sdk/pull/436)) [@clostao](https://github.com/clostao)
+- ✨ file preview component ([#433](https://github.com/autonomys/auto-sdk/pull/433)) [@iamnamananand996](https://github.com/iamnamananand996)
+
+### Documentation
+
+- add comprehensive JSDoc documentation for @autonomys/auto-utils package ([#434](https://github.com/autonomys/auto-sdk/pull/434)) [@cursor[bot]](https://github.com/apps/cursor)
+- add comprehensive JSDoc documentation for @autonomys/auto-consensus exported functions ([#432](https://github.com/autonomys/auto-sdk/pull/432)) [@cursor[bot]](https://github.com/apps/cursor)
+
+### Code Refactoring
+
+- nominatorPosition calculation into smaller, easier to follow functions ([#435](https://github.com/autonomys/auto-sdk/pull/435)) [@jfrank-summit](https://github.com/jfrank-summit)
+
+### Chores
+
+- Chore v1.5.2 ([#431](https://github.com/autonomys/auto-sdk/pull/431)) [@clostao](https://github.com/clostao)
+
+
 ## [Unreleased]
 
 Future changes will appear here.
