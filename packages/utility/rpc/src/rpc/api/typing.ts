@@ -32,9 +32,20 @@ export type ApiDefinition = {
   notifications: Record<string, MessageDefinition>
 }
 
-export type ApiClientType<S extends ApiDefinition> = {
+export type HttpClientOptions = {
+  headers?: Record<string, string>
+}
+
+export type WsClientType<S extends ApiDefinition> = {
   [K in keyof S['methods']]: (
     params: DefinitionTypeOutput<S['methods'][K]['params']>,
+  ) => Promise<DefinitionTypeOutput<S['methods'][K]['returns']>>
+}
+
+export type HttpClientType<S extends ApiDefinition> = {
+  [K in keyof S['methods']]: (
+    params: DefinitionTypeOutput<S['methods'][K]['params']>,
+    options?: HttpClientOptions,
   ) => Promise<DefinitionTypeOutput<S['methods'][K]['returns']>>
 }
 

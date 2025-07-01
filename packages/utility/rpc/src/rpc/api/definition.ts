@@ -5,16 +5,18 @@ import { createRpcServer } from '../server'
 import { Message, MessageQuery, RpcParams, TypedRpcNotificationHandler } from '../types'
 import { RpcError } from '../utils'
 import {
-  ApiClientType,
   ApiDefinition,
   ApiServerHandlers,
   ApiServerNotifications,
   DefinitionTypeOutput,
+  HttpClientOptions,
+  HttpClientType,
   isZodType,
+  WsClientType,
 } from './typing'
 
 export const createApiDefinition = <S extends ApiDefinition>(serverDefinition: S) => {
-  const createClient = <Client extends ApiClientType<S>>(
+  const createClient = <Client extends WsClientType<S>>(
     clientParams: Parameters<typeof createRpcClient>[0],
   ): {
     api: Client
@@ -131,12 +133,18 @@ export const createApiDefinition = <S extends ApiDefinition>(serverDefinition: S
     }
   }
 
-  const createHttpClient = <Client extends ApiClientType<S>>(baseUrl: string) => {
+  const createHttpClient = <Client extends HttpClientType<S>>(
+    baseUrl: string,
+    clientOptions?: HttpClientOptions,
+  ) => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const apiMethods = Object.entries(serverDefinition.methods).map(([method, handler]) => {
       return [
         method,
-        async (params: Parameters<DefinitionTypeOutput<typeof handler.params>>[0]) => {
+        async (
+          params: Parameters<DefinitionTypeOutput<typeof handler.params>>[0],
+          options?: HttpClientOptions,
+        ) => {
           const result = await fetch(`${baseUrl}`, {
             method: 'POST',
             body: JSON.stringify({
@@ -145,6 +153,11 @@ export const createApiDefinition = <S extends ApiDefinition>(serverDefinition: S
               params,
               id: randomId(),
             }),
+            headers: {
+              'Content-Type': 'application/json',
+              ...clientOptions?.headers,
+              ...options?.headers,
+            },
           })
 
           if (!result.ok) {
