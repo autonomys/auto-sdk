@@ -9,6 +9,7 @@ import {
   ApiServerHandlers,
   ApiServerNotifications,
   DefinitionTypeOutput,
+  HttpClientOptions,
   HttpClientType,
   isZodType,
   WsClientType,
@@ -132,14 +133,17 @@ export const createApiDefinition = <S extends ApiDefinition>(serverDefinition: S
     }
   }
 
-  const createHttpClient = <Client extends HttpClientType<S>>(baseUrl: string) => {
+  const createHttpClient = <Client extends HttpClientType<S>>(
+    baseUrl: string,
+    clientOptions?: HttpClientOptions,
+  ) => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const apiMethods = Object.entries(serverDefinition.methods).map(([method, handler]) => {
       return [
         method,
         async (
           params: Parameters<DefinitionTypeOutput<typeof handler.params>>[0],
-          headers?: Record<string, string>,
+          options?: HttpClientOptions,
         ) => {
           const result = await fetch(`${baseUrl}`, {
             method: 'POST',
@@ -151,7 +155,8 @@ export const createApiDefinition = <S extends ApiDefinition>(serverDefinition: S
             }),
             headers: {
               'Content-Type': 'application/json',
-              ...headers,
+              ...clientOptions?.headers,
+              ...options?.headers,
             },
           })
 
