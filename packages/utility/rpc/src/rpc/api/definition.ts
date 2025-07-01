@@ -19,11 +19,9 @@ export const createApiDefinition = <S extends ApiDefinition>(serverDefinition: S
   ): {
     api: Client
     close: () => void
-    onNotification: (
-      notificationName: keyof S['notifications'],
-      handler: (
-        params: DefinitionTypeOutput<S['notifications'][keyof S['notifications']]['content']>,
-      ) => void,
+    onNotification: <T extends keyof S['notifications']>(
+      notificationName: T,
+      handler: (params: DefinitionTypeOutput<S['notifications'][T]['content']>) => void,
     ) => void
   } => {
     const client = createRpcClient(clientParams)
