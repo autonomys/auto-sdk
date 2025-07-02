@@ -6,29 +6,29 @@ import { parseDomain } from './utils/parse'
 
 /**
  * Retrieves all registered domains on the network.
- * 
+ *
  * This function queries the domain registry to get information about all domains
  * registered on the Autonomys network, including their configuration, ownership,
  * and creation details.
- * 
+ *
  * @param api - The connected API instance to query the blockchain
  * @returns Promise that resolves to an array of DomainRegistry objects
  * @throws Error if the domain registry query fails
- * 
+ *
  * @example
  * ```typescript
  * import { domains } from '@autonomys/auto-consensus'
  * import { activate } from '@autonomys/auto-utils'
- * 
+ *
  * const api = await activate({ networkId: 'gemini-3h' })
  * const domainList = await domains(api)
- * 
+ *
  * domainList.forEach(domain => {
  *   console.log(`Domain ID: ${domain.domainId}`)
  *   console.log(`Owner: ${domain.ownerAccountId}`)
  *   console.log(`Name: ${domain.domainConfig.domainName}`)
  * })
- * 
+ *
  * await api.disconnect()
  * ```
  */
@@ -51,36 +51,36 @@ export async function domainStakingSummary(
 
 /**
  * Retrieves staking summary information for domains.
- * 
+ *
  * This function can be used in two ways:
  * 1. Without domainId: Returns staking summaries for all domains
  * 2. With domainId: Returns staking summary for a specific domain
- * 
+ *
  * The staking summary includes information about current epoch, total stake,
  * operators, and epoch rewards for each domain.
- * 
- * @param api - The connected API instance to query the blockchain  
+ *
+ * @param api - The connected API instance to query the blockchain
  * @param domainId - Optional domain ID to query specific domain summary
  * @returns Promise that resolves to array of summaries (all domains) or single summary (specific domain)
  * @throws Error if the staking summary query fails
- * 
+ *
  * @example
  * ```typescript
  * import { domainStakingSummary } from '@autonomys/auto-consensus'
  * import { activate } from '@autonomys/auto-utils'
- * 
+ *
  * const api = await activate({ networkId: 'gemini-3h' })
- * 
+ *
  * // Get all domain staking summaries
  * const allSummaries = await domainStakingSummary(api)
  * console.log(`Found ${allSummaries.length} domains`)
- * 
+ *
  * // Get specific domain summary
  * const specificSummary = await domainStakingSummary(api, '0')
  * if (specificSummary) {
  *   console.log(`Domain 0 total stake: ${specificSummary.currentTotalStake}`)
  * }
- * 
+ *
  * await api.disconnect()
  * ```
  */
@@ -120,29 +120,29 @@ export async function domainStakingSummary(
 
 /**
  * Retrieves the latest confirmed domain blocks for all domains.
- * 
+ *
  * This function queries the latest confirmed block information for each domain,
  * providing details about the most recent blocks that have been confirmed
  * on each domain chain.
- * 
+ *
  * @param api - The connected API instance to query the blockchain
  * @returns Promise that resolves to an array of ConfirmedDomainBlock objects
  * @throws Error if the confirmed domain block query fails
- * 
+ *
  * @example
  * ```typescript
  * import { latestConfirmedDomainBlock } from '@autonomys/auto-consensus'
  * import { activate } from '@autonomys/auto-utils'
- * 
+ *
  * const api = await activate({ networkId: 'gemini-3h' })
  * const confirmedBlocks = await latestConfirmedDomainBlock(api)
- * 
+ *
  * confirmedBlocks.forEach(block => {
  *   console.log(`Domain ${block.id}: Block #${block.blockNumber}`)
  *   console.log(`Block Hash: ${block.blockHash}`)
  *   console.log(`State Root: ${block.stateRoot}`)
  * })
- * 
+ *
  * await api.disconnect()
  * ```
  */
@@ -156,5 +156,50 @@ export const latestConfirmedDomainBlock = async (api: Api): Promise<ConfirmedDom
   } catch (error) {
     console.error('error', error)
     throw new Error('Error querying latest confirmed block list.' + error)
+  }
+}
+
+/**
+ * Retrieves the latest block number for a specific domain.
+ *
+ * This function queries the domain's current latest block number, which represents
+ * the highest block number that has been processed for the specified domain.
+ *
+ * @param api - The connected API instance to query the blockchain
+ * @param domainId - The ID of the domain to query (can be string, number, or bigint)
+ * @returns Promise that resolves to the best block number, or undefined if not found
+ * @throws Error if the domain best number query fails
+ *
+ * @example
+ * ```typescript
+ * import { domainBestNumber } from '@autonomys/auto-consensus'
+ * import { activate } from '@autonomys/auto-utils'
+ *
+ * const api = await activate({ networkId: 'gemini-3h' })
+ * const bestNumber = await domainBestNumber(api, '0')
+ *
+ * if (bestNumber !== undefined) {
+ *   console.log(`Domain 0 best block number: ${bestNumber}`)
+ * } else {
+ *   console.log('Domain not found or no blocks processed')
+ * }
+ *
+ * await api.disconnect()
+ * ```
+ */
+export const headDomainNumber = async (
+  api: Api,
+  domainId: string | number | bigint,
+): Promise<number | undefined> => {
+  try {
+    const _headDomainNumber = await api.query.domains.headDomainNumber(domainId.toString())
+    if (_headDomainNumber.isEmpty) {
+      return undefined
+    }
+    const result = _headDomainNumber.toJSON()
+    return result !== null ? Number(result) : undefined
+  } catch (error) {
+    console.error('error', error)
+    throw new Error('Error querying domain best number.' + error)
   }
 }
