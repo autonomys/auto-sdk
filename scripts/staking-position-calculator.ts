@@ -379,13 +379,13 @@ const demonstrateSDKFunctions = async (
       `   ${formatShares(testShares)} at price ${parsePerbill(testPrice)} = ${formatBalance(convertedStake)}`,
     )
 
-    // Demonstrate domain latest number
+    // Demonstrate domain head number
     console.log(`\n📊 Testing headDomainNumber() function:`)
-    const bestNumber = await headDomainNumber(api, domainId)
-    if (bestNumber !== undefined) {
-      console.log(`   Domain ${domainId} best block number: ${bestNumber}`)
+    const headNumber = await headDomainNumber(api, domainId)
+    if (headNumber !== undefined) {
+      console.log(`   Domain ${domainId} head block number: ${headNumber}`)
     } else {
-      console.log(`   Domain ${domainId} best block number: Not found or no blocks processed`)
+      console.log(`   Domain ${domainId} head block number: Not found or no blocks processed`)
     }
   } catch (error) {
     console.error(`   Error demonstrating SDK functions:`, error)
