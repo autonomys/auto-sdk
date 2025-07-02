@@ -218,11 +218,29 @@
 - Chore v1.5.2 ([#431](https://github.com/autonomys/auto-sdk/pull/431)) [@clostao](https://github.com/clostao)
 
 
+## [1.5.5] - 2025-07-02
+
+### Features
+
+- add headDomainNumber function to retrieve latest block number for a specific domain ([#440](https://github.com/autonomys/auto-sdk/pull/440)) [@jfrank-summit](https://github.com/jfrank-summit)
+- add storage fee refund to pending withdrawals ([#439](https://github.com/autonomys/auto-sdk/pull/439)) [@jfrank-summit](https://github.com/jfrank-summit)
+
+
 ## [Unreleased]
 
 Future changes will appear here.
 
-## [1.4.30] - 2025-05-14
+### [1.5.4] - 2025-07-01
+
+### Features
+
+- enable passing http options to HttpClient & methods ([#438](https://github.com/autonomys/auto-sdk/pull/438)) [@clostao](https://github.com/clostao)
+
+### Chores
+
+- v1.5.3 ([#437](https://github.com/autonomys/auto-sdk/pull/437)) [@clostao](https://github.com/clostao)
+
+# [1.4.30] - 2025-05-14
 
 No changes in this version.
 
