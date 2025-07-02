@@ -172,14 +172,14 @@ export const latestConfirmedDomainBlock = async (api: Api): Promise<ConfirmedDom
  *
  * @example
  * ```typescript
- * import { domainBestNumber } from '@autonomys/auto-consensus'
+ * import { headDomainNumber } from '@autonomys/auto-consensus'
  * import { activate } from '@autonomys/auto-utils'
  *
  * const api = await activate({ networkId: 'gemini-3h' })
- * const bestNumber = await domainBestNumber(api, '0')
+ * const headNumber = await headDomainNumber(api, '0')
  *
- * if (bestNumber !== undefined) {
- *   console.log(`Domain 0 best block number: ${bestNumber}`)
+ * if (headNumber !== undefined) {
+ *   console.log(`Domain 0 head block number: ${headNumber}`)
  * } else {
  *   console.log('Domain not found or no blocks processed')
  * }
@@ -192,14 +192,14 @@ export const headDomainNumber = async (
   domainId: string | number | bigint,
 ): Promise<number | undefined> => {
   try {
-    const _headDomainNumber = await api.query.domains.headDomainNumber(domainId.toString())
-    if (_headDomainNumber.isEmpty) {
+    const blockHeight = await api.query.domains.headDomainNumber(domainId.toString())
+    if (blockHeight.isEmpty) {
       return undefined
     }
-    const result = _headDomainNumber.toJSON()
+    const result = blockHeight.toJSON()
     return result !== null ? Number(result) : undefined
   } catch (error) {
     console.error('error', error)
-    throw new Error('Error querying domain best number.' + error)
+    throw new Error('Error querying domain head number.' + error)
   }
 }
