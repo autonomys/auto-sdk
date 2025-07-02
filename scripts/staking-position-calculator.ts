@@ -17,6 +17,7 @@ import type { NominatorPosition } from '@autonomys/auto-consensus'
 import {
   deposits,
   domainStakingSummary,
+  headDomainNumber,
   instantSharePrice,
   nominatorPosition,
   operatorEpochSharePrice,
@@ -244,7 +245,7 @@ const calculatePosition = async (
   if (positionData.pendingWithdrawals.length > 0) {
     console.log(`\n   📤 Detailed Pending Withdrawals:`)
     positionData.pendingWithdrawals.forEach((withdrawal, i) => {
-      console.log(`      ${i + 1}. Amount: ${formatBalance(withdrawal.amount)}`)
+      console.log(`      ${i + 1}. Amount: ${formatBalance(withdrawal.stakeWithdrawalAmount)}`)
       console.log(`         Unlock at block: ${withdrawal.unlockAtDomainBlock}`)
       console.log(`         Storage fee refund: ${formatBalance(withdrawal.storageFeeRefund)}`)
     })
@@ -377,6 +378,15 @@ const demonstrateSDKFunctions = async (
     console.log(
       `   ${formatShares(testShares)} at price ${parsePerbill(testPrice)} = ${formatBalance(convertedStake)}`,
     )
+
+    // Demonstrate domain head number
+    console.log(`\n📊 Testing headDomainNumber() function:`)
+    const headNumber = await headDomainNumber(api, domainId)
+    if (headNumber !== undefined) {
+      console.log(`   Domain ${domainId} head block number: ${headNumber}`)
+    } else {
+      console.log(`   Domain ${domainId} head block number: Not found or no blocks processed`)
+    }
   } catch (error) {
     console.error(`   Error demonstrating SDK functions:`, error)
   }
