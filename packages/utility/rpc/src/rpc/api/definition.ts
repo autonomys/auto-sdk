@@ -1,3 +1,4 @@
+import EventEmitter from 'events'
 import Websocket from 'websocket'
 import { randomId } from '../../utils'
 import { createRpcClient } from '../client'
@@ -7,7 +8,7 @@ import { RpcError } from '../utils'
 import {
   ApiDefinition,
   ApiServerHandlers,
-  ApiServerNotifications,
+  ApiServerNotificationHandlers,
   DefinitionTypeOutput,
   HttpClientOptions,
   HttpClientType,
@@ -15,17 +16,19 @@ import {
   WsClientType,
 } from './typing'
 
+type ApiDefinitionClient<S extends ApiDefinition> = {
+  api: WsClientType<S>
+  close: () => void
+  onNotification: <T extends keyof S['notifications']>(
+    notificationName: T,
+    handler: (params: DefinitionTypeOutput<S['notifications'][T]['content']>) => void,
+  ) => void
+}
+
 export const createApiDefinition = <S extends ApiDefinition>(serverDefinition: S) => {
   const createClient = <Client extends WsClientType<S>>(
     clientParams: Parameters<typeof createRpcClient>[0],
-  ): {
-    api: Client
-    close: () => void
-    onNotification: <T extends keyof S['notifications']>(
-      notificationName: T,
-      handler: (params: DefinitionTypeOutput<S['notifications'][T]['content']>) => void,
-    ) => void
-  } => {
+  ): ApiDefinitionClient<S> => {
     const client = createRpcClient(clientParams)
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -89,7 +92,7 @@ export const createApiDefinition = <S extends ApiDefinition>(serverDefinition: S
           }) as TypedRpcNotificationHandler<DefinitionTypeOutput<typeof handler.content>>,
         ]
       }),
-    ) as ApiServerNotifications<S>
+    ) as ApiServerNotificationHandlers<S>
 
     for (const [method, internalHandler] of Object.entries(handlers)) {
       const handler = async (
@@ -187,5 +190,56 @@ export const createApiDefinition = <S extends ApiDefinition>(serverDefinition: S
     return Object.fromEntries(apiMethods) as Client
   }
 
-  return { createClient, createServer, createHttpClient }
+  const createMockServerClient = <Client extends HttpClientType<S>>(
+    handlers: ApiServerHandlers<S>,
+  ): ApiDefinitionClient<S> => {
+    const eventEmitter = new EventEmitter()
+
+    const notificationClient = Object.fromEntries(
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      Object.entries(serverDefinition.notifications).map(([notificationName, handler]) => {
+        return [
+          notificationName,
+          ((
+            connection: Websocket.connection,
+            params: Parameters<DefinitionTypeOutput<typeof handler.content>>[0],
+          ) => {
+            eventEmitter.emit(notificationName, params)
+          }) as TypedRpcNotificationHandler<DefinitionTypeOutput<typeof handler.content>>,
+        ]
+      }),
+    ) as ApiServerNotificationHandlers<S>
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const apiMethods = Object.entries(serverDefinition.methods).map(([method, handler]) => {
+      return [
+        method,
+        async (params: DefinitionTypeOutput<typeof handler.params>) => {
+          const internalHandler = handlers[method]
+
+          const send = () => {
+            throw new Error('RPC handler send method not supported in mock server')
+          }
+
+          // Inject the notification client into the handler
+          const result = await internalHandler(params, { notificationClient, send })
+
+          return result
+        },
+      ]
+    })
+
+    return {
+      api: Object.fromEntries(apiMethods) as Client,
+      close: () => {},
+      onNotification: <T extends keyof S['notifications']>(
+        notificationName: T,
+        handler: (params: DefinitionTypeOutput<S['notifications'][T]['content']>) => void,
+      ) => {
+        eventEmitter.on(notificationName as string, handler)
+      },
+    }
+  }
+
+  return { createClient, createServer, createHttpClient, createMockServerClient }
 }

@@ -2,7 +2,7 @@
 import { connection } from 'websocket'
 import { z } from 'zod'
 import { PromiseOr } from '../utils/types'
-import { ApiDefinition, ApiServerNotifications } from './api'
+import { ApiDefinition, ApiServerNotificationHandlers } from './api'
 
 export type ClientRPC = {
   send: (message: MessageQuery) => Promise<MessageResponse>
@@ -79,7 +79,7 @@ export type TypedRpcParams<S extends ApiDefinition> = {
   send: (msg: string) => void
   connection?: connection
   messageId?: number
-  notificationClient: ApiServerNotifications<S>
+  notificationClient: ApiServerNotificationHandlers<S>
 }
 
 export type TypedRpcCallback<I, O extends RpcResponse, S extends ApiDefinition> = (
