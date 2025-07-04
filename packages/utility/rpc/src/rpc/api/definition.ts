@@ -25,6 +25,10 @@ type ApiDefinitionClient<S extends ApiDefinition> = {
   ) => void
 }
 
+type ApiMockServerClient<S extends ApiDefinition> = ApiDefinitionClient<S> & {
+  notificationClient: ApiServerNotificationHandlers<S>
+}
+
 export const createApiDefinition = <S extends ApiDefinition>(serverDefinition: S) => {
   const createClient = <Client extends WsClientType<S>>(
     clientParams: Parameters<typeof createRpcClient>[0],
@@ -192,7 +196,7 @@ export const createApiDefinition = <S extends ApiDefinition>(serverDefinition: S
 
   const createMockServerClient = <Client extends HttpClientType<S>>(
     handlers: ApiServerHandlers<S>,
-  ): ApiDefinitionClient<S> => {
+  ): ApiMockServerClient<S> => {
     const eventEmitter = new EventEmitter()
 
     const notificationClient = Object.fromEntries(
@@ -238,6 +242,7 @@ export const createApiDefinition = <S extends ApiDefinition>(serverDefinition: S
       ) => {
         eventEmitter.on(notificationName as string, handler)
       },
+      notificationClient,
     }
   }
 
