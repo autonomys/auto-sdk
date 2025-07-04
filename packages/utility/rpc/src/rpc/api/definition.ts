@@ -194,10 +194,19 @@ export const createApiDefinition = <S extends ApiDefinition>(serverDefinition: S
     return Object.fromEntries(apiMethods) as Client
   }
 
-  const createMockServerClient = <Client extends HttpClientType<S>>(
-    handlers: ApiServerHandlers<S>,
-  ): ApiMockServerClient<S> => {
+  const createMockServerClient = <Client extends HttpClientType<S>>({
+    handlers,
+    callbacks,
+  }: {
+    handlers: ApiServerHandlers<S>
+    callbacks: Parameters<typeof createRpcClient>[0]['callbacks']
+  }): ApiMockServerClient<S> => {
     const eventEmitter = new EventEmitter()
+
+    setTimeout(() => {
+      callbacks?.onEveryOpen?.()
+      callbacks?.onFirstOpen?.()
+    }, 0)
 
     const notificationClient = Object.fromEntries(
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -235,7 +244,9 @@ export const createApiDefinition = <S extends ApiDefinition>(serverDefinition: S
 
     return {
       api: Object.fromEntries(apiMethods) as Client,
-      close: () => {},
+      close: () => {
+        eventEmitter.removeAllListeners()
+      },
       onNotification: <T extends keyof S['notifications']>(
         notificationName: T,
         handler: (params: DefinitionTypeOutput<S['notifications'][T]['content']>) => void,
