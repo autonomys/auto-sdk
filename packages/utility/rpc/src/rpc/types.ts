@@ -97,3 +97,9 @@ export type TypedRpcNotificationHandler<I> = (connection: connection, params: I)
 export type RpcHandlerList = RpcHandler<any, RpcResponse>[]
 
 export type TypedRpcHandlerList<S extends ApiDefinition> = TypedRPCHandler<any, RpcResponse, S>[]
+
+export type RpcServer = {
+  addRpcHandler: (handler: RpcHandler<any, RpcResponse>) => void
+  close: () => void
+  listen: (port: number, cb?: () => void) => void
+}

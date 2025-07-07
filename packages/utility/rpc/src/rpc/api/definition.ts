@@ -7,27 +7,17 @@ import { Message, MessageQuery, RpcParams, TypedRpcNotificationHandler } from '.
 import { RpcError } from '../utils'
 import {
   ApiDefinition,
+  ApiDefinitionClient,
+  ApiMockServerClient,
   ApiServerHandlers,
   ApiServerNotificationHandlers,
   DefinitionTypeOutput,
   HttpClientOptions,
   HttpClientType,
   isZodType,
+  TypedRpcServerClient,
   WsClientType,
 } from './typing'
-
-type ApiDefinitionClient<S extends ApiDefinition> = {
-  api: WsClientType<S>
-  close: () => void
-  onNotification: <T extends keyof S['notifications']>(
-    notificationName: T,
-    handler: (params: DefinitionTypeOutput<S['notifications'][T]['content']>) => void,
-  ) => void
-}
-
-type ApiMockServerClient<S extends ApiDefinition> = ApiDefinitionClient<S> & {
-  notificationClient: ApiServerNotificationHandlers<S>
-}
 
 export const createApiDefinition = <S extends ApiDefinition>(serverDefinition: S) => {
   const createClient = <Client extends WsClientType<S>>(
@@ -76,7 +66,7 @@ export const createApiDefinition = <S extends ApiDefinition>(serverDefinition: S
   const createServer = <Handlers extends ApiServerHandlers<S>>(
     handlers: Handlers,
     serverParams: Parameters<typeof createRpcServer>[0],
-  ) => {
+  ): TypedRpcServerClient<S> => {
     const server = createRpcServer(serverParams)
 
     const notificationClient = Object.fromEntries(
@@ -140,10 +130,10 @@ export const createApiDefinition = <S extends ApiDefinition>(serverDefinition: S
     }
   }
 
-  const createHttpClient = <Client extends HttpClientType<S>>(
+  const createHttpClient = (
     baseUrl: string,
     clientOptions?: HttpClientOptions,
-  ) => {
+  ): HttpClientType<S> => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const apiMethods = Object.entries(serverDefinition.methods).map(([method, handler]) => {
       return [
@@ -191,7 +181,7 @@ export const createApiDefinition = <S extends ApiDefinition>(serverDefinition: S
       ]
     })
 
-    return Object.fromEntries(apiMethods) as Client
+    return Object.fromEntries(apiMethods) as HttpClientType<S>
   }
 
   const createMockServerClient = <Client extends HttpClientType<S>>({
