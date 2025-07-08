@@ -1,26 +1,17 @@
-import { OffchainMetadata } from '@autonomys/auto-dag-data'
-import { NetworkId } from '@autonomys/auto-utils'
-import type { Meta, StoryObj } from '@storybook/react'
-import React, { useCallback, useEffect, useState } from 'react'
-import {
-  fileMock1,
-  fileMock2,
-  // fileMock3,
-  // fileMock4,
-  // fileMock5,
-  // fileMock6,
-  // fileMock7,
-  fileMock8,
-} from '../../../mocks/files.mock'
-import type { FileData } from '../../../types'
 import {
   canDisplayDirectly,
   decryptFileData,
-  fileGatewayUrl,
   needsContentParsing,
+  OffchainMetadata,
   processFileData,
-} from '../../../utils'
+} from '@autonomys/auto-dag-data'
+import { NetworkId } from '@autonomys/auto-utils'
+import type { Meta, StoryObj } from '@storybook/react'
+import React, { useCallback, useEffect, useState } from 'react'
+import { fileMock1, fileMock2 } from '../../../mocks/files.mock'
+import type { FileData } from '../../../types'
 import { FilePreview } from './FilePreview'
+import { EXTERNAL_ROUTES } from './constants'
 
 const meta: Meta<typeof FilePreview> = {
   title: 'Common/FilePreview',
@@ -51,7 +42,7 @@ export const Astral: Story = {
     const [textContent, setTextContent] = useState<string | null>(null)
 
     const metadata: OffchainMetadata = fileMock1
-    const gatewayUrl = fileGatewayUrl(metadata.dataCid)
+    const gatewayUrl = EXTERNAL_ROUTES.gatewayObjectDownload(metadata.dataCid)
 
     const fetchFile = useCallback(
       async (password?: string) => {
@@ -150,7 +141,7 @@ export const Encrypted: Story = {
     const [textContent, setTextContent] = useState<string | null>(null)
 
     const metadata: OffchainMetadata = fileMock2
-    const gatewayUrl = fileGatewayUrl(metadata.dataCid)
+    const gatewayUrl = EXTERNAL_ROUTES.gatewayObjectDownload(metadata.dataCid)
 
     const fetchFile = useCallback(
       async (password?: string) => {
