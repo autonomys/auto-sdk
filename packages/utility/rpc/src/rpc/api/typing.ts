@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ZodType } from 'zod'
 import { PromiseOr } from '../../utils/types'
-import { TypedRpcCallback, TypedRpcNotificationHandler } from '../types'
+import { RpcServer, TypedRpcCallback, TypedRpcNotificationHandler } from '../types'
 
 export interface UnvalidatedType<T> {
   _type?: T
@@ -57,7 +57,7 @@ export type ApiServerHandlers<S extends ApiDefinition> = {
   >
 }
 
-export type ApiServerNotifications<S extends ApiDefinition> = {
+export type ApiServerNotificationHandlers<S extends ApiDefinition> = {
   [K in keyof S['notifications']]: TypedRpcNotificationHandler<
     DefinitionTypeOutput<S['notifications'][K]['content']>
   >
@@ -65,4 +65,21 @@ export type ApiServerNotifications<S extends ApiDefinition> = {
 
 export const isZodType = <T extends DefinitionType>(type: T): type is T & ZodType => {
   return type instanceof ZodType
+}
+
+export type ApiDefinitionClient<S extends ApiDefinition> = {
+  api: WsClientType<S>
+  close: () => void
+  onNotification: <T extends keyof S['notifications']>(
+    notificationName: T,
+    handler: (params: DefinitionTypeOutput<S['notifications'][T]['content']>) => void,
+  ) => void
+}
+
+export type ApiMockServerClient<S extends ApiDefinition> = ApiDefinitionClient<S> & {
+  notificationClient: ApiServerNotificationHandlers<S>
+}
+
+export type TypedRpcServerClient<S extends ApiDefinition> = RpcServer & {
+  notificationClient: ApiServerNotificationHandlers<S>
 }
