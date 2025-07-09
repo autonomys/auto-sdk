@@ -1,6 +1,7 @@
 import {
   canDisplayDirectly,
   decryptFileData,
+  FileData,
   needsContentParsing,
   OffchainMetadata,
   processFileData,
@@ -9,7 +10,6 @@ import { NetworkId } from '@autonomys/auto-utils'
 import type { Meta, StoryObj } from '@storybook/react'
 import React, { useCallback, useEffect, useState } from 'react'
 import { fileMock1, fileMock2 } from '../../../mocks/files.mock'
-import type { FileData } from '../../../types'
 import { FilePreview } from './FilePreview'
 import { EXTERNAL_ROUTES } from './constants'
 
