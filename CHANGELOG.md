@@ -237,6 +237,13 @@
 - v1.5.5 ([#441](https://github.com/autonomys/auto-sdk/pull/441)) [@jfrank-summit](https://github.com/jfrank-summit)
 
 
+## [1.5.7] - 2025-07-09
+
+### Code Refactoring
+
+- update sdk structure for avoid deps issues ([#443](https://github.com/autonomys/auto-sdk/pull/443)) [@clostao](https://github.com/clostao)
+
+
 ## [Unreleased]
 
 Future changes will appear here.
