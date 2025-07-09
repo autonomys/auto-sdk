@@ -1,15 +1,18 @@
+import { decompressFile } from '../compression/index.js'
+import { decryptFile } from '../encryption/index.js'
 import {
   CompressionAlgorithm,
-  decompressFile,
-  decryptFile,
   EncryptionAlgorithm,
+  FileUploadOptions,
   OffchainMetadata,
-} from '@autonomys/auto-dag-data'
-import { EXTERNAL_ROUTES } from '../components/common/FilePreview/constants'
-import type { FileData } from '../types/file'
+} from '../metadata/index.js'
 
-export const fileGatewayUrl = (dataCid: string) => {
-  return EXTERNAL_ROUTES.gatewayObjectDownload(dataCid)
+export type FileData = {
+  name: string
+  rawData?: string
+  dataArrayBuffer: ArrayBuffer
+  isEncrypted: boolean
+  uploadOptions: FileUploadOptions
 }
 
 // Helper to convert stream to async iterable
