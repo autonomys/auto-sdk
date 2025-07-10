@@ -37,6 +37,7 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.ref }}
           token: ${{ secrets.GITHUB_TOKEN }}
+          clean: true
 
       - name: Setup Node.js
         uses: actions/setup-node@v2

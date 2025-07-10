@@ -226,11 +226,29 @@
 - add storage fee refund to pending withdrawals ([#439](https://github.com/autonomys/auto-sdk/pull/439)) [@jfrank-summit](https://github.com/jfrank-summit)
 
 
+## [1.5.6] - 2025-07-08
+
+### Features
+
+- add utils for testing rpc integrations ([#442](https://github.com/autonomys/auto-sdk/pull/442)) [@clostao](https://github.com/clostao)
+
+### Chores
+
+- v1.5.5 ([#441](https://github.com/autonomys/auto-sdk/pull/441)) [@jfrank-summit](https://github.com/jfrank-summit)
+
+
+## [1.5.7] - 2025-07-09
+
+### Code Refactoring
+
+- update sdk structure for avoid deps issues ([#443](https://github.com/autonomys/auto-sdk/pull/443)) [@clostao](https://github.com/clostao)
+
+
 ## [Unreleased]
 
 Future changes will appear here.
 
-### [1.5.4] - 2025-07-01
+## [1.5.4] - 2025-07-01
 
 ### Features
 
