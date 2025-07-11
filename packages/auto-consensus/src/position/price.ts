@@ -2,6 +2,7 @@ import type { Api } from '@autonomys/auto-utils'
 import { domainStakingSummary } from '../domain'
 import { operator } from '../staking'
 import { parseString } from '../utils/parse'
+import { getOperatorEpochSharePrice } from '../utils/storage'
 
 /**
  * Retrieves the stored share price for a specific operator at a given domain epoch.
@@ -9,13 +10,13 @@ import { parseString } from '../utils/parse'
  * This function fetches the historical share price that was recorded for an operator
  * at a specific domain epoch. Share prices are stored when staking activity occurs
  * and are used to convert between stake amounts and shares at different points in time.
- * The price is returned in 18-decimal Perbill format.
+ * The price is returned in 18-decimal Perquintill format.
  *
  * @param api - The connected API instance
  * @param operatorId - The ID of the operator to query price for
  * @param domainEpoch - The domain epoch index to query price for
  * @param domainId - The domain ID (default: 0)
- * @returns Promise that resolves to share price in 18-decimal Perbill format, or undefined if no price stored
+ * @returns Promise that resolves to share price in 18-decimal Perquintill format, or undefined if no price stored
  * @throws Error if the query fails or operator/epoch not found
  *
  * @example
@@ -23,7 +24,7 @@ import { parseString } from '../utils/parse'
  * import { operatorEpochSharePrice } from '@autonomys/auto-consensus'
  * import { activate } from '@autonomys/auto-utils'
  *
- * const api = await activate({ networkId: 'gemini-3h' })
+ * const api = await activate({ networkId: 'taurus' })
  *
  * // Get share price for operator 1 at epoch 100
  * const sharePrice = await operatorEpochSharePrice(api, '1', 100, 0)
@@ -40,36 +41,28 @@ export const operatorEpochSharePrice = async (
   api: Api,
   operatorId: string | number | bigint,
   domainEpoch: string | number | bigint,
-  domainId: string | number | bigint = 0, // Default to domain 0
+  domainId: string | number | bigint = 0,
 ): Promise<bigint | undefined> => {
   try {
-    // Create domain epoch tuple [domainId, epochIndex]
-    const domainEpochTuple = [parseString(domainId), parseString(domainEpoch)]
-
-    const sharePrice = await api.query.domains.operatorEpochSharePrice(
+    const sharePrice = await getOperatorEpochSharePrice(
+      api,
       parseString(operatorId),
-      domainEpochTuple,
+      domainId,
+      domainEpoch,
     )
 
-    if (sharePrice.isEmpty) {
+    if (sharePrice === undefined) {
       return undefined
     }
 
-    // The response is a direct Perbill value, not an object
-    const priceValue = sharePrice.toJSON() as number | string | null
-    if (priceValue === null || priceValue === undefined) {
+    const perquintillValue = sharePrice
+
+    if (perquintillValue === BigInt(0)) {
       return undefined
     }
 
-    // Convert to bigint - the value is already in Perbill format but needs to be scaled to 18 decimals
-    // The raw value from chain is in parts per billion (9 decimals), we need 18 decimals
-    const perbillValue = BigInt(priceValue.toString())
-    const scaledPrice = perbillValue * BigInt(10 ** 9) // Scale from 9 to 18 decimals
-
-    // Invert the share price: if API returns 0.5601 (shares worth 56% of original),
-    // we need 1/0.5601 ≈ 1.785 for stakeToShare conversion
-    const oneInPerbill = BigInt(10 ** 18)
-    return (oneInPerbill * oneInPerbill) / scaledPrice
+    const one = BigInt('1000000000000000000')
+    return (one * one) / perquintillValue
   } catch (error) {
     console.error('Error fetching operator epoch share price:', error)
     throw new Error(
@@ -90,7 +83,7 @@ export const operatorEpochSharePrice = async (
  *
  * @param api - The connected API instance
  * @param operatorId - The ID of the operator to calculate price for
- * @returns Promise that resolves to current share price in 18-decimal Perbill format
+ * @returns Promise that resolves to current share price in 18-decimal Perquintill format
  * @throws Error if operator not found, domain staking summary unavailable, or calculation fails
  *
  * @example
@@ -98,7 +91,7 @@ export const operatorEpochSharePrice = async (
  * import { instantSharePrice } from '@autonomys/auto-consensus'
  * import { activate } from '@autonomys/auto-utils'
  *
- * const api = await activate({ networkId: 'gemini-3h' })
+ * const api = await activate({ networkId: 'taurus' })
  *
  * // Get current share price for operator 1
  * const currentPrice = await instantSharePrice(api, '1')
@@ -137,10 +130,10 @@ export const instantSharePrice = async (
 
     // Avoid division by zero
     if (currentTotalShares === BigInt(0)) {
-      return BigInt(10 ** 18) // Return 1.0 in Perbill format
+      return BigInt(10 ** 18) // Return 1.0 in Perquintill format
     }
 
-    // Return price in 18-decimal Perbill format
+    // Return price in 18-decimal Perquintill format
     return (effectiveStake * BigInt(10 ** 18)) / currentTotalShares
   } catch (error) {
     console.error('Error computing instant share price:', error)
