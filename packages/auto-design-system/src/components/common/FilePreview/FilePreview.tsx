@@ -1,6 +1,7 @@
 import { OffchainMetadata } from '@autonomys/auto-dag-data'
 import { NetworkId } from '@autonomys/auto-utils'
 import React, { useMemo, useState } from 'react'
+import { sanitizeHTML } from '../../../utils/sanitizeHTML'
 import { Arguments } from './Arguments'
 import { AudioPlayer } from './AudioPlayer'
 import { DecryptionErrorDisplay } from './DecryptionErrorDisplay'
@@ -48,6 +49,9 @@ export const FilePreview = ({
   handleDecrypt,
 }: FilePreviewProps) => {
   const [isModalOpen, setModalOpen] = useState(false)
+  const sanitizedTextContent = useMemo(() => {
+    return textContent ? sanitizeHTML(textContent) : null
+  }, [textContent])
 
   const fileData = useMemo(() => {
     // For non-encrypted files that can be displayed directly, use gateway URL even without file blob
@@ -212,7 +216,7 @@ export const FilePreview = ({
       )
     }
     if (
-      textContent &&
+      sanitizedTextContent &&
       (mimeType.startsWith('text/') ||
         [
           'js',
@@ -235,7 +239,7 @@ export const FilePreview = ({
     ) {
       return (
         <>
-          <TextViewer content={textContent} extension={extension} />
+          <TextViewer content={sanitizedTextContent} extension={extension} />
           <DirectGatewayLink
             gatewayUrl={gatewayUrl}
             isEncrypted={!!metadata.uploadOptions?.encryption}
@@ -258,14 +262,19 @@ export const FilePreview = ({
         </>
       )
     }
+
+    const sanitizedFileName = useMemo(() => {
+      return fileData.fileName ? sanitizeHTML(fileData.fileName) : undefined
+    }, [fileData.fileName])
+
     return (
       <div className='flex flex-col items-center'>
         <object
           className='h-[50vh] w-full border dark:border-gray-700'
           data={fileData.uri}
           type={fileData.fileType}
-          aria-label={fileData.fileName}
-          title={fileData.fileName}
+          aria-label={sanitizedFileName}
+          title={sanitizedFileName}
         />
         <div className='mt-4 text-sm text-gray-500 dark:text-gray-400'>
           {fileData.fileType || extension.toUpperCase()} file preview
@@ -293,7 +302,7 @@ export const FilePreview = ({
     file,
     isFilePreview,
     fileData,
-    textContent,
+    sanitizedTextContent,
     gatewayUrl,
     isDecrypted,
   ])
