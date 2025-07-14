@@ -20,7 +20,6 @@ import {
   headDomainNumber,
   instantSharePrice,
   nominatorPosition,
-  operatorEpochSharePrice,
   shareToStake,
   withdrawals,
 } from '@autonomys/auto-consensus'
@@ -65,11 +64,11 @@ const parseShares = (shares: bigint): number => {
 }
 
 /**
- * Parse Perbill format (parts per billion) to decimal
+ * Parse Perquintill format (parts per quintillion) to decimal
  */
-const parsePerbill = (perbill: bigint): number => {
-  const divisor = BigInt(10 ** 18) // 10^18 for Perbill
-  return Number(perbill) / Number(divisor)
+const parsePerquintill = (perquintill: bigint): number => {
+  const divisor = BigInt(10 ** 18) // 10^18 for Perquintill
+  return Number(perquintill) / Number(divisor)
 }
 
 /**
@@ -259,7 +258,7 @@ const calculatePosition = async (
   // Step 3: Get instant share price
   console.log(`\n📊 Step 3: Getting instant share price...`)
   const sharePriceBigInt = await instantSharePrice(api, operatorId)
-  const sharePrice = parsePerbill(sharePriceBigInt)
+  const sharePrice = parsePerquintill(sharePriceBigInt)
   console.log(
     `   Share price: ${sharePrice} (${sharePrice === 1.0 ? 'no rewards/slashing' : sharePrice > 1.0 ? 'rewards earned' : 'slashing occurred'})`,
   )
@@ -317,7 +316,6 @@ const demonstrateSDKFunctions = async (
           console.log(`      Regular Withdrawals (${withdrawal.withdrawals.length}):`)
           withdrawal.withdrawals.forEach((w, j) => {
             console.log(`        ${j + 1}. Amount: ${formatBalance(w.amountToUnlock)}`)
-            console.log(`           Domain ID: ${w.domainId}`)
             console.log(`           Unlock at block: ${w.unlockAtConfirmedDomainBlockNumber}`)
             console.log(`           Storage fee refund: ${formatBalance(w.storageFeeRefund)}`)
           })
@@ -358,17 +356,7 @@ const demonstrateSDKFunctions = async (
     // Demonstrate instant share price
     console.log(`\n📊 Testing instantSharePrice() function:`)
     const instantPrice = await instantSharePrice(api, operatorId)
-    console.log(`   Instant share price: ${parsePerbill(instantPrice)}`)
-
-    // Demonstrate epoch share price
-    console.log(`\n📊 Testing operatorEpochSharePrice() function:`)
-    const currentEpoch = await getCurrentDomainEpoch(api, domainId)
-    const epochPrice = await operatorEpochSharePrice(api, operatorId, currentEpoch, domainId)
-    if (epochPrice !== undefined) {
-      console.log(`   Epoch ${currentEpoch} share price: ${parsePerbill(epochPrice)}`)
-    } else {
-      console.log(`   No share price stored for epoch ${currentEpoch}`)
-    }
+    console.log(`   Instant share price: ${parsePerquintill(instantPrice)}`)
 
     // Demonstrate share/stake conversion
     console.log(`\n📊 Testing share/stake conversion functions:`)
@@ -376,7 +364,7 @@ const demonstrateSDKFunctions = async (
     const testPrice = BigInt('1100000000000000000') // 1.1 price
     const convertedStake = shareToStake(testShares, testPrice)
     console.log(
-      `   ${formatShares(testShares)} at price ${parsePerbill(testPrice)} = ${formatBalance(convertedStake)}`,
+      `   ${formatShares(testShares)} at price ${parsePerquintill(testPrice)} = ${formatBalance(convertedStake)}`,
     )
 
     // Demonstrate domain head number
@@ -444,7 +432,7 @@ export {
   formatBalance,
   formatShares,
   parseBalance,
-  parsePerbill,
+  parsePerquintill,
   parseShares,
   printResults,
 }
