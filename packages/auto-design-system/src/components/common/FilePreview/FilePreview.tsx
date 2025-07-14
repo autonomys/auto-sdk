@@ -263,9 +263,7 @@ export const FilePreview = ({
       )
     }
 
-    const sanitizedFileName = useMemo(() => {
-      return fileData.fileName ? sanitizeHTML(fileData.fileName) : undefined
-    }, [fileData.fileName])
+    const sanitizedFileName = fileData.fileName ? sanitizeHTML(fileData.fileName) : undefined
 
     return (
       <div className='flex flex-col items-center'>
