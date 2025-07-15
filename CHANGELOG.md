@@ -244,11 +244,32 @@
 - update sdk structure for avoid deps issues ([#443](https://github.com/autonomys/auto-sdk/pull/443)) [@clostao](https://github.com/clostao)
 
 
+## [1.5.9] - 2025-07-15
+
+### Features
+
+- simplify `nominatorPosition` to use runtime api ([#450](https://github.com/autonomys/auto-sdk/pull/450)) [@jfrank-summit](https://github.com/jfrank-summit)
+
+
 ## [Unreleased]
 
 Future changes will appear here.
 
-## [1.5.4] - 2025-07-01
+### [1.5.8] - 2025-07-15
+
+### Features
+
+- add input sanitization for FilePreview ([#447](https://github.com/autonomys/auto-sdk/pull/447)) [@clostao](https://github.com/clostao)
+
+### Bug Fixes
+
+- fix runtime upgrade compatibility for operator epoch share prices ([#449](https://github.com/autonomys/auto-sdk/pull/449)) [@jfrank-summit](https://github.com/jfrank-summit)
+
+### Chores
+
+- bump version to v1.5.7 ([#445](https://github.com/autonomys/auto-sdk/pull/445)) [@clostao](https://github.com/clostao)
+
+# [1.5.4] - 2025-07-01
 
 ### Features
 
