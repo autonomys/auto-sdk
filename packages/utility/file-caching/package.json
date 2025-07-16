@@ -1,7 +1,7 @@
 {
   "name": "@autonomys/file-caching",
   "packageManager": "yarn@4.7.0",
-  "version": "1.5.7",
+  "version": "1.5.9",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -45,9 +45,9 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "@autonomys/asynchronous": "^1.5.7",
-    "@autonomys/auto-dag-data": "^1.5.7",
-    "@autonomys/auto-utils": "^1.5.7",
+    "@autonomys/asynchronous": "^1.5.9",
+    "@autonomys/auto-dag-data": "^1.5.9",
+    "@autonomys/auto-utils": "^1.5.9",
     "@keyvhq/sqlite": "^2.1.7",
     "cache-manager": "^6.4.2",
     "jszip": "^3.10.1",
