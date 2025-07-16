@@ -159,7 +159,6 @@ export const parseWithdrawal = (withdrawal: [StorageKey<AnyTuple>, Codec]): With
       Array.isArray(parsedWithdrawal.withdrawals) &&
       parsedWithdrawal.withdrawals.length > 0
         ? parsedWithdrawal.withdrawals.map((w) => ({
-            domainId: w.domainId,
             unlockAtConfirmedDomainBlockNumber: w.unlockAtConfirmedDomainBlockNumber,
             amountToUnlock: BigInt(w.amountToUnlock),
             storageFeeRefund: BigInt(w.storageFeeRefund),
