@@ -1,13 +1,156 @@
-## [1.4.31] - 2025-05-14
+## [Unreleased]
+
+Future changes will appear here.
+
+
+## [1.5.7] - 2025-07-09
+
+### Code Refactoring
+
+- update sdk structure for avoid deps issues ([#443](https://github.com/autonomys/auto-sdk/pull/443)) [@clostao](https://github.com/clostao)
+
+
+
+## [1.5.6] - 2025-07-08
 
 ### Features
 
-- safe fork stream method for asynchronous pkg ([#410](https://github.com/autonomys/auto-sdk/pull/410)) [@clostao](https://github.com/clostao)
-- add `forkStream` method to `@autonomys/asynchronous` ([#405](https://github.com/autonomys/auto-sdk/pull/405)) [@clostao](https://github.com/clostao)
+- add utils for testing rpc integrations ([#442](https://github.com/autonomys/auto-sdk/pull/442)) [@clostao](https://github.com/clostao)
+
+### Chores
+
+- v1.5.5 ([#441](https://github.com/autonomys/auto-sdk/pull/441)) [@jfrank-summit](https://github.com/jfrank-summit)
+
+
+
+## [1.5.5] - 2025-07-02
+
+### Features
+
+- add headDomainNumber function to retrieve latest block number for a specific domain ([#440](https://github.com/autonomys/auto-sdk/pull/440)) [@jfrank-summit](https://github.com/jfrank-summit)
+- add storage fee refund to pending withdrawals ([#439](https://github.com/autonomys/auto-sdk/pull/439)) [@jfrank-summit](https://github.com/jfrank-summit)
+
+
+
+## [1.5.4] - 2025-07-01
+
+### Features
+
+- enable passing http options to HttpClient & methods ([#438](https://github.com/autonomys/auto-sdk/pull/438)) [@clostao](https://github.com/clostao)
+
+### Chores
+
+- v1.5.3 ([#437](https://github.com/autonomys/auto-sdk/pull/437)) [@clostao](https://github.com/clostao)
+
+# [1.4.30] - 2025-05-14
+
+No changes in this version.
+
+
+
+[Unreleased]: https://github.com/autonomys/auto-sdk/compare/v1.4.31...HEAD
+[1.4.31]: https://github.com/autonomys/auto-sdk/compare/v1.4.30...v1.4.31
+[1.4.30]: https://github.com/autonomys/auto-sdk/releases/tag/v1.4.30
+
+
+## [1.5.3] - 2025-07-01
+
+### Features
+
+- improve type infer ([#436](https://github.com/autonomys/auto-sdk/pull/436)) [@clostao](https://github.com/clostao)
+- ✨ file preview component ([#433](https://github.com/autonomys/auto-sdk/pull/433)) [@iamnamananand996](https://github.com/iamnamananand996)
+
+### Documentation
+
+- add comprehensive JSDoc documentation for @autonomys/auto-utils package ([#434](https://github.com/autonomys/auto-sdk/pull/434)) [@cursor[bot]](https://github.com/apps/cursor)
+- add comprehensive JSDoc documentation for @autonomys/auto-consensus exported functions ([#432](https://github.com/autonomys/auto-sdk/pull/432)) [@cursor[bot]](https://github.com/apps/cursor)
+
+### Code Refactoring
+
+- nominatorPosition calculation into smaller, easier to follow functions ([#435](https://github.com/autonomys/auto-sdk/pull/435)) [@jfrank-summit](https://github.com/jfrank-summit)
+
+### Chores
+
+- Chore v1.5.2 ([#431](https://github.com/autonomys/auto-sdk/pull/431)) [@clostao](https://github.com/clostao)
+
+
+
+## [1.5.2] - 2025-06-24
+
+### Features
+
+- advanced staking position tracking ([#429](https://github.com/autonomys/auto-sdk/pull/429)) [@jfrank-summit](https://github.com/jfrank-summit)
 
 ### Bug Fixes
 
-- 🐛 publish action workflow and version sync ([#409](https://github.com/autonomys/auto-sdk/pull/409)) [@iamnamananand996](https://github.com/iamnamananand996)
+- downloads should be perfomed in raw mode ([#430](https://github.com/autonomys/auto-sdk/pull/430)) [@clostao](https://github.com/clostao)
+
+
+
+## [1.5.1] - 2025-06-19
+
+### Features
+
+- support conditional fetching from cache or dsn ([#428](https://github.com/autonomys/auto-sdk/pull/428)) [@clostao](https://github.com/clostao)
+
+### Chores
+
+- bump to v1.5.0 ([#426](https://github.com/autonomys/auto-sdk/pull/426)) [@clostao](https://github.com/clostao)
+
+
+
+## [1.5.0] - 2025-06-13
+
+### Features
+
+- create @autonomys/auto-files pkg ([#425](https://github.com/autonomys/auto-sdk/pull/425)) [@clostao](https://github.com/clostao)
+- add `streamToBuffer` method ([#424](https://github.com/autonomys/auto-sdk/pull/424)) [@clostao](https://github.com/clostao)
+
+### Bug Fixes
+
+- `Cache.has` method was not returning a boolean but throwing if failing ([#423](https://github.com/autonomys/auto-sdk/pull/423)) [@clostao](https://github.com/clostao)
+
+### Chores
+
+- remove Marc-Aurele from codeowners file ([#422](https://github.com/autonomys/auto-sdk/pull/422)) [@marc-aurele-besner](https://github.com/marc-aurele-besner)
+- v1.4.35 ([#421](https://github.com/autonomys/auto-sdk/pull/421)) [@clostao](https://github.com/clostao)
+
+
+
+## [1.4.35] - 2025-05-29
+
+### Features
+
+- ✨ add async download functionality to AutoDrive API ([#413](https://github.com/autonomys/auto-sdk/pull/413)) [@clostao](https://github.com/clostao)
+
+### Chores
+
+- bump to v1.4.34 ([#420](https://github.com/autonomys/auto-sdk/pull/420)) [@clostao](https://github.com/clostao)
+
+
+
+## [1.4.34] - 2025-05-29
+
+### Features
+
+- enable to redirect to a separate download service ([#419](https://github.com/autonomys/auto-sdk/pull/419)) [@clostao](https://github.com/clostao)
+
+### Chores
+
+- bump version to v1.4.33 ([#418](https://github.com/autonomys/auto-sdk/pull/418)) [@clostao](https://github.com/clostao)
+
+
+
+## [1.4.33] - 2025-05-28
+
+### Bug Fixes
+
+- remove cross-dependency on env vars ([#415](https://github.com/autonomys/auto-sdk/pull/415)) [@jfrank-summit](https://github.com/jfrank-summit)
+
+### Chores
+
+- v1.4.32 ([#417](https://github.com/autonomys/auto-sdk/pull/417)) [@clostao](https://github.com/clostao)
+
 
 
 ## [1.4.32] - 2025-05-28
@@ -125,144 +268,17 @@
 - Update dependency cache-manager to ^6.4.2 ([#365](https://github.com/autonomys/auto-sdk/pull/365)) [@renovate[bot]](https://github.com/apps/renovate)
 
 
-## [1.4.33] - 2025-05-28
+
+## [1.4.31] - 2025-05-14
+
+### Features
+
+- safe fork stream method for asynchronous pkg ([#410](https://github.com/autonomys/auto-sdk/pull/410)) [@clostao](https://github.com/clostao)
+- add `forkStream` method to `@autonomys/asynchronous` ([#405](https://github.com/autonomys/auto-sdk/pull/405)) [@clostao](https://github.com/clostao)
 
 ### Bug Fixes
 
-- remove cross-dependency on env vars ([#415](https://github.com/autonomys/auto-sdk/pull/415)) [@jfrank-summit](https://github.com/jfrank-summit)
-
-### Chores
-
-- v1.4.32 ([#417](https://github.com/autonomys/auto-sdk/pull/417)) [@clostao](https://github.com/clostao)
-
-
-## [1.4.34] - 2025-05-29
-
-### Features
-
-- enable to redirect to a separate download service ([#419](https://github.com/autonomys/auto-sdk/pull/419)) [@clostao](https://github.com/clostao)
-
-### Chores
-
-- bump version to v1.4.33 ([#418](https://github.com/autonomys/auto-sdk/pull/418)) [@clostao](https://github.com/clostao)
-
-
-## [1.4.35] - 2025-05-29
-
-### Features
-
-- ✨ add async download functionality to AutoDrive API ([#413](https://github.com/autonomys/auto-sdk/pull/413)) [@clostao](https://github.com/clostao)
-
-### Chores
-
-- bump to v1.4.34 ([#420](https://github.com/autonomys/auto-sdk/pull/420)) [@clostao](https://github.com/clostao)
-
-
-## [1.5.0] - 2025-06-13
-
-### Features
-
-- create @autonomys/auto-files pkg ([#425](https://github.com/autonomys/auto-sdk/pull/425)) [@clostao](https://github.com/clostao)
-- add `streamToBuffer` method ([#424](https://github.com/autonomys/auto-sdk/pull/424)) [@clostao](https://github.com/clostao)
-
-### Bug Fixes
-
-- `Cache.has` method was not returning a boolean but throwing if failing ([#423](https://github.com/autonomys/auto-sdk/pull/423)) [@clostao](https://github.com/clostao)
-
-### Chores
-
-- remove Marc-Aurele from codeowners file ([#422](https://github.com/autonomys/auto-sdk/pull/422)) [@marc-aurele-besner](https://github.com/marc-aurele-besner)
-- v1.4.35 ([#421](https://github.com/autonomys/auto-sdk/pull/421)) [@clostao](https://github.com/clostao)
-
-
-## [1.5.1] - 2025-06-19
-
-### Features
-
-- support conditional fetching from cache or dsn ([#428](https://github.com/autonomys/auto-sdk/pull/428)) [@clostao](https://github.com/clostao)
-
-### Chores
-
-- bump to v1.5.0 ([#426](https://github.com/autonomys/auto-sdk/pull/426)) [@clostao](https://github.com/clostao)
-
-
-## [1.5.2] - 2025-06-24
-
-### Features
-
-- advanced staking position tracking ([#429](https://github.com/autonomys/auto-sdk/pull/429)) [@jfrank-summit](https://github.com/jfrank-summit)
-
-### Bug Fixes
-
-- downloads should be perfomed in raw mode ([#430](https://github.com/autonomys/auto-sdk/pull/430)) [@clostao](https://github.com/clostao)
-
-
-## [1.5.3] - 2025-07-01
-
-### Features
-
-- improve type infer ([#436](https://github.com/autonomys/auto-sdk/pull/436)) [@clostao](https://github.com/clostao)
-- ✨ file preview component ([#433](https://github.com/autonomys/auto-sdk/pull/433)) [@iamnamananand996](https://github.com/iamnamananand996)
-
-### Documentation
-
-- add comprehensive JSDoc documentation for @autonomys/auto-utils package ([#434](https://github.com/autonomys/auto-sdk/pull/434)) [@cursor[bot]](https://github.com/apps/cursor)
-- add comprehensive JSDoc documentation for @autonomys/auto-consensus exported functions ([#432](https://github.com/autonomys/auto-sdk/pull/432)) [@cursor[bot]](https://github.com/apps/cursor)
-
-### Code Refactoring
-
-- nominatorPosition calculation into smaller, easier to follow functions ([#435](https://github.com/autonomys/auto-sdk/pull/435)) [@jfrank-summit](https://github.com/jfrank-summit)
-
-### Chores
-
-- Chore v1.5.2 ([#431](https://github.com/autonomys/auto-sdk/pull/431)) [@clostao](https://github.com/clostao)
-
-
-## [1.5.5] - 2025-07-02
-
-### Features
-
-- add headDomainNumber function to retrieve latest block number for a specific domain ([#440](https://github.com/autonomys/auto-sdk/pull/440)) [@jfrank-summit](https://github.com/jfrank-summit)
-- add storage fee refund to pending withdrawals ([#439](https://github.com/autonomys/auto-sdk/pull/439)) [@jfrank-summit](https://github.com/jfrank-summit)
-
-
-## [1.5.6] - 2025-07-08
-
-### Features
-
-- add utils for testing rpc integrations ([#442](https://github.com/autonomys/auto-sdk/pull/442)) [@clostao](https://github.com/clostao)
-
-### Chores
-
-- v1.5.5 ([#441](https://github.com/autonomys/auto-sdk/pull/441)) [@jfrank-summit](https://github.com/jfrank-summit)
-
-
-## [1.5.7] - 2025-07-09
-
-### Code Refactoring
-
-- update sdk structure for avoid deps issues ([#443](https://github.com/autonomys/auto-sdk/pull/443)) [@clostao](https://github.com/clostao)
-
-
-## [Unreleased]
-
-Future changes will appear here.
-
-## [1.5.4] - 2025-07-01
-
-### Features
-
-- enable passing http options to HttpClient & methods ([#438](https://github.com/autonomys/auto-sdk/pull/438)) [@clostao](https://github.com/clostao)
-
-### Chores
-
-- v1.5.3 ([#437](https://github.com/autonomys/auto-sdk/pull/437)) [@clostao](https://github.com/clostao)
-
-# [1.4.30] - 2025-05-14
-
-No changes in this version.
-
-
+- 🐛 publish action workflow and version sync ([#409](https://github.com/autonomys/auto-sdk/pull/409)) [@iamnamananand996](https://github.com/iamnamananand996)
 
 [Unreleased]: https://github.com/autonomys/auto-sdk/compare/v1.4.31...HEAD
 [1.4.31]: https://github.com/autonomys/auto-sdk/compare/v1.4.30...v1.4.31
