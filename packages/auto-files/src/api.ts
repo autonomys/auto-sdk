@@ -52,6 +52,22 @@ export const createAutoFilesApi = (baseUrl: string, apiSecret: string) => {
   }
 
   /**
+   * Fetches a specific node from the API
+   * @param cid - The CID of the node
+   * @returns A Promise that resolves to the node data as ArrayBuffer
+   * @throws Error if the node fetch fails
+   */
+  const getNode = async (cid: string): Promise<ArrayBuffer> => {
+    const response = await authFetch(`${baseUrl}/nodes/${cid}`)
+    if (!response.ok) {
+      throw new Error(`Error fetching chunk: ${response.status} ${response.statusText}`)
+    }
+
+    const buffer = await response.arrayBuffer()
+    return buffer
+  }
+
+  /**
    * Fetches a complete file from the API with support for progress tracking and retries
    * @param cid - The content identifier of the file to fetch
    * @param options - Optional configuration for the fetch operation
@@ -168,5 +184,5 @@ export const createAutoFilesApi = (baseUrl: string, apiSecret: string) => {
     return file.data
   }
 
-  return { getFile, isFileCached, getChunkedFile }
+  return { getFile, isFileCached, getChunkedFile, getNode }
 }
