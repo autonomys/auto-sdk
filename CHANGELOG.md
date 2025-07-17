@@ -251,11 +251,22 @@
 - simplify `nominatorPosition` to use runtime api ([#450](https://github.com/autonomys/auto-sdk/pull/450)) [@jfrank-summit](https://github.com/jfrank-summit)
 
 
+## [1.5.10] - 2025-07-17
+
+### Features
+
+- add support for byte range cache retrieval ([#453](https://github.com/autonomys/auto-sdk/pull/453)) [@clostao](https://github.com/clostao)
+
+### Chores
+
+- release v1.5.9 ([#451](https://github.com/autonomys/auto-sdk/pull/451)) [@jfrank-summit](https://github.com/jfrank-summit)
+
+
 ## [Unreleased]
 
 Future changes will appear here.
 
-### [1.5.8] - 2025-07-15
+## [1.5.8] - 2025-07-15
 
 ### Features
 
