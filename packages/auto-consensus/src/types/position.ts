@@ -1,13 +1,17 @@
 export type NominatorPosition = {
-  knownValue: bigint
-  pendingDeposits: {
+  currentStakedValue: bigint
+  totalShares: bigint
+  storageFeeDeposit: {
+    totalDeposited: bigint
+    currentValue: bigint
+  }
+  pendingDeposit: {
     amount: bigint
     effectiveEpoch: number
-  }[]
+  } | null
   pendingWithdrawals: {
     stakeWithdrawalAmount: bigint
-    unlockAtDomainBlock: number
     storageFeeRefund: bigint
+    unlockAtBlock: number
   }[]
-  storageFeeDeposit: bigint
 }
