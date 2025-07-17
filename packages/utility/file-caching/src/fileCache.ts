@@ -2,7 +2,7 @@ import { createCache } from 'cache-manager'
 import fs from 'fs'
 import fsPromises from 'fs/promises'
 import path from 'path'
-import { BaseCacheConfig, FileResponse } from './models'
+import { BaseCacheConfig, FileCacheOptions, FileResponse } from './models'
 import { writeFile } from './utils'
 
 const CHARS_PER_PARTITION = 2
@@ -41,7 +41,7 @@ export const createFileCache = (config: BaseCacheConfig) => {
     }
   }
 
-  const get = async (cid: string): Promise<FileResponse | null> => {
+  const get = async (cid: string, options?: FileCacheOptions): Promise<FileResponse | null> => {
     const data: UncheckedFileCacheEntry = deserialize(await filepathCache.get(cid))
     if (!data) {
       return null
@@ -51,7 +51,10 @@ export const createFileCache = (config: BaseCacheConfig) => {
 
     return {
       ...data,
-      data: fs.createReadStream(path),
+      data: fs.createReadStream(path, {
+        start: options?.byteRange?.[0],
+        end: options?.byteRange?.[1],
+      }),
     }
   }
 
