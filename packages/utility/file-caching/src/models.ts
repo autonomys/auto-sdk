@@ -20,3 +20,9 @@ export interface FileCache {
   set: (cid: string, data: Buffer | Readable) => Promise<void>
   remove: (cid: string) => Promise<void>
 }
+
+export type ByteRange = [number, number | undefined]
+
+export interface FileCacheOptions {
+  byteRange?: ByteRange
+}
