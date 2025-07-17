@@ -1,6 +1,6 @@
 {
   "name": "@autonomys/auto-agents",
-  "version": "1.5.9",
+  "version": "1.5.10",
   "license": "MIT",
   "main": "dist/index.js",
   "type": "module",
@@ -26,8 +26,8 @@
     "README.md"
   ],
   "dependencies": {
-    "@autonomys/auto-dag-data": "^1.5.9",
-    "@autonomys/auto-drive": "^1.5.9",
+    "@autonomys/auto-dag-data": "^1.5.10",
+    "@autonomys/auto-drive": "^1.5.10",
     "ethers": "6.13.5"
   },
   "devDependencies": {
