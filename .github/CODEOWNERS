@@ -1,10 +1,10 @@
-/.github/workflows                @clostao @jfrank-summit @Xm0onh
-/packages/auto-consensus          @jfrank-summit @Xm0onh
+/.github/workflows                @clostao @jfrank-summit
+/packages/auto-consensus          @jfrank-summit
 /packages/auto-dag-data           @clostao
 /packages/auto-drive              @clostao
-/packages/auto-utils              @jfrank-summit @Xm0onh
-/packages/auto-xdm                @jfrank-summit @Xm0onh
+/packages/auto-utils              @jfrank-summit
+/packages/auto-xdm                @jfrank-summit
 /packages/utility/asynchronous    @clostao
 /packages/utility/file-caching    @clostao
 /packages/utility/rpc             @clostao
-/packages/utility/user-session    @jfrank-summit @Xm0onh
+/packages/utility/user-session    @jfrank-summit
