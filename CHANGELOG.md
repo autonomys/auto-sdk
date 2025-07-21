@@ -2,14 +2,31 @@
 
 Future changes will appear here.
 
+## [1.5.9] - 2025-07-15
+
+### Features
+
+- simplify `nominatorPosition` to use runtime api ([#450](https://github.com/autonomys/auto-sdk/pull/450)) [@jfrank-summit](https://github.com/jfrank-summit)
+
+## [1.5.8] - 2025-07-15
+
+### Features
+
+- add input sanitization for FilePreview ([#447](https://github.com/autonomys/auto-sdk/pull/447)) [@clostao](https://github.com/clostao)
+
+### Bug Fixes
+
+- fix runtime upgrade compatibility for operator epoch share prices ([#449](https://github.com/autonomys/auto-sdk/pull/449)) [@jfrank-summit](https://github.com/jfrank-summit)
+
+### Chores
+
+- bump version to v1.5.7 ([#445](https://github.com/autonomys/auto-sdk/pull/445)) [@clostao](https://github.com/clostao)
 
 ## [1.5.7] - 2025-07-09
 
 ### Code Refactoring
 
 - update sdk structure for avoid deps issues ([#443](https://github.com/autonomys/auto-sdk/pull/443)) [@clostao](https://github.com/clostao)
-
-
 
 ## [1.5.6] - 2025-07-08
 
@@ -21,16 +38,12 @@ Future changes will appear here.
 
 - v1.5.5 ([#441](https://github.com/autonomys/auto-sdk/pull/441)) [@jfrank-summit](https://github.com/jfrank-summit)
 
-
-
 ## [1.5.5] - 2025-07-02
 
 ### Features
 
 - add headDomainNumber function to retrieve latest block number for a specific domain ([#440](https://github.com/autonomys/auto-sdk/pull/440)) [@jfrank-summit](https://github.com/jfrank-summit)
 - add storage fee refund to pending withdrawals ([#439](https://github.com/autonomys/auto-sdk/pull/439)) [@jfrank-summit](https://github.com/jfrank-summit)
-
-
 
 ## [1.5.4] - 2025-07-01
 
@@ -41,17 +54,6 @@ Future changes will appear here.
 ### Chores
 
 - v1.5.3 ([#437](https://github.com/autonomys/auto-sdk/pull/437)) [@clostao](https://github.com/clostao)
-
-# [1.4.30] - 2025-05-14
-
-No changes in this version.
-
-
-
-[Unreleased]: https://github.com/autonomys/auto-sdk/compare/v1.4.31...HEAD
-[1.4.31]: https://github.com/autonomys/auto-sdk/compare/v1.4.30...v1.4.31
-[1.4.30]: https://github.com/autonomys/auto-sdk/releases/tag/v1.4.30
-
 
 ## [1.5.3] - 2025-07-01
 
@@ -73,8 +75,6 @@ No changes in this version.
 
 - Chore v1.5.2 ([#431](https://github.com/autonomys/auto-sdk/pull/431)) [@clostao](https://github.com/clostao)
 
-
-
 ## [1.5.2] - 2025-06-24
 
 ### Features
@@ -85,8 +85,6 @@ No changes in this version.
 
 - downloads should be perfomed in raw mode ([#430](https://github.com/autonomys/auto-sdk/pull/430)) [@clostao](https://github.com/clostao)
 
-
-
 ## [1.5.1] - 2025-06-19
 
 ### Features
@@ -96,8 +94,6 @@ No changes in this version.
 ### Chores
 
 - bump to v1.5.0 ([#426](https://github.com/autonomys/auto-sdk/pull/426)) [@clostao](https://github.com/clostao)
-
-
 
 ## [1.5.0] - 2025-06-13
 
@@ -115,8 +111,6 @@ No changes in this version.
 - remove Marc-Aurele from codeowners file ([#422](https://github.com/autonomys/auto-sdk/pull/422)) [@marc-aurele-besner](https://github.com/marc-aurele-besner)
 - v1.4.35 ([#421](https://github.com/autonomys/auto-sdk/pull/421)) [@clostao](https://github.com/clostao)
 
-
-
 ## [1.4.35] - 2025-05-29
 
 ### Features
@@ -126,8 +120,6 @@ No changes in this version.
 ### Chores
 
 - bump to v1.4.34 ([#420](https://github.com/autonomys/auto-sdk/pull/420)) [@clostao](https://github.com/clostao)
-
-
 
 ## [1.4.34] - 2025-05-29
 
@@ -139,8 +131,6 @@ No changes in this version.
 
 - bump version to v1.4.33 ([#418](https://github.com/autonomys/auto-sdk/pull/418)) [@clostao](https://github.com/clostao)
 
-
-
 ## [1.4.33] - 2025-05-28
 
 ### Bug Fixes
@@ -151,20 +141,18 @@ No changes in this version.
 
 - v1.4.32 ([#417](https://github.com/autonomys/auto-sdk/pull/417)) [@clostao](https://github.com/clostao)
 
-
-
 ## [1.4.32] - 2025-05-28
 
 ### Features
 
 - add "has" method to file cache ([#416](https://github.com/autonomys/auto-sdk/pull/416)) [@clostao](https://github.com/clostao)
 - redirect to public instances for downloads ([#414](https://github.com/autonomys/auto-sdk/pull/414)) [@clostao](https://github.com/clostao)
-- ✨  add astral component ([#412](https://github.com/autonomys/auto-sdk/pull/412)) [@iamnamananand996](https://github.com/iamnamananand996)
+- ✨ add astral component ([#412](https://github.com/autonomys/auto-sdk/pull/412)) [@iamnamananand996](https://github.com/iamnamananand996)
 - safe fork stream method for asynchronous pkg ([#410](https://github.com/autonomys/auto-sdk/pull/410)) [@clostao](https://github.com/clostao)
 - add `forkStream` method to `@autonomys/asynchronous` ([#405](https://github.com/autonomys/auto-sdk/pull/405)) [@clostao](https://github.com/clostao)
 - ✨ add release cycle and changelog ([#394](https://github.com/autonomys/auto-sdk/pull/394)) [@iamnamananand996](https://github.com/iamnamananand996)
-- ✨  add auto-design-system sdk ([#393](https://github.com/autonomys/auto-sdk/pull/393)) [@iamnamananand996](https://github.com/iamnamananand996)
-- ✨  add design tokens sdk ([#389](https://github.com/autonomys/auto-sdk/pull/389)) [@iamnamananand996](https://github.com/iamnamananand996)
+- ✨ add auto-design-system sdk ([#393](https://github.com/autonomys/auto-sdk/pull/393)) [@iamnamananand996](https://github.com/iamnamananand996)
+- ✨ add design tokens sdk ([#389](https://github.com/autonomys/auto-sdk/pull/389)) [@iamnamananand996](https://github.com/iamnamananand996)
 - make server respond to http post request ([#385](https://github.com/autonomys/auto-sdk/pull/385)) [@clostao](https://github.com/clostao)
 - Feat: Improve user session ([#373](https://github.com/autonomys/auto-sdk/pull/373)) [@marc-aurele-besner](https://github.com/marc-aurele-besner)
 - Feat: Add WAI3 contract ([#364](https://github.com/autonomys/auto-sdk/pull/364)) [@marc-aurele-besner](https://github.com/marc-aurele-besner)
@@ -239,7 +227,7 @@ No changes in this version.
 - v1.4.9 ([#331](https://github.com/autonomys/auto-sdk/pull/331)) [@clostao](https://github.com/clostao)
 - Fix cid format ([#329](https://github.com/autonomys/auto-sdk/pull/329)) [@clostao](https://github.com/clostao)
 - v1.4.7 ([#328](https://github.com/autonomys/auto-sdk/pull/328)) [@clostao](https://github.com/clostao)
-- Add RPC API definitions for implementing type-safe RPC protocols  ([#327](https://github.com/autonomys/auto-sdk/pull/327)) [@clostao](https://github.com/clostao)
+- Add RPC API definitions for implementing type-safe RPC protocols ([#327](https://github.com/autonomys/auto-sdk/pull/327)) [@clostao](https://github.com/clostao)
 - update dependency ts-jest to ^29.3.0 ([#325](https://github.com/autonomys/auto-sdk/pull/325)) [@renovate[bot]](https://github.com/apps/renovate)
 - Fixing/enhancing RPC server ([#323](https://github.com/autonomys/auto-sdk/pull/323)) [@clostao](https://github.com/clostao)
 - v1.4.6 ([#322](https://github.com/autonomys/auto-sdk/pull/322)) [@clostao](https://github.com/clostao)
@@ -267,8 +255,6 @@ No changes in this version.
 
 - Update dependency cache-manager to ^6.4.2 ([#365](https://github.com/autonomys/auto-sdk/pull/365)) [@renovate[bot]](https://github.com/apps/renovate)
 
-
-
 ## [1.4.31] - 2025-05-14
 
 ### Features
@@ -279,6 +265,10 @@ No changes in this version.
 ### Bug Fixes
 
 - 🐛 publish action workflow and version sync ([#409](https://github.com/autonomys/auto-sdk/pull/409)) [@iamnamananand996](https://github.com/iamnamananand996)
+
+## [1.4.30] - 2025-05-14
+
+No changes in this version.
 
 [Unreleased]: https://github.com/autonomys/auto-sdk/compare/v1.4.31...HEAD
 [1.4.31]: https://github.com/autonomys/auto-sdk/compare/v1.4.30...v1.4.31
