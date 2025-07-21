@@ -68,7 +68,35 @@ if (!process.env.GITHUB_TOKEN) {
 let octokit
 
 /**
- * Get all tags sorted by date
+ * Compare two semantic versions
+ * @param {string} a - First version (e.g., "1.2.3")
+ * @param {string} b - Second version (e.g., "1.2.4")
+ * @returns {number} - Negative if a < b, positive if a > b, 0 if equal
+ */
+function compareVersions(a, b) {
+  // Remove 'v' prefix if present
+  const cleanA = a.replace(/^v/, '')
+  const cleanB = b.replace(/^v/, '')
+
+  const partsA = cleanA.split('.').map((x) => parseInt(x, 10) || 0)
+  const partsB = cleanB.split('.').map((x) => parseInt(x, 10) || 0)
+
+  // Ensure both arrays have the same length
+  const maxLength = Math.max(partsA.length, partsB.length)
+  while (partsA.length < maxLength) partsA.push(0)
+  while (partsB.length < maxLength) partsB.push(0)
+
+  for (let i = 0; i < maxLength; i++) {
+    if (partsA[i] !== partsB[i]) {
+      return partsA[i] - partsB[i]
+    }
+  }
+
+  return 0
+}
+
+/**
+ * Get all tags sorted by semantic version (descending)
  */
 async function getTags() {
   try {
@@ -114,7 +142,8 @@ async function getTags() {
       }
     }
 
-    return tagsWithDates.sort((a, b) => b.date - a.date)
+    // Sort by semantic version (descending - newest first)
+    return tagsWithDates.sort((a, b) => compareVersions(b.name, a.name))
   } catch (error) {
     console.error('Error getting tags:', error.message)
 
@@ -288,6 +317,64 @@ async function generateChangelogBetweenTags(startTag, endTag, version) {
 }
 
 /**
+ * Extract version sections from changelog content
+ */
+function extractVersionSections(content) {
+  const sections = []
+  const lines = content.split('\n')
+  let currentSection = null
+  let currentContent = []
+
+  for (const line of lines) {
+    const versionMatch = line.match(/^## \[([^\]]+)\]/)
+    if (versionMatch) {
+      // Save previous section if exists
+      if (currentSection) {
+        sections.push({
+          version: currentSection,
+          content: currentContent.join('\n'),
+        })
+      }
+
+      // Start new section
+      currentSection = versionMatch[1]
+      currentContent = [line]
+    } else if (currentSection) {
+      currentContent.push(line)
+    }
+  }
+
+  // Add the last section
+  if (currentSection) {
+    sections.push({
+      version: currentSection,
+      content: currentContent.join('\n'),
+    })
+  }
+
+  return sections
+}
+
+/**
+ * Rebuild changelog with proper version ordering
+ */
+function rebuildChangelog(sections, header) {
+  // Sort sections by version (Unreleased first, then by semantic version descending)
+  const sortedSections = sections.sort((a, b) => {
+    if (a.version === 'Unreleased') return -1
+    if (b.version === 'Unreleased') return 1
+    return compareVersions(b.version, a.version)
+  })
+
+  let content = header
+  for (const section of sortedSections) {
+    content += section.content + '\n\n'
+  }
+
+  return content.trim()
+}
+
+/**
  * Update the changelog file
  */
 async function updateChangelog() {
@@ -315,11 +402,16 @@ async function updateChangelog() {
 
     // Get existing changelog content
     let changelogContent = ''
+    let changelogHeader =
+      '# Changelog\n\nAll notable changes to the Autonomys Auto SDK will be documented in this file.\n\n'
+
     if (fs.existsSync(config.changelogFile)) {
       changelogContent = fs.readFileSync(config.changelogFile, 'utf8')
-    } else {
-      // Initialize new changelog
-      changelogContent = `# Changelog\n\nAll notable changes to the Autonomys Auto SDK will be documented in this file.\n\n`
+      // Extract header (everything before first version section)
+      const firstVersionMatch = changelogContent.match(/^([\s\S]*?)## \[/m)
+      if (firstVersionMatch) {
+        changelogHeader = firstVersionMatch[1]
+      }
     }
 
     console.log('Generating changelog for next version...')
@@ -332,76 +424,68 @@ async function updateChangelog() {
       ? await generateChangelogBetweenTags(previousTag, currentTag, currentVersion)
       : ''
 
-    // Combine changelogs
-    let newChangelog = changelogContent
+    // Extract existing version sections
+    const existingSections = extractVersionSections(changelogContent)
 
-    // Find existing headers
-    const unreleasedHeaderRegex = /## \[Unreleased\]/
-    const versionHeaderRegex = /## \[\d+\.\d+\.\d+\]/
-    const nextVersionHeaderRegex = new RegExp(`## \\[${nextVersion}\\]`)
+    // Update or add the next version section
+    const nextVersionSection = {
+      version: nextVersion,
+      content: nextVersionChangelog.replace('## [Unreleased]', `## [${nextVersion}]`).trim(),
+    }
 
-    // Add the next version changes at the top
-    if (nextVersionHeaderRegex.test(newChangelog)) {
-      // Replace the existing next version section
-      newChangelog = newChangelog.replace(
-        new RegExp(`${nextVersionHeaderRegex.source}[\\s\\S]*?(?=${versionHeaderRegex.source}|$)`),
-        nextVersionChangelog.replace('## [Unreleased]', `## [${nextVersion}]`),
-      )
-    } else if (unreleasedHeaderRegex.test(newChangelog)) {
-      // Replace the unreleased section with the next version
-      newChangelog = newChangelog.replace(
-        new RegExp(`${unreleasedHeaderRegex.source}[\\s\\S]*?(?=${versionHeaderRegex.source}|$)`),
-        nextVersionChangelog.replace('## [Unreleased]', `## [${nextVersion}]`),
-      )
+    // Update or add the current version section
+    const currentVersionSection = currentVersionChangelog
+      ? {
+          version: currentVersion,
+          content: currentVersionChangelog.trim(),
+        }
+      : null
+
+    // Combine all sections
+    const allSections = [...existingSections]
+
+    // Update or add next version
+    const nextVersionIndex = allSections.findIndex((s) => s.version === nextVersion)
+    if (nextVersionIndex !== -1) {
+      allSections[nextVersionIndex] = nextVersionSection
     } else {
-      // Add the next version section at the top
-      const introEndIndex = newChangelog.indexOf('\n\n') + 2
-      newChangelog =
-        newChangelog.slice(0, introEndIndex) +
-        nextVersionChangelog.replace('## [Unreleased]', `## [${nextVersion}]`) +
-        '\n' +
-        newChangelog.slice(introEndIndex)
+      allSections.push(nextVersionSection)
     }
 
-    // Add a small unreleased section after the next version
-    const emptyUnreleased = '\n## [Unreleased]\n\nFuture changes will appear here.\n\n'
-    if (!unreleasedHeaderRegex.test(newChangelog)) {
-      const nextVersionEndIndex =
-        newChangelog.indexOf(`## [${nextVersion}]`) +
-        nextVersionChangelog.replace('## [Unreleased]', `## [${nextVersion}]`).length
-      newChangelog =
-        newChangelog.slice(0, nextVersionEndIndex) +
-        emptyUnreleased +
-        newChangelog.slice(nextVersionEndIndex)
+    // Update or add current version
+    if (currentVersionSection) {
+      const currentVersionIndex = allSections.findIndex((s) => s.version === currentVersion)
+      if (currentVersionIndex !== -1) {
+        allSections[currentVersionIndex] = currentVersionSection
+      } else {
+        allSections.push(currentVersionSection)
+      }
     }
 
-    // Add the current version changelog if needed and not already present
-    if (currentVersionChangelog && !newChangelog.includes(`## [${currentVersion}]`)) {
-      const unreleasedEndIndex = newChangelog.indexOf('## [Unreleased]') + emptyUnreleased.length
-      newChangelog =
-        newChangelog.slice(0, unreleasedEndIndex) +
-        currentVersionChangelog +
-        newChangelog.slice(unreleasedEndIndex)
+    // Ensure there's an Unreleased section
+    const unreleasedIndex = allSections.findIndex((s) => s.version === 'Unreleased')
+    if (unreleasedIndex === -1) {
+      allSections.push({
+        version: 'Unreleased',
+        content: '## [Unreleased]\n\nFuture changes will appear here.',
+      })
     }
 
-    // Update the links at the bottom
-    let links =
-      `\n\n[Unreleased]: https://github.com/${config.owner}/${config.repo}/compare/v${nextVersion}...HEAD\n` +
-      `[${nextVersion}]: https://github.com/${config.owner}/${config.repo}/compare/v${currentVersion}...v${nextVersion}\n`
+    // Rebuild changelog with proper ordering
+    const newChangelog = rebuildChangelog(allSections, changelogHeader)
+
+    // Add version links at the bottom
+    let links = `\n\n[Unreleased]: https://github.com/${config.owner}/${config.repo}/compare/v${nextVersion}...HEAD\n`
+    links += `[${nextVersion}]: https://github.com/${config.owner}/${config.repo}/compare/v${currentVersion}...v${nextVersion}\n`
 
     if (currentTag) {
       links += `[${currentVersion}]: https://github.com/${config.owner}/${config.repo}/releases/tag/v${currentVersion}\n`
     }
 
-    // Make sure we end with the links section
-    if (newChangelog.includes('[Unreleased]:')) {
-      newChangelog = newChangelog.replace(/\[Unreleased\]:.*(\n\[\d+\.\d+\.\d+\]:.*)*$/, links)
-    } else {
-      newChangelog += links
-    }
+    const finalChangelog = newChangelog + links
 
     // Write the updated changelog
-    fs.writeFileSync(config.changelogFile, newChangelog)
+    fs.writeFileSync(config.changelogFile, finalChangelog)
     console.log(`Changelog updated successfully at ${config.changelogFile}`)
   } catch (error) {
     console.error('Error updating changelog:', error)
