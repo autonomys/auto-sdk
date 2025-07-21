@@ -262,6 +262,13 @@
 - release v1.5.9 ([#451](https://github.com/autonomys/auto-sdk/pull/451)) [@jfrank-summit](https://github.com/jfrank-summit)
 
 
+## [1.5.11] - 2025-07-21
+
+### Features
+
+- add get node method ([#454](https://github.com/autonomys/auto-sdk/pull/454)) [@clostao](https://github.com/clostao)
+
+
 ## [Unreleased]
 
 Future changes will appear here.
