@@ -2,6 +2,22 @@
 
 Future changes will appear here.
 
+## [1.5.11] - 2025-07-21
+
+### Features
+
+- add get node method ([#454](https://github.com/autonomys/auto-sdk/pull/454)) [@clostao](https://github.com/clostao)
+
+## [1.5.10] - 2025-07-17
+
+### Features
+
+- add support for byte range cache retrieval ([#453](https://github.com/autonomys/auto-sdk/pull/453)) [@clostao](https://github.com/clostao)
+
+### Chores
+
+- release v1.5.9 ([#451](https://github.com/autonomys/auto-sdk/pull/451)) [@jfrank-summit](https://github.com/jfrank-summit)
+
 ## [1.5.9] - 2025-07-15
 
 ### Features
@@ -265,11 +281,3 @@ Future changes will appear here.
 ### Bug Fixes
 
 - 🐛 publish action workflow and version sync ([#409](https://github.com/autonomys/auto-sdk/pull/409)) [@iamnamananand996](https://github.com/iamnamananand996)
-
-## [1.4.30] - 2025-05-14
-
-No changes in this version.
-
-[Unreleased]: https://github.com/autonomys/auto-sdk/compare/v1.4.31...HEAD
-[1.4.31]: https://github.com/autonomys/auto-sdk/compare/v1.4.30...v1.4.31
-[1.4.30]: https://github.com/autonomys/auto-sdk/releases/tag/v1.4.30
