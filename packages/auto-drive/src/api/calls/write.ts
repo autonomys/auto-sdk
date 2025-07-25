@@ -113,3 +113,75 @@ export const publishObject = async (
 
   return response.json()
 }
+
+/**
+ * Reports an object by sending a request to the server.
+ *
+ * This function sends a request to the server to report an object identified
+ * by its CID. The report will be reviewed by moderators.
+ *
+ * @param {AutoDriveApiHandler} api - The API instance used to send requests.
+ * @param {ArgsWithoutPagination<{ cid: string }>} query - The query parameters containing the CID of the object to report.
+ * @returns {Promise<void>} - A promise that resolves when the object has been successfully reported.
+ * @throws {Error} - Throws an error if the reporting process fails.
+ */
+export const reportObject = async (
+  api: AutoDriveApiHandler,
+  query: ArgsWithoutPagination<{ cid: string }>,
+): Promise<void> => {
+  const response = await api.sendAPIRequest(`/objects/${query.cid}/report`, {
+    method: 'POST',
+  })
+
+  if (!response.ok) {
+    throw new Error(`Failed to report object: ${response.statusText}`)
+  }
+}
+
+/**
+ * Bans an object by sending a request to the server.
+ *
+ * This function sends a request to the server to ban an object identified
+ * by its CID. Only authorized users can ban objects.
+ *
+ * @param {AutoDriveApiHandler} api - The API instance used to send requests.
+ * @param {ArgsWithoutPagination<{ cid: string }>} query - The query parameters containing the CID of the object to ban.
+ * @returns {Promise<void>} - A promise that resolves when the object has been successfully banned.
+ * @throws {Error} - Throws an error if the banning process fails.
+ */
+export const banObject = async (
+  api: AutoDriveApiHandler,
+  query: ArgsWithoutPagination<{ cid: string }>,
+): Promise<void> => {
+  const response = await api.sendAPIRequest(`/objects/${query.cid}/ban`, {
+    method: 'POST',
+  })
+
+  if (!response.ok) {
+    throw new Error(`Failed to ban object: ${response.statusText}`)
+  }
+}
+
+/**
+ * Dismisses a report on an object by sending a request to the server.
+ *
+ * This function sends a request to the server to dismiss a report on an object
+ * identified by its CID. Only authorized users can dismiss reports.
+ *
+ * @param {AutoDriveApiHandler} api - The API instance used to send requests.
+ * @param {ArgsWithoutPagination<{ cid: string }>} query - The query parameters containing the CID of the object whose report should be dismissed.
+ * @returns {Promise<void>} - A promise that resolves when the report has been successfully dismissed.
+ * @throws {Error} - Throws an error if the dismissal process fails.
+ */
+export const dismissReport = async (
+  api: AutoDriveApiHandler,
+  query: ArgsWithoutPagination<{ cid: string }>,
+): Promise<void> => {
+  const response = await api.sendAPIRequest(`/objects/${query.cid}/dismiss-report`, {
+    method: 'POST',
+  })
+
+  if (!response.ok) {
+    throw new Error(`Failed to dismiss report: ${response.statusText}`)
+  }
+}
