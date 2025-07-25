@@ -2,11 +2,26 @@ import { httpBodyToStream } from '@autonomys/asynchronous'
 import { CompressionOptions, EncryptionOptions } from '@autonomys/auto-drive'
 import { Readable } from 'stream'
 import { withRetries } from './utils'
+
 interface FetchedFile {
   length: bigint
   compression: CompressionOptions | undefined
   encryption: EncryptionOptions | undefined
   data: Readable
+}
+
+interface BannedFile {
+  cid: string
+  bannedAt: string
+  reason?: string
+  bannedBy?: string
+}
+
+interface BannedFilesResponse {
+  bannedFiles: BannedFile[]
+  totalCount?: number
+  page?: number
+  limit?: number
 }
 
 /**
@@ -184,5 +199,68 @@ export const createAutoFilesApi = (baseUrl: string, apiSecret: string) => {
     return file.data
   }
 
-  return { getFile, isFileCached, getChunkedFile, getNode }
+  /**
+   * Bans a file by sending a request to the moderation service
+   * @param cid - The content identifier of the file to ban
+   * @returns A Promise that resolves when the file has been successfully banned
+   * @throws Error if the ban operation fails
+   */
+  const banFile = async (cid: string): Promise<void> => {
+    const response = await authFetch(`${baseUrl}/moderation/${cid}/ban`, {
+      method: 'POST',
+    })
+
+    if (!response.ok) {
+      throw new Error(`Error banning file: ${response.status} ${response.statusText}`)
+    }
+
+    const result = await response.json()
+    if (!result.success) {
+      throw new Error(`Failed to ban file: ${result.message || 'Unknown error'}`)
+    }
+  }
+
+  /**
+   * Unbans a file by sending a request to the moderation service
+   * @param cid - The content identifier of the file to unban
+   * @returns A Promise that resolves when the file has been successfully unbanned
+   * @throws Error if the unban operation fails
+   */
+  const unbanFile = async (cid: string): Promise<void> => {
+    const response = await authFetch(`${baseUrl}/moderation/${cid}/unban`, {
+      method: 'POST',
+    })
+
+    if (!response.ok) {
+      throw new Error(`Error unbanning file: ${response.status} ${response.statusText}`)
+    }
+
+    const result = await response.json()
+    if (!result.success) {
+      throw new Error(`Failed to unban file: ${result.message || 'Unknown error'}`)
+    }
+  }
+
+  /**
+   * Gets a list of banned files with pagination support
+   * @param page - The page number for pagination (optional, defaults to 1)
+   * @param limit - The number of files per page (optional, defaults to 10)
+   * @returns A Promise that resolves to an object containing the banned files
+   * @throws Error if the request fails
+   */
+  const getBannedFiles = async (
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<BannedFilesResponse> => {
+    const response = await authFetch(`${baseUrl}/moderation/banned?page=${page}&limit=${limit}`)
+
+    if (!response.ok) {
+      throw new Error(`Error fetching banned files: ${response.status} ${response.statusText}`)
+    }
+
+    const result = await response.json()
+    return result
+  }
+
+  return { getFile, isFileCached, getChunkedFile, getNode, banFile, unbanFile, getBannedFiles }
 }
