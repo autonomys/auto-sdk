@@ -166,6 +166,80 @@ try {
 }
 ```
 
+### Example Usage of Object Moderation
+
+Here are examples of how to use the object moderation methods:
+
+#### Report an Object
+
+```typescript
+import { createAutoDriveApi } from '@autonomys/auto-drive'
+import { NetworkId } from '@autonomys/auto-utils'
+
+const api = createAutoDriveApi({ apiKey: 'your-api-key', network: NetworkId.TAURUS })
+
+try {
+  const cid = 'your-object-cid'
+  await api.reportObject(cid)
+  console.log('Object reported successfully')
+} catch (error) {
+  console.error('Error reporting object:', error)
+}
+```
+
+#### Ban an Object
+
+```typescript
+import { createAutoDriveApi } from '@autonomys/auto-drive'
+import { NetworkId } from '@autonomys/auto-utils'
+
+const api = createAutoDriveApi({ apiKey: 'your-api-key', network: NetworkId.TAURUS })
+
+try {
+  const cid = 'your-object-cid'
+  await api.banObject(cid)
+  console.log('Object banned successfully')
+} catch (error) {
+  console.error('Error banning object:', error)
+}
+```
+
+#### Dismiss a Report
+
+```typescript
+import { createAutoDriveApi } from '@autonomys/auto-drive'
+import { NetworkId } from '@autonomys/auto-utils'
+
+const api = createAutoDriveApi({ apiKey: 'your-api-key', network: NetworkId.TAURUS })
+
+try {
+  const cid = 'your-object-cid'
+  await api.dismissReport(cid)
+  console.log('Report dismissed successfully')
+} catch (error) {
+  console.error('Error dismissing report:', error)
+}
+```
+
+#### Get Objects to be Reviewed
+
+```typescript
+import { createAutoDriveApi } from '@autonomys/auto-drive'
+import { NetworkId } from '@autonomys/auto-utils'
+
+const api = createAutoDriveApi({ apiKey: 'your-api-key', network: NetworkId.TAURUS })
+
+try {
+  const toBeReviewed = await api.getToBeReviewedList(50, 0)
+  console.log(`Found ${toBeReviewed.length} objects to be reviewed`)
+  for (const object of toBeReviewed) {
+    console.log(`${object.name} - ${object.headCid}: ${object.size}`)
+  }
+} catch (error) {
+  console.error('Error getting objects to be reviewed:', error)
+}
+```
+
 ### Create shareable download link
 
 Here is an example of how to use the `publishObject` method to publish an object and get its public download URL:

@@ -369,6 +369,12 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
     dismissAsyncDownload: (downloadId: string) => apiCalls.dismissAsyncDownload(api, downloadId),
     isFileCached: (cid: string) =>
       apiCalls.downloadStatus(api, cid).then((e) => e.status === DownloadStatus.Cached),
+    reportFile: (cid: string) => apiCalls.reportObject(api, { cid }),
+    reportObject: (cid: string) => apiCalls.reportObject(api, { cid }),
+    banObject: (cid: string) => apiCalls.banObject(api, { cid }),
+    dismissReport: (cid: string) => apiCalls.dismissReport(api, { cid }),
+    getToBeReviewedList: (limit: number = 100, offset: number = 0) =>
+      apiCalls.getToBeReviewedList(api, { limit, offset }),
     baseUrl: api.baseUrl,
     downloadBaseUrl: api.downloadBaseUrl,
   }
