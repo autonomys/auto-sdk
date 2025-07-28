@@ -10,20 +10,6 @@ interface FetchedFile {
   data: Readable
 }
 
-interface BannedFile {
-  cid: string
-  bannedAt: string
-  reason?: string
-  bannedBy?: string
-}
-
-interface BannedFilesResponse {
-  bannedFiles: BannedFile[]
-  totalCount?: number
-  page?: number
-  limit?: number
-}
-
 /**
  * Creates an API client for interacting with the Auto Files service
  * @param baseUrl - The base URL of the Auto Files API
@@ -248,10 +234,7 @@ export const createAutoFilesApi = (baseUrl: string, apiSecret: string) => {
    * @returns A Promise that resolves to an object containing the banned files
    * @throws Error if the request fails
    */
-  const getBannedFiles = async (
-    page: number = 1,
-    limit: number = 10,
-  ): Promise<BannedFilesResponse> => {
+  const getBannedFiles = async (page: number = 1, limit: number = 10): Promise<string[]> => {
     const response = await authFetch(`${baseUrl}/moderation/banned?page=${page}&limit=${limit}`)
 
     if (!response.ok) {
@@ -259,7 +242,7 @@ export const createAutoFilesApi = (baseUrl: string, apiSecret: string) => {
     }
 
     const result = await response.json()
-    return result
+    return result.bannedFiles
   }
 
   /**
