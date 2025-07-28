@@ -208,6 +208,59 @@ export interface AutoDriveApi extends AutoDriveApiHandler {
    * @returns {Promise<void>} - A promise that resolves when the async download is dismissed.
    */
   dismissAsyncDownload: (downloadId: string) => Promise<void>
+
+  /**
+   * Reports a file
+   *
+   * @param cid {string} - The CID of the node to get.
+   * @returns {Promise<ArrayBuffer>} - A promise that resolves to the node data.
+   */
+  reportFile: (cid: string) => Promise<void>
+
+  /**
+   * Reports an object by sending a request to the server.
+   *
+   * This function sends a request to the server to report an object identified
+   * by its CID. The report will be reviewed by moderators.
+   *
+   * @param cid {string} - The CID of the object to report.
+   * @returns {Promise<void>} - A promise that resolves when the object has been successfully reported.
+   */
+  reportObject: (cid: string) => Promise<void>
+
+  /**
+   * Bans an object by sending a request to the server.
+   *
+   * This function sends a request to the server to ban an object identified
+   * by its CID. Only authorized users can ban objects.
+   *
+   * @param cid {string} - The CID of the object to ban.
+   * @returns {Promise<void>} - A promise that resolves when the object has been successfully banned.
+   */
+  banObject: (cid: string) => Promise<void>
+
+  /**
+   * Dismisses a report on an object by sending a request to the server.
+   *
+   * This function sends a request to the server to dismiss a report on an object
+   * identified by its CID. Only authorized users can dismiss reports.
+   *
+   * @param cid {string} - The CID of the object whose report should be dismissed.
+   * @returns {Promise<void>} - A promise that resolves when the report has been successfully dismissed.
+   */
+  dismissReport: (cid: string) => Promise<void>
+
+  /**
+   * Gets the list of objects that need to be reviewed.
+   *
+   * This function sends a request to the server to fetch a list of objects
+   * that have been reported and need moderation review.
+   *
+   * @param limit {number} - The maximum number of objects to return (default: 100).
+   * @param offset {number} - The number of objects to skip for pagination (default: 0).
+   * @returns {Promise<ObjectSummary[]>} - A promise that resolves to the list of objects to be reviewed.
+   */
+  getToBeReviewedList: (limit?: number, offset?: number) => Promise<ObjectSummary[]>
 }
 
 export interface AutoDriveApiHandler {
