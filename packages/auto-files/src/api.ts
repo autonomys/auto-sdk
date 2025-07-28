@@ -231,7 +231,7 @@ export const createAutoFilesApi = (baseUrl: string, apiSecret: string) => {
    * Gets a list of banned files with pagination support
    * @param page - The page number for pagination (optional, defaults to 1)
    * @param limit - The number of files per page (optional, defaults to 10)
-   * @returns A Promise that resolves to an object containing the banned files
+   * @returns A Promise that resolves to an array of CIDs
    * @throws Error if the request fails
    */
   const getBannedFiles = async (page: number = 1, limit: number = 10): Promise<string[]> => {
