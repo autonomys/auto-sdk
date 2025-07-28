@@ -262,5 +262,31 @@ export const createAutoFilesApi = (baseUrl: string, apiSecret: string) => {
     return result
   }
 
-  return { getFile, isFileCached, getChunkedFile, getNode, banFile, unbanFile, getBannedFiles }
+  /**
+   * Checks if a file is banned by querying the moderation service
+   * @param cid - The content identifier of the file to check
+   * @returns A Promise that resolves to true if the file is banned, false otherwise
+   * @throws Error if the status check fails
+   */
+  const isFileBanned = async (cid: string): Promise<boolean> => {
+    const response = await authFetch(`${baseUrl}/moderation/${cid}/status`)
+
+    if (!response.ok) {
+      throw new Error(`Error checking file ban status: ${response.status} ${response.statusText}`)
+    }
+
+    const result = await response.json()
+    return result.isBanned
+  }
+
+  return {
+    getFile,
+    isFileCached,
+    getChunkedFile,
+    getNode,
+    banFile,
+    unbanFile,
+    getBannedFiles,
+    isFileBanned,
+  }
 }
