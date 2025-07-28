@@ -140,16 +140,10 @@ const api = createAutoFilesApi('https://api.autofiles.com', 'your-api-secret')
 
 try {
   const bannedFiles = await api.getBannedFiles(1, 10)
-  console.log(`Found ${bannedFiles.bannedFiles.length} banned files`)
+  console.log(`Found ${bannedFiles.length} banned files`)
 
-  for (const file of bannedFiles.bannedFiles) {
-    console.log(`CID: ${file.cid}, Banned at: ${file.bannedAt}`)
-    if (file.reason) {
-      console.log(`Reason: ${file.reason}`)
-    }
-    if (file.bannedBy) {
-      console.log(`Banned by: ${file.bannedBy}`)
-    }
+  for (const cid of bannedFiles) {
+    console.log(`CID: ${cid}`)
   }
 } catch (error) {
   console.error('Error fetching banned files:', error)
