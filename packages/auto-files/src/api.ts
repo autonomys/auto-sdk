@@ -2,6 +2,7 @@ import { httpBodyToStream } from '@autonomys/asynchronous'
 import { CompressionOptions, EncryptionOptions } from '@autonomys/auto-drive'
 import { Readable } from 'stream'
 import { withRetries } from './utils'
+
 interface FetchedFile {
   length: bigint
   compression: CompressionOptions | undefined
@@ -184,5 +185,91 @@ export const createAutoFilesApi = (baseUrl: string, apiSecret: string) => {
     return file.data
   }
 
-  return { getFile, isFileCached, getChunkedFile, getNode }
+  /**
+   * Bans a file by sending a request to the moderation service
+   * @param cid - The content identifier of the file to ban
+   * @returns A Promise that resolves when the file has been successfully banned
+   * @throws Error if the ban operation fails
+   */
+  const banFile = async (cid: string): Promise<void> => {
+    const response = await authFetch(`${baseUrl}/moderation/${cid}/ban`, {
+      method: 'POST',
+    })
+
+    if (!response.ok) {
+      throw new Error(`Error banning file: ${response.status} ${response.statusText}`)
+    }
+
+    const result = await response.json()
+    if (!result.success) {
+      throw new Error(`Failed to ban file: ${result.message || 'Unknown error'}`)
+    }
+  }
+
+  /**
+   * Unbans a file by sending a request to the moderation service
+   * @param cid - The content identifier of the file to unban
+   * @returns A Promise that resolves when the file has been successfully unbanned
+   * @throws Error if the unban operation fails
+   */
+  const unbanFile = async (cid: string): Promise<void> => {
+    const response = await authFetch(`${baseUrl}/moderation/${cid}/unban`, {
+      method: 'POST',
+    })
+
+    if (!response.ok) {
+      throw new Error(`Error unbanning file: ${response.status} ${response.statusText}`)
+    }
+
+    const result = await response.json()
+    if (!result.success) {
+      throw new Error(`Failed to unban file: ${result.message || 'Unknown error'}`)
+    }
+  }
+
+  /**
+   * Gets a list of banned files with pagination support
+   * @param page - The page number for pagination (optional, defaults to 1)
+   * @param limit - The number of files per page (optional, defaults to 10)
+   * @returns A Promise that resolves to an array of CIDs
+   * @throws Error if the request fails
+   */
+  const getBannedFiles = async (page: number = 1, limit: number = 10): Promise<string[]> => {
+    const response = await authFetch(`${baseUrl}/moderation/banned?page=${page}&limit=${limit}`)
+
+    if (!response.ok) {
+      throw new Error(`Error fetching banned files: ${response.status} ${response.statusText}`)
+    }
+
+    const result = await response.json()
+    return result.bannedFiles
+  }
+
+  /**
+   * Checks if a file is banned by querying the moderation service
+   * @param cid - The content identifier of the file to check
+   * @returns A Promise that resolves to true if the file is banned, false otherwise
+   * @throws Error if the status check fails
+   */
+  const isFileBanned = async (cid: string): Promise<boolean> => {
+    const response = await authFetch(`${baseUrl}/moderation/${cid}/status`)
+
+    if (!response.ok) {
+      throw new Error(`Error checking file ban status: ${response.status} ${response.statusText}`)
+    }
+
+    const result = await response.json()
+    return result.isBanned
+  }
+
+  return {
+    getFile,
+    isFileCached,
+    getChunkedFile,
+    getNode,
+    banFile,
+    unbanFile,
+    getBannedFiles,
+    isFileBanned,
+  }
 }
