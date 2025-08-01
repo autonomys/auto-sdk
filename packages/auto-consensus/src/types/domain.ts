@@ -20,6 +20,7 @@ export type DomainRegistry = {
 }
 
 export type DomainStakingSummary = {
+  domainId: string
   currentEpochIndex: number
   currentTotalStake: string
   currentOperators: {

@@ -14,7 +14,7 @@ export const balanceFunction = async () => {
     'Alice Free Balance:',
     aliceBalance.free.toString(),
     '\x1b[36m',
-    'ATC',
+    'AI3',
     '\x1b[0m\n',
   )
 
@@ -27,7 +27,7 @@ export const balanceFunction = async () => {
     'Bob Free Balance:',
     bobBalance.free.toString(),
     '\x1b[36m',
-    'ATC',
+    'AI3',
     '\x1b[0m\n',
     '\n',
   )

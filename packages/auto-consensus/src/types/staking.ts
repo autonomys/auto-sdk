@@ -80,18 +80,20 @@ export type RawWithdrawalHeader = [string, string]
 
 export type RawWithdrawal = {
   totalWithdrawalAmount: string
-  withdrawals: {
-    domainId: number
-    unlockAtConfirmedDomainBlockNumber: number
-    amountToUnlock: string
-    storageFeeRefund: string
-  }[]
+  withdrawals:
+    | {
+        domainId: number
+        unlockAtConfirmedDomainBlockNumber: number
+        amountToUnlock: string
+        storageFeeRefund: string
+      }[]
+    | null
   withdrawalInShares: {
     domainEpoch: number[]
     unlockAtConfirmedDomainBlockNumber: number
     shares: string
     storageFeeRefund: string
-  }
+  } | null
 }
 
 export type WithdrawalUnlock = {

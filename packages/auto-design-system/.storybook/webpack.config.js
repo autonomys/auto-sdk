@@ -1,24 +1,37 @@
-module.exports = ({ config }) => {
+import path from 'path'
+import { fileURLToPath } from 'url'
+import webpack from 'webpack'
+
+const filename = fileURLToPath(import.meta.url)
+const dirname = path.dirname(filename)
+
+export default ({ config }) => {
   // Typescript support
   config.module.rules.push({
     test: /\.(ts|tsx)$/,
     use: [
       {
-        loader: require.resolve('babel-loader'),
+        loader: 'babel-loader',
         options: {
-          presets: [
-            require.resolve('@babel/preset-env'),
-            require.resolve('@babel/preset-react'),
-            require.resolve('@babel/preset-typescript'),
-          ],
+          presets: ['@babel/preset-env', '@babel/preset-react', '@babel/preset-typescript'],
         },
       },
     ],
-  });
-  
+  })
+
   // Add TypeScript extensions
-  config.resolve.extensions.push('.ts', '.tsx');
-  
+  config.resolve.extensions.push('.ts', '.tsx')
+
+  // Add Node.js polyfills for browser environment
+  config.resolve.fallback = {
+    ...config.resolve.fallback,
+    stream: 'stream-browserify',
+    buffer: 'buffer',
+    util: 'util',
+    events: 'events',
+    assert: 'assert',
+  }
+
   // Add PostCSS loader for Tailwind CSS
   config.module.rules.push({
     test: /\.css$/,
@@ -27,16 +40,27 @@ module.exports = ({ config }) => {
         loader: 'postcss-loader',
         options: {
           postcssOptions: {
-            plugins: [
-              require('tailwindcss'),
-              require('autoprefixer'),
-            ],
+            plugins: ['tailwindcss', 'autoprefixer'],
           },
         },
       },
     ],
-    include: require.resolve('../src/styles.css'),
-  });
-  
-  return config;
-}; 
+    include: path.resolve(dirname, '../src/styles.css'),
+  })
+
+  // Provide Buffer and process globals
+  config.plugins.push(
+    new webpack.ProvidePlugin({
+      Buffer: ['buffer', 'Buffer'],
+      process: 'process/browser',
+    }),
+  )
+
+  // Add alias to mock problematic modules
+  config.resolve.alias = {
+    ...config.resolve.alias,
+    'stream-fork': path.resolve(dirname, './mocks/stream-fork.js'),
+  }
+
+  return config
+}

@@ -16,7 +16,7 @@ export const getRoots = async (
   api: AutoDriveApiHandler,
   query: ArgsWithPagination<{ scope: Scope }>,
 ): Promise<PaginatedResult<ObjectSummary>> => {
-  const response = await api.sendRequest(
+  const response = await api.sendAPIRequest(
     `/objects/roots?scope=${query.scope}&limit=${query.limit}&offset=${query.offset}`,
     {
       method: 'GET',
@@ -45,7 +45,7 @@ export const getSharedWithMe = async (
   api: AutoDriveApiHandler,
   query: ArgsWithPagination,
 ): Promise<PaginatedResult<ObjectSummary>> => {
-  const response = await api.sendRequest(
+  const response = await api.sendAPIRequest(
     `/objects/roots/shared?limit=${query.limit}&offset=${query.offset}`,
     {
       method: 'GET',
@@ -63,7 +63,7 @@ export const searchByNameOrCID = async (
   api: AutoDriveApiHandler,
   query: ArgsWithoutPagination<{ value: string; scope: Scope }>,
 ): Promise<ObjectSearchResult[]> => {
-  const response = await api.sendRequest(
+  const response = await api.sendAPIRequest(
     `/objects/search?cid=${encodeURIComponent(query.value)}&scope=${query.scope}`,
     {
       method: 'GET',
@@ -92,7 +92,7 @@ export const getDeleted = async (
   api: AutoDriveApiHandler,
   query: ArgsWithPagination,
 ): Promise<PaginatedResult<ObjectSummary>> => {
-  const response = await api.sendRequest(
+  const response = await api.sendAPIRequest(
     `/objects/roots/deleted?limit=${query.limit}&offset=${query.offset}`,
     {
       method: 'GET',
@@ -121,7 +121,7 @@ export const getObject = async (
   api: AutoDriveApiHandler,
   query: ArgsWithoutPagination<{ cid: string }>,
 ): Promise<ObjectInformation> => {
-  const response = await api.sendRequest(`/objects/${query.cid}`, {
+  const response = await api.sendAPIRequest(`/objects/${query.cid}`, {
     method: 'GET',
   })
 
@@ -146,7 +146,7 @@ export const getObjectSummary = async (
   api: AutoDriveApiHandler,
   query: ArgsWithoutPagination<{ cid: string }>,
 ): Promise<ObjectSummary> => {
-  const response = await api.sendRequest(`/objects/${query.cid}/summary`, {
+  const response = await api.sendAPIRequest(`/objects/${query.cid}/summary`, {
     method: 'GET',
   })
 
@@ -173,7 +173,7 @@ export const getObjectUploadStatus = async (
   api: AutoDriveApiHandler,
   query: ArgsWithoutPagination<{ cid: string }>,
 ): Promise<ObjectInformation['uploadStatus']> => {
-  const response = await api.sendRequest(`/objects/${query.cid}/status`, {
+  const response = await api.sendAPIRequest(`/objects/${query.cid}/status`, {
     method: 'GET',
   })
 
@@ -200,7 +200,7 @@ export const getObjectOwners = async (
   api: AutoDriveApiHandler,
   query: ArgsWithoutPagination<{ cid: string }>,
 ): Promise<ObjectInformation['owners']> => {
-  const response = await api.sendRequest(`/objects/${query.cid}/owners`, {
+  const response = await api.sendAPIRequest(`/objects/${query.cid}/owners`, {
     method: 'GET',
   })
 
@@ -227,7 +227,7 @@ export const getObjectMetadata = async (
   api: AutoDriveApiHandler,
   query: ArgsWithoutPagination<{ cid: string }>,
 ): Promise<ObjectInformation['metadata']> => {
-  const response = await api.sendRequest(`/objects/${query.cid}/metadata`, {
+  const response = await api.sendAPIRequest(`/objects/${query.cid}/metadata`, {
     method: 'GET',
   })
 
@@ -246,11 +246,40 @@ export const getObjectMetadata = async (
  * @throws {Error} - Throws an error if the request fails.
  */
 export const getMe = async (api: AutoDriveApiHandler): Promise<UserInfo> => {
-  const response = await api.sendRequest('@me', {
+  const response = await api.sendAPIRequest('@me', {
     method: 'GET',
   })
   if (!response.ok) {
     throw new Error(`Failed to get limits: ${response.statusText}`)
+  }
+
+  return response.json()
+}
+
+/**
+ * Retrieves the list of objects that need to be reviewed.
+ *
+ * This method sends a request to the server to fetch a list of objects
+ * that have been reported and need moderation review.
+ *
+ * @param {AutoDriveApiHandler} api - The API instance used to send requests.
+ * @param {ArgsWithPagination} query - The query parameters including limit and offset for pagination.
+ * @returns {Promise<ObjectSummary[]>} - A promise that resolves to the list of objects to be reviewed.
+ * @throws {Error} - Throws an error if the request fails.
+ */
+export const getToBeReviewedList = async (
+  api: AutoDriveApiHandler,
+  query: ArgsWithPagination,
+): Promise<ObjectSummary[]> => {
+  const response = await api.sendAPIRequest(
+    `/objects/to-be-reviewed/list?limit=${query.limit}&offset=${query.offset}`,
+    {
+      method: 'GET',
+    },
+  )
+
+  if (!response.ok) {
+    throw new Error(`Failed to get to be reviewed list: ${response.statusText}`)
   }
 
   return response.json()

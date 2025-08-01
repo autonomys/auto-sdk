@@ -1,6 +1,6 @@
 {
   "name": "@autonomys/auto-utils",
-  "version": "1.4.30",
+  "version": "1.5.11",
   "license": "MIT",
   "main": "dist/index.js",
   "repository": {
@@ -29,7 +29,7 @@
     "@polkadot/extension-dapp": "^0.58.6"
   },
   "devDependencies": {
-    "@polkadot/extension-inject": "^0.58.6",
+    "@polkadot/extension-inject": "^0.58.9",
     "@polkadot/types": "^15.8.1",
     "@polkadot/types-codec": "^15.8.1",
     "@types/jest": "^29.5.14",

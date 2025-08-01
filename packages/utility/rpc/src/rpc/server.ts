@@ -12,6 +12,7 @@ import {
   RpcHandler,
   RpcHandlerList,
   RpcResponse,
+  RpcServer,
 } from './types'
 import { errorResponse, RpcError, wrapResponse } from './utils'
 
@@ -27,7 +28,7 @@ export const createRpcServer = ({
 }: {
   server: WsServer | Parameters<typeof createWsServer>[0]
   initialHandlers?: RpcHandlerList
-}) => {
+}): RpcServer => {
   const wsServer = isWsServer(server) ? server : createWsServer(server)
   const handlers = initialHandlers ?? []
 

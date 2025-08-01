@@ -1,4 +1,5 @@
 import { ObjectSummary } from './models'
+import { AsyncDownload } from './models/asyncDownloads'
 import { PaginatedResult } from './models/common'
 import { GenericFile, GenericFileWithinFolder } from './models/file'
 import { SubscriptionInfo, UserInfo } from './models/user'
@@ -11,6 +12,14 @@ export interface AutoDriveApi extends AutoDriveApiHandler {
    * @returns {Promise<UserInfo>} A promise that resolves to the user info.
    */
   me: () => Promise<UserInfo>
+
+  /**
+   * Checks if a file is cached.
+   *
+   * @param cid {string} - The CID of the file to check.
+   * @returns {Promise<boolean>} - A promise that resolves to true if the file is cached, false otherwise.
+   */
+  isFileCached: (cid: string) => Promise<boolean>
 
   /**
    * Uploads a file to the server with optional encryption and compression.
@@ -168,14 +177,104 @@ export interface AutoDriveApi extends AutoDriveApiHandler {
    * @returns {Promise<ObjectSummary[]>} - A promise that resolves to the list of files matching the search criteria.
    */
   searchByNameOrCID: (value: string) => Promise<ObjectSummary[]>
+
+  /**
+   * Gets the async downloads for the current user.
+   *
+   * @returns {Promise<AsyncDownload[]>} - A promise that resolves to the list of async downloads.
+   */
+  getAsyncDownloads: () => Promise<AsyncDownload[]>
+
+  /**
+   * Creates an async download for a file.
+   *
+   * @param cid {string} - The CID of the file to create an async download for.
+   * @returns {Promise<AsyncDownload>} - A promise that resolves to the async download.
+   */
+  createAsyncDownload: (cid: string) => Promise<AsyncDownload>
+
+  /**
+   * Gets an async download by ID.
+   *
+   * @param downloadId {string} - The ID of the async download to get.
+   * @returns {Promise<AsyncDownload>} - A promise that resolves to the async download.
+   */
+  getAsyncDownload: (downloadId: string) => Promise<AsyncDownload>
+
+  /**
+   * Dismisses an async download by ID.
+   *
+   * @param downloadId {string} - The ID of the async download to dismiss.
+   * @returns {Promise<void>} - A promise that resolves when the async download is dismissed.
+   */
+  dismissAsyncDownload: (downloadId: string) => Promise<void>
+
+  /**
+   * Reports a file
+   *
+   * @param cid {string} - The CID of the node to get.
+   * @returns {Promise<ArrayBuffer>} - A promise that resolves to the node data.
+   */
+  reportFile: (cid: string) => Promise<void>
+
+  /**
+   * Reports an object by sending a request to the server.
+   *
+   * This function sends a request to the server to report an object identified
+   * by its CID. The report will be reviewed by moderators.
+   *
+   * @param cid {string} - The CID of the object to report.
+   * @returns {Promise<void>} - A promise that resolves when the object has been successfully reported.
+   */
+  reportObject: (cid: string) => Promise<void>
+
+  /**
+   * Bans an object by sending a request to the server.
+   *
+   * This function sends a request to the server to ban an object identified
+   * by its CID. Only authorized users can ban objects.
+   *
+   * @param cid {string} - The CID of the object to ban.
+   * @returns {Promise<void>} - A promise that resolves when the object has been successfully banned.
+   */
+  banObject: (cid: string) => Promise<void>
+
+  /**
+   * Dismisses a report on an object by sending a request to the server.
+   *
+   * This function sends a request to the server to dismiss a report on an object
+   * identified by its CID. Only authorized users can dismiss reports.
+   *
+   * @param cid {string} - The CID of the object whose report should be dismissed.
+   * @returns {Promise<void>} - A promise that resolves when the report has been successfully dismissed.
+   */
+  dismissReport: (cid: string) => Promise<void>
+
+  /**
+   * Gets the list of objects that need to be reviewed.
+   *
+   * This function sends a request to the server to fetch a list of objects
+   * that have been reported and need moderation review.
+   *
+   * @param limit {number} - The maximum number of objects to return (default: 100).
+   * @param offset {number} - The number of objects to skip for pagination (default: 0).
+   * @returns {Promise<ObjectSummary[]>} - A promise that resolves to the list of objects to be reviewed.
+   */
+  getToBeReviewedList: (limit?: number, offset?: number) => Promise<ObjectSummary[]>
 }
 
 export interface AutoDriveApiHandler {
-  sendRequest: (
+  sendAPIRequest: (
     relativeUrl: string,
     request: Partial<Request>,
     body?: BodyInit,
   ) => Promise<Response>
+  sendDownloadRequest: (
+    relativeUrl: string,
+    request: Partial<Request>,
+    body?: BodyInit,
+  ) => Promise<Response>
+  downloadBaseUrl: string
   baseUrl: string
 }
 
@@ -197,12 +296,14 @@ export type ConnectionOptions =
   | {
       provider?: AuthProvider
       apiKey?: string
-      url?: null
+      apiUrl?: null
+      downloadServiceUrl?: null
       network: AutoDriveNetwork
     }
   | {
       provider?: AuthProvider
       apiKey?: string
-      url: string
+      apiUrl: string
+      downloadServiceUrl?: string
       network?: null
     }
