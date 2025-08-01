@@ -15,10 +15,10 @@ export const registerOperatorFunction = async () => {
     'Alice Initial Balance:',
     initialAliceBalance.free.toString(),
     '\x1b[36m',
-    'ATC',
+    'AI3',
     '\x1b[0m',
   )
-  // Transfer 2x10^18 ATC tokens from Alice to Bob
+  // Transfer 2x10^18 AI3 tokens from Alice to Bob
   const amountToStake = BigInt(100 * 10 ** 18)
   const tx = registerOperator({
     api,
@@ -42,7 +42,7 @@ export const registerOperatorFunction = async () => {
     'Alice Final Balance:',
     finalAliceBalance.free.toString(),
     '\x1b[36m',
-    'ATC',
+    'AI3',
     '\x1b[0m',
   )
 }

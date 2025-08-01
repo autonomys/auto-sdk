@@ -10,6 +10,7 @@ import { progressToPercentage } from '../utils/misc'
 import { publicDownloadUrl } from './calls/download'
 import { apiCalls } from './calls/index'
 import { ObjectSummary, Scope } from './models'
+import { DownloadStatus } from './models/asyncDownloads'
 import { PaginatedResult } from './models/common'
 import { GenericFile, GenericFileWithinFolder } from './models/file'
 import { constructFromInput, constructZipBlobFromTreeAndPaths } from './models/folderTree'
@@ -360,7 +361,21 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
     getMyFiles,
     searchByNameOrCIDInMyFiles,
     searchByNameOrCID,
-    sendRequest: api.sendRequest,
+    sendAPIRequest: api.sendAPIRequest,
+    sendDownloadRequest: api.sendDownloadRequest,
+    getAsyncDownloads: () => apiCalls.getAsyncDownloads(api),
+    createAsyncDownload: (cid: string) => apiCalls.createAsyncDownload(api, cid),
+    getAsyncDownload: (downloadId: string) => apiCalls.getAsyncDownload(api, downloadId),
+    dismissAsyncDownload: (downloadId: string) => apiCalls.dismissAsyncDownload(api, downloadId),
+    isFileCached: (cid: string) =>
+      apiCalls.downloadStatus(api, cid).then((e) => e.status === DownloadStatus.Cached),
+    reportFile: (cid: string) => apiCalls.reportObject(api, { cid }),
+    reportObject: (cid: string) => apiCalls.reportObject(api, { cid }),
+    banObject: (cid: string) => apiCalls.banObject(api, { cid }),
+    dismissReport: (cid: string) => apiCalls.dismissReport(api, { cid }),
+    getToBeReviewedList: (limit: number = 100, offset: number = 0) =>
+      apiCalls.getToBeReviewedList(api, { limit, offset }),
     baseUrl: api.baseUrl,
+    downloadBaseUrl: api.downloadBaseUrl,
   }
 }

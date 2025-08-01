@@ -90,8 +90,8 @@ import { transfer } from '@autonomys/auto-consensus'
   })
   const receiver = receiverWallet.accounts[0]
 
-  // Transfer 1 ATC from sender to receiver
-  const amount = 1 // Amount in ATC
+  // Transfer 1 AI3 from sender to receiver
+  const amount = 1 // Amount in AI3
   const transferTx = await transfer(senderWallet.api, receiver.address, amount)
 
   // Sign and send the transaction
