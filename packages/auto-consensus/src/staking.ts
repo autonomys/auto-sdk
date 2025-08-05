@@ -40,7 +40,7 @@ import {
  * import { operators } from '@autonomys/auto-consensus'
  * import { activate } from '@autonomys/auto-utils'
  *
- * const api = await activate({ networkId: 'gemini-3h' })
+ * const api = await activate({ networkId: 'mainnet' })
  * const allOperators = await operators(api)
  *
  * allOperators.forEach(op => {
@@ -75,7 +75,7 @@ export const operators = async (api: Api) => {
  * import { operator } from '@autonomys/auto-consensus'
  * import { activate } from '@autonomys/auto-utils'
  *
- * const api = await activate({ networkId: 'gemini-3h' })
+ * const api = await activate({ networkId: 'mainnet' })
  * const operatorInfo = await operator(api, '1')
  *
  * console.log(`Domain: ${operatorInfo.currentDomainId}`)
@@ -111,7 +111,7 @@ export const operator = async (api: Api, operatorId: StringNumberOrBigInt) => {
  * import { deposits } from '@autonomys/auto-consensus'
  * import { activate } from '@autonomys/auto-utils'
  *
- * const api = await activate({ networkId: 'gemini-3h' })
+ * const api = await activate({ networkId: 'mainnet' })
  *
  * // Get all deposits for operator
  * const allDeposits = await deposits(api, '1')
@@ -163,7 +163,7 @@ export const deposits = async (
  * import { withdrawals } from '@autonomys/auto-consensus'
  * import { activate } from '@autonomys/auto-utils'
  *
- * const api = await activate({ networkId: 'gemini-3h' })
+ * const api = await activate({ networkId: 'mainnet' })
  *
  * // Get all withdrawals for operator
  * const allWithdrawals = await withdrawals(api, '1')
@@ -223,8 +223,8 @@ export const withdrawals = async (
  * import { registerOperator } from '@autonomys/auto-consensus'
  * import { activate, activateWallet, signAndSendTx } from '@autonomys/auto-utils'
  *
- * const api = await activate({ networkId: 'gemini-3h' })
- * const { accounts } = await activateWallet({ networkId: 'gemini-3h', mnemonic })
+ * const api = await activate({ networkId: 'mainnet' })
+ * const { accounts } = await activateWallet({ networkId: 'mainnet', mnemonic })
  *
  * const registerTx = registerOperator({
  *   api,
@@ -278,7 +278,7 @@ export const registerOperator = (params: RegisterOperatorParams) => {
  * import { nominateOperator } from '@autonomys/auto-consensus'
  * import { activate, signAndSendTx } from '@autonomys/auto-utils'
  *
- * const api = await activate({ networkId: 'gemini-3h' })
+ * const api = await activate({ networkId: 'mainnet' })
  *
  * const nominateTx = nominateOperator({
  *   api,
@@ -322,7 +322,7 @@ export const nominateOperator = (params: NominateOperatorParams) => {
  * import { withdrawStake } from '@autonomys/auto-consensus'
  * import { activate, signAndSendTx } from '@autonomys/auto-utils'
  *
- * const api = await activate({ networkId: 'gemini-3h' })
+ * const api = await activate({ networkId: 'mainnet' })
  *
  * // Withdraw all stake
  * const withdrawAllTx = withdrawStake({ api, operatorId: '1', all: true })
@@ -379,7 +379,7 @@ export const withdrawStake = (params: WithdrawStakeParams) => {
  * import { deregisterOperator } from '@autonomys/auto-consensus'
  * import { activate, signAndSendTx } from '@autonomys/auto-utils'
  *
- * const api = await activate({ networkId: 'gemini-3h' })
+ * const api = await activate({ networkId: 'mainnet' })
  *
  * const deregisterTx = deregisterOperator({
  *   api,
@@ -418,7 +418,7 @@ export const deregisterOperator = (params: StakingParams) => {
  * import { unlockFunds } from '@autonomys/auto-consensus'
  * import { activate, signAndSendTx } from '@autonomys/auto-utils'
  *
- * const api = await activate({ networkId: 'gemini-3h' })
+ * const api = await activate({ networkId: 'mainnet' })
  *
  * const unlockTx = unlockFunds({
  *   api,
@@ -458,7 +458,7 @@ export const unlockFunds = (params: StakingParams) => {
  * import { unlockNominator } from '@autonomys/auto-consensus'
  * import { activate, signAndSendTx } from '@autonomys/auto-utils'
  *
- * const api = await activate({ networkId: 'gemini-3h' })
+ * const api = await activate({ networkId: 'mainnet' })
  *
  * const unlockNominatorTx = unlockNominator({
  *   api,

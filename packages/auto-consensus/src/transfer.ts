@@ -22,7 +22,7 @@ export type Amount = bigint | number | string
  * import { transfer } from '@autonomys/auto-consensus'
  * import { activate, signAndSendTx } from '@autonomys/auto-utils'
  *
- * const api = await activate({ networkId: 'gemini-3h' })
+ * const api = await activate({ networkId: 'mainnet' })
  *
  * // Transfer 1 AI3 (keeping account alive)
  * const keepAliveTx = transfer(api, 'recipient_address', '1000000000000000000')
@@ -63,7 +63,7 @@ export const transfer = (
  * import { transferAll } from '@autonomys/auto-consensus'
  * import { activate, signAndSendTx } from '@autonomys/auto-utils'
  *
- * const api = await activate({ networkId: 'gemini-3h' })
+ * const api = await activate({ networkId: 'mainnet' })
  *
  * // Transfer all tokens and close account
  * const transferAllTx = transferAll(api, 'recipient_address', false)

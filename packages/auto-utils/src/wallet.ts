@@ -21,40 +21,40 @@ import type {
 
 /**
  * Sets up a wallet from a mnemonic phrase or derivation URI.
- * 
+ *
  * This function creates a KeyringPair from either a mnemonic phrase or a derivation
  * URI (like //Alice for development). It supports different key types including
  * sr25519 (default) and ethereum for cross-chain compatibility.
- * 
+ *
  * @param params - Wallet setup parameters containing either mnemonic or URI, plus optional key type.
  * @returns A Wallet object containing the KeyringPair and standardized addresses.
- * 
+ *
  * @example
  * import { setupWallet } from '@autonomys/auto-utils'
- * 
+ *
  * // Setup wallet from mnemonic (sr25519 default)
  * const wallet = setupWallet({
  *   mnemonic: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
  * })
  * console.log(wallet.address) // Standardized Autonomys address
  * console.log(wallet.commonAddress) // Original address format
- * 
+ *
  * // Setup wallet with ethereum key type
  * const ethWallet = setupWallet({
  *   mnemonic: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about',
  *   type: 'ethereum'
  * })
  * console.log(ethWallet.address) // Ethereum-format address (0x...)
- * 
+ *
  * // Setup development wallet from URI
  * const aliceWallet = setupWallet({ uri: '//Alice' })
  * console.log(aliceWallet.address) // Alice's development address
- * 
+ *
  * // Setup with custom derivation path
  * const customWallet = setupWallet({
  *   uri: '//Alice/stash'
  * })
- * 
+ *
  * @throws {Error} When neither mnemonic nor URI is provided, or when the input is invalid.
  */
 export const setupWallet = (params: SetupWalletParams): Wallet => {
@@ -79,28 +79,28 @@ export const setupWallet = (params: SetupWalletParams): Wallet => {
 
 /**
  * Generates a new wallet with a random mnemonic phrase.
- * 
+ *
  * This function creates a brand new wallet by generating a cryptographically secure
  * mnemonic phrase and deriving the corresponding KeyringPair. It's useful for creating
  * new user accounts or generating test wallets.
- * 
+ *
  * @param type - The cryptographic key type to use. Defaults to 'sr25519'.
  * @returns A GeneratedWallet object containing the mnemonic, KeyringPair, and addresses.
- * 
+ *
  * @example
  * import { generateWallet } from '@autonomys/auto-utils'
- * 
+ *
  * // Generate new sr25519 wallet (default)
  * const newWallet = generateWallet()
  * console.log(newWallet.mnemonic) // 12-word mnemonic phrase
  * console.log(newWallet.address) // Standardized Autonomys address
  * console.log(newWallet.commonAddress) // Original address format
- * 
+ *
  * // Generate ethereum-compatible wallet
  * const ethWallet = generateWallet('ethereum')
  * console.log(ethWallet.mnemonic) // Same 12-word mnemonic
  * console.log(ethWallet.address) // Ethereum-format address (0x...)
- * 
+ *
  * // Store the mnemonic securely for later use
  * const mnemonic = newWallet.mnemonic
  * // Use setupWallet later to recreate the same wallet
@@ -121,55 +121,55 @@ export const generateWallet = (type: KeypairType = 'sr25519'): GeneratedWallet =
 
 /**
  * Activates a wallet and establishes connection to the Autonomys Network or domain.
- * 
+ *
  * This comprehensive function handles wallet activation in both Node.js and browser
  * environments. It can work with mnemonic phrases, URIs, or browser extensions,
  * and automatically establishes the appropriate API connection.
- * 
+ *
  * @param params - Wallet activation parameters including credentials, network, and options.
  * @returns A WalletActivated object containing the API connection and account information.
- * 
+ *
  * @example
  * import { activateWallet } from '@autonomys/auto-utils'
- * 
+ *
  * // Activate wallet with mnemonic on mainnet
  * const { api, accounts } = await activateWallet({
  *   mnemonic: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
  * })
  * console.log('Connected to mainnet')
  * console.log('Account address:', accounts[0].address)
- * 
+ *
  * // Activate on specific network
  * const { api: taurusApi, accounts: taurusAccounts } = await activateWallet({
  *   mnemonic: 'your mnemonic here',
  *   networkId: 'taurus'
  * })
- * 
+ *
  * // Activate on domain
  * const { api: domainApi, accounts: domainAccounts } = await activateWallet({
  *   uri: '//Alice',
  *   networkId: 'taurus',
  *   domainId: '0' // Auto-EVM domain
  * })
- * 
+ *
  * // Activate with ethereum key type
  * const { api: ethApi, accounts: ethAccounts } = await activateWallet({
  *   mnemonic: 'your mnemonic here',
  *   networkId: 'taurus',
  *   type: 'ethereum'
  * })
- * 
+ *
  * // Use with existing API instance
  * import { activate } from '@autonomys/auto-utils'
- * const existingApi = await activate({ networkId: 'gemini-3h' })
+ * const existingApi = await activate({ networkId: 'mainnet' })
  * const { accounts } = await activateWallet({
  *   uri: '//Bob',
  *   api: existingApi
  * })
- * 
+ *
  * // Always disconnect when done
  * await api.disconnect()
- * 
+ *
  * @throws {Error} When no wallet credentials are provided or connection fails.
  */
 export const activateWallet = async (params: ActivateWalletParams): Promise<WalletActivated> => {
@@ -211,45 +211,45 @@ export const activateWallet = async (params: ActivateWalletParams): Promise<Wall
 
 /**
  * Creates a collection of mock wallets for testing and development purposes.
- * 
+ *
  * This function generates wallets for all predefined development accounts
  * (Alice, Bob, Charlie, Dave, etc.) and establishes connections to the specified
  * network. It's essential for testing applications and running development scenarios.
- * 
+ *
  * @param network - Network parameters specifying which network to connect to. Defaults to mainnet.
  * @param api - Optional existing API instance to reuse. If not provided, creates new connections.
  * @param type - The cryptographic key type to use for all mock wallets. Defaults to 'sr25519'.
  * @returns Promise resolving to an array of WalletActivated objects for all mock accounts.
- * 
+ *
  * @example
  * import { mockWallets, activate } from '@autonomys/auto-utils'
- * 
+ *
  * // Create mock wallets for mainnet
  * const wallets = await mockWallets()
  * console.log('Created', wallets.length, 'mock wallets')
- * 
+ *
  * // Create mock wallets for testnet
  * const testWallets = await mockWallets({ networkId: 'taurus' })
- * 
+ *
  * // Create mock wallets with existing API
  * const api = await activate({ networkId: 'localhost' })
  * const localWallets = await mockWallets({ networkId: 'localhost' }, api)
- * 
+ *
  * // Create ethereum-type mock wallets
  * const ethWallets = await mockWallets(
  *   { networkId: 'taurus' },
  *   undefined,
  *   'ethereum'
  * )
- * 
+ *
  * // Use specific mock wallet
  * const aliceWallet = wallets[0] // Alice is always first
  * const bobWallet = wallets[1]   // Bob is always second
- * 
+ *
  * // Access wallet details
  * console.log('Alice address:', aliceWallet.accounts[0].address)
  * console.log('Bob address:', bobWallet.accounts[0].address)
- * 
+ *
  * // Disconnect all APIs when done
  * for (const wallet of wallets) {
  *   await wallet.api.disconnect()
@@ -276,39 +276,39 @@ export const mockWallets = async (
 
 /**
  * Retrieves a specific mock wallet by name from a collection of mock wallets.
- * 
+ *
  * This utility function provides easy access to specific development accounts
  * by name, making test code more readable and maintainable. It works with the
  * standard set of development account names.
- * 
+ *
  * @param name - The name of the mock wallet to retrieve (e.g., 'Alice', 'Bob').
  * @param wallets - Array of WalletActivated objects from mockWallets().
  * @returns The WalletActivated object for the specified mock account.
- * 
+ *
  * @example
  * import { mockWallets, getMockWallet } from '@autonomys/auto-utils'
- * 
+ *
  * // Create mock wallets and get specific ones
  * const wallets = await mockWallets({ networkId: 'localhost' })
- * 
+ *
  * const alice = getMockWallet('Alice', wallets)
  * const bob = getMockWallet('Bob', wallets)
  * const charlie = getMockWallet('Charlie', wallets)
- * 
+ *
  * console.log('Alice address:', alice.accounts[0].address)
  * console.log('Bob address:', bob.accounts[0].address)
  * console.log('Charlie address:', charlie.accounts[0].address)
- * 
+ *
  * // Use in tests
  * const sender = getMockWallet('Alice', wallets)
  * const receiver = getMockWallet('Bob', wallets)
- * 
+ *
  * // Perform transfer from Alice to Bob
  * // ... transfer logic here ...
- * 
+ *
  * // Available mock wallet names:
  * // 'Alice', 'Bob', 'Charlie', 'Dave', 'Eve', 'Frank', 'Grace', 'Harry', 'Ivy', 'Jacob'
- * 
+ *
  * @throws {Error} When the specified name is not found in the available mock wallets.
  */
 export const getMockWallet = (name: string, wallets: WalletActivated[]): WalletActivated =>

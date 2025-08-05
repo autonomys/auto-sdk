@@ -16,7 +16,7 @@
  * import { shareToStake, instantSharePrice } from '@autonomys/auto-consensus'
  * import { activate } from '@autonomys/auto-utils'
  *
- * const api = await activate({ networkId: 'gemini-3h' })
+ * const api = await activate({ networkId: 'mainnet' })
  *
  * // Get current share price
  * const sharePrice = await instantSharePrice(api, '1')
@@ -50,7 +50,7 @@ export const shareToStake = (shares: bigint, price: bigint): bigint => {
  * import { stakeToShare, instantSharePrice } from '@autonomys/auto-consensus'
  * import { activate } from '@autonomys/auto-utils'
  *
- * const api = await activate({ networkId: 'gemini-3h' })
+ * const api = await activate({ networkId: 'mainnet' })
  *
  * // Get current share price
  * const sharePrice = await instantSharePrice(api, '1')

@@ -20,7 +20,7 @@ import { parseDomain } from './utils/parse'
  * import { domains } from '@autonomys/auto-consensus'
  * import { activate } from '@autonomys/auto-utils'
  *
- * const api = await activate({ networkId: 'gemini-3h' })
+ * const api = await activate({ networkId: 'mainnet' })
  * const domainList = await domains(api)
  *
  * domainList.forEach(domain => {
@@ -69,7 +69,7 @@ export async function domainStakingSummary(
  * import { domainStakingSummary } from '@autonomys/auto-consensus'
  * import { activate } from '@autonomys/auto-utils'
  *
- * const api = await activate({ networkId: 'gemini-3h' })
+ * const api = await activate({ networkId: 'mainnet' })
  *
  * // Get all domain staking summaries
  * const allSummaries = await domainStakingSummary(api)
@@ -134,7 +134,7 @@ export async function domainStakingSummary(
  * import { latestConfirmedDomainBlock } from '@autonomys/auto-consensus'
  * import { activate } from '@autonomys/auto-utils'
  *
- * const api = await activate({ networkId: 'gemini-3h' })
+ * const api = await activate({ networkId: 'mainnet' })
  * const confirmedBlocks = await latestConfirmedDomainBlock(api)
  *
  * confirmedBlocks.forEach(block => {
@@ -175,7 +175,7 @@ export const latestConfirmedDomainBlock = async (api: Api): Promise<ConfirmedDom
  * import { headDomainNumber } from '@autonomys/auto-consensus'
  * import { activate } from '@autonomys/auto-utils'
  *
- * const api = await activate({ networkId: 'gemini-3h' })
+ * const api = await activate({ networkId: 'mainnet' })
  * const headNumber = await headDomainNumber(api, '0')
  *
  * if (headNumber !== undefined) {

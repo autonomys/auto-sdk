@@ -7,7 +7,6 @@ import { DEFAULT_TOKEN, TESTNET_TOKEN } from './token'
 export enum NetworkId {
   MAINNET = 'mainnet',
   TAURUS = 'taurus',
-  GEMINI_3H = 'gemini-3h',
   DEVNET = 'devnet',
   LOCALHOST = 'localhost',
 }
@@ -15,7 +14,6 @@ export enum NetworkId {
 export enum NetworkName {
   MAINNET = 'Mainnet',
   TAURUS = 'Testnet - Taurus',
-  GEMINI_3H = 'Testnet - Gemini 3H',
   DEVNET = 'Devnet',
   LOCALHOST = 'Localhost',
 }
@@ -49,7 +47,13 @@ export const networks: Network[] = [
         url: SUBSCAN_EXPLORER,
       },
     ],
-    domains: [],
+    domains: [
+      {
+        domainId: '0',
+        ...domains[DomainRuntime.AUTO_EVM],
+        rpcUrls: ['wss://auto-evm.mainnet.autonomys.xyz/ws'],
+      },
+    ],
     token: DEFAULT_TOKEN,
   },
   {
@@ -79,31 +83,6 @@ export const networks: Network[] = [
           'wss://auto-evm-0.taurus.subspace.network/ws',
           'wss://auto-evm-1.taurus.subspace.network/ws',
         ],
-      },
-    ],
-    token: TESTNET_TOKEN,
-    isTestnet: true,
-  },
-  {
-    id: NetworkId.GEMINI_3H,
-    name: NetworkName.GEMINI_3H,
-    rpcUrls: ['wss://rpc-0.gemini-3h.subspace.network/ws'],
-    explorer: [
-      {
-        name: NetworkExplorerName.ASTRAL,
-        url: ASTRAL_EXPLORER + 'gemini-3h/consensus/',
-      },
-    ],
-    domains: [
-      {
-        domainId: '0',
-        ...domains[DomainRuntime.AUTO_EVM],
-        rpcUrls: ['wss://nova-0.gemini-3h.subspace.network/ws'],
-      },
-      {
-        domainId: '1',
-        ...domains[DomainRuntime.AUTO_ID],
-        rpcUrls: ['wss://autoid-0.gemini-3h.subspace.network/ws'],
       },
     ],
     token: TESTNET_TOKEN,
