@@ -49,7 +49,13 @@ export const networks: Network[] = [
         url: SUBSCAN_EXPLORER,
       },
     ],
-    domains: [],
+    domains: [
+      {
+        domainId: '0',
+        ...domains[DomainRuntime.AUTO_EVM],
+        rpcUrls: ['wss://auto-evm.mainnet.autonomys.xyz/ws'],
+      },
+    ],
     token: DEFAULT_TOKEN,
   },
   {
