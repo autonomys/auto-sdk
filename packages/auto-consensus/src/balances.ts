@@ -52,7 +52,7 @@ export const totalIssuance = async (networkId?: string) => {
  * import { balance } from '@autonomys/auto-consensus'
  * import { activate } from '@autonomys/auto-utils'
  *
- * const api = await activate({ networkId: 'gemini-3h' })
+ * const api = await activate({ networkId: 'mainnet' })
  * const balanceData = await balance(api, '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY')
  *
  * console.log(`Free Balance: ${balanceData.free}`)

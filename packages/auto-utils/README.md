@@ -70,7 +70,7 @@ import { activateWallet } from '@autonomys/auto-utils'
   // Activate the wallet
   const { api, accounts } = await activateWallet({
     mnemonic,
-    networkId: 'gemini-3h', // Optional: specify the network ID
+    networkId: 'mainnet', // Optional: specify the network ID
   })
 
   const account = accounts[0]
@@ -121,7 +121,7 @@ Create mock wallets for testing purposes:
 ```typescript
 import { activate, mockWallets, getMockWallet } from '@autonomys/auto-utils'
 ;(async () => {
-  const api = await activate({ networkId: 'gemini-3h' })
+  const api = await activate({ networkId: 'mainnet' })
 
   const wallets = await mockWallets({}, api)
   const aliceWallet = getMockWallet('Alice', wallets)
@@ -158,7 +158,7 @@ Retrieve details of a specific network:
 ```typescript
 import { getNetworkDetails } from '@autonomys/auto-utils'
 
-const network = getNetworkDetails({ networkId: 'gemini-3h' })
+const network = getNetworkDetails({ networkId: 'mainnet' })
 console.log(`Network Name: ${network.name}`)
 console.log(`RPC URLs: ${network.rpcUrls.join(', ')}`)
 ```
@@ -170,7 +170,7 @@ Retrieve details of a specific domain within a network:
 ```typescript
 import { getNetworkDomainDetails } from '@autonomys/auto-utils'
 
-const domain = getNetworkDomainDetails({ domainId: '1', networkId: 'gemini-3h' })
+const domain = getNetworkDomainDetails({ domainId: '0', networkId: 'mainnet' })
 console.log(`Domain Name: ${domain.name}`)
 console.log(`RPC URLs: ${domain.rpcUrls.join(', ')}`)
 ```
@@ -232,7 +232,7 @@ Connect to the Autonomys Network:
 ```typescript
 import { activate } from '@autonomys/auto-utils'
 ;(async () => {
-  const api = await activate({ networkId: 'gemini-3h' })
+  const api = await activate({ networkId: 'mainnet' })
 
   console.log('API connected')
 
@@ -250,7 +250,7 @@ Connect to a specific domain within the network:
 ```typescript
 import { activateDomain } from '@autonomys/auto-utils'
 ;(async () => {
-  const api = await activateDomain({ domainId: '1', networkId: 'gemini-3h' })
+  const api = await activateDomain({ domainId: '0', networkId: 'mainnet' })
 
   console.log('Domain API connected')
 

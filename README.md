@@ -56,7 +56,7 @@ import { balance } from '@autonomys/auto-consensus'
   // Activate a wallet using a mnemonic phrase
   const { api, accounts } = await activateWallet({
     mnemonic: 'your mnemonic phrase here', // Replace with your mnemonic
-    networkId: 'gemini-3h', // Optional: specify the network ID
+    networkId: 'mainnet', // Optional: specify the network ID
   })
 
   const account = accounts[0]
