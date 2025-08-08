@@ -2,8 +2,8 @@ import { createCache } from 'cache-manager'
 import fs from 'fs'
 import fsPromises from 'fs/promises'
 import path from 'path'
+import { writeFile } from '../utils'
 import { BaseCacheConfig, FileCacheOptions, FileResponse } from './models'
-import { writeFile } from './utils'
 
 const CHARS_PER_PARTITION = 2
 
