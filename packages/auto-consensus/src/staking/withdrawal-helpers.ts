@@ -1,8 +1,8 @@
 import type { ApiPromise } from '@autonomys/auto-utils'
 import { nominatorPosition } from '../position'
-import { withdrawStake } from './staking'
 import type { StringNumberOrBigInt } from '../types/staking'
 import { parseString } from '../utils/parse'
+import { withdrawStake } from './staking'
 
 /**
  * Parameters to withdraw all stake for an account on an operator.
@@ -106,15 +106,22 @@ export const withdrawStakeByPercent = async (params: WithdrawStakeByPercentParam
 }
 
 /**
- * Creates a submittable extrinsic to withdraw a target value (in balance units) from the current stake.
+ * Creates a submittable extrinsic to withdraw a target value (in balance units) from the current position.
  *
- * Share calculation (using floor):
- * shares = floor(min(requestedAmount, currentStakedValue) * totalShares / currentStakedValue)
+ * Storage-inclusive value: This helper uses total payout value = current staked value + current storage fee refund value.
+ * The storage fee refund component is valued at the current bundle storage fund redeem price and varies with time.
+ *
+ * Share calculation (using floor, "at most at snapshot"):
+ *   totalPayoutValue = currentStakedValue + storageFeeDeposit.currentValue
+ *   shares = floor(min(requestedAmount, totalPayoutValue) * totalShares / totalPayoutValue)
+ *
+ * Notes:
+ * - The number of shares is fixed in the extrinsic; actual received tokens may exceed the requested amount if prices rise between calculation and inclusion.
  *
  * Edge cases:
  * - Throws if amountToWithdraw <= 0
- * - Caps requested amount to currentStakedValue
- * - Throws if currentStakedValue is zero
+ * - Caps requested amount to totalPayoutValue
+ * - Throws if totalPayoutValue is zero
  * - Throws if computed shares is zero
  * - Throws if the nominator has no shares
  *
@@ -128,19 +135,22 @@ export const withdrawStakeByValue = async (params: WithdrawStakeByValueParams) =
   if (requestedAmount <= BigInt(0)) throw new Error('amountToWithdraw must be greater than zero')
 
   const position = await nominatorPosition(api, operatorId, account)
-  const { totalShares, currentStakedValue } = position
+  const { totalShares, currentStakedValue, storageFeeDeposit } = position
 
   if (totalShares === BigInt(0)) throw new Error('No shares to withdraw for the given account')
-  if (currentStakedValue === BigInt(0))
-    throw new Error('Current staked value is zero; cannot compute shares')
 
-  const effectiveAmount =
-    requestedAmount > currentStakedValue ? currentStakedValue : requestedAmount
+  const totalPayoutValue = currentStakedValue + storageFeeDeposit.currentValue
+  if (totalPayoutValue === BigInt(0))
+    throw new Error('No redeemable value to withdraw; cannot compute shares')
 
-  const shares = (effectiveAmount * totalShares) / currentStakedValue
+  const effectiveAmount = requestedAmount > totalPayoutValue ? totalPayoutValue : requestedAmount
+
+  const shares = (effectiveAmount * totalShares) / totalPayoutValue
 
   if (shares === BigInt(0))
-    throw new Error('Computed zero shares to withdraw; requested amount too small for current price')
+    throw new Error(
+      'Computed zero shares to withdraw; requested amount too small for current price',
+    )
 
   return withdrawStake({ api, operatorId, shares })
 }

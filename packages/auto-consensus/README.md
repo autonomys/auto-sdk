@@ -198,7 +198,6 @@ import {
   events,
 } from '@autonomys/auto-consensus'
 import { activate, activateWallet, signAndSendTx } from '@autonomys/auto-utils'
-
 ;(async () => {
   const api = await activate({ networkId: 'your_network_id' })
   const { accounts } = await activateWallet({ networkId: 'your_network_id', mnemonic: '...' })
@@ -215,6 +214,10 @@ import { activate, activateWallet, signAndSendTx } from '@autonomys/auto-utils'
   await signAndSendTx(sender, txPct, [events.withdrawStake])
 
   // Withdraw by target value (amount in smallest units)
+  // Note: Value is storage-inclusive. Estimated receive uses
+  // totalPayoutValue = currentStakedValue + storageFeeDeposit.currentValue.
+  // Shares are computed at snapshot; if price rises before inclusion,
+  // actual received may exceed the requested amount.
   const txVal = await withdrawStakeByValue({
     api,
     operatorId,
