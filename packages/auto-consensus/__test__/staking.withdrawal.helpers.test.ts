@@ -1,10 +1,10 @@
 import { ApiPromise } from '@autonomys/auto-utils'
-import { withdrawStake } from '../src/staking'
+import { withdrawStake } from '../src/staking/staking'
 import {
   withdrawStakeAll,
   withdrawStakeByPercent,
   withdrawStakeByValue,
-} from '../src/staking.withdrawal.helpers'
+} from '../src/staking/withdrawal-helpers'
 
 jest.mock('../src/position', () => ({
   nominatorPosition: jest.fn(),
