@@ -136,10 +136,7 @@ export type StakingParams = {
 }
 
 export interface WithdrawStakeParams extends StakingParams {
-  all?: boolean
-  percent?: string | number
-  stake?: StringNumberOrBigInt
-  shares?: StringNumberOrBigInt
+  shares: StringNumberOrBigInt
 }
 
 export interface NominateOperatorParams extends StakingParams {
