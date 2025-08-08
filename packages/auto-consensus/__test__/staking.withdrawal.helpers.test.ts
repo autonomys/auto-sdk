@@ -10,7 +10,7 @@ jest.mock('../src/position', () => ({
   nominatorPosition: jest.fn(),
 }))
 
-jest.mock('../src/staking', () => ({
+jest.mock('../src/staking/staking', () => ({
   withdrawStake: jest.fn(() => ({ hash: { toHex: () => '0xdeadbeef' } })),
 }))
 
