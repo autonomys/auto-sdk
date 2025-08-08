@@ -1,14 +1,6 @@
 // file: src/staking.ts
 
-import {
-  Api,
-  Codec,
-  createWithdrawStakeAll,
-  createWithdrawStakeByPercent,
-  createWithdrawStakeByShares,
-  createWithdrawStakeByStake,
-  signingKey as signingKeyFn,
-} from '@autonomys/auto-utils'
+import { Api, signingKey as signingKeyFn } from '@autonomys/auto-utils'
 import type {
   NominateOperatorParams,
   RegisterOperatorParams,
@@ -304,16 +296,13 @@ export const nominateOperator = (params: NominateOperatorParams) => {
  * Creates a transaction to withdraw stake from an operator.
  *
  * This function creates a transaction to withdraw staked tokens from an operator.
- * Supports different withdrawal modes: all stake, by percentage, by specific amount,
- * or by number of shares. Withdrawn stake enters a withdrawal period before being available.
+ * As per the latest protocol, withdrawals are specified strictly in shares.
+ * Withdrawn stake enters a withdrawal period before being available.
  *
  * @param params - WithdrawStakeParams containing withdrawal parameters
  * @param params.api - The connected API promise instance
  * @param params.operatorId - The ID of the operator to withdraw stake from
- * @param params.all - Optional: withdraw all stake (boolean)
- * @param params.percent - Optional: withdraw by percentage (string/number)
- * @param params.stake - Optional: withdraw specific stake amount
- * @param params.shares - Optional: withdraw specific number of shares
+ * @param params.shares - Number of shares to withdraw (string/number/bigint)
  * @returns A submittable stake withdrawal transaction
  * @throws Error if no withdrawal method specified or transaction creation fails
  *
@@ -342,19 +331,11 @@ export const nominateOperator = (params: NominateOperatorParams) => {
  */
 export const withdrawStake = (params: WithdrawStakeParams) => {
   try {
-    const { api, operatorId } = params
-    let param2: Codec | null = null
-    if (params.all) param2 = createWithdrawStakeAll(api)
-    else if (params.percent) param2 = createWithdrawStakeByPercent(api, parseString(params.percent))
-    else if (params.stake) param2 = createWithdrawStakeByStake(api, parseString(params.stake))
-    else if (params.shares) param2 = createWithdrawStakeByShares(api, parseString(params.shares))
+    const { api, operatorId, shares } = params
+    if (shares === undefined || shares === null)
+      throw new Error('Provide shares(string/number/bigint) to withdraw stake')
 
-    if (param2 === null)
-      throw new Error(
-        'Provide all(boolean), percent(string/number/bigint), stake(string/number/bigint) or shared(string/number/bigint) to withdraw stake',
-      )
-
-    return api.tx.domains.withdrawStake(parseString(operatorId), param2)
+    return api.tx.domains.withdrawStake(parseString(operatorId), parseString(shares))
   } catch (error) {
     console.error('error', error)
     throw new Error('Error creating withdraw stake tx.' + error)
