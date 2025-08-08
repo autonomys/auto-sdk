@@ -22,7 +22,7 @@ The **Autonomys Auto Consensus SDK** (`@autonomys/auto-consensus`) offers a suit
 - **Account Management**: Access detailed account information, including nonce and balance data.
 - **Balance Operations**: Retrieve account balances and the total issuance of tokens in the network.
 - **Token Transfers**: Transfer tokens securely between addresses.
-- **Staking Functionality**: Register operators, nominate operators, and manage staking operations.
+- **Staking Functionality**: Register operators, nominate operators, manage staking operations, and withdraw by all/percent/value via helpers.
 - **Blockchain Information Access**: Fetch current block numbers, block hashes, and network timestamps.
 - **Domain Interactions**: Access domain registry information and staking summaries.
 - **TypeScript Support**: Fully typed for enhanced developer experience.
@@ -187,6 +187,43 @@ import { activate, activateWallet, signAndSendTx, disconnect } from '@autonomys/
 - A SubmittableExtrinsic transaction object.
 
 ### 4. Staking Operations
+
+#### Withdraw Stake Helpers (all / percent / value)
+
+```typescript
+import {
+  withdrawStakeAll,
+  withdrawStakeByPercent,
+  withdrawStakeByValue,
+  events,
+} from '@autonomys/auto-consensus'
+import { activate, activateWallet, signAndSendTx } from '@autonomys/auto-utils'
+
+;(async () => {
+  const api = await activate({ networkId: 'your_network_id' })
+  const { accounts } = await activateWallet({ networkId: 'your_network_id', mnemonic: '...' })
+  const sender = accounts[0]
+  const operatorId = '1'
+  const account = sender.address
+
+  // Withdraw all
+  const txAll = await withdrawStakeAll({ api, operatorId, account })
+  await signAndSendTx(sender, txAll, [events.withdrawStake])
+
+  // Withdraw by percent (e.g., 25%)
+  const txPct = await withdrawStakeByPercent({ api, operatorId, account, percent: 25 })
+  await signAndSendTx(sender, txPct, [events.withdrawStake])
+
+  // Withdraw by target value (amount in smallest units)
+  const txVal = await withdrawStakeByValue({
+    api,
+    operatorId,
+    account,
+    amountToWithdraw: '500000000000000000',
+  })
+  await signAndSendTx(sender, txVal, [events.withdrawStake])
+})()
+```
 
 #### **Register an Operator**
 
