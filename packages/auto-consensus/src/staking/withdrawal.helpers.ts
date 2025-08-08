@@ -1,6 +1,6 @@
-import { nominatorPosition } from './position'
-import { withdrawStake } from './staking'
-import type { StringNumberOrBigInt } from './types/staking'
+import { nominatorPosition } from '../position'
+import { withdrawStake } from '../staking'
+import type { StringNumberOrBigInt } from '../types/staking'
 
 const toStringVal = (v: StringNumberOrBigInt): string =>
   typeof v === 'string' ? v : (v as number | bigint).toString()

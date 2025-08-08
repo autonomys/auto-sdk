@@ -1,4 +1,4 @@
-import { withdrawStakeAll, withdrawStakeByPercent, withdrawStakeByValue } from '../src/staking.withdrawal.helpers'
+import { withdrawStakeAll, withdrawStakeByPercent, withdrawStakeByValue } from '../src/staking/withdrawal.helpers'
 
 // Minimal mock for auto-utils types consumed by parse.ts
 jest.mock('@autonomys/auto-utils', () => ({
