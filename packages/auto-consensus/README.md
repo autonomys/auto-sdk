@@ -188,6 +188,47 @@ import { activate, activateWallet, signAndSendTx, disconnect } from '@autonomys/
 
 ### 4. Staking Operations
 
+#### Withdraw helpers (by shares, all, percent, value)
+
+You can withdraw directly by shares using `withdrawStake({ api, operatorId, shares })` or use convenience helpers that compute shares for you:
+
+```ts
+import {
+  withdrawStake, // shares-only
+  withdrawStakeAll,
+  withdrawStakeByPercent,
+  withdrawStakeByValue,
+  events,
+} from '@autonomys/auto-consensus'
+import { activate, activateWallet, signAndSendTx } from '@autonomys/auto-utils'
+
+;(async () => {
+  const api = await activate({ networkId: 'your_network_id' })
+  const { accounts } = await activateWallet({ networkId: 'your_network_id', mnemonic: 'mnemonic' })
+  const sender = accounts[0]
+
+  // Shares-only
+  await signAndSendTx(sender, withdrawStake({ api, operatorId: '1', shares: '100' }), [events.withdrawStake])
+
+  // All
+  await signAndSendTx(sender, await withdrawStakeAll({ api, operatorId: '1', account: sender.address }), [events.withdrawStake])
+
+  // Percent (0..100)
+  await signAndSendTx(
+    sender,
+    await withdrawStakeByPercent({ api, operatorId: '1', account: sender.address, percent: 50 }),
+    [events.withdrawStake]
+  )
+
+  // By value (amount in token units)
+  await signAndSendTx(
+    sender,
+    await withdrawStakeByValue({ api, operatorId: '1', account: sender.address, amountToWithdraw: '1000000000000' }),
+    [events.withdrawStake]
+  )
+})()
+```
+
 #### **Register an Operator**
 
 Register a new operator for staking.
