@@ -1,5 +1,6 @@
 import { u8aToHex } from '@polkadot/util'
-import { operator, operators, RegisterOperatorParams } from '../../src/staking'
+import { operator, operators } from '../../src/staking/staking'
+import type { RegisterOperatorParams } from '../../src/types/staking'
 
 const STORAGE_FEE_DEPOSIT_PERCENTAGE = 20 // 20%
 

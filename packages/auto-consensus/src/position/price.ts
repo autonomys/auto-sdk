@@ -1,6 +1,6 @@
 import type { Api } from '@autonomys/auto-utils'
 import { domainStakingSummary } from '../domain'
-import { operator } from '../staking'
+import { operator } from '../staking/staking'
 import { parseString } from '../utils/parse'
 import { getOperatorEpochSharePrice } from '../utils/storage'
 
