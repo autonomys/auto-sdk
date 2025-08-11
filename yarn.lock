@@ -310,9 +310,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@autonomys/file-caching@workspace:packages/utility/file-download":
+"@autonomys/file-server@workspace:packages/utility/file-server":
   version: 0.0.0-use.local
-  resolution: "@autonomys/file-caching@workspace:packages/utility/file-download"
+  resolution: "@autonomys/file-server@workspace:packages/utility/file-server"
   dependencies:
     "@autonomys/asynchronous": "npm:^1.5.12"
     "@autonomys/auto-dag-data": "npm:^1.5.12"
