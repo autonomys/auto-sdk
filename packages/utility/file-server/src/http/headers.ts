@@ -61,7 +61,7 @@ const setFileResponseHeaders = (
   if (byteRange) {
     res.status(206)
     res.set('Content-Range', `bytes ${byteRange[0]}-${byteRange[1]}/${metadata.size}`)
-    const upperBound = byteRange[1] ?? Number(metadata.size)
+    const upperBound = byteRange[1] ?? Number(metadata.size) - 1
     res.set('Content-Length', (upperBound - byteRange[0] + 1).toString())
   } else if (metadata.size) {
     res.set('Content-Length', metadata.size.toString())
@@ -105,7 +105,7 @@ export const getByteRange = (req: Request): ByteRange | undefined => {
 
   const [start, end] = byteRange.slice(header.length).split('-')
   const startNumber = Number(start)
-  const endNumber = end && end !== '*' ? Number(end) : undefined
+  const endNumber = end && !['*', ''].includes(end) ? Number(end) : undefined
 
   if (startNumber < 0 || (endNumber && endNumber < 0) || (endNumber && startNumber > endNumber)) {
     return undefined
