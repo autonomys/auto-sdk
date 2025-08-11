@@ -50,7 +50,7 @@ const setFileResponseHeaders = (
   res.set('Content-Type', contentType)
   res.set(
     'Content-Disposition',
-    `filename="${safeName}"; ${isExpectedDocument ? 'inline' : 'attachment'}`,
+    `${isExpectedDocument ? 'inline' : 'attachment'}; filename="${safeName}"`,
   )
   const compressedButNoEncrypted = metadata.isCompressed && !isEncrypted
 
@@ -78,7 +78,7 @@ const setFolderResponseHeaders = (
   res.set('Content-Type', contentType)
   res.set(
     'Content-Disposition',
-    `filename="${safeName}.zip"; ${isExpectedDocument ? 'inline' : 'attachment'}`,
+    `${isExpectedDocument ? 'inline' : 'attachment'}; filename="${safeName}.zip"`,
   )
 }
 
