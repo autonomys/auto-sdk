@@ -96,6 +96,28 @@ function compareVersions(a, b) {
 }
 
 /**
+ * Remove Markdown link reference definitions from a changelog content string.
+ * This prevents duplicating definitions like [Unreleased]: ... and [x.y.z]: ...
+ * when we later append freshly computed links at the end of the file.
+ *
+ * @param {string} content
+ * @returns {string}
+ */
+function removeLinkReferenceDefinitionsForLabels(content, labels) {
+  if (!content) return content
+  if (!Array.isArray(labels) || labels.length === 0) return content
+
+  const pattern = new RegExp(
+    `^\\[(?:${labels.map((l) => l.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\$&')).join('|')})\\]:\\s+\\S+`,
+    'i',
+  )
+
+  const lines = content.split('\n')
+  const filtered = lines.filter((line) => !pattern.test(line.trim()))
+  return filtered.join('\n')
+}
+
+/**
  * Get all tags sorted by semantic version (descending)
  */
 async function getTags() {
@@ -472,7 +494,12 @@ async function updateChangelog() {
     }
 
     // Rebuild changelog with proper ordering
-    const newChangelog = rebuildChangelog(allSections, changelogHeader)
+    let newChangelog = rebuildChangelog(allSections, changelogHeader)
+
+    // Remove existing link reference definitions for the labels we're about to append
+    const labelsToReplace = ['Unreleased', nextVersion]
+    if (currentTag) labelsToReplace.push(currentVersion)
+    newChangelog = removeLinkReferenceDefinitionsForLabels(newChangelog, labelsToReplace)
 
     // Add version links at the bottom
     let links = `\n\n[Unreleased]: https://github.com/${config.owner}/${config.repo}/compare/v${nextVersion}...HEAD\n`
