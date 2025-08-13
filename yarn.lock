@@ -310,9 +310,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@autonomys/file-caching@workspace:packages/utility/file-caching":
+"@autonomys/file-server@workspace:packages/utility/file-server":
   version: 0.0.0-use.local
-  resolution: "@autonomys/file-caching@workspace:packages/utility/file-caching"
+  resolution: "@autonomys/file-server@workspace:packages/utility/file-server"
   dependencies:
     "@autonomys/asynchronous": "npm:^1.5.14"
     "@autonomys/auto-dag-data": "npm:^1.5.14"
@@ -324,8 +324,10 @@ __metadata:
     "@rollup/plugin-node-resolve": "npm:^16.0.1"
     "@rollup/plugin-terser": "npm:^0.4.4"
     "@rollup/plugin-typescript": "npm:^12.1.2"
+    "@types/express": "npm:^5.0.0"
     "@types/mime-types": "npm:^2.1.4"
     cache-manager: "npm:^6.4.2"
+    express: "npm:^4.19.2"
     jszip: "npm:^3.10.1"
     keyv: "npm:^5.3.2"
     mime-types: "npm:^3.0.1"
@@ -8323,6 +8325,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/express-serve-static-core@npm:^5.0.0":
+  version: 5.0.7
+  resolution: "@types/express-serve-static-core@npm:5.0.7"
+  dependencies:
+    "@types/node": "npm:*"
+    "@types/qs": "npm:*"
+    "@types/range-parser": "npm:*"
+    "@types/send": "npm:*"
+  checksum: 10c0/28666f6a0743b8678be920a6eed075bc8afc96fc7d8ef59c3c049bd6b51533da3b24daf3b437d061e053fba1475e4f3175cb4972f5e8db41608e817997526430
+  languageName: node
+  linkType: hard
+
 "@types/express@npm:^4.7.0":
   version: 4.17.21
   resolution: "@types/express@npm:4.17.21"
@@ -8332,6 +8346,17 @@ __metadata:
     "@types/qs": "npm:*"
     "@types/serve-static": "npm:*"
   checksum: 10c0/12e562c4571da50c7d239e117e688dc434db1bac8be55613294762f84fd77fbd0658ccd553c7d3ab02408f385bc93980992369dd30e2ecd2c68c358e6af8fabf
+  languageName: node
+  linkType: hard
+
+"@types/express@npm:^5.0.0":
+  version: 5.0.3
+  resolution: "@types/express@npm:5.0.3"
+  dependencies:
+    "@types/body-parser": "npm:*"
+    "@types/express-serve-static-core": "npm:^5.0.0"
+    "@types/serve-static": "npm:*"
+  checksum: 10c0/f0fbc8daa7f40070b103cf4d020ff1dd08503477d866d1134b87c0390bba71d5d7949cb8b4e719a81ccba89294d8e1573414e6dcbb5bb1d097a7b820928ebdef
   languageName: node
   linkType: hard
 
@@ -13624,7 +13649,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"express@npm:^4.17.3, express@npm:^4.18.2":
+"express@npm:^4.17.3, express@npm:^4.18.2, express@npm:^4.19.2":
   version: 4.21.2
   resolution: "express@npm:4.21.2"
   dependencies:

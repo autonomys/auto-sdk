@@ -3,7 +3,7 @@ import KeyvSqlite from '@keyvhq/sqlite'
 import Keyv from 'keyv'
 import { LRUCache } from 'lru-cache'
 import path from 'path'
-import { ensureDirectoryExists } from './utils'
+import { ensureDirectoryExists } from './utils.js'
 
 export const defaultMemoryAndSqliteConfig = ({
   dirname,
