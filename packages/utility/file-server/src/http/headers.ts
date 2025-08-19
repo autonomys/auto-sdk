@@ -54,7 +54,7 @@ const setFileResponseHeaders = (
   )
   const compressedButNoEncrypted = metadata.isCompressed && !isEncrypted
 
-  if (compressedButNoEncrypted && shouldHandleEncoding && !rawMode) {
+  if (compressedButNoEncrypted && shouldHandleEncoding && !rawMode && !byteRange) {
     res.set('Content-Encoding', 'deflate')
   }
 
