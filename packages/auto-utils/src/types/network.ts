@@ -18,6 +18,7 @@ export type Network = {
   token: Token
   isTestnet?: boolean
   isLocalhost?: boolean
+  isDeprecated?: boolean
 }
 
 export type NetworkParams = { networkId?: string } | undefined

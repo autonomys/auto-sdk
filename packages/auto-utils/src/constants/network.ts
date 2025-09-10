@@ -93,6 +93,7 @@ export const networks: Network[] = [
     ],
     token: TESTNET_TOKEN,
     isTestnet: true,
+    isDeprecated: true,
   },
   {
     id: NetworkId.DEVNET,

@@ -38,6 +38,8 @@ import type { DomainParams, NetworkParams } from './types/network'
  *
  * @throws {Error} When the specified networkId is not found in the available networks.
  */
+let hasWarnedDeprecatedOnce = false
+
 export const getNetworkDetails = (input?: NetworkParams) => {
   // If no id is provided, return the default network
   if (!input || !input.networkId) return defaultNetwork
@@ -47,6 +49,15 @@ export const getNetworkDetails = (input?: NetworkParams) => {
   // Find the network with the provided id
   const network = networks.find((network) => network.id === networkId)
   if (!network) throw new Error(`Network with id ${networkId} not found`)
+
+  if (network.isDeprecated && !hasWarnedDeprecatedOnce) {
+    hasWarnedDeprecatedOnce = true
+
+    console.warn(
+      `Warning: Network "${networkId}" is deprecated and will be removed in a future release. ` +
+        'Please migrate to Chronos or Mainnet.',
+    )
+  }
 
   return network
 }
