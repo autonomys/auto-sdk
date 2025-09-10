@@ -6,6 +6,7 @@ import { DEFAULT_TOKEN, TESTNET_TOKEN } from './token'
 
 export enum NetworkId {
   MAINNET = 'mainnet',
+  CHRONOS = 'chronos',
   TAURUS = 'taurus',
   DEVNET = 'devnet',
   LOCALHOST = 'localhost',
@@ -13,6 +14,7 @@ export enum NetworkId {
 
 export enum NetworkName {
   MAINNET = 'Mainnet',
+  CHRONOS = 'Testnet - Chronos',
   TAURUS = 'Testnet - Taurus',
   DEVNET = 'Devnet',
   LOCALHOST = 'Localhost',
@@ -25,6 +27,7 @@ export enum NetworkExplorerName {
 
 export const ASTRAL_EXPLORER = 'https://explorer.autonomys.xyz/'
 export const SUBSCAN_EXPLORER = 'https://autonomys.subscan.io/'
+export const SUBSCAN_CHRONOS_EXPLORER = 'https://autonomys-chronos.subscan.io/'
 
 export const networks: Network[] = [
   {
@@ -57,32 +60,35 @@ export const networks: Network[] = [
     token: DEFAULT_TOKEN,
   },
   {
-    id: NetworkId.TAURUS,
-    name: NetworkName.TAURUS,
-    rpcUrls: [
-      'wss://rpc-0.taurus.autonomys.xyz/ws',
-      'wss://rpc-1.taurus.autonomys.xyz/ws',
-      'wss://rpc-0.taurus.subspace.network/ws',
-      'wss://rpc-1.taurus.subspace.network/ws',
-    ],
+    id: NetworkId.CHRONOS,
+    name: NetworkName.CHRONOS,
+    rpcUrls: ['wss://rpc.chronos.autonomys.xyz/ws'],
     explorer: [
       {
-        name: NetworkExplorerName.ASTRAL,
-        url: ASTRAL_EXPLORER + 'taurus/consensus/',
+        name: NetworkExplorerName.SUBSCAN,
+        url: SUBSCAN_CHRONOS_EXPLORER,
       },
     ],
     domains: [
       {
         domainId: '0',
         ...domains[DomainRuntime.AUTO_EVM],
-        rpcUrls: [
-          'wss://auto-evm.taurus.autonomys.xyz/ws',
-          'wss://auto-evm-0.taurus.autonomys.xyz/ws',
-          'wss://auto-evm-1.taurus.autonomys.xyz/ws',
-          'wss://auto-evm.taurus.subspace.network/ws',
-          'wss://auto-evm-0.taurus.subspace.network/ws',
-          'wss://auto-evm-1.taurus.subspace.network/ws',
-        ],
+        rpcUrls: ['wss://auto-evm.chronos.autonomys.xyz/ws'],
+      },
+    ],
+    token: TESTNET_TOKEN,
+    isTestnet: true,
+  },
+  {
+    id: NetworkId.TAURUS,
+    name: NetworkName.TAURUS,
+    rpcUrls: ['wss://rpc-0.taurus.autonomys.xyz/ws'],
+    explorer: [],
+    domains: [
+      {
+        domainId: '0',
+        ...domains[DomainRuntime.AUTO_EVM],
+        rpcUrls: ['wss://auto-evm.taurus.autonomys.xyz/ws'],
       },
     ],
     token: TESTNET_TOKEN,
