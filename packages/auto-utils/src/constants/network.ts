@@ -92,7 +92,7 @@ export const networks: Network[] = [
       {
         domainId: '0',
         ...domains[DomainRuntime.AUTO_EVM],
-        rpcUrls: ['wss:///auto-evm.devnet.autonomys.xyz/ws'],
+        rpcUrls: ['wss://auto-evm.devnet.autonomys.xyz/ws'],
       },
       {
         domainId: '1',
