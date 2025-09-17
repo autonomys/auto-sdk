@@ -31,13 +31,7 @@ export const networks: Network[] = [
   {
     id: NetworkId.MAINNET,
     name: NetworkName.MAINNET,
-    rpcUrls: [
-      'wss://rpc-0.mainnet.subspace.network/ws',
-      'wss://rpc-1.mainnet.subspace.network/ws',
-      'wss://rpc-0.mainnet.autonomys.xyz/ws',
-      'wss://rpc-1.mainnet.autonomys.xyz/ws',
-      'wss://rpc.mainnet.subspace.foundation/ws',
-    ],
+    rpcUrls: ['wss://rpc.mainnet.autonomys.xyz/ws', 'wss://rpc.mainnet.subspace.foundation/ws'],
     explorer: [
       {
         name: NetworkExplorerName.SUBSCAN,
@@ -92,18 +86,18 @@ export const networks: Network[] = [
   {
     id: NetworkId.DEVNET,
     name: NetworkName.DEVNET,
-    rpcUrls: ['ws://rpc.devnet.subspace.network/ws'],
+    rpcUrls: ['ws://rpc.devnet.autonomys.xyz/ws'],
     explorer: [],
     domains: [
       {
         domainId: '0',
         ...domains[DomainRuntime.AUTO_EVM],
-        rpcUrls: ['wss:///auto-evm.devnet.subspace.network/ws'],
+        rpcUrls: ['wss:///auto-evm.devnet.autonomys.xyz/ws'],
       },
       {
         domainId: '1',
         ...domains[DomainRuntime.AUTO_ID],
-        rpcUrls: ['wss://autoid.devnet.subspace.network/ws'],
+        rpcUrls: ['wss://autoid.devnet.autonomys.xyz/ws'],
       },
     ],
     token: TESTNET_TOKEN,
