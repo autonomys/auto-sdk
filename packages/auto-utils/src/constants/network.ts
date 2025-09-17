@@ -21,11 +21,9 @@ export enum NetworkName {
 }
 
 export enum NetworkExplorerName {
-  ASTRAL = 'Astral',
   SUBSCAN = 'Subscan',
 }
 
-export const ASTRAL_EXPLORER = 'https://explorer.autonomys.xyz/'
 export const SUBSCAN_EXPLORER = 'https://autonomys.subscan.io/'
 export const SUBSCAN_CHRONOS_EXPLORER = 'https://autonomys-chronos.subscan.io/'
 
@@ -41,10 +39,6 @@ export const networks: Network[] = [
       'wss://rpc.mainnet.subspace.foundation/ws',
     ],
     explorer: [
-      {
-        name: NetworkExplorerName.ASTRAL,
-        url: ASTRAL_EXPLORER,
-      },
       {
         name: NetworkExplorerName.SUBSCAN,
         url: SUBSCAN_EXPLORER,
@@ -99,17 +93,12 @@ export const networks: Network[] = [
     id: NetworkId.DEVNET,
     name: NetworkName.DEVNET,
     rpcUrls: ['ws://rpc.devnet.subspace.network/ws'],
-    explorer: [
-      {
-        name: NetworkExplorerName.ASTRAL,
-        url: ASTRAL_EXPLORER + '/devnet/consensus/',
-      },
-    ],
+    explorer: [],
     domains: [
       {
         domainId: '0',
         ...domains[DomainRuntime.AUTO_EVM],
-        rpcUrls: ['wss:///nova.devnet.subspace.network/ws'],
+        rpcUrls: ['wss:///auto-evm.devnet.subspace.network/ws'],
       },
       {
         domainId: '1',
@@ -125,12 +114,7 @@ export const networks: Network[] = [
     id: NetworkId.LOCALHOST,
     name: NetworkName.LOCALHOST,
     rpcUrls: ['ws://127.0.0.1:9944/ws'],
-    explorer: [
-      {
-        name: NetworkExplorerName.ASTRAL,
-        url: ASTRAL_EXPLORER + 'localhost/consensus/',
-      },
-    ],
+    explorer: [],
     domains: [
       {
         domainId: '0',

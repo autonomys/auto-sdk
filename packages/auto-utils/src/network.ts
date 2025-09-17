@@ -29,7 +29,7 @@ import type { DomainParams, NetworkParams } from './types/network'
  *
  * // Access network explorers
  * const mainnet = getNetworkDetails({ networkId: 'mainnet' })
- * console.log(mainnet.explorer[0].name) // Output: "Astral"
+ * console.log(mainnet.explorer[0].name) // Output: "Subscan"
  * console.log(mainnet.explorer[0].url) // Output: explorer URL
  *
  * // Check if network is for local development
