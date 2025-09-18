@@ -1,4 +1,4 @@
-import { activate, Api } from '@autonomys/auto-utils'
+import { activate, activateDomain, Api, type DomainParams } from '@autonomys/auto-utils'
 import { account } from './account'
 import type { BalanceData } from './types/balance'
 
@@ -8,7 +8,7 @@ import type { BalanceData } from './types/balance'
  * This function queries the blockchain to get the total amount of tokens that have been issued
  * across the entire network. This includes all tokens in circulation, staked, reserved, and frozen.
  *
- * @param networkId - Optional network identifier. If not provided, uses the default network
+ * @param networkId - Either a networkId string for consensus, or { networkId, domainId } to query a domain
  * @returns Promise that resolves to a Codec containing the total issuance value as a hex string
  * @throws Error if the network connection fails or the query is unsuccessful
  *
@@ -21,17 +21,21 @@ import type { BalanceData } from './types/balance'
  * const totalTokens = BigInt(issuance.toString())
  * console.log(`Total tokens issued: ${totalTokens}`)
  *
- * // Query for specific network
- * const taurusIssuance = await totalIssuance('taurus')
+ * // Query for specific network (consensus)
+ * const chronosIssuance = await totalIssuance('chronos')
+ *
+ * // Query Auto-EVM domain on Chronos
+ * const evmIssuance = await totalIssuance({ networkId: 'chronos', domainId: '0' })
  * ```
  */
-export const totalIssuance = async (networkId?: string) => {
-  // Get the api instance for the network
-  const api = await activate({ networkId })
+export const totalIssuance = async (networkId?: string | DomainParams) => {
+  // Determine whether to connect to consensus or a domain
+  const isDomain = typeof networkId === 'object' && networkId !== null && 'domainId' in networkId
+  const api = await (isDomain
+    ? activateDomain(networkId)
+    : activate(networkId ? { networkId } : undefined))
 
-  // Get the current total token issuance
   const totalIssuance = await api.query.balances.totalIssuance()
-
   return totalIssuance
 }
 
