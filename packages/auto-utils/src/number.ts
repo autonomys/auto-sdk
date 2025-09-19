@@ -132,12 +132,13 @@ export const formatSpacePledged = (value: bigint, decimals = 2) => {
  * - Disallows scientific notation
  * - If fractional digits exceed `decimals`, defaults to throwing; caller can opt into truncation or rounding
  * - If `options.rounding` is `'round'`, rounds half up based on the first discarded digit (i.e., if the first omitted digit is 5 or greater, rounds up)
+ * - If `options.rounding` is `'ceil'`, always rounds up if there are any excess fractional digits (ceiling function)
  * - This is not banker's rounding (half to even) or round away from zero
  */
 export const parseUnits = (
   value: string,
   decimals: number = DEFAULT_TOKEN_DECIMALS,
-  options: { rounding?: 'error' | 'truncate' | 'round' } = {},
+  options: { rounding?: 'error' | 'truncate' | 'round' | 'ceil' } = {},
 ): bigint => {
   const { rounding = 'error' } = options
   if (typeof value !== 'string') throw new Error('parseUnits: value must be a string')
@@ -164,20 +165,35 @@ export const parseUnits = (
   let frac = BigInt((fractional || '0').padEnd(decimals, '0'))
 
   if (extra.length > 0) {
-    if (rounding === 'error')
-      throw new Error(`parseUnits: too many decimal places for ${decimals} decimals`)
-    if (rounding === 'round') {
-      const roundUp = extra[0] >= '5'
-      if (roundUp) {
+    switch (rounding) {
+      case 'error':
+        throw new Error(`parseUnits: too many decimal places for ${decimals} decimals`)
+      case 'round': {
+        const roundUp = extra[0] >= '5'
+        if (roundUp) {
+          frac = frac + BigInt(1)
+          // handle carry into whole if frac rolls over
+          if (frac === base) {
+            frac = BigInt(0)
+            return (signIsNegative ? BigInt(-1) : BigInt(1)) * (whole + base)
+          }
+        }
+        break
+      }
+      case 'ceil':
+        // Always round up if there are any excess digits (ceiling function)
         frac = frac + BigInt(1)
         // handle carry into whole if frac rolls over
         if (frac === base) {
           frac = BigInt(0)
           return (signIsNegative ? BigInt(-1) : BigInt(1)) * (whole + base)
         }
-      }
+        break
+      case 'truncate':
+      default:
+        // truncate (no-op; we already sliced)
+        break
     }
-    // truncate otherwise (no-op; we already sliced)
   }
 
   const result = whole + frac
@@ -234,10 +250,14 @@ export const formatUnits = (
  * // Convert tiny amount
  * const tinyShannons = ai3ToShannons("0.000000000000000001")
  * console.log(tinyShannons) // 1n
+ *
+ * // Always round up with excess decimals
+ * const ceilShannons = ai3ToShannons("1.0000000000000000001", { rounding: 'ceil' })
+ * console.log(shannonsToAi3(ceilShannons)) // "1.000000000000000001"
  */
 export const ai3ToShannons = (
   ai3Amount: string,
-  options: { rounding?: 'error' | 'truncate' | 'round' } = {},
+  options: { rounding?: 'error' | 'truncate' | 'round' | 'ceil' } = {},
 ): bigint => parseUnits(ai3Amount, DEFAULT_TOKEN_DECIMALS, options)
 
 /**

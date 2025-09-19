@@ -51,6 +51,18 @@ describe('AI3/Shannon conversion', () => {
     assert.equal(shannonsToAi3(shannons), '1.123456789012345679')
   })
 
+  test('excess decimals ceil on option', () => {
+    const shannons1 = ai3ToShannons('1.1234567890123456781', { rounding: 'ceil' })
+    assert.equal(shannonsToAi3(shannons1), '1.123456789012345679')
+
+    const shannons2 = ai3ToShannons('1.1234567890123456701', { rounding: 'ceil' })
+    assert.equal(shannonsToAi3(shannons2), '1.123456789012345671')
+
+    // Even tiny excess should round up
+    const shannons3 = ai3ToShannons('1.0000000000000000001', { rounding: 'ceil' })
+    assert.equal(shannonsToAi3(shannons3), '1.000000000000000001')
+  })
+
   test('validates decimals parameter', () => {
     assert.throws(() => parseUnits('1.5', -1), /decimals must be a non-negative integer/)
     assert.throws(() => parseUnits('1.5', 1.5), /decimals must be a non-negative integer/)
@@ -68,5 +80,17 @@ describe('Generic parseUnits/formatUnits', () => {
   test('works with custom decimals - round', () => {
     const v = parseUnits('1.125', 2, { rounding: 'round' })
     assert.equal(formatUnits(v, 2), '1.13')
+  })
+
+  test('works with custom decimals - ceil', () => {
+    const v1 = parseUnits('1.121', 2, { rounding: 'ceil' })
+    assert.equal(formatUnits(v1, 2), '1.13')
+
+    const v2 = parseUnits('1.129', 2, { rounding: 'ceil' })
+    assert.equal(formatUnits(v2, 2), '1.13')
+
+    // Even tiny excess should ceil
+    const v3 = parseUnits('1.101', 2, { rounding: 'ceil' })
+    assert.equal(formatUnits(v3, 2), '1.11')
   })
 })
