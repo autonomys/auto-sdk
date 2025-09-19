@@ -6,29 +6,33 @@ import { DEFAULT_TOKEN_DECIMALS } from './constants/token'
  *
  * This function converts token amounts stored in their smallest unit (with decimal places)
  * back to their standard decimal representation. It handles both string and BigInt inputs
- * and is essential for displaying token balances in user interfaces.
+ * and is useful for displaying token balances in user interfaces.
+ *
+ * This function uses floating-point arithmetic and may lose precision
+ * for large values or high-precision decimals. For precise calculations, consider using
+ * `formatUnits` or `shannonsToAi3` instead.
  *
  * @param amount - The token amount in smallest units (string or BigInt).
  * @param decimals - Number of decimal places the token uses. Defaults to 18 for AI3 tokens.
- * @returns The parsed amount as a number with decimal places applied.
+ * @returns The parsed amount as a number (for string input) or bigint (for BigInt input).
  *
  * @example
  * import { parseTokenAmount } from '@autonomys/auto-utils'
  *
- * // Parse AI3 token amount (18 decimals)
+ * // Parse AI3 token amount (18 decimals) - string input returns number
  * const balance = '1000000000000000000' // 1 AI3 in smallest units
  * const readable = parseTokenAmount(balance)
- * console.log(readable) // Output: 1
+ * console.log(readable) // Output: 1 (number)
  *
- * // Parse with custom decimals
+ * // Parse with BigInt input - returns bigint
  * const customBalance = BigInt('1000000') // 1 token with 6 decimals
  * const customReadable = parseTokenAmount(customBalance, 6)
- * console.log(customReadable) // Output: 1
+ * console.log(customReadable) // Output: 1n (bigint)
  *
  * // Parse fractional amounts
  * const fractional = '500000000000000000' // 0.5 AI3
  * const fractionalReadable = parseTokenAmount(fractional)
- * console.log(fractionalReadable) // Output: 0.5
+ * console.log(fractionalReadable) // Output: 0.5 (number)
  */
 export const parseTokenAmount = (
   amount: string | bigint,
@@ -41,31 +45,32 @@ export const parseTokenAmount = (
 /**
  * Formats a human-readable token amount to its smallest unit representation.
  *
- * This function converts user-friendly decimal token amounts into the format required
- * for blockchain transactions. It multiplies the amount by the appropriate power of 10
- * based on the token's decimal places.
+ *
+ * This function uses floating-point arithmetic for number inputs
+ * and may lose precision for large values or high-precision decimals. For precise calculations,
+ * consider using `parseUnits` or `ai3ToShannons` instead.
  *
  * @param amount - The token amount in human-readable format (number or BigInt).
  * @param decimals - Number of decimal places the token uses. Defaults to 18 for AI3 tokens.
- * @returns The formatted amount in smallest units (BigInt for BigInt input, number for number input).
+ * @returns The formatted amount in smallest units (number for number input, BigInt for BigInt input).
  *
  * @example
  * import { formatTokenAmount } from '@autonomys/auto-utils'
  *
- * // Format AI3 token amount (18 decimals)
+ * // Format AI3 token amount (18 decimals) - number input returns number
  * const userAmount = 1.5 // 1.5 AI3
  * const formatted = formatTokenAmount(userAmount)
- * console.log(formatted) // Output: 1500000000000000000
+ * console.log(formatted) // Output: 1500000000000000000 (number)
  *
- * // Format with BigInt input
+ * // Format with BigInt input - returns BigInt
  * const bigAmount = BigInt(10)
  * const bigFormatted = formatTokenAmount(bigAmount)
- * console.log(bigFormatted) // Output: 10000000000000000000n
+ * console.log(bigFormatted) // Output: 10000000000000000000n (BigInt)
  *
  * // Format with custom decimals
  * const customAmount = 100
  * const customFormatted = formatTokenAmount(customAmount, 6)
- * console.log(customFormatted) // Output: 100000000
+ * console.log(customFormatted) // Output: 100000000 (number)
  */
 export const formatTokenAmount = (
   amount: number | bigint,
