@@ -50,6 +50,13 @@ describe('AI3/Shannon conversion', () => {
     const shannons = ai3ToShannons('1.1234567890123456789', { rounding: 'round' })
     assert.equal(shannonsToAi3(shannons), '1.123456789012345679')
   })
+
+  test('validates decimals parameter', () => {
+    assert.throws(() => parseUnits('1.5', -1), /decimals must be a non-negative integer/)
+    assert.throws(() => parseUnits('1.5', 1.5), /decimals must be a non-negative integer/)
+    assert.throws(() => formatUnits(1500n, -1), /decimals must be a non-negative integer/)
+    assert.throws(() => formatUnits(1500n, 1.5), /decimals must be a non-negative integer/)
+  })
 })
 
 describe('Generic parseUnits/formatUnits', () => {

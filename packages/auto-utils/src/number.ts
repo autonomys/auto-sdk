@@ -131,6 +131,8 @@ export const formatSpacePledged = (value: bigint, decimals = 2) => {
  * - Accepts optional leading sign and a single decimal point
  * - Disallows scientific notation
  * - If fractional digits exceed `decimals`, defaults to throwing; caller can opt into truncation or rounding
+ * - If `options.rounding` is `'round'`, rounds half up based on the first discarded digit (i.e., if the first omitted digit is 5 or greater, rounds up)
+ * - This is not banker's rounding (half to even) or round away from zero
  */
 export const parseUnits = (
   value: string,
@@ -139,6 +141,9 @@ export const parseUnits = (
 ): bigint => {
   const { rounding = 'error' } = options
   if (typeof value !== 'string') throw new Error('parseUnits: value must be a string')
+  if (!Number.isInteger(decimals) || decimals < 0) {
+    throw new Error('parseUnits: decimals must be a non-negative integer')
+  }
   const trimmed = value.trim()
   if (trimmed.length === 0) throw new Error('parseUnits: empty string')
 
@@ -191,6 +196,9 @@ export const formatUnits = (
   options: { trimTrailingZeros?: boolean } = {},
 ): string => {
   const { trimTrailingZeros = true } = options
+  if (!Number.isInteger(decimals) || decimals < 0) {
+    throw new Error('formatUnits: decimals must be a non-negative integer')
+  }
   const v = typeof value === 'bigint' ? value : BigInt(value)
   const negative = v < BigInt(0)
   const abs = negative ? -v : v
