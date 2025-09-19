@@ -3,6 +3,21 @@
 Future changes will appear here.
 
 
+
+## [1.5.16] - 2025-09-18
+
+### Features
+
+- enhance totalIssuance function to support domain queries ([#472](https://github.com/autonomys/auto-sdk/pull/472)) [@jfrank-summit](https://github.com/jfrank-summit)
+
+### Code Refactoring
+
+- update network explorer details to remove Astral and cleanup RPCs ([#471](https://github.com/autonomys/auto-sdk/pull/471)) [@jfrank-summit](https://github.com/jfrank-summit)
+
+### Chores
+
+- v1.5.15 ([#470](https://github.com/autonomys/auto-sdk/pull/470)) [@jfrank-summit](https://github.com/jfrank-summit)
+
 ## [1.5.15] - 2025-09-10
 
 ### Features
@@ -28,6 +43,7 @@ Future changes will appear here.
 
 - v1.5.13 ([#461](https://github.com/autonomys/auto-sdk/pull/461)) [@jfrank-summit](https://github.com/jfrank-summit)
 
+
 ## [1.5.13] - 2025-08-08
 
 ### Features
@@ -41,6 +57,7 @@ Future changes will appear here.
 ### Chores
 
 - update dependency @polkadot/extension-inject to ^0.58.9 ([#358](https://github.com/autonomys/auto-sdk/pull/358)) [@renovate[bot]](https://github.com/apps/renovate)
+
 
 
 ## [1.5.12] - 2025-07-29
@@ -58,11 +75,13 @@ Future changes will appear here.
 - update dependency eslint-config-prettier to ^10.1.5 ([#370](https://github.com/autonomys/auto-sdk/pull/370)) [@renovate[bot]](https://github.com/apps/renovate)
 
 
+
 ## [1.5.11] - 2025-07-21
 
 ### Features
 
 - add get node method ([#454](https://github.com/autonomys/auto-sdk/pull/454)) [@clostao](https://github.com/clostao)
+
 
 
 ## [1.5.10] - 2025-07-17
@@ -76,11 +95,13 @@ Future changes will appear here.
 - release v1.5.9 ([#451](https://github.com/autonomys/auto-sdk/pull/451)) [@jfrank-summit](https://github.com/jfrank-summit)
 
 
+
 ## [1.5.9] - 2025-07-15
 
 ### Features
 
 - simplify `nominatorPosition` to use runtime api ([#450](https://github.com/autonomys/auto-sdk/pull/450)) [@jfrank-summit](https://github.com/jfrank-summit)
+
 
 
 ## [1.5.8] - 2025-07-15
@@ -98,11 +119,13 @@ Future changes will appear here.
 - bump version to v1.5.7 ([#445](https://github.com/autonomys/auto-sdk/pull/445)) [@clostao](https://github.com/clostao)
 
 
+
 ## [1.5.7] - 2025-07-09
 
 ### Code Refactoring
 
 - update sdk structure for avoid deps issues ([#443](https://github.com/autonomys/auto-sdk/pull/443)) [@clostao](https://github.com/clostao)
+
 
 
 ## [1.5.6] - 2025-07-08
@@ -116,12 +139,14 @@ Future changes will appear here.
 - v1.5.5 ([#441](https://github.com/autonomys/auto-sdk/pull/441)) [@jfrank-summit](https://github.com/jfrank-summit)
 
 
+
 ## [1.5.5] - 2025-07-02
 
 ### Features
 
 - add headDomainNumber function to retrieve latest block number for a specific domain ([#440](https://github.com/autonomys/auto-sdk/pull/440)) [@jfrank-summit](https://github.com/jfrank-summit)
 - add storage fee refund to pending withdrawals ([#439](https://github.com/autonomys/auto-sdk/pull/439)) [@jfrank-summit](https://github.com/jfrank-summit)
+
 
 
 ## [1.5.4] - 2025-07-01
@@ -133,6 +158,7 @@ Future changes will appear here.
 ### Chores
 
 - v1.5.3 ([#437](https://github.com/autonomys/auto-sdk/pull/437)) [@clostao](https://github.com/clostao)
+
 
 
 ## [1.5.3] - 2025-07-01
@@ -156,6 +182,7 @@ Future changes will appear here.
 - Chore v1.5.2 ([#431](https://github.com/autonomys/auto-sdk/pull/431)) [@clostao](https://github.com/clostao)
 
 
+
 ## [1.5.2] - 2025-06-24
 
 ### Features
@@ -167,6 +194,7 @@ Future changes will appear here.
 - downloads should be perfomed in raw mode ([#430](https://github.com/autonomys/auto-sdk/pull/430)) [@clostao](https://github.com/clostao)
 
 
+
 ## [1.5.1] - 2025-06-19
 
 ### Features
@@ -176,6 +204,7 @@ Future changes will appear here.
 ### Chores
 
 - bump to v1.5.0 ([#426](https://github.com/autonomys/auto-sdk/pull/426)) [@clostao](https://github.com/clostao)
+
 
 
 ## [1.5.0] - 2025-06-13
@@ -195,6 +224,7 @@ Future changes will appear here.
 - v1.4.35 ([#421](https://github.com/autonomys/auto-sdk/pull/421)) [@clostao](https://github.com/clostao)
 
 
+
 ## [1.4.35] - 2025-05-29
 
 ### Features
@@ -204,6 +234,7 @@ Future changes will appear here.
 ### Chores
 
 - bump to v1.4.34 ([#420](https://github.com/autonomys/auto-sdk/pull/420)) [@clostao](https://github.com/clostao)
+
 
 
 ## [1.4.34] - 2025-05-29
@@ -217,6 +248,7 @@ Future changes will appear here.
 - bump version to v1.4.33 ([#418](https://github.com/autonomys/auto-sdk/pull/418)) [@clostao](https://github.com/clostao)
 
 
+
 ## [1.4.33] - 2025-05-28
 
 ### Bug Fixes
@@ -226,6 +258,7 @@ Future changes will appear here.
 ### Chores
 
 - v1.4.32 ([#417](https://github.com/autonomys/auto-sdk/pull/417)) [@clostao](https://github.com/clostao)
+
 
 
 ## [1.4.32] - 2025-05-28
@@ -343,6 +376,7 @@ Future changes will appear here.
 - Update dependency cache-manager to ^6.4.2 ([#365](https://github.com/autonomys/auto-sdk/pull/365)) [@renovate[bot]](https://github.com/apps/renovate)
 
 
+
 ## [1.4.31] - 2025-05-14
 
 ### Features
@@ -357,6 +391,8 @@ Future changes will appear here.
 [1.5.13]: https://github.com/autonomys/auto-sdk/compare/v1.5.12...v1.5.13
 [1.5.12]: https://github.com/autonomys/auto-sdk/releases/tag/v1.5.12
 
-[Unreleased]: https://github.com/autonomys/auto-sdk/compare/v1.5.15...HEAD
-[1.5.15]: https://github.com/autonomys/auto-sdk/compare/v1.5.14...v1.5.15
 [1.5.14]: https://github.com/autonomys/auto-sdk/releases/tag/v1.5.14
+
+[Unreleased]: https://github.com/autonomys/auto-sdk/compare/v1.5.16...HEAD
+[1.5.16]: https://github.com/autonomys/auto-sdk/compare/v1.5.15...v1.5.16
+[1.5.15]: https://github.com/autonomys/auto-sdk/releases/tag/v1.5.15
