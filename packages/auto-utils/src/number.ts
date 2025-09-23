@@ -1,5 +1,5 @@
 import { BIGINT_ZERO } from './constants/number'
-import { DEFAULT_TOKEN_DECIMALS } from './constants/token'
+import { DEFAULT_EXISTENTIAL_DEPOSIT_SHANNONS, DEFAULT_TOKEN_DECIMALS } from './constants/token'
 
 /**
  * Parses a token amount from its smallest unit representation to a human-readable format.
@@ -285,3 +285,44 @@ export const shannonsToAi3 = (
   shannons: bigint | string,
   options: { trimTrailingZeros?: boolean } = {},
 ): string => formatUnits(shannons, DEFAULT_TOKEN_DECIMALS, options)
+
+/**
+ * Checks if an amount meets the Autonomys Network existential deposit requirement.
+ *
+ * The existential deposit (ED) is the minimum balance required to keep an account active
+ * on the Autonomys Network. Accounts with balances below the ED may be reaped (removed)
+ * by the network, and their funds will be destroyed to prevent storage bloat.
+ *
+ * For Autonomys Network, the existential deposit is 0.000001 AI3 (1,000,000,000,000 Shannon).
+ *
+ * @param amount - AI3 amount as a decimal string (e.g., "1.5", "0.000001")
+ * @returns true if the amount meets or exceeds the existential deposit requirement
+ * @throws Error if the amount format is invalid (same validation as ai3ToShannons)
+ *
+ * @example
+ * import { meetsExistentialDeposit, EXISTENTIAL_DEPOSIT_AI3 } from '@autonomys/auto-utils'
+ *
+ * // Check if amount meets ED requirement
+ * const amount = "0.000001"
+ * if (meetsExistentialDeposit(amount)) {
+ *   console.log('Amount meets existential deposit requirement')
+ * } else {
+ *   console.log(`Amount too low. Minimum required: ${EXISTENTIAL_DEPOSIT_AI3} AI3`)
+ * }
+ *
+ * // Examples of different amounts
+ * console.log(meetsExistentialDeposit("0.0000005")) // false - below ED
+ * console.log(meetsExistentialDeposit("0.000001"))  // true - exactly at ED
+ * console.log(meetsExistentialDeposit("0.000002"))  // true - above ED
+ * console.log(meetsExistentialDeposit("1"))         // true - well above ED
+ *
+ * // Will throw error for invalid formats
+ * try {
+ *   meetsExistentialDeposit("invalid")
+ * } catch (error) {
+ *   console.error("Invalid amount format")
+ * }
+ */
+export const meetsExistentialDeposit = (amount: string): boolean => {
+  return ai3ToShannons(amount) >= DEFAULT_EXISTENTIAL_DEPOSIT_SHANNONS
+}
