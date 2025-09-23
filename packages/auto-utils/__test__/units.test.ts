@@ -1,6 +1,12 @@
 import assert from 'node:assert/strict'
-import { ai3ToShannons, formatUnits, parseUnits, shannonsToAi3, meetsExistentialDeposit } from '../src/number'
 import { DEFAULT_EXISTENTIAL_DEPOSIT_SHANNONS } from '../src/constants/token'
+import {
+  ai3ToShannons,
+  formatUnits,
+  meetsExistentialDeposit,
+  parseUnits,
+  shannonsToAi3,
+} from '../src/number'
 
 describe('AI3/Shannon conversion', () => {
   test('round-trip exactness for sample cases', () => {
@@ -120,7 +126,7 @@ describe('Existential Deposit validation', () => {
     const justBelow = shannonsToAi3(DEFAULT_EXISTENTIAL_DEPOSIT_SHANNONS - BigInt(1))
     assert.equal(meetsExistentialDeposit(justBelow), false)
 
-    // Just above ED - should be true  
+    // Just above ED - should be true
     const justAbove = shannonsToAi3(DEFAULT_EXISTENTIAL_DEPOSIT_SHANNONS + BigInt(1))
     assert.equal(meetsExistentialDeposit(justAbove), true)
   })
@@ -129,7 +135,7 @@ describe('Existential Deposit validation', () => {
     // Test the exact ED value in different string formats
     assert.equal(meetsExistentialDeposit('0.000001000000000000'), true)
     assert.equal(meetsExistentialDeposit('0.000001'), true)
-    
+
     // Test values that are exactly 1 Shannon below ED
     const oneShannonBelow = shannonsToAi3(BigInt('999999999999'))
     assert.equal(meetsExistentialDeposit(oneShannonBelow), false)
