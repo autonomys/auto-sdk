@@ -1,5 +1,5 @@
 import { BIGINT_ZERO } from './constants/number'
-import { DEFAULT_TOKEN_DECIMALS } from './constants/token'
+import { DEFAULT_EXISTENTIAL_DEPOSIT_SHANNONS, DEFAULT_TOKEN_DECIMALS } from './constants/token'
 
 /**
  * Parses a token amount from its smallest unit representation to a human-readable format.
@@ -285,3 +285,85 @@ export const shannonsToAi3 = (
   shannons: bigint | string,
   options: { trimTrailingZeros?: boolean } = {},
 ): string => formatUnits(shannons, DEFAULT_TOKEN_DECIMALS, options)
+
+/**
+ * Checks if an AI3 amount meets the Autonomys Network existential deposit requirement.
+ *
+ * The existential deposit (ED) is the minimum balance required to keep an account active
+ * on the Autonomys Network. Accounts with balances below the ED may be reaped (removed)
+ * by the network, and their funds will be destroyed to prevent storage bloat.
+ *
+ * This function accepts AI3 amounts as strings and performs string-to-BigInt conversion.
+ * For direct Shannon (BigInt) validation, use `meetsExistentialDepositShannons` instead.
+ *
+ * For Autonomys Network, the existential deposit is 0.000001 AI3 (1,000,000,000,000 Shannons).
+ *
+ * @param amount - AI3 amount as a decimal string (e.g., "1.5", "0.000001")
+ * @returns true if the amount meets or exceeds the existential deposit requirement
+ * @throws Error if the amount format is invalid (same validation as ai3ToShannons)
+ * @see meetsExistentialDepositShannons - for direct Shannon (BigInt) validation
+ *
+ * @example
+ * import { meetsExistentialDepositAi3 } from '@autonomys/auto-utils'
+ *
+ * // Check if amount meets ED requirement
+ * const amount = "0.000001"
+ * if (meetsExistentialDepositAi3(amount)) {
+ *   console.log('Amount meets existential deposit requirement')
+ * } else {
+ *   console.log(`Amount too low. Minimum required: 0.000001 AI3`)
+ * }
+ *
+ * // Examples of different amounts
+ * console.log(meetsExistentialDepositAi3("0.0000005")) // false - below ED
+ * console.log(meetsExistentialDepositAi3("0.000001"))  // true - exactly at ED
+ * console.log(meetsExistentialDepositAi3("0.000002"))  // true - above ED
+ * console.log(meetsExistentialDepositAi3("1"))         // true - well above ED
+ *
+ * // Will throw error for invalid formats
+ * try {
+ *   meetsExistentialDepositAi3("invalid")
+ * } catch (error) {
+ *   console.error("Invalid amount format")
+ * }
+ */
+export const meetsExistentialDepositAi3 = (amount: string): boolean => {
+  return meetsExistentialDepositShannons(ai3ToShannons(amount))
+}
+
+/**
+ * Checks if a Shannon amount meets the Autonomys Network existential deposit requirement.
+ *
+ * This is the Shannon-based version of `meetsExistentialDepositAi3` that works directly with
+ * BigInt values in the smallest units (Shannons). It's more efficient when you already
+ * have amounts in Shannon units and don't need string parsing.
+ *
+ * For Autonomys Network, the existential deposit is 1,000,000,000,000 Shannons (0.000001 AI3).
+ *
+ * @param amount - Shannon amount as BigInt (smallest units)
+ * @returns true if the amount meets or exceeds the existential deposit requirement
+ *
+ * @example
+ * import { meetsExistentialDepositShannons, DEFAULT_EXISTENTIAL_DEPOSIT_SHANNONS } from '@autonomys/auto-utils'
+ *
+ * // Check if Shannon amount meets ED requirement
+ * const shannons = BigInt('1000000000000') // 0.000001 AI3
+ * if (meetsExistentialDepositShannons(shannons)) {
+ *   console.log('Amount meets existential deposit requirement')
+ * }
+ *
+ * // Examples with different Shannon amounts
+ * console.log(meetsExistentialDepositShannons(BigInt('999999999999'))) // false - below ED
+ * console.log(meetsExistentialDepositShannons(BigInt('1000000000000'))) // true - exactly at ED
+ * console.log(meetsExistentialDepositShannons(BigInt('2000000000000'))) // true - above ED
+ * console.log(meetsExistentialDepositShannons(BigInt('1000000000000000000'))) // true - 1 AI3
+ *
+ * // Works with the constant directly
+ * console.log(meetsExistentialDepositShannons(DEFAULT_EXISTENTIAL_DEPOSIT_SHANNONS)) // true
+ *
+ * // Handles negative amounts
+ * console.log(meetsExistentialDepositShannons(BigInt('-1000000000000'))) // false
+ */
+export const meetsExistentialDepositShannons = (amount: bigint): boolean => {
+  return amount >= DEFAULT_EXISTENTIAL_DEPOSIT_SHANNONS
+}
