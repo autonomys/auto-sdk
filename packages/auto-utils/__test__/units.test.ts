@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
-import { ai3ToShannons, formatUnits, parseUnits, shannonsToAi3 } from '../src/number'
+import { ai3ToShannons, formatUnits, parseUnits, shannonsToAi3, meetsExistentialDeposit } from '../src/number'
+import { DEFAULT_EXISTENTIAL_DEPOSIT_SHANNONS } from '../src/constants/token'
 
 describe('AI3/Shannon conversion', () => {
   test('round-trip exactness for sample cases', () => {
@@ -92,5 +93,78 @@ describe('Generic parseUnits/formatUnits', () => {
     // Even tiny excess should ceil
     const v3 = parseUnits('1.101', 2, { rounding: 'ceil' })
     assert.equal(formatUnits(v3, 2), '1.11')
+  })
+})
+
+describe('Existential Deposit validation', () => {
+  test('returns false for amounts below existential deposit', () => {
+    assert.equal(meetsExistentialDeposit('0'), false)
+    assert.equal(meetsExistentialDeposit('0.0000005'), false)
+    assert.equal(meetsExistentialDeposit('0.000000999999'), false)
+  })
+
+  test('returns true for amounts at existential deposit threshold', () => {
+    assert.equal(meetsExistentialDeposit('0.000001'), true)
+  })
+
+  test('returns true for amounts above existential deposit', () => {
+    assert.equal(meetsExistentialDeposit('0.000001000001'), true)
+    assert.equal(meetsExistentialDeposit('0.000002'), true)
+    assert.equal(meetsExistentialDeposit('0.001'), true)
+    assert.equal(meetsExistentialDeposit('1'), true)
+    assert.equal(meetsExistentialDeposit('100.5'), true)
+  })
+
+  test('handles high precision amounts correctly', () => {
+    // Just below ED - should be false
+    const justBelow = shannonsToAi3(DEFAULT_EXISTENTIAL_DEPOSIT_SHANNONS - BigInt(1))
+    assert.equal(meetsExistentialDeposit(justBelow), false)
+
+    // Just above ED - should be true  
+    const justAbove = shannonsToAi3(DEFAULT_EXISTENTIAL_DEPOSIT_SHANNONS + BigInt(1))
+    assert.equal(meetsExistentialDeposit(justAbove), true)
+  })
+
+  test('works with edge case precision values', () => {
+    // Test the exact ED value in different string formats
+    assert.equal(meetsExistentialDeposit('0.000001000000000000'), true)
+    assert.equal(meetsExistentialDeposit('0.000001'), true)
+    
+    // Test values that are exactly 1 Shannon below ED
+    const oneShannonBelow = shannonsToAi3(BigInt('999999999999'))
+    assert.equal(meetsExistentialDeposit(oneShannonBelow), false)
+  })
+
+  test('handles negative amounts', () => {
+    assert.equal(meetsExistentialDeposit('-1'), false)
+    assert.equal(meetsExistentialDeposit('-0.000001'), false)
+  })
+
+  test('throws error for invalid amount formats', () => {
+    assert.throws(() => meetsExistentialDeposit('invalid'), /invalid numeric string/)
+    assert.throws(() => meetsExistentialDeposit('1.23e-6'), /invalid numeric string/)
+    assert.throws(() => meetsExistentialDeposit(''), /empty string/)
+    assert.throws(() => meetsExistentialDeposit('1.23.45'), /invalid numeric string/)
+  })
+
+  test('handles amounts with excess decimal precision', () => {
+    // Should throw by default for excess decimals (same as ai3ToShannons)
+    assert.throws(() => meetsExistentialDeposit('0.0000010000000000000000001'))
+  })
+
+  test('consistency with ai3ToShannons and constant', () => {
+    // Verify our function uses the same logic as direct comparison
+    const testAmount = '0.000001'
+    const shannons = ai3ToShannons(testAmount)
+    const directComparison = shannons >= DEFAULT_EXISTENTIAL_DEPOSIT_SHANNONS
+    assert.equal(meetsExistentialDeposit(testAmount), directComparison)
+
+    // Test with various amounts
+    const testCases = ['0', '0.0000005', '0.000001', '0.000002', '1', '100']
+    for (const amount of testCases) {
+      const shannons = ai3ToShannons(amount)
+      const expected = shannons >= DEFAULT_EXISTENTIAL_DEPOSIT_SHANNONS
+      assert.equal(meetsExistentialDeposit(amount), expected, `Failed for amount: ${amount}`)
+    }
   })
 })
