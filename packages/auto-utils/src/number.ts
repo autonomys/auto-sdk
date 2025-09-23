@@ -293,7 +293,7 @@ export const shannonsToAi3 = (
  * on the Autonomys Network. Accounts with balances below the ED may be reaped (removed)
  * by the network, and their funds will be destroyed to prevent storage bloat.
  *
- * For Autonomys Network, the existential deposit is 0.000001 AI3 (1,000,000,000,000 Shannon).
+ * For Autonomys Network, the existential deposit is 0.000001 AI3 (1,000,000,000,000 Shannons).
  *
  * @param amount - AI3 amount as a decimal string (e.g., "1.5", "0.000001")
  * @returns true if the amount meets or exceeds the existential deposit requirement
