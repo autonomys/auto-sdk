@@ -294,15 +294,15 @@ export type AuthProvider = ApiKeyAuthProvider | 'oauth'
 
 export type ConnectionOptions =
   | {
-      provider?: AuthProvider
-      apiKey?: string
+      provider?: AuthProvider | null
+      apiKey: string | null
       apiUrl?: null
       downloadServiceUrl?: null
       network: AutoDriveNetwork
     }
   | {
-      provider?: AuthProvider
-      apiKey?: string
+      provider?: AuthProvider | null
+      apiKey: string | null
       apiUrl: string
       downloadServiceUrl?: string
       network?: null
