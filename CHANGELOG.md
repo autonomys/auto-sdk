@@ -5,6 +5,19 @@ Future changes will appear here.
 
 
 
+
+## [1.5.18] - 2025-09-24
+
+### Features
+
+- add transactionByteFee function and schema ([#479](https://github.com/autonomys/auto-sdk/pull/479)) [@clostao](https://github.com/clostao)
+- support unlogged api connection ([#478](https://github.com/autonomys/auto-sdk/pull/478)) [@clostao](https://github.com/clostao)
+- add meetsExistentialDeposit function and constant ([#477](https://github.com/autonomys/auto-sdk/pull/477)) [@jim-counter](https://github.com/jim-counter)
+
+### Chores
+
+- v1.5.17 ([#476](https://github.com/autonomys/auto-sdk/pull/476)) [@jfrank-summit](https://github.com/jfrank-summit)
+
 ## [1.5.17] - 2025-09-22
 
 ### Features
@@ -29,6 +42,7 @@ Future changes will appear here.
 
 - v1.5.15 ([#470](https://github.com/autonomys/auto-sdk/pull/470)) [@jfrank-summit](https://github.com/jfrank-summit)
 
+
 ## [1.5.15] - 2025-09-10
 
 ### Features
@@ -45,6 +59,7 @@ Future changes will appear here.
 - v1.5.14 ([#465](https://github.com/autonomys/auto-sdk/pull/465)) [@jfrank-summit](https://github.com/jfrank-summit)
 
 
+
 ## [1.5.14] - 2025-08-08
 
 ### Features
@@ -54,6 +69,7 @@ Future changes will appear here.
 ### Chores
 
 - v1.5.13 ([#461](https://github.com/autonomys/auto-sdk/pull/461)) [@jfrank-summit](https://github.com/jfrank-summit)
+
 
 
 
@@ -70,6 +86,7 @@ Future changes will appear here.
 ### Chores
 
 - update dependency @polkadot/extension-inject to ^0.58.9 ([#358](https://github.com/autonomys/auto-sdk/pull/358)) [@renovate[bot]](https://github.com/apps/renovate)
+
 
 
 
@@ -91,11 +108,13 @@ Future changes will appear here.
 
 
 
+
 ## [1.5.11] - 2025-07-21
 
 ### Features
 
 - add get node method ([#454](https://github.com/autonomys/auto-sdk/pull/454)) [@clostao](https://github.com/clostao)
+
 
 
 
@@ -113,11 +132,13 @@ Future changes will appear here.
 
 
 
+
 ## [1.5.9] - 2025-07-15
 
 ### Features
 
 - simplify `nominatorPosition` to use runtime api ([#450](https://github.com/autonomys/auto-sdk/pull/450)) [@jfrank-summit](https://github.com/jfrank-summit)
+
 
 
 
@@ -139,11 +160,13 @@ Future changes will appear here.
 
 
 
+
 ## [1.5.7] - 2025-07-09
 
 ### Code Refactoring
 
 - update sdk structure for avoid deps issues ([#443](https://github.com/autonomys/auto-sdk/pull/443)) [@clostao](https://github.com/clostao)
+
 
 
 
@@ -161,12 +184,14 @@ Future changes will appear here.
 
 
 
+
 ## [1.5.5] - 2025-07-02
 
 ### Features
 
 - add headDomainNumber function to retrieve latest block number for a specific domain ([#440](https://github.com/autonomys/auto-sdk/pull/440)) [@jfrank-summit](https://github.com/jfrank-summit)
 - add storage fee refund to pending withdrawals ([#439](https://github.com/autonomys/auto-sdk/pull/439)) [@jfrank-summit](https://github.com/jfrank-summit)
+
 
 
 
@@ -180,6 +205,7 @@ Future changes will appear here.
 ### Chores
 
 - v1.5.3 ([#437](https://github.com/autonomys/auto-sdk/pull/437)) [@clostao](https://github.com/clostao)
+
 
 
 
@@ -207,6 +233,7 @@ Future changes will appear here.
 
 
 
+
 ## [1.5.2] - 2025-06-24
 
 ### Features
@@ -220,6 +247,7 @@ Future changes will appear here.
 
 
 
+
 ## [1.5.1] - 2025-06-19
 
 ### Features
@@ -229,6 +257,7 @@ Future changes will appear here.
 ### Chores
 
 - bump to v1.5.0 ([#426](https://github.com/autonomys/auto-sdk/pull/426)) [@clostao](https://github.com/clostao)
+
 
 
 
@@ -252,6 +281,7 @@ Future changes will appear here.
 
 
 
+
 ## [1.4.35] - 2025-05-29
 
 ### Features
@@ -261,6 +291,7 @@ Future changes will appear here.
 ### Chores
 
 - bump to v1.4.34 ([#420](https://github.com/autonomys/auto-sdk/pull/420)) [@clostao](https://github.com/clostao)
+
 
 
 
@@ -278,6 +309,7 @@ Future changes will appear here.
 
 
 
+
 ## [1.4.33] - 2025-05-28
 
 ### Bug Fixes
@@ -287,6 +319,7 @@ Future changes will appear here.
 ### Chores
 
 - v1.4.32 ([#417](https://github.com/autonomys/auto-sdk/pull/417)) [@clostao](https://github.com/clostao)
+
 
 
 
@@ -408,6 +441,7 @@ Future changes will appear here.
 
 
 
+
 ## [1.4.31] - 2025-05-14
 
 ### Features
@@ -426,6 +460,8 @@ Future changes will appear here.
 
 [1.5.15]: https://github.com/autonomys/auto-sdk/releases/tag/v1.5.15
 
-[Unreleased]: https://github.com/autonomys/auto-sdk/compare/v1.5.17...HEAD
-[1.5.17]: https://github.com/autonomys/auto-sdk/compare/v1.5.16...v1.5.17
 [1.5.16]: https://github.com/autonomys/auto-sdk/releases/tag/v1.5.16
+
+[Unreleased]: https://github.com/autonomys/auto-sdk/compare/v1.5.18...HEAD
+[1.5.18]: https://github.com/autonomys/auto-sdk/compare/v1.5.17...v1.5.18
+[1.5.17]: https://github.com/autonomys/auto-sdk/releases/tag/v1.5.17
