@@ -106,17 +106,17 @@ describe('Generic parseUnits/formatUnits', () => {
 describe('Existential Deposit validation (AI3)', () => {
   test('returns false for amounts below existential deposit', () => {
     assert.equal(meetsExistentialDepositAi3('0'), false)
-    assert.equal(meetsExistentialDepositAi3('0.0000005'), false)
-    assert.equal(meetsExistentialDepositAi3('0.000000999999'), false)
+    assert.equal(meetsExistentialDepositAi3('0.000005'), false)
+    assert.equal(meetsExistentialDepositAi3('0.0000099999'), false)
   })
 
   test('returns true for amounts at existential deposit threshold', () => {
-    assert.equal(meetsExistentialDepositAi3('0.000001'), true)
+    assert.equal(meetsExistentialDepositAi3('0.00001'), true)
   })
 
   test('returns true for amounts above existential deposit', () => {
-    assert.equal(meetsExistentialDepositAi3('0.000001000001'), true)
-    assert.equal(meetsExistentialDepositAi3('0.000002'), true)
+    assert.equal(meetsExistentialDepositAi3('0.00001000001'), true)
+    assert.equal(meetsExistentialDepositAi3('0.00002'), true)
     assert.equal(meetsExistentialDepositAi3('0.001'), true)
     assert.equal(meetsExistentialDepositAi3('1'), true)
     assert.equal(meetsExistentialDepositAi3('100.5'), true)
@@ -134,17 +134,17 @@ describe('Existential Deposit validation (AI3)', () => {
 
   test('works with edge case precision values', () => {
     // Test the exact ED value in different string formats
-    assert.equal(meetsExistentialDepositAi3('0.000001000000000000'), true)
-    assert.equal(meetsExistentialDepositAi3('0.000001'), true)
+    assert.equal(meetsExistentialDepositAi3('0.00001000000000000'), true)
+    assert.equal(meetsExistentialDepositAi3('0.00001'), true)
 
     // Test values that are exactly 1 Shannon below ED
-    const oneShannonBelow = shannonsToAi3(BigInt('999999999999'))
+    const oneShannonBelow = shannonsToAi3(BigInt('9999999999999'))
     assert.equal(meetsExistentialDepositAi3(oneShannonBelow), false)
   })
 
   test('handles negative amounts', () => {
     assert.equal(meetsExistentialDepositAi3('-1'), false)
-    assert.equal(meetsExistentialDepositAi3('-0.000001'), false)
+    assert.equal(meetsExistentialDepositAi3('-0.00001'), false)
   })
 
   test('throws error for invalid amount formats', () => {
@@ -156,18 +156,18 @@ describe('Existential Deposit validation (AI3)', () => {
 
   test('handles amounts with excess decimal precision', () => {
     // Should throw by default for excess decimals (same as ai3ToShannons)
-    assert.throws(() => meetsExistentialDepositAi3('0.0000010000000000000000001'))
+    assert.throws(() => meetsExistentialDepositAi3('0.000010000000000000000001'))
   })
 
   test('consistency with ai3ToShannons and constant', () => {
     // Verify our function uses the same logic as direct comparison
-    const testAmount = '0.000001'
+    const testAmount = '0.00001'
     const shannons = ai3ToShannons(testAmount)
     const directComparison = shannons >= DEFAULT_EXISTENTIAL_DEPOSIT_SHANNONS
     assert.equal(meetsExistentialDepositAi3(testAmount), directComparison)
 
     // Test with various amounts
-    const testCases = ['0', '0.0000005', '0.000001', '0.000002', '1', '100']
+    const testCases = ['0', '0.000005', '0.00001', '0.00002', '1', '100']
     for (const amount of testCases) {
       const shannons = ai3ToShannons(amount)
       const expected = shannons >= DEFAULT_EXISTENTIAL_DEPOSIT_SHANNONS
@@ -179,18 +179,18 @@ describe('Existential Deposit validation (AI3)', () => {
 describe('Existential Deposit validation (Shannon units)', () => {
   test('returns false for Shannon amounts below existential deposit', () => {
     assert.equal(meetsExistentialDepositShannons(BigInt(0)), false)
-    assert.equal(meetsExistentialDepositShannons(BigInt('500000000000')), false)
-    assert.equal(meetsExistentialDepositShannons(BigInt('999999999999')), false)
+    assert.equal(meetsExistentialDepositShannons(BigInt('5000000000000')), false)
+    assert.equal(meetsExistentialDepositShannons(BigInt('9999999999999')), false)
   })
 
   test('returns true for Shannon amounts at existential deposit threshold', () => {
-    assert.equal(meetsExistentialDepositShannons(BigInt('1000000000000')), true)
+    assert.equal(meetsExistentialDepositShannons(BigInt('10000000000000')), true)
     assert.equal(meetsExistentialDepositShannons(DEFAULT_EXISTENTIAL_DEPOSIT_SHANNONS), true)
   })
 
   test('returns true for Shannon amounts above existential deposit', () => {
-    assert.equal(meetsExistentialDepositShannons(BigInt('1000000000001')), true)
-    assert.equal(meetsExistentialDepositShannons(BigInt('2000000000000')), true)
+    assert.equal(meetsExistentialDepositShannons(BigInt('10000000000001')), true)
+    assert.equal(meetsExistentialDepositShannons(BigInt('20000000000000')), true)
     assert.equal(meetsExistentialDepositShannons(BigInt('1000000000000000000')), true) // 1 AI3
   })
 
@@ -206,7 +206,7 @@ describe('Existential Deposit validation (Shannon units)', () => {
 
   test('handles negative Shannon amounts', () => {
     assert.equal(meetsExistentialDepositShannons(BigInt('-1')), false)
-    assert.equal(meetsExistentialDepositShannons(BigInt('-1000000000000')), false)
+    assert.equal(meetsExistentialDepositShannons(BigInt('-10000000000000')), false)
     assert.equal(meetsExistentialDepositShannons(-DEFAULT_EXISTENTIAL_DEPOSIT_SHANNONS), false)
   })
 
@@ -233,7 +233,7 @@ describe('Existential Deposit validation (Shannon units)', () => {
   test('performance with string-based BigInt creation', () => {
     // Test that function works with BigInt created from strings (common pattern)
     assert.equal(meetsExistentialDepositShannons(BigInt('0')), false)
-    assert.equal(meetsExistentialDepositShannons(BigInt('1000000000000')), true)
+    assert.equal(meetsExistentialDepositShannons(BigInt('10000000000000')), true)
     assert.equal(meetsExistentialDepositShannons(BigInt('1000000000000000000')), true)
   })
 })
@@ -242,9 +242,9 @@ describe('Cross-function consistency (AI3 vs Shannon)', () => {
   test('both functions return same result for equivalent amounts', () => {
     const testCases = [
       { ai3: '0', shannon: BigInt('0') },
-      { ai3: '0.0000005', shannon: BigInt('500000000000') },
-      { ai3: '0.000001', shannon: BigInt('1000000000000') },
-      { ai3: '0.000002', shannon: BigInt('2000000000000') },
+      { ai3: '0.000005', shannon: BigInt('5000000000000') },
+      { ai3: '0.00001', shannon: BigInt('10000000000000') },
+      { ai3: '0.00002', shannon: BigInt('20000000000000') },
       { ai3: '1', shannon: BigInt('1000000000000000000') },
       { ai3: '100.5', shannon: BigInt('100500000000000000000') },
     ]
@@ -261,7 +261,7 @@ describe('Cross-function consistency (AI3 vs Shannon)', () => {
   })
 
   test('AI3 function converts to same Shannon value', () => {
-    const testAmounts = ['0.000001', '0.000002', '1', '100']
+    const testAmounts = ['0.00001', '0.00002', '1', '100']
     for (const amount of testAmounts) {
       const convertedShannon = ai3ToShannons(amount)
       const ai3Result = meetsExistentialDepositAi3(amount)
