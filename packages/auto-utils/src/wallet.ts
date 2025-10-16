@@ -150,22 +150,22 @@ export const generateWallet = (type: KeypairType = 'sr25519'): GeneratedWallet =
  * console.log('Account address:', accounts[0].address)
  *
  * // Activate on specific network
- * const { api: taurusApi, accounts: taurusAccounts } = await activateWallet({
+ * const { api: mainnetApi, accounts: mainnetAccounts } = await activateWallet({
  *   mnemonic: 'your mnemonic here',
- *   networkId: 'taurus'
+ *   networkId: 'mainnet'
  * })
  *
  * // Activate on domain
  * const { api: domainApi, accounts: domainAccounts } = await activateWallet({
  *   uri: '//Alice',
- *   networkId: 'taurus',
+ *   networkId: 'mainnet',
  *   domainId: '0' // Auto-EVM domain
  * })
  *
  * // Activate with ethereum key type
  * const { api: ethApi, accounts: ethAccounts } = await activateWallet({
  *   mnemonic: 'your mnemonic here',
- *   networkId: 'taurus',
+ *   networkId: 'mainnet',
  *   type: 'ethereum'
  * })
  *
@@ -239,7 +239,7 @@ export const activateWallet = async (params: ActivateWalletParams): Promise<Wall
  * console.log('Created', wallets.length, 'mock wallets')
  *
  * // Create mock wallets for testnet
- * const testWallets = await mockWallets({ networkId: 'taurus' })
+ * const testWallets = await mockWallets({ networkId: 'mainnet' })
  *
  * // Create mock wallets with existing API
  * const api = await activate({ networkId: 'localhost' })
@@ -247,7 +247,7 @@ export const activateWallet = async (params: ActivateWalletParams): Promise<Wall
  *
  * // Create ethereum-type mock wallets
  * const ethWallets = await mockWallets(
- *   { networkId: 'taurus' },
+ *   { networkId: 'mainnet' },
  *   undefined,
  *   'ethereum'
  * )
