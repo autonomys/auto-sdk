@@ -12,7 +12,7 @@ export interface ErrorResilientStreamOptions {
 }
 
 interface ErrorResilientStream extends Readable {
-  healthCheck: () => StreamHealthMetrics
+  healthCheck?: () => StreamHealthMetrics
 }
 
 /**
@@ -128,5 +128,8 @@ export const createErrorResilientStream = (
   // Start health monitoring
   startHealthChecks()
 
-  return { ...(passThrough as Readable), healthCheck } as ErrorResilientStream
+  const errorResilientStream: ErrorResilientStream = passThrough as ErrorResilientStream
+  errorResilientStream.healthCheck = healthCheck
+
+  return errorResilientStream
 }
