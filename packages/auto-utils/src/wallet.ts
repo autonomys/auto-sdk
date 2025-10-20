@@ -46,6 +46,14 @@ import type {
  * })
  * console.log(ethWallet.address) // Ethereum-format address (0x...)
  *
+ * // Setup ethereum wallet with BIP44 derivation path
+ * const ethBip44 = setupWallet({
+ *   mnemonic: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about',
+ *   type: 'ethereum',
+ *   derivationPath: "m/44'/60'/0'/0/0",
+ * })
+ * console.log(ethBip44.address) // Matches MetaMask default derivation
+ *
  * // Setup development wallet from URI
  * const aliceWallet = setupWallet({ uri: '//Alice' })
  * console.log(aliceWallet.address) // Alice's development address
@@ -67,7 +75,9 @@ export const setupWallet = (params: SetupWalletParams): Wallet => {
     keyringPair = keyring.addFromUri((params as URI).uri)
   } else if ((params as Mnemonic).mnemonic) {
     // Treat as mnemonic
-    keyringPair = keyring.addFromUri((params as Mnemonic).mnemonic)
+    const base = (params as Mnemonic).mnemonic
+    const withPath = params.derivationPath ? `${base}/${params.derivationPath}` : base
+    keyringPair = keyring.addFromUri(withPath)
   } else throw new Error('Invalid mnemonic or private key')
 
   return {
@@ -140,22 +150,22 @@ export const generateWallet = (type: KeypairType = 'sr25519'): GeneratedWallet =
  * console.log('Account address:', accounts[0].address)
  *
  * // Activate on specific network
- * const { api: taurusApi, accounts: taurusAccounts } = await activateWallet({
+ * const { api: mainnetApi, accounts: mainnetAccounts } = await activateWallet({
  *   mnemonic: 'your mnemonic here',
- *   networkId: 'taurus'
+ *   networkId: 'mainnet'
  * })
  *
  * // Activate on domain
  * const { api: domainApi, accounts: domainAccounts } = await activateWallet({
  *   uri: '//Alice',
- *   networkId: 'taurus',
+ *   networkId: 'mainnet',
  *   domainId: '0' // Auto-EVM domain
  * })
  *
  * // Activate with ethereum key type
  * const { api: ethApi, accounts: ethAccounts } = await activateWallet({
  *   mnemonic: 'your mnemonic here',
- *   networkId: 'taurus',
+ *   networkId: 'mainnet',
  *   type: 'ethereum'
  * })
  *
@@ -229,7 +239,7 @@ export const activateWallet = async (params: ActivateWalletParams): Promise<Wall
  * console.log('Created', wallets.length, 'mock wallets')
  *
  * // Create mock wallets for testnet
- * const testWallets = await mockWallets({ networkId: 'taurus' })
+ * const testWallets = await mockWallets({ networkId: 'mainnet' })
  *
  * // Create mock wallets with existing API
  * const api = await activate({ networkId: 'localhost' })
@@ -237,7 +247,7 @@ export const activateWallet = async (params: ActivateWalletParams): Promise<Wall
  *
  * // Create ethereum-type mock wallets
  * const ethWallets = await mockWallets(
- *   { networkId: 'taurus' },
+ *   { networkId: 'mainnet' },
  *   undefined,
  *   'ethereum'
  * )

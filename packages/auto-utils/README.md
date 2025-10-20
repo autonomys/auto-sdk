@@ -71,6 +71,8 @@ import { activateWallet } from '@autonomys/auto-utils'
   const { api, accounts } = await activateWallet({
     mnemonic,
     networkId: 'mainnet', // Optional: specify the network ID
+    // Optional derivation path (useful for ethereum BIP44):
+    // derivationPath: "m/44'/60'/0'/0/0",
   })
 
   const account = accounts[0]
@@ -262,6 +264,27 @@ import { activateDomain } from '@autonomys/auto-utils'
 ```
 
 ---
+
+#### **Setup a Wallet with Ethereum BIP44**
+
+```typescript
+import { setupWallet } from '@autonomys/auto-utils'
+
+const mnemonic = 'your mnemonic phrase here'
+
+// Default behavior derives from master (m)
+const ethMaster = setupWallet({ mnemonic, type: 'ethereum' })
+
+// To derive using BIP44 path
+const ethBip44 = setupWallet({
+  mnemonic,
+  type: 'ethereum',
+  derivationPath: "m/44'/60'/0'/0/0",
+})
+
+console.log(ethMaster.address)
+console.log(ethBip44.address)
+```
 
 ### 5. Address Utilities
 

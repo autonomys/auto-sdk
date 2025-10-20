@@ -24,6 +24,7 @@ describe('Verify wallet functions', () => {
   const TEST_MNEMONIC = 'test test test test test test test test test test test junk'
   const TEST_ADDRESS = '5GmS1wtCfR4tK5SSgnZbVT4kYw5W8NmxmijcsxCQE6oLW6A8'
   const TEST_ADDRESS_ETHEREUM = '0xF5a6EAD936fb47f342Bb63E676479bDdf26EbE1d'
+  const TEST_ADDRESS_ETHEREUM_BIP44 = '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266'
   const ALICE_URI = '//Alice'
   const BOB_URI = '//Bob'
   let api: ApiPromise
@@ -61,6 +62,17 @@ describe('Verify wallet functions', () => {
       expect(wallet.address.startsWith('0x')).toBeTruthy()
       expect(wallet.commonAddress).toEqual(TEST_ADDRESS_ETHEREUM)
       expect(wallet.address).toEqual(TEST_ADDRESS_ETHEREUM)
+    })
+
+    test("Check setupWallet returns expected address when provided with Ethereum BIP44 derivationPath ('m/44'/60'/0'/0/0')", async () => {
+      const wallet = setupWallet({
+        mnemonic: TEST_MNEMONIC,
+        type: 'ethereum',
+        derivationPath: "m/44'/60'/0'/0/0",
+      } as any)
+      expect(wallet.keyringPair?.type).toEqual('ethereum')
+      expect(wallet.address.startsWith('0x')).toBeTruthy()
+      expect(wallet.address).toEqual(TEST_ADDRESS_ETHEREUM_BIP44)
     })
 
     test('Check setupWallet return a pair with matching private key when provided with Alice seed', async () => {
@@ -110,6 +122,19 @@ describe('Verify wallet functions', () => {
       expect(accounts.length).toBeGreaterThan(0)
       expect(accounts[0].address.startsWith('0x')).toBeTruthy()
       expect(accounts[0].address).toEqual(TEST_ADDRESS_ETHEREUM)
+    }, 15000)
+
+    test('Check activateWallet returns an account with expected address when provided with a test mnemonic (ethereum + BIP44 derivationPath)', async () => {
+      const { api, accounts } = await activateWallet({
+        ...TEST_NETWORK,
+        mnemonic: TEST_MNEMONIC,
+        type: 'ethereum',
+        derivationPath: "m/44'/60'/0'/0/0",
+      } as ActivateWalletParams)
+      expect(api).toBeDefined()
+      expect(accounts.length).toBeGreaterThan(0)
+      expect(accounts[0].address.startsWith('0x')).toBeTruthy()
+      expect(accounts[0].address).toEqual(TEST_ADDRESS_ETHEREUM_BIP44)
     }, 15000)
 
     test('Check activateWallet return an api instance and an account when provided with Alice uri', async () => {

@@ -3,12 +3,12 @@ import { getDownloadServiceUrl, getNetworkUrl } from './networks'
 import { AuthProvider, AutoDriveApiHandler, ConnectionOptions } from './types'
 
 const createSendRequest =
-  (baseUrl: string, provider: AuthProvider, apiKey: string) =>
+  (baseUrl: string, provider: AuthProvider | null, apiKey: string | null) =>
   async (relativeUrl: string, request: Partial<Request>, body?: BodyInit) => {
     const headers = new Headers({
       ...Object.fromEntries(request.headers?.entries() || []),
-      'x-auth-provider': provider,
-      Authorization: `Bearer ${apiKey}`,
+      ...(provider ? { 'x-auth-provider': provider } : {}),
+      ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
       'x-auto-sdk-version': version,
       'User-Agent': `AutoDrive/${version}`,
     })
@@ -35,9 +35,6 @@ export const createApiRequestHandler = ({
   }
   if (!downloadBaseUrl) {
     throw new Error('No download base URL provided')
-  }
-  if (!apiKey) {
-    throw new Error('No API key provided')
   }
 
   const api = {

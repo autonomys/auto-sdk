@@ -26,7 +26,10 @@ export type WalletType = {
   type?: KeypairType
 }
 
-export type SetupWalletParams = MnemonicOrURI & WalletType
+export type SetupWalletParams = MnemonicOrURI &
+  WalletType & {
+    derivationPath?: string
+  }
 
 export type Wallet = {
   keyringPair?: KeyringPair
@@ -42,7 +45,9 @@ export interface GeneratedWallet extends Wallet {
 export type ActivateWalletParams = (NetworkParams | DomainParams) &
   MnemonicOrURI &
   ExtraActivationOptions &
-  WalletType
+  WalletType & {
+    derivationPath?: string
+  }
 
 export type WalletActivated = {
   api: ApiPromise

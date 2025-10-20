@@ -59,6 +59,33 @@ yarn autoid:view-revoked-certs <AUTO_ID_IDENTIFIER>
 
 ```bash
 yarn address
+yarn eth-derivation-demo
+```
+
+### Ethereum derivation paths (demo)
+
+The `eth-derivation-demo` script shows the difference between deriving an Ethereum address from the master key (`m`) and from the BIP44 path (`m/44'/60'/0'/0/0`). It also cross-checks results using `ethers`.
+
+To run:
+
+```bash
+yarn eth-derivation-demo
+```
+
+Programmatic usage with optional `derivationPath`:
+
+```ts
+import { setupWallet } from '@autonomys/auto-utils'
+
+// Master key (m) derivation
+const ethMaster = setupWallet({ mnemonic, type: 'ethereum' })
+
+// BIP44 derivation
+const ethBip44 = setupWallet({
+  mnemonic,
+  type: 'ethereum',
+  derivationPath: "m/44'/60'/0'/0/0",
+} as any)
 ```
 
 ## Run All
