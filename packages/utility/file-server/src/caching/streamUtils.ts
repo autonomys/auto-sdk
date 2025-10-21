@@ -72,18 +72,29 @@ export const createErrorResilientStream = (
     }, healthCheckInterval)
   }
 
-  // Handle source stream data
+  // Set up backpressure-aware data flow
   sourceStream.on('data', (chunk) => {
     try {
       metrics.lastActivity = Date.now()
       metrics.isStalled = false
 
       if (!passThrough.destroyed) {
-        passThrough.write(chunk)
+        const canContinue = passThrough.write(chunk)
+        if (!canContinue) {
+          // Backpressure: pause source stream until drain event
+          sourceStream.pause()
+        }
       }
     } catch (error) {
       console.error('Error processing stream data:', error)
       // Don't destroy the stream on consumer errors, just log
+    }
+  })
+
+  // Resume source stream when pass-through is ready for more data
+  passThrough.on('drain', () => {
+    if (!sourceStream.destroyed && !passThrough.destroyed) {
+      sourceStream.resume()
     }
   })
 
