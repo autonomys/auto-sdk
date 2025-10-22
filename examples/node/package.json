@@ -16,6 +16,7 @@
     "cli": "npx ts-node ./src/cli.ts",
     "all": "yarn address && yarn balance && yarn transfer && yarn operators && yarn register-operator && yarn nominate-operator && yarn withdraw-stake && yarn deregister-operator",
     "address": "npx ts-node ./src/address.ts",
+    "eth-derivation-demo": "npx ts-node ./src/eth-derivation-demo.ts",
     "balance": "npx ts-node ./src/balance.ts",
     "transfer": "npx ts-node ./src/transfer.ts",
     "operators": "npx ts-node ./src/operators.ts",
@@ -28,7 +29,8 @@
   },
   "dependencies": {
     "@autonomys/auto-consensus": "workspace:*",
-    "@autonomys/auto-utils": "workspace:*"
+    "@autonomys/auto-utils": "workspace:*",
+    "ethers": "^6.13.5"
   },
   "devDependencies": {
     "commander": "^12.1.0",
