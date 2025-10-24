@@ -25,7 +25,8 @@
     "README.md"
   ],
   "dependencies": {
-    "@autonomys/auto-utils": "^1.5.19"
+    "@autonomys/auto-utils": "^1.5.19",
+    "zod": "^3.24.2"
   },
   "devDependencies": {
     "@types/jest": "^29.5.14",
