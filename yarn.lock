@@ -72,6 +72,7 @@ __metadata:
     prettier: "npm:^3.5.3"
     ts-jest: "npm:^29.3.1"
     typescript: "npm:^5.8.3"
+    zod: "npm:^3.24.2"
   languageName: unknown
   linkType: soft
 
