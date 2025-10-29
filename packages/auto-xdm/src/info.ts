@@ -53,14 +53,6 @@ export const consensusChannels = async (api: ApiPromise) =>
 export const domainChannels = async (api: ApiPromise, domainId: number) =>
   await query<Codec>(api, 'messenger.channels', [createDomainsChainIdType(api, domainId)])
 
-export const allCancelledTransfers = async (api: ApiPromise) => {
-  return await query<Codec>(api, 'transporter.cancelledTransfers', [])
-}
-
-export const chainTransfers = async (api: ApiPromise) => {
-  return await query<Codec>(api, 'transporter.chainTransfers', [])
-}
-
 /**
  * Query all domain balances on the consensus chain.
  *
@@ -88,8 +80,4 @@ export const allDomainBalances = async (api: ApiPromise) => {
  */
 export const domainBalances = async (api: ApiPromise, domainId: number) => {
   return await query<Codec>(api, 'transporter.domainBalances', [domainId])
-}
-
-export const allUnconfirmedTransfers = async (api: ApiPromise) => {
-  return await query<Codec>(api, 'transporter.unconfirmedTransfers', [])
 }
