@@ -16,7 +16,7 @@ import { createDomainsChainIdType, type ApiPromise, type Codec } from '@autonomy
  * const domain: Chain = 1
  * ```
  */
-export type Chain = 'consensus' | { domain: number }
+export type Chain = 'consensus' | { domainId: number }
 
 /**
  * Helper to convert Chain type to ChainId Codec
@@ -26,7 +26,7 @@ const createChainId = (api: ApiPromise, chain: Chain): Codec => {
   if (chain === 'consensus') {
     return createDomainsChainIdType(api)
   }
-  return createDomainsChainIdType(api, chain.domain)
+  return createDomainsChainIdType(api, chain.domainId)
 }
 
 /**
@@ -42,42 +42,62 @@ export const chainAllowlist = async (api: ApiPromise) =>
   await query<Codec>(api, 'messenger.chainAllowlist', [])
 
 /**
- * Query channels for a specific chain ID.
+ * Query the next channel ID for a given chain.
  *
- * Returns the channel configuration between the current chain and the specified chain.
- * Channels represent bridges for exchanging cross-domain messages between two chains.
+ * Returns the next channel ID that will be assigned when a new channel is created to the specified chain.
+ * If the value is 0, no channels exist yet. If > 0, channels exist (IDs start at 1).
  *
  * @param api - The API promise instance for the chain
- * @param chainId - The chain ID to query channels for
- * @returns Channel configuration for the specified chain
+ * @param chain - The chain to query: 'consensus' or domain ID (number)
+ * @returns The next channel ID (U256) as a Codec
+ *
+ * @example
+ * ```typescript
+ * // Check if any channels exist to domain 0
+ * const nextId = await nextChannelId(api, { domainId: 0 })
+ * const hasChannels = BigInt(nextId.toString()) > 0n
+ * ```
  */
-export const channels = async (api: ApiPromise, chainId: Codec) =>
-  await query<Codec>(api, 'messenger.channels', [chainId])
+export const nextChannelId = async (api: ApiPromise, chain: Chain) => {
+  const chainId = createChainId(api, chain)
+  return await query<Codec>(api, 'messenger.nextChannelId', [chainId])
+}
 
 /**
- * Query channels from the consensus chain.
+ * Query channels for a chain.
  *
- * Returns all channels from the consensus chain to other chains (consensus or domains).
- * This is a convenience method that automatically uses the consensus chain ID.
+ * Channels storage is a DoubleMap keyed by (ChainId, ChannelId).
+ * - If channelId is provided, returns the specific channel
+ * - If channelId is omitted, returns all channels for the chain
  *
- * @param api - The API promise instance for the consensus chain
- * @returns Channel configurations from the consensus chain
+ * @param api - The API promise instance for the chain
+ * @param chain - The chain to query channels for: 'consensus' or domain ID
+ * @param channelId - Optional channel ID (number, string, or bigint). If omitted, returns all channels for the chain.
+ * @returns Channel configuration(s) for the specified chain (and channel ID if provided)
+ *
+ * @example
+ * ```typescript
+ * // Query all channels to domain 0
+ * const allChannels = await channels(api, { domainId: 0 })
+ *
+ * // Query specific channel 1 to domain 0
+ * const channel = await channels(api, { domainId: 0 }, 1)
+ * ```
  */
-export const consensusChannels = async (api: ApiPromise) =>
-  await query<Codec>(api, 'messenger.channels', [createDomainsChainIdType(api)])
+export const channels = async (
+  api: ApiPromise,
+  chain: Chain,
+  channelId?: number | string | bigint,
+) => {
+  const chainIdCodec = createChainId(api, chain)
 
-/**
- * Query channels from a specific domain.
- *
- * Returns all channels from the specified domain to other chains.
- * This allows domains to communicate with the consensus chain and other domains.
- *
- * @param api - The API promise instance for the domain
- * @param domainId - The domain ID to query channels for
- * @returns Channel configurations from the specified domain
- */
-export const domainChannels = async (api: ApiPromise, domainId: number) =>
-  await query<Codec>(api, 'messenger.channels', [createDomainsChainIdType(api, domainId)])
+  if (channelId !== undefined) {
+    const channelIdCodec = api.createType('U256', channelId)
+    return await query<Codec>(api, 'messenger.channels', [chainIdCodec, channelIdCodec])
+  }
+
+  return await query<Codec>(api, 'messenger.channels', [chainIdCodec])
+}
 
 /**
  * Query all domain balances on the consensus chain.
