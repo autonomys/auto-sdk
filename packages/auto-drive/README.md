@@ -26,7 +26,7 @@ To interact with the Auto-Drive API, you'll need to create an API key. Follow th
 - Once you're logged in, click on the developers section in the left sidebar menu.
 - In the developers section, click on 'Create API Key'
 - Read the modal message and click on generate
-
+Add
 ### How to upload a file from Buffer?
 
 Here is an example of how to use the `uploadFileFromBuffer` method to upload a Buffer with optional encryption and compression:
