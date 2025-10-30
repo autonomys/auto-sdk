@@ -35,7 +35,7 @@ Here is an example of how to use the `uploadFileFromBuffer` method to upload a B
 import { createAutoDriveApi } from '@autonomys/auto-drive'
 import { NetworkId } from '@autonomys/auto-utils'
 
-const api = createAutoDriveApi({ apiKey: 'your-api-key', network: NetworkId.TAURUS }) // Initialize your API instance with API key
+const api = createAutoDriveApi({ apiKey: 'your-api-key', network: NetworkId.MAINNET }) // Initialize your API instance with API key
 
 // Create a buffer from your data
 const buffer = Buffer.from('Hello, Autonomys!')
