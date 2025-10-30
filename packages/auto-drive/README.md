@@ -26,6 +26,34 @@ To interact with the Auto-Drive API, you'll need to create an API key. Follow th
 - Once you're logged in, click on the developers section in the left sidebar menu.
 - In the developers section, click on 'Create API Key'
 - Read the modal message and click on generate
+Add
+### How to upload a file from Buffer?
+
+Here is an example of how to use the `uploadFileFromBuffer` method to upload a Buffer with optional encryption and compression:
+
+```typescript
+import { createAutoDriveApi } from '@autonomys/auto-drive'
+import { NetworkId } from '@autonomys/auto-utils'
+
+const api = createAutoDriveApi({ apiKey: 'your-api-key', network: NetworkId.MAINNET }) // Initialize your API instance with API key
+
+// Create a buffer from your data
+const buffer = Buffer.from('Hello, Autonomys!')
+const fileName = 'hello.txt'
+
+const options = {
+  password: 'your-encryption-password', // Optional: specify a password for encryption
+  compression: true,
+  // an optional callback useful for large file uploads
+  onProgress?: (progress: number) => {
+    console.log(`The upload is ${progress}% completed`)
+  }
+}
+
+const cid = await api.uploadFileFromBuffer(buffer, fileName, options)
+
+console.log(`The file is uploaded and its cid is ${cid}`)
+```
 
 ### How to upload a file from filepath? (Not available in browser)
 
@@ -35,7 +63,7 @@ Here is an example of how to use the `fs.uploadFileFromFilepath` method to uploa
 import { fs, createAutoDriveApi } from '@autonomys/auto-drive'
 import { NetworkId } from '@autonomys/auto-utils'
 
-const api = createAutoDriveApi({ apiKey: 'your-api-key', network: NetworkId.TAURUS }) // Initialize your API instance with API key
+const api = createAutoDriveApi({ apiKey: 'your-api-key', network: NetworkId.MAINNET }) // Initialize your API instance with API key
 const filePath = 'path/to/your/file.txt' // Specify the path to your file
 const options = {
   password: 'your-encryption-password', // Optional: specify a password for encryption
@@ -57,7 +85,7 @@ console.log(`The file is uploaded and its cid is ${cid}`)
 import { createAutoDriveApi } from '@autonomys/auto-drive'
 import { NetworkId } from '@autonomys/auto-utils'
 
-const api = createAutoDriveApi({ apiKey: 'your-api-key', network: NetworkId.TAURUS }) // Initialize your API instance with API key
+const api = createAutoDriveApi({ apiKey: 'your-api-key', network: NetworkId.MAINNET }) // Initialize your API instance with API key
 
 // e.g Get File from object from HTML event
 const file: File = e.target.value // Substitute with your file
@@ -92,7 +120,7 @@ You could upload any file that could be represented in that way. For example, up
 import { createAutoDriveApi } from '@autonomys/auto-drive'
 import { NetworkId } from '@autonomys/auto-utils'
 
-const api = createAutoDriveApi({ apiKey: 'your-api-key', network: NetworkId.TAURUS }) // Initialize your API instance with API key
+const api = createAutoDriveApi({ apiKey: 'your-api-key', network: NetworkId.MAINNET }) // Initialize your API instance with API key
 const buffer = Buffer.from(...);
 const genericFile = {
   read: async function *() {
@@ -124,7 +152,7 @@ console.log(`The file is uploaded and its cid is ${cid}`)
 import { createAutoDriveApi, fs } from '@autonomys/auto-drive'
 import { NetworkId } from '@autonomys/auto-utils'
 
-const api = createAutoDriveApi({ apiKey: 'your-api-key', network: NetworkId.TAURUS }) // Initialize your API instance with API key
+const api = createAutoDriveApi({ apiKey: 'your-api-key', network: NetworkId.MAINNET }) // Initialize your API instance with API key
 const folderPath = 'path/to/your/folder' // Specify the path to your folder
 
 const options = {
@@ -151,7 +179,7 @@ Here is an example of how to use the `downloadFile` method to download a file fr
 import { createAutoDriveApi } from '@autonomys/auto-drive'
 import { NetworkId } from '@autonomys/auto-utils'
 
-const api = createAutoDriveApi({ apiKey: 'your-api-key', network: NetworkId.TAURUS }) // Initialize your API instance with API key
+const api = createAutoDriveApi({ apiKey: 'your-api-key', network: NetworkId.MAINNET }) // Initialize your API instance with API key
 
 try {
   const cid = '..'
@@ -176,7 +204,7 @@ Here are examples of how to use the object moderation methods:
 import { createAutoDriveApi } from '@autonomys/auto-drive'
 import { NetworkId } from '@autonomys/auto-utils'
 
-const api = createAutoDriveApi({ apiKey: 'your-api-key', network: NetworkId.TAURUS })
+const api = createAutoDriveApi({ apiKey: 'your-api-key', network: NetworkId.MAINNET })
 
 try {
   const cid = 'your-object-cid'
@@ -193,7 +221,7 @@ try {
 import { createAutoDriveApi } from '@autonomys/auto-drive'
 import { NetworkId } from '@autonomys/auto-utils'
 
-const api = createAutoDriveApi({ apiKey: 'your-api-key', network: NetworkId.TAURUS })
+const api = createAutoDriveApi({ apiKey: 'your-api-key', network: NetworkId.MAINNET })
 
 try {
   const cid = 'your-object-cid'
@@ -210,7 +238,7 @@ try {
 import { createAutoDriveApi } from '@autonomys/auto-drive'
 import { NetworkId } from '@autonomys/auto-utils'
 
-const api = createAutoDriveApi({ apiKey: 'your-api-key', network: NetworkId.TAURUS })
+const api = createAutoDriveApi({ apiKey: 'your-api-key', network: NetworkId.MAINNET })
 
 try {
   const cid = 'your-object-cid'
@@ -227,7 +255,7 @@ try {
 import { createAutoDriveApi } from '@autonomys/auto-drive'
 import { NetworkId } from '@autonomys/auto-utils'
 
-const api = createAutoDriveApi({ apiKey: 'your-api-key', network: NetworkId.TAURUS })
+const api = createAutoDriveApi({ apiKey: 'your-api-key', network: NetworkId.MAINNET })
 
 try {
   const toBeReviewed = await api.getToBeReviewedList(50, 0)
@@ -248,7 +276,7 @@ Here is an example of how to use the `publishObject` method to publish an object
 import { createAutoDriveApi } from '@autonomys/auto-drive'
 import { NetworkId } from '@autonomys/auto-utils'
 
-const api = createAutoDriveApi({ apiKey: 'your-api-key', network: NetworkId.TAURUS }) // Initialize your API instance with API key
+const api = createAutoDriveApi({ apiKey: 'your-api-key', network: NetworkId.MAINNET }) // Initialize your API instance with API key
 
 try {
   const cid = 'your-file-cid'
@@ -269,7 +297,7 @@ Here is an example of how to use the `getMyFiles` method to retrieve the root di
 import { createAutoDriveApi } from '@autonomys/auto-drive'
 import { NetworkId } from '@autonomys/auto-utils'
 
-const api = createAutoDriveApi({ apiKey: 'your-api-key', network: NetworkId.TAURUS }) // Initialize your API instance with API key
+const api = createAutoDriveApi({ apiKey: 'your-api-key', network: NetworkId.MAINNET }) // Initialize your API instance with API key
 
 try {
   for (let i = 0; i < 10; i++) {

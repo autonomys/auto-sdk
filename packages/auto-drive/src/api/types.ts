@@ -66,6 +66,23 @@ export interface AutoDriveApi extends AutoDriveApiHandler {
     uploadChunkSize?: number,
   ) => Promise<string>
   /**
+   * Uploads a buffer to the server with optional encryption and compression.
+   *
+   * @param {AutoDriveApi} api - The API instance used to send requests.
+   * @param {Buffer} buffer - The buffer to be uploaded.
+   * @param {string} name - The name of the file to be uploaded.
+   * @param {UploadFileOptions} options - Options for the upload process.
+   * @param {number} [uploadChunkSize] - The size of each chunk to upload (optional).
+   * @returns {Promise<string>} - The CID of the uploaded file.
+   * @throws {Error} - Throws an error if the upload fails at any stage.
+   */
+  uploadFileFromBuffer: (
+    buffer: Buffer,
+    name: string,
+    options: UploadFileOptions,
+    uploadChunkSize?: number,
+  ) => Promise<string>
+  /**
    * Uploads an object as a JSON file to the server.
    *
    * This function serializes the provided object to a JSON string,
