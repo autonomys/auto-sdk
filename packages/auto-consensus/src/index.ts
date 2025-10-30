@@ -8,6 +8,7 @@ export * from './info'
 export * from './position'
 export * from './remark'
 export * from './staking'
+export * from './transactionFees'
 export * from './transfer'
 
 export * from './types'

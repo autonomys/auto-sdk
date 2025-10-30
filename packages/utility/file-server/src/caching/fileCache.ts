@@ -3,6 +3,7 @@ import fs from 'fs'
 import fsPromises from 'fs/promises'
 import path from 'path'
 import { BaseCacheConfig, FileCacheOptions, FileResponse } from '../models.js'
+import { createErrorResilientStream } from './streamUtils.js'
 import { writeFile } from './utils.js'
 
 const CHARS_PER_PARTITION = 2
@@ -49,12 +50,20 @@ export const createFileCache = (config: BaseCacheConfig) => {
 
     const path = cidToFilePath(cid)
 
+    const sourceStream = fs.createReadStream(path, {
+      start: options?.byteRange?.[0],
+      end: options?.byteRange?.[1],
+    })
+
+    // Wrap with error-resilient stream for stalled stream detection
+    const resilientStream = createErrorResilientStream(sourceStream, {
+      stallTimeout: 30000, // 30 seconds
+      healthCheckInterval: 5000, // 5 seconds
+    })
+
     return {
       ...data,
-      data: fs.createReadStream(path, {
-        start: options?.byteRange?.[0],
-        end: options?.byteRange?.[1],
-      }),
+      data: resilientStream,
     }
   }
 
