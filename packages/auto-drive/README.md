@@ -27,6 +27,34 @@ To interact with the Auto-Drive API, you'll need to create an API key. Follow th
 - In the developers section, click on 'Create API Key'
 - Read the modal message and click on generate
 
+### How to upload a file from Buffer?
+
+Here is an example of how to use the `uploadFileFromBuffer` method to upload a Buffer with optional encryption and compression:
+
+```typescript
+import { createAutoDriveApi } from '@autonomys/auto-drive'
+import { NetworkId } from '@autonomys/auto-utils'
+
+const api = createAutoDriveApi({ apiKey: 'your-api-key', network: NetworkId.TAURUS }) // Initialize your API instance with API key
+
+// Create a buffer from your data
+const buffer = Buffer.from('Hello, Autonomys!')
+const fileName = 'hello.txt'
+
+const options = {
+  password: 'your-encryption-password', // Optional: specify a password for encryption
+  compression: true,
+  // an optional callback useful for large file uploads
+  onProgress?: (progress: number) => {
+    console.log(`The upload is ${progress}% completed`)
+  }
+}
+
+const cid = await api.uploadFileFromBuffer(buffer, fileName, options)
+
+console.log(`The file is uploaded and its cid is ${cid}`)
+```
+
 ### How to upload a file from filepath? (Not available in browser)
 
 Here is an example of how to use the `fs.uploadFileFromFilepath` method to upload a file with optional encryption and compression:

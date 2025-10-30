@@ -2,6 +2,7 @@
 import {
   asyncByChunk,
   asyncFromStream,
+  bufferToAsyncIterable,
   bufferToIterable,
   fileToIterable,
 } from '@autonomys/asynchronous'
@@ -150,6 +151,19 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
     const result = await apiCalls.completeUpload(api, { uploadId: fileUpload.id })
 
     return result.cid
+  }
+
+  const uploadFileFromBuffer = async (
+    buffer: Buffer,
+    name: string,
+    options: UploadFileOptions = {},
+    uploadChunkSize?: number,
+  ): Promise<string> => {
+    return uploadFile(
+      { read: () => bufferToAsyncIterable(buffer), name, size: buffer.length },
+      options,
+      uploadChunkSize,
+    )
   }
 
   const uploadObjectAsJSON = async (
@@ -351,6 +365,7 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
     me,
     uploadFileFromInput,
     uploadFile,
+    uploadFileFromBuffer,
     uploadObjectAsJSON,
     uploadFolderFromInput,
     uploadFileWithinFolderUpload,
