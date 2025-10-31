@@ -1,5 +1,4 @@
-import { query } from '@autonomys/auto-consensus'
-import { createDomainsChainIdType, type ApiPromise, type Codec } from '@autonomys/auto-utils'
+import { createDomainsChainIdType, type ApiPromise } from '@autonomys/auto-utils'
 
 /**
  * Chain identifier for queries.
@@ -22,7 +21,7 @@ export type Chain = 'consensus' | { domainId: number }
  * Helper to convert Chain type to ChainId Codec
  * @internal
  */
-const createChainId = (api: ApiPromise, chain: Chain): Codec => {
+const createChainId = (api: ApiPromise, chain: Chain) => {
   if (chain === 'consensus') {
     return createDomainsChainIdType(api)
   }
@@ -38,8 +37,7 @@ const createChainId = (api: ApiPromise, chain: Chain): Codec => {
  * @param api - The API promise instance for the chain
  * @returns The set of allowed chain IDs
  */
-export const chainAllowlist = async (api: ApiPromise) =>
-  await query<Codec>(api, 'messenger.chainAllowlist', [])
+export const chainAllowlist = async (api: ApiPromise) => await api.query.messenger.chainAllowlist()
 
 /**
  * Query the next channel ID for a given chain.
@@ -49,7 +47,7 @@ export const chainAllowlist = async (api: ApiPromise) =>
  *
  * @param api - The API promise instance for the chain
  * @param chain - The chain to query: 'consensus' or domain ID (number)
- * @returns The next channel ID (U256) as a Codec
+ * @returns The next channel ID (U256)
  *
  * @example
  * ```typescript
@@ -60,26 +58,24 @@ export const chainAllowlist = async (api: ApiPromise) =>
  */
 export const nextChannelId = async (api: ApiPromise, chain: Chain) => {
   const chainId = createChainId(api, chain)
-  return await query<Codec>(api, 'messenger.nextChannelId', [chainId])
+  return await api.query.messenger.nextChannelId(chainId)
 }
 
 /**
- * Query channels for a chain.
+ * Query a specific channel between two chains.
  *
  * Channels storage is a DoubleMap keyed by (ChainId, ChannelId).
- * - If channelId is provided, returns the specific channel
- * - If channelId is omitted, returns all channels for the chain
+ * Both the chain and channel ID are required to query a specific channel.
+ *
+ * Note: To get all channels for a chain, use `api.query.messenger.channels.entries(chainId)` directly.
  *
  * @param api - The API promise instance for the chain
  * @param chain - The chain to query channels for: 'consensus' or domain ID
- * @param channelId - Optional channel ID (number, string, or bigint). If omitted, returns all channels for the chain.
- * @returns Channel configuration(s) for the specified chain (and channel ID if provided)
+ * @param channelId - The channel ID (number, string, or bigint)
+ * @returns Channel configuration for the specified chain and channel ID
  *
  * @example
  * ```typescript
- * // Query all channels to domain 0
- * const allChannels = await channels(api, { domainId: 0 })
- *
  * // Query specific channel 1 to domain 0
  * const channel = await channels(api, { domainId: 0 }, 1)
  * ```
@@ -87,45 +83,39 @@ export const nextChannelId = async (api: ApiPromise, chain: Chain) => {
 export const channels = async (
   api: ApiPromise,
   chain: Chain,
-  channelId?: number | string | bigint,
+  channelId: number | string | bigint,
 ) => {
   const chainIdCodec = createChainId(api, chain)
-
-  if (channelId !== undefined) {
-    const channelIdCodec = api.createType('U256', channelId)
-    return await query<Codec>(api, 'messenger.channels', [chainIdCodec, channelIdCodec])
-  }
-
-  return await query<Codec>(api, 'messenger.channels', [chainIdCodec])
+  const channelIdCodec = api.createType('U256', channelId)
+  return await api.query.messenger.channels(chainIdCodec, channelIdCodec)
 }
 
 /**
- * Query all domain balances on the consensus chain.
+ * Query domain balances on the consensus chain.
  *
- * Returns the balances for all domains tracked on the consensus chain.
  * Domain balances represent the amount of funds available on each domain
  * for processing transfers and other operations.
  *
  * @param api - The API promise instance for the consensus chain
- * @returns All domain balances indexed by domain ID
+ * @param domainId - The domain ID to query balance for. If omitted, returns all domain balances.
+ * @returns The balance for the specified domain, or all balances if domainId is omitted
+ *
+ * @example
+ * ```typescript
+ * // Query balance for domain 0
+ * const balance = await domainBalances(api, 0)
+ *
+ * // Query all domain balances
+ * const allBalances = await domainBalances(api)
+ * ```
  */
-export const allDomainBalances = async (api: ApiPromise) => {
-  return await query<Codec>(api, 'transporter.domainBalances', [])
-}
+export const domainBalances = async (api: ApiPromise, domainId?: number) => {
+  if (domainId !== undefined) {
+    return await api.query.transporter.domainBalances(domainId)
+  }
 
-/**
- * Query the balance for a specific domain.
- *
- * Returns the balance for the specified domain on the consensus chain.
- * Domain balances represent the amount of funds available on the domain
- * for processing transfers and other operations.
- *
- * @param api - The API promise instance for the consensus chain
- * @param domainId - The domain ID to query balance for
- * @returns The balance for the specified domain
- */
-export const domainBalances = async (api: ApiPromise, domainId: number) => {
-  return await query<Codec>(api, 'transporter.domainBalances', [domainId])
+  // Get all entries when no domainId is provided
+  return await api.query.transporter.domainBalances.entries()
 }
 
 /**
@@ -169,10 +159,10 @@ export const cancelledTransfers = async (
 
   if (to !== undefined) {
     const toChainId = createChainId(api, to)
-    return await query<Codec>(api, 'transporter.cancelledTransfers', [fromChainId, toChainId])
+    return await api.query.transporter.cancelledTransfers(fromChainId, toChainId)
   }
 
-  return await query<Codec>(api, 'transporter.cancelledTransfers', [fromChainId])
+  return await api.query.transporter.cancelledTransfers(fromChainId)
 }
 
 /**
@@ -215,8 +205,8 @@ export const unconfirmedTransfers = async (
 
   if (to !== undefined) {
     const toChainId = createChainId(api, to)
-    return await query<Codec>(api, 'transporter.unconfirmedTransfers', [fromChainId, toChainId])
+    return await api.query.transporter.unconfirmedTransfers(fromChainId, toChainId)
   }
 
-  return await query<Codec>(api, 'transporter.unconfirmedTransfers', [fromChainId])
+  return await api.query.transporter.unconfirmedTransfers(fromChainId)
 }
