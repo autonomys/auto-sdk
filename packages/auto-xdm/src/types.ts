@@ -119,3 +119,20 @@ export type Channel = {
   /** Amount of funds put on hold by the owner account for this channel (Balance as string) */
   channelReserveFee: string
 }
+
+/**
+ * Domain balance entry.
+ *
+ * Represents the balance available on a domain for processing transfers.
+ *
+ * @example
+ * ```typescript
+ * const balance: DomainBalance = { domainId: 0, balance: 1000000000000n }
+ * ```
+ */
+export type DomainBalance = {
+  /** Domain ID */
+  domainId: number
+  /** Balance amount (bigint to handle large numbers and enable arithmetic) */
+  balance: bigint
+}

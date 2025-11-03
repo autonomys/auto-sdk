@@ -44,12 +44,19 @@ describe('XDM Info Functions', () => {
   describe('domainBalances()', () => {
     test('should query balance for domain 0', async () => {
       const balance = await domainBalances(apis.consensus, 0)
-      expect(balance).toBeDefined()
+      expect(typeof balance).toBe('bigint')
+      expect(balance).toBeGreaterThanOrEqual(0n)
     })
     test('should query all domain balances from consensus chain', async () => {
       const balances = await domainBalances(apis.consensus)
-      expect(balances).toBeDefined()
       expect(Array.isArray(balances)).toBe(true)
+      if (Array.isArray(balances)) {
+        expect(balances.length).toBeGreaterThan(0)
+        expect(balances[0]).toMatchObject({
+          domainId: expect.any(Number),
+          balance: expect.any(BigInt),
+        })
+      }
     })
   })
 })

@@ -75,3 +75,26 @@ export const codecToChannel = (codec: unknown): Channel | null => {
     channelReserveFee: String(channel.channel_reserve_fee ?? '0'),
   }
 }
+
+/**
+ * Converts balance Codec to bigint.
+ * Used when reading balances from storage.
+ *
+ * @internal
+ */
+export const codecToBalance = (codec: unknown): bigint => {
+  if (!codec || typeof codec !== 'object') return BigInt(0)
+
+  // Handle toString method (common for Polkadot Codecs)
+  if ('toString' in codec && typeof (codec as { toString: () => string }).toString === 'function') {
+    return BigInt((codec as { toString: () => string }).toString())
+  }
+
+  // Handle Codec with toJSON method
+  if ('toJSON' in codec && typeof (codec as { toJSON: () => unknown }).toJSON === 'function') {
+    const json = (codec as { toJSON: () => unknown }).toJSON()
+    return BigInt(String(json ?? 0))
+  }
+
+  return BigInt(String(codec ?? 0))
+}

@@ -1,6 +1,6 @@
 import { type ApiPromise } from '@autonomys/auto-utils'
-import { chainIdToChain, chainToChainIdCodec, codecToChannel } from './transforms'
-import type { Chain, ChainAllowlist, ChainId, Channel } from './types'
+import { chainIdToChain, chainToChainIdCodec, codecToBalance, codecToChannel } from './transforms'
+import type { Chain, ChainAllowlist, ChainId, Channel, DomainBalance } from './types'
 
 /**
  * Query the chain allowlist for the current chain.
@@ -92,25 +92,40 @@ export const channels = async (
  * for processing transfers and other operations.
  *
  * @param api - The API promise instance for the consensus chain
- * @param domainId - The domain ID to query balance for. If omitted, returns all domain balances.
- * @returns The balance for the specified domain, or all balances if domainId is omitted
+ * @param domainId - Optional domain ID to query balance for. If provided, returns a single balance bigint. If omitted, returns all domain balances.
+ * @returns The balance for the specified domain as a bigint, or an array of all domain balances
  *
  * @example
  * ```typescript
- * // Query balance for domain 0
+ * // Query balance for a specific domain
  * const balance = await domainBalances(api, 0)
+ * // balance: 1000000000000n
  *
  * // Query all domain balances
  * const allBalances = await domainBalances(api)
+ * // allBalances: [{ domainId: 0, balance: 1000000000000n }, { domainId: 1, balance: 2000000000000n }]
  * ```
  */
-export const domainBalances = async (api: ApiPromise, domainId?: number) => {
+export const domainBalances = async (
+  api: ApiPromise,
+  domainId?: number,
+): Promise<bigint | DomainBalance[]> => {
   if (domainId !== undefined) {
-    return await api.query.transporter.domainBalances(domainId)
+    const codec = await api.query.transporter.domainBalances(domainId)
+    return codecToBalance(codec)
   }
 
   // Get all entries when no domainId is provided
-  return await api.query.transporter.domainBalances.entries()
+  const entries = await api.query.transporter.domainBalances.entries()
+  return entries.map(([key, value]) => {
+    // Extract domainId from storage key
+    const domainIdCodec = key.args[0]
+    const domainId = Number(domainIdCodec.toString())
+    return {
+      domainId,
+      balance: codecToBalance(value),
+    }
+  })
 }
 
 /**
