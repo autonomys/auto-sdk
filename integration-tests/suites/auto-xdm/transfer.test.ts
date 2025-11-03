@@ -1,6 +1,10 @@
 import { balance } from '@autonomys/auto-consensus'
 import { cryptoWaitReady, setupWallet, signAndSendTx, type ApiPromise } from '@autonomys/auto-utils'
-import { transferToDomainAccount20Type, unconfirmedTransfers } from '@autonomys/auto-xdm'
+import {
+  transferToConsensus,
+  transferToDomainAccount20Type,
+  unconfirmedTransfers,
+} from '@autonomys/auto-xdm'
 import { cleanupChains, setupChains, setupXDM, waitUntil } from '../../helpers'
 
 // Has balance increased since last check
@@ -15,7 +19,8 @@ describe('XDM Transfers - E2E', () => {
   let apis: Awaited<ReturnType<typeof setupChains>>
   let consensusWallet: ReturnType<typeof setupWallet>
   let domainWallet: ReturnType<typeof setupWallet>
-  const transferAmount = 10n ** 19n // 10 TSSC
+  const c2dTransferAmount = 10n * 10n ** 18n // 10 TSSC
+  const d2cTransferAmount = 5n * 10n ** 18n // 5 TSSC
 
   beforeAll(async () => {
     // Wait for WASM crypto to be initialized before creating wallets
@@ -58,7 +63,7 @@ describe('XDM Transfers - E2E', () => {
         apis.consensus,
         0,
         domainWallet.address,
-        transferAmount,
+        c2dTransferAmount,
       )
 
       // Send transaction and wait for inclusion
@@ -87,6 +92,60 @@ describe('XDM Transfers - E2E', () => {
       expect(BigInt(receiverBalanceAfter.free)).toBeGreaterThan(BigInt(receiverBalanceBefore.free))
 
       console.log('✅ Consensus → Domain transfer completed successfully')
+    }, 300000)
+  })
+
+  describe('Domain to Consensus Transfers', () => {
+    test('should transfer from domain to consensus and update balances', async () => {
+      // Get balances before transfer
+      const senderBalanceBefore = await balance(apis.domain, domainWallet.address)
+      const receiverBalanceBefore = await balance(apis.consensus, consensusWallet.address)
+
+      // Get unconfirmed transfers before
+      const unconfirmedBefore = await unconfirmedTransfers(
+        apis.consensus,
+        { domainId: 0 },
+        'consensus',
+      )
+
+      const tx = await transferToConsensus(apis.domain, consensusWallet.address, d2cTransferAmount)
+      await signAndSendTx(domainWallet.keyringPair!, tx, {}, [], false)
+
+      // Wait for unconfirmed transfers to increase
+      await waitUntil(async () => {
+        const unconfirmedAfterInit = await unconfirmedTransfers(
+          apis.consensus,
+          { domainId: 0 },
+          'consensus',
+        )
+        return BigInt(unconfirmedAfterInit.toString()) > BigInt(unconfirmedBefore.toString())
+      })
+      const unconfirmedAfterInit = await unconfirmedTransfers(
+        apis.consensus,
+        { domainId: 0 },
+        'consensus',
+      )
+      expect(BigInt(unconfirmedAfterInit.toString())).toBeGreaterThan(
+        BigInt(unconfirmedBefore.toString()),
+      )
+      console.log('Unconfirmed transfers increased')
+
+      // Wait for transfer to be finalized (balance should increase on consensus)
+      await waitUntil(() =>
+        balanceIncreased(apis.consensus, consensusWallet.address, receiverBalanceBefore.free),
+      )
+
+      // Verify balances changed
+      const senderBalanceAfter = await balance(apis.domain, domainWallet.address)
+      const receiverBalanceAfter = await balance(apis.consensus, consensusWallet.address)
+
+      // Sender should have less (transfer amount + fees)
+      expect(BigInt(senderBalanceAfter.free)).toBeLessThan(BigInt(senderBalanceBefore.free))
+
+      // Receiver should have more
+      expect(BigInt(receiverBalanceAfter.free)).toBeGreaterThan(BigInt(receiverBalanceBefore.free))
+
+      console.log('✅ Domain → Consensus transfer completed successfully')
     }, 300000)
   })
 })
