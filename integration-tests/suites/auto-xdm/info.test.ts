@@ -46,8 +46,9 @@ describe('XDM Info Functions', () => {
       // Channels exist since we set up XDM in beforeAll
       expect(nextIdBigInt).toBeGreaterThan(0n)
 
-      // Query the first channel (ID starts at 1)
-      const channel = await channels(apis.consensus, { domainId: 0 }, 1)
+      // Query the first channel (ID starts at 0)
+      const channel = await channels(apis.consensus, { domainId: 0 }, 0)
+      console.log('channel', JSON.stringify(channel, null, 2))
       expect(channel).toBeDefined()
       expect(!channel.isEmpty).toBe(true)
     })

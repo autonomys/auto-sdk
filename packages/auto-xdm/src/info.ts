@@ -1,21 +1,5 @@
 import { createDomainsChainIdType, type ApiPromise } from '@autonomys/auto-utils'
-
-/**
- * Chain identifier for queries.
- *
- * Use the string literal 'consensus' for the consensus chain,
- * or a number for a specific domain ID.
- *
- * @example
- * ```typescript
- * // Consensus chain
- * const consensus: Chain = 'consensus'
- *
- * // Domain chain (e.g., domain 1)
- * const domain: Chain = 1
- * ```
- */
-export type Chain = 'consensus' | { domainId: number }
+import type { Chain } from './types'
 
 /**
  * Helper to convert Chain type to ChainId Codec
