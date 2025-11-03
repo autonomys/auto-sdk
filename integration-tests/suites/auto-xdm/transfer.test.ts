@@ -1,10 +1,6 @@
 import { balance } from '@autonomys/auto-consensus'
 import { cryptoWaitReady, setupWallet, signAndSendTx, type ApiPromise } from '@autonomys/auto-utils'
-import {
-  transferToConsensus,
-  transferToDomainAccount20Type,
-  unconfirmedTransfers,
-} from '@autonomys/auto-xdm'
+import { transporterTransfer, unconfirmedTransfers } from '@autonomys/auto-xdm'
 import { cleanupChains, setupChains, setupXDM, waitUntil } from '../../helpers'
 
 // Has balance increased since last check
@@ -59,10 +55,10 @@ describe('XDM Transfers - E2E', () => {
         domainId: 0,
       })
 
-      const tx = await transferToDomainAccount20Type(
+      const tx = transporterTransfer(
         apis.consensus,
-        0,
-        domainWallet.address,
+        { domainId: 0 },
+        { accountId20: domainWallet.address },
         c2dTransferAmount,
       )
 
@@ -90,8 +86,6 @@ describe('XDM Transfers - E2E', () => {
 
       // Receiver should have more
       expect(BigInt(receiverBalanceAfter.free)).toBeGreaterThan(BigInt(receiverBalanceBefore.free))
-
-      console.log('✅ Consensus → Domain transfer completed successfully')
     }, 300000)
   })
 
@@ -108,7 +102,12 @@ describe('XDM Transfers - E2E', () => {
         'consensus',
       )
 
-      const tx = await transferToConsensus(apis.domain, consensusWallet.address, d2cTransferAmount)
+      const tx = transporterTransfer(
+        apis.domain,
+        'consensus',
+        { accountId32: consensusWallet.address },
+        d2cTransferAmount,
+      )
       await signAndSendTx(domainWallet.keyringPair!, tx, {}, [], false)
 
       // Wait for unconfirmed transfers to increase
@@ -128,7 +127,6 @@ describe('XDM Transfers - E2E', () => {
       expect(BigInt(unconfirmedAfterInit.toString())).toBeGreaterThan(
         BigInt(unconfirmedBefore.toString()),
       )
-      console.log('Unconfirmed transfers increased')
 
       // Wait for transfer to be finalized (balance should increase on consensus)
       await waitUntil(() =>
@@ -144,8 +142,6 @@ describe('XDM Transfers - E2E', () => {
 
       // Receiver should have more
       expect(BigInt(receiverBalanceAfter.free)).toBeGreaterThan(BigInt(receiverBalanceBefore.free))
-
-      console.log('✅ Domain → Consensus transfer completed successfully')
     }, 300000)
   })
 })
