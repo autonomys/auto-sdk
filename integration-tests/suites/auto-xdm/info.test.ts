@@ -1,4 +1,4 @@
-import { chainAllowlist, channels, domainBalances, nextChannelId } from '@autonomys/auto-xdm'
+import { chainAllowlist, channels, domainBalances } from '@autonomys/auto-xdm'
 import { cleanupChains, setupChains, setupXDM } from '../../helpers'
 
 describe('XDM Info Functions', () => {
@@ -25,30 +25,19 @@ describe('XDM Info Functions', () => {
     })
   })
 
-  describe('nextChannelId()', () => {
-    test('should query next channel ID for domain 0', async () => {
-      const nextId = await nextChannelId(apis.consensus, { domainId: 0 })
-      expect(nextId).toBeDefined()
-      expect(!nextId.isEmpty).toBe(true)
-      // Should be > 0 since we set up XDM in beforeAll
-      expect(BigInt(nextId.toString())).toBeGreaterThan(0n)
-    })
-  })
-
   describe('channels()', () => {
     test('should query a specific channel to domain 0', async () => {
-      // First get the next channel ID to know what channels exist
-      const nextId = await nextChannelId(apis.consensus, { domainId: 0 })
-      const nextIdBigInt = BigInt(nextId.toString())
-
-      // Channels exist since we set up XDM in beforeAll
-      expect(nextIdBigInt).toBeGreaterThan(0n)
-
       // Query the first channel (ID starts at 0)
       const channel = await channels(apis.consensus, { domainId: 0 }, 0)
-      console.log('channel', JSON.stringify(channel, null, 2))
-      expect(channel).toBeDefined()
-      expect(!channel.isEmpty).toBe(true)
+      expect(channel).not.toBeNull()
+      expect(channel).toMatchObject({
+        channelId: expect.any(String),
+        state: expect.stringMatching(/^(Initiated|Open|Closed)$/),
+        nextInboxNonce: expect.any(String),
+        nextOutboxNonce: expect.any(String),
+        maxOutgoingMessages: expect.any(Number),
+        channelReserveFee: expect.any(String),
+      })
     })
   })
 

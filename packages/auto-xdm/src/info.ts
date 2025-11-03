@@ -1,5 +1,5 @@
 import { createDomainsChainIdType, type ApiPromise } from '@autonomys/auto-utils'
-import type { Chain, ChainAllowlist, ChainId } from './types'
+import type { Chain, ChainAllowlist, ChainId, Channel, ChannelState } from './types'
 
 /**
  * Helper to convert Chain type to ChainId Codec
@@ -21,6 +21,55 @@ const chainIdToChain = (chainId: ChainId): Chain => {
     return 'consensus'
   }
   return { domainId: chainId.domain }
+}
+
+/**
+ * Helper to convert Channel Codec to friendly Channel type
+ * @internal
+ */
+const codecToChannel = (codec: unknown): Channel | null => {
+  if (!codec || typeof codec !== 'object') return null
+
+  // Check if it's an empty Codec
+  if ('isEmpty' in codec && (codec as { isEmpty: boolean }).isEmpty) {
+    return null
+  }
+
+  // Convert to JSON first to get the structure
+  const json =
+    'toJSON' in codec && typeof (codec as { toJSON: () => unknown }).toJSON === 'function'
+      ? (codec as { toJSON: () => unknown }).toJSON()
+      : codec
+
+  if (!json || typeof json !== 'object' || json === null) return null
+
+  const channel = json as Record<string, unknown>
+
+  // Convert field names from Rust snake_case to camelCase
+  const state = channel.state as string
+  const stateMap: Record<string, ChannelState> = {
+    Initiated: 'Initiated',
+    Open: 'Open',
+    Closed: 'Closed',
+  }
+
+  return {
+    channelId: String(channel.channel_id ?? '0'),
+    state: stateMap[state] ?? 'Initiated',
+    nextInboxNonce: String(channel.next_inbox_nonce ?? '0'),
+    nextOutboxNonce: String(channel.next_outbox_nonce ?? '0'),
+    latestResponseReceivedMessageNonce:
+      channel.latest_response_received_message_nonce !== null &&
+      channel.latest_response_received_message_nonce !== undefined
+        ? String(channel.latest_response_received_message_nonce)
+        : null,
+    maxOutgoingMessages: Number(channel.max_outgoing_messages ?? 0),
+    maybeOwner:
+      channel.maybe_owner !== null && channel.maybe_owner !== undefined
+        ? String(channel.maybe_owner)
+        : null,
+    channelReserveFee: String(channel.channel_reserve_fee ?? '0'),
+  }
 }
 
 /**
@@ -66,9 +115,10 @@ export const chainAllowlist = async (api: ApiPromise): Promise<ChainAllowlist> =
  * const hasChannels = BigInt(nextId.toString()) > 0n
  * ```
  */
-export const nextChannelId = async (api: ApiPromise, chain: Chain) => {
+export const nextChannelId = async (api: ApiPromise, chain: Chain): Promise<bigint> => {
   const chainId = createChainId(api, chain)
-  return await api.query.messenger.nextChannelId(chainId)
+  const nextId = await api.query.messenger.nextChannelId(chainId)
+  return BigInt(nextId.toString())
 }
 
 /**
@@ -82,22 +132,27 @@ export const nextChannelId = async (api: ApiPromise, chain: Chain) => {
  * @param api - The API promise instance for the chain
  * @param chain - The chain to query channels for: 'consensus' or domain ID
  * @param channelId - The channel ID (number, string, or bigint)
- * @returns Channel configuration for the specified chain and channel ID
+ * @returns Channel configuration for the specified chain and channel ID, or null if not found
  *
  * @example
  * ```typescript
- * // Query specific channel 1 to domain 0
- * const channel = await channels(api, { domainId: 0 }, 1)
+ * // Query specific channel 0 to domain 0
+ * const channel = await channels(api, { domainId: 0 }, 0)
+ * if (channel) {
+ *   console.log(`Channel state: ${channel.state}`)
+ *   console.log(`Next outbox nonce: ${channel.nextOutboxNonce}`)
+ * }
  * ```
  */
 export const channels = async (
   api: ApiPromise,
   chain: Chain,
   channelId: number | string | bigint,
-) => {
+): Promise<Channel | null> => {
   const chainIdCodec = createChainId(api, chain)
   const channelIdCodec = api.createType('U256', channelId)
-  return await api.query.messenger.channels(chainIdCodec, channelIdCodec)
+  const codec = await api.query.messenger.channels(chainIdCodec, channelIdCodec)
+  return codecToChannel(codec)
 }
 
 /**
