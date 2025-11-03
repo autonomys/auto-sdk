@@ -1,6 +1,6 @@
 import { type ApiPromise } from '@autonomys/auto-utils'
 import { chainIdToChain, chainToChainIdCodec, codecToBalance, codecToChannel } from './transforms'
-import type { Chain, ChainAllowlist, ChainId, Channel, DomainBalance } from './types'
+import type { Chain, ChainAllowlist, ChainId, Channel, DomainBalance, Transfer } from './types'
 
 /**
  * Query the chain allowlist for the current chain.
@@ -136,43 +136,50 @@ export const domainBalances = async (
  * by the destination chain. These transfers can be claimed back by the source chain.
  *
  * This storage is only available on the consensus chain where all transfer tracking is maintained.
- * The storage is a DoubleMap keyed by (from_chain_id, to_chain_id), so the first key is required.
  *
  * @param api - The API promise instance for the consensus chain
- * @param from - Source chain: 'consensus' or domain ID (number). Defaults to 'consensus'.
- * @param to - Optional destination chain: 'consensus' or domain ID (number). If omitted, returns all cancelled transfers from the source chain.
- * @returns Cancelled transfers filtered by source chain, or specific entry if both parameters provided.
+ * @param from - Source chain: 'consensus' or { domainId: number }. Defaults to 'consensus'.
+ * @param to - Optional destination chain. If provided, returns a specific transfer amount. If omitted, returns all cancelled transfers from the source chain.
+ * @returns Transfer amount as bigint for a specific route, or array of all cancelled transfers from the source chain
  *
  * @example
  * ```typescript
  * // All cancelled transfers from consensus
  * const fromConsensus = await cancelledTransfers(api)
- * // or explicitly
- * const fromConsensus = await cancelledTransfers(api, 'consensus')
+ * // fromConsensus: [{ from: 'consensus', to: { domainId: 0 }, amount: 1000000000000n }]
  *
  * // All cancelled transfers from domain 1
- * const fromDomain = await cancelledTransfers(api, 1)
+ * const fromDomain = await cancelledTransfers(api, { domainId: 1 })
  *
  * // Specific transfer from consensus to domain 1
- * const specific = await cancelledTransfers(api, 'consensus', 1)
- *
- * // Specific transfer from domain 1 to domain 2
- * const domainToDomain = await cancelledTransfers(api, 1, 2)
+ * const specific = await cancelledTransfers(api, 'consensus', { domainId: 1 })
+ * // specific: 1000000000000n
  * ```
  */
 export const cancelledTransfers = async (
   api: ApiPromise,
   from: Chain = 'consensus',
   to?: Chain,
-) => {
+): Promise<bigint | Transfer[]> => {
   const fromChainId = chainToChainIdCodec(api, from)
 
   if (to !== undefined) {
     const toChainId = chainToChainIdCodec(api, to)
-    return await api.query.transporter.cancelledTransfers(fromChainId, toChainId)
+    const codec = await api.query.transporter.cancelledTransfers(fromChainId, toChainId)
+    return codecToBalance(codec)
   }
 
-  return await api.query.transporter.cancelledTransfers(fromChainId)
+  const entries = await api.query.transporter.cancelledTransfers.entries(fromChainId)
+  return entries.map(([key, value]) => {
+    // Extract toChainId from storage key (second key in DoubleMap)
+    const toChainIdCodec = key.args[1]
+    const toChainId = toChainIdCodec.toJSON() as ChainId
+    return {
+      from,
+      to: chainIdToChain(toChainId),
+      amount: codecToBalance(value),
+    }
+  })
 }
 
 /**
@@ -182,41 +189,48 @@ export const cancelledTransfers = async (
  * Unconfirmed transfers are in a pending state and will either be confirmed or cancelled.
  *
  * This storage is only available on the consensus chain where all transfer tracking is maintained.
- * The storage is a DoubleMap keyed by (from_chain_id, to_chain_id), so the first key is required.
  *
  * @param api - The API promise instance for the consensus chain
- * @param from - Source chain: 'consensus' or domain ID (number). Defaults to 'consensus'.
- * @param to - Optional destination chain: 'consensus' or domain ID (number). If omitted, returns all unconfirmed transfers from the source chain.
- * @returns Unconfirmed transfers filtered by source chain, or specific entry if both parameters provided.
+ * @param from - Source chain: 'consensus' or { domainId: number }. Defaults to 'consensus'.
+ * @param to - Optional destination chain. If provided, returns a specific transfer amount. If omitted, returns all unconfirmed transfers from the source chain.
+ * @returns Transfer amount as bigint for a specific route, or array of all unconfirmed transfers from the source chain
  *
  * @example
  * ```typescript
  * // All unconfirmed transfers from consensus
  * const fromConsensus = await unconfirmedTransfers(api)
- * // or explicitly
- * const fromConsensus = await unconfirmedTransfers(api, 'consensus')
+ * // fromConsensus: [{ from: 'consensus', to: { domainId: 0 }, amount: 1000000000000n }]
  *
  * // All unconfirmed transfers from domain 1
- * const fromDomain = await unconfirmedTransfers(api, 1)
+ * const fromDomain = await unconfirmedTransfers(api, { domainId: 1 })
  *
  * // Specific transfer from consensus to domain 1
- * const specific = await unconfirmedTransfers(api, 'consensus', 1)
- *
- * // Specific transfer from domain 1 to domain 2
- * const domainToDomain = await unconfirmedTransfers(api, 1, 2)
+ * const specific = await unconfirmedTransfers(api, 'consensus', { domainId: 1 })
+ * // specific: 1000000000000n
  * ```
  */
 export const unconfirmedTransfers = async (
   api: ApiPromise,
   from: Chain = 'consensus',
   to?: Chain,
-) => {
+): Promise<bigint | Transfer[]> => {
   const fromChainId = chainToChainIdCodec(api, from)
 
   if (to !== undefined) {
     const toChainId = chainToChainIdCodec(api, to)
-    return await api.query.transporter.unconfirmedTransfers(fromChainId, toChainId)
+    const codec = await api.query.transporter.unconfirmedTransfers(fromChainId, toChainId)
+    return codecToBalance(codec)
   }
 
-  return await api.query.transporter.unconfirmedTransfers(fromChainId)
+  const entries = await api.query.transporter.unconfirmedTransfers.entries(fromChainId)
+  return entries.map(([key, value]) => {
+    // Extract toChainId from storage key (second key in DoubleMap)
+    const toChainIdCodec = key.args[1]
+    const toChainId = toChainIdCodec.toJSON() as ChainId
+    return {
+      from,
+      to: chainIdToChain(toChainId),
+      amount: codecToBalance(value),
+    }
+  })
 }

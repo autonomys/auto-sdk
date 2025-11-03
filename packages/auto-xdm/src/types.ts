@@ -136,3 +136,26 @@ export type DomainBalance = {
   /** Balance amount (bigint to handle large numbers and enable arithmetic) */
   balance: bigint
 }
+
+/**
+ * Transfer entry between two chains.
+ *
+ * Represents a transfer (cancelled or unconfirmed) between a source and destination chain.
+ *
+ * @example
+ * ```typescript
+ * const transfer: Transfer = {
+ *   from: 'consensus',
+ *   to: { domainId: 0 },
+ *   amount: 1000000000000n
+ * }
+ * ```
+ */
+export type Transfer = {
+  /** Source chain */
+  from: Chain
+  /** Destination chain */
+  to: Chain
+  /** Transfer amount (bigint to handle large numbers and enable arithmetic) */
+  amount: bigint
+}
