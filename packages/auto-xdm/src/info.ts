@@ -1,76 +1,6 @@
-import { createDomainsChainIdType, type ApiPromise } from '@autonomys/auto-utils'
-import type { Chain, ChainAllowlist, ChainId, Channel, ChannelState } from './types'
-
-/**
- * Helper to convert Chain type to ChainId Codec
- * @internal
- */
-const createChainId = (api: ApiPromise, chain: Chain) => {
-  if (chain === 'consensus') {
-    return createDomainsChainIdType(api)
-  }
-  return createDomainsChainIdType(api, chain.domainId)
-}
-
-/**
- * Helper to convert ChainId to Chain
- * @internal
- */
-const chainIdToChain = (chainId: ChainId): Chain => {
-  if ('consensus' in chainId) {
-    return 'consensus'
-  }
-  return { domainId: chainId.domain }
-}
-
-/**
- * Helper to convert Channel Codec to friendly Channel type
- * @internal
- */
-const codecToChannel = (codec: unknown): Channel | null => {
-  if (!codec || typeof codec !== 'object') return null
-
-  // Check if it's an empty Codec
-  if ('isEmpty' in codec && (codec as { isEmpty: boolean }).isEmpty) {
-    return null
-  }
-
-  // Convert to JSON first to get the structure
-  const json =
-    'toJSON' in codec && typeof (codec as { toJSON: () => unknown }).toJSON === 'function'
-      ? (codec as { toJSON: () => unknown }).toJSON()
-      : codec
-
-  if (!json || typeof json !== 'object' || json === null) return null
-
-  const channel = json as Record<string, unknown>
-
-  // Convert field names from Rust snake_case to camelCase
-  const state = channel.state as string
-  const stateMap: Record<string, ChannelState> = {
-    Initiated: 'Initiated',
-    Open: 'Open',
-    Closed: 'Closed',
-  }
-
-  return {
-    channelId: String(channel.channel_id ?? '0'),
-    state: stateMap[state] ?? 'Initiated',
-    nextInboxNonce: String(channel.next_inbox_nonce ?? '0'),
-    nextOutboxNonce: String(channel.next_outbox_nonce ?? '0'),
-    latestResponseReceivedMessageNonce:
-      channel.latest_response_received_message_nonce !== null &&
-      channel.latest_response_received_message_nonce !== undefined
-        ? String(channel.latest_response_received_message_nonce)
-        : null,
-    maxOutgoingMessages: Number(channel.max_outgoing_messages ?? 0),
-    maybeOwner:
-      channel.maybe_owner !== null && channel.maybe_owner !== undefined
-        ? String(channel.maybe_owner)
-        : null,
-    channelReserveFee: String(channel.channel_reserve_fee ?? '0'),
-  }
-}
+import { type ApiPromise } from '@autonomys/auto-utils'
+import { chainIdToChain, chainToChainIdCodec, codecToChannel } from './transforms'
+import type { Chain, ChainAllowlist, ChainId, Channel } from './types'
 
 /**
  * Query the chain allowlist for the current chain.
@@ -116,7 +46,7 @@ export const chainAllowlist = async (api: ApiPromise): Promise<ChainAllowlist> =
  * ```
  */
 export const nextChannelId = async (api: ApiPromise, chain: Chain): Promise<bigint> => {
-  const chainId = createChainId(api, chain)
+  const chainId = chainToChainIdCodec(api, chain)
   const nextId = await api.query.messenger.nextChannelId(chainId)
   return BigInt(nextId.toString())
 }
@@ -149,7 +79,7 @@ export const channels = async (
   chain: Chain,
   channelId: number | string | bigint,
 ): Promise<Channel | null> => {
-  const chainIdCodec = createChainId(api, chain)
+  const chainIdCodec = chainToChainIdCodec(api, chain)
   const channelIdCodec = api.createType('U256', channelId)
   const codec = await api.query.messenger.channels(chainIdCodec, channelIdCodec)
   return codecToChannel(codec)
@@ -220,10 +150,10 @@ export const cancelledTransfers = async (
   from: Chain = 'consensus',
   to?: Chain,
 ) => {
-  const fromChainId = createChainId(api, from)
+  const fromChainId = chainToChainIdCodec(api, from)
 
   if (to !== undefined) {
-    const toChainId = createChainId(api, to)
+    const toChainId = chainToChainIdCodec(api, to)
     return await api.query.transporter.cancelledTransfers(fromChainId, toChainId)
   }
 
@@ -266,10 +196,10 @@ export const unconfirmedTransfers = async (
   from: Chain = 'consensus',
   to?: Chain,
 ) => {
-  const fromChainId = createChainId(api, from)
+  const fromChainId = chainToChainIdCodec(api, from)
 
   if (to !== undefined) {
-    const toChainId = createChainId(api, to)
+    const toChainId = chainToChainIdCodec(api, to)
     return await api.query.transporter.unconfirmedTransfers(fromChainId, toChainId)
   }
 
