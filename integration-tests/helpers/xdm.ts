@@ -1,29 +1,22 @@
-import { setupWallet, signAndSendTx, type ApiPromise, type Codec } from '@autonomys/auto-utils'
-import { chainAllowlist, nextChannelId } from '@autonomys/auto-xdm'
+import { setupWallet, signAndSendTx, type ApiPromise } from '@autonomys/auto-utils'
+import { chainAllowlist, nextChannelId, type Chain } from '@autonomys/auto-xdm'
 
 /**
  * Checks if a chain ID exists in the allowlist
  */
 const isChainInAllowlist = (
-  allowlist: Codec,
+  allowlist: Chain[],
   chainId: { Domain: number } | 'Consensus',
 ): boolean => {
-  if (!allowlist?.toJSON) return false
+  if (!Array.isArray(allowlist)) return false
 
-  const allowlistJson = allowlist.toJSON()
-  if (!Array.isArray(allowlistJson)) return false
-
-  return allowlistJson.some((entry: unknown) => {
+  return allowlist.some((entry: Chain) => {
     if (typeof chainId === 'string') {
-      // Check if the entry has a 'consensus' property (case-insensitive)
-      return (
-        entry === chainId ||
-        (typeof entry === 'object' &&
-          entry !== null &&
-          chainId.toLowerCase() in (entry as Record<string, unknown>))
-      )
+      // Check if entry is 'consensus'
+      return entry === 'consensus'
     }
-    return (entry as { domain?: number })?.domain === chainId.Domain
+    // Check if entry is a domain with matching domainId
+    return entry !== 'consensus' && entry.domainId === chainId.Domain
   })
 }
 

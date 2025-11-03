@@ -1,5 +1,5 @@
 import { createDomainsChainIdType, type ApiPromise } from '@autonomys/auto-utils'
-import type { Chain } from './types'
+import type { Chain, ChainAllowlist, ChainId } from './types'
 
 /**
  * Helper to convert Chain type to ChainId Codec
@@ -13,15 +13,41 @@ const createChainId = (api: ApiPromise, chain: Chain) => {
 }
 
 /**
+ * Helper to convert ChainId to Chain
+ * @internal
+ */
+const chainIdToChain = (chainId: ChainId): Chain => {
+  if ('consensus' in chainId) {
+    return 'consensus'
+  }
+  return { domainId: chainId.domain }
+}
+
+/**
  * Query the chain allowlist for the current chain.
  *
  * Returns the allowlist of chains that can open channels with this chain.
  * This is used to control which chains are allowed to establish communication channels.
  *
  * @param api - The API promise instance for the chain
- * @returns The set of allowed chain IDs
+ * @returns An array of Chain identifiers that are allowed to open channels
+ *
+ * @example
+ * ```typescript
+ * const allowlist = await chainAllowlist(api)
+ * // allowlist: ['consensus'] or [{ domainId: 0 }, { domainId: 1 }]
+ *
+ * // Check if a specific chain is in the allowlist
+ * const isDomain0Allowed = allowlist.some(
+ *   chain => chain !== 'consensus' && chain.domainId === 0
+ * )
+ * ```
  */
-export const chainAllowlist = async (api: ApiPromise) => await api.query.messenger.chainAllowlist()
+export const chainAllowlist = async (api: ApiPromise): Promise<ChainAllowlist> => {
+  const codec = await api.query.messenger.chainAllowlist()
+  const chainIds = codec.toJSON() as ChainId[]
+  return chainIds.map(chainIdToChain)
+}
 
 /**
  * Query the next channel ID for a given chain.

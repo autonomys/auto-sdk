@@ -17,13 +17,11 @@ describe('XDM Info Functions', () => {
   describe('chainAllowlist()', () => {
     test('should query chain allowlist from consensus chain', async () => {
       const consensusAllowlist = await chainAllowlist(apis.consensus)
-      const allowlistJson = consensusAllowlist.toJSON() as Array<{ domain?: number }>
-      expect(allowlistJson).toEqual([{ domain: 0 }])
+      expect(consensusAllowlist).toEqual([{ domainId: 0 }])
     })
     test('should query chain allowlist from domain chain', async () => {
       const domainAllowlist = await chainAllowlist(apis.domain)
-      const allowlistJson = domainAllowlist.toJSON() as Array<{ consensus?: null }>
-      expect(allowlistJson).toEqual([{ consensus: null }])
+      expect(domainAllowlist).toEqual(['consensus'])
     })
   })
 
