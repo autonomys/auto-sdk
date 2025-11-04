@@ -45,7 +45,7 @@ export const codecToChannel = (codec: unknown): Channel | null => {
       ? (codec as { toJSON: () => unknown }).toJSON()
       : codec
 
-  if (!json || typeof json !== 'object' || json === null) return null
+  if (!json || typeof json !== 'object') return null
 
   const channel = json as Record<string, unknown>
 
@@ -96,5 +96,6 @@ export const codecToBalance = (codec: unknown): bigint => {
     return BigInt(String(json ?? 0))
   }
 
-  return BigInt(String(codec ?? 0))
+  // At this point, codec is guaranteed to be truthy (due to early return above)
+  return BigInt(String(codec))
 }
