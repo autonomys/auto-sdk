@@ -1,25 +1,6 @@
 import { setupWallet, signAndSendTx, type ApiPromise } from '@autonomys/auto-utils'
-import { chainAllowlist, channels, nextChannelId, type Chain } from '@autonomys/auto-xdm'
+import { chainAllowlist, channels, nextChannelId } from '@autonomys/auto-xdm'
 import { waitForBlocks, waitUntil } from './chain'
-
-/**
- * Checks if a chain ID exists in the allowlist
- */
-const isChainInAllowlist = (
-  allowlist: Chain[],
-  chainId: { Domain: number } | 'Consensus',
-): boolean => {
-  if (!Array.isArray(allowlist)) return false
-
-  return allowlist.some((entry: Chain) => {
-    if (typeof chainId === 'string') {
-      // Check if entry is 'consensus'
-      return entry === 'consensus'
-    }
-    // Check if entry is a domain with matching domainId
-    return entry !== 'consensus' && entry.domainId === chainId.Domain
-  })
-}
 
 /**
  * Sets up XDM (Cross-Domain Messaging) between consensus and domain.
@@ -44,16 +25,17 @@ export const setupXDM = async (
     throw new Error('Sudo or owner keyring pair is undefined')
   }
 
-  const chainIdDomain = { Domain: domainId }
-
   // Check current state
   const consensusAllowlist = await chainAllowlist(consensusApi)
-  const domainInAllowlist = isChainInAllowlist(consensusAllowlist, chainIdDomain)
+  const domainInAllowlist = consensusAllowlist.some(
+    (entry) => typeof entry !== 'string' && entry.domainId === domainId,
+  )
 
   // Step 1: SUDO update consensus chain allowlist (add domain)
   if (!domainInAllowlist) {
     console.log(`Step 1/3: Adding domain ${domainId} to consensus allowlist`)
-    const allowAddDomain = { Add: chainIdDomain }
+    // Use ChainId format (lowercase 'domain') for transaction
+    const allowAddDomain = { Add: { domain: domainId } }
     const callUpdateAllowlist =
       consensusApi.tx.messenger.updateConsensusChainAllowlist(allowAddDomain)
     const sudoWrapped = consensusApi.tx.sudo.sudo(callUpdateAllowlist)
@@ -65,12 +47,13 @@ export const setupXDM = async (
   }
 
   const domainAllowlist = await chainAllowlist(domainApi)
-  const consensusInAllowlist = isChainInAllowlist(domainAllowlist, 'Consensus')
+  const consensusInAllowlist = domainAllowlist.some((entry) => entry === 'consensus')
 
   // Step 2: Owner initiates domain allowlist update (add Consensus)
   if (!consensusInAllowlist) {
     console.log(`Step 2/3: Initiating domain ${domainId} allowlist update`)
-    const allowAddConsensus = { Add: 'Consensus' }
+    // Use ChainId format (lowercase 'consensus') for transaction
+    const allowAddConsensus = { Add: { consensus: null } }
     const callInitiateDomainUpdate = consensusApi.tx.messenger.initiateDomainUpdateChainAllowlist(
       domainId,
       allowAddConsensus,
@@ -91,7 +74,8 @@ export const setupXDM = async (
 
   if (!channelExists) {
     console.log(`Step 3/3: Initiating channel to domain ${domainId}`)
-    const callInitiateChannel = consensusApi.tx.messenger.initiateChannel(chainIdDomain)
+    // Use ChainId format (lowercase 'domain') for transaction
+    const callInitiateChannel = consensusApi.tx.messenger.initiateChannel({ domain: domainId })
     await signAndSendTx(owner.keyringPair, callInitiateChannel, {}, [], false)
 
     // Wait for channel to be open (similar to official Subspace test pattern)
