@@ -62,8 +62,12 @@ export const waitForAllChainsReady = async (): Promise<void> => {
 
 /**
  * Setup chains for testing
+ * Waits for chains to be ready before connecting
  */
 export const setupChains = async () => {
+  // Wait for chains to be ready before connecting
+  await waitForAllChainsReady()
+
   const api = await createConnection(TEST_CONFIG.endpoints.consensus)
 
   const domainApi = await createConnection(TEST_CONFIG.endpoints.domain)

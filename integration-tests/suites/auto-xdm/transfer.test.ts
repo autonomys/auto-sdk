@@ -38,7 +38,7 @@ describe('XDM Transfers - E2E', () => {
     }
     // Setup XDM between consensus and domain before running tests
     await setupXDM(apis.consensus, apis.domain, 0)
-  }, 30000)
+  }, 300000) // Increased timeout to allow chains to start and XDM to be set up
 
   afterAll(async () => {
     await cleanupChains(apis)
