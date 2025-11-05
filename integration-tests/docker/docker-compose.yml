@@ -1,0 +1,85 @@
+# Docker Compose configuration for integration tests
+# Version information is defined below (committed to git for reproducibility)
+# To override versions, create a .env file or set NODE_VERSION/FARMER_VERSION environment variables
+
+# ============================================================================
+# DEFAULT VERSION - Single source of truth for node/farmer versions
+# ============================================================================
+# When updating, search/replace "mainnet-2025-aug-20" in this file
+# This version appears in the image tags below (lines ~15 and ~62)
+# ============================================================================
+# Version: mainnet-2025-aug-20
+# ============================================================================
+
+services:
+  # Node running both consensus and domain operator
+  node:
+    image: ghcr.io/autonomys/node:${NODE_VERSION:-mainnet-2025-aug-20}
+    container_name: auto-sdk-node
+    command:
+      # Consensus node configuration
+      - run
+      - --dev
+      - --node-key=0000000000000000000000000000000000000000000000000000000000000001
+      - --rpc-cors=all
+      - --rpc-methods=unsafe
+      - --rpc-listen-on=0.0.0.0:9944
+      - --listen-on=/ip4/0.0.0.0/tcp/30333
+      - --farmer
+      - --timekeeper
+      - --name=AutoSDK-DevNode
+      # Domain operator configuration (after --)
+      - --
+      - --domain-id=${DOMAIN_ID:-0}
+      - --operator-id=${OPERATOR_ID:-0}
+      - --keystore-suri=${KEYSTORE_SURI:-//Bob}
+      - --rpc-cors=all
+      - --rpc-methods=unsafe
+      - --rpc-listen-on=0.0.0.0:9945
+      - --listen-on=/ip4/0.0.0.0/tcp/30334
+    ports:
+      - '${CONSENSUS_RPC_PORT:-9944}:9944'
+      - '${DOMAIN_RPC_PORT:-9945}:9945'
+      - '30333:30333'
+      - '30334:30334'
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'curl -sf -H ''Content-Type: application/json'' -d ''{"id":1,"jsonrpc":"2.0","method":"system_health","params":[]}'' http://localhost:9944 || exit 1',
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
+    environment:
+      - RUST_LOG=${RUST_LOG:-info}
+    volumes:
+      - node-data:/var/subspace
+
+  # Farmer
+  # Note: Uses same version as node by default (defined above)
+  farmer:
+    image: ghcr.io/autonomys/farmer:${FARMER_VERSION:-${NODE_VERSION:-mainnet-2025-aug-20}}
+    container_name: auto-sdk-farmer
+    depends_on:
+      node:
+        condition: service_healthy
+    command:
+      - farm
+      - --reward-address=${REWARD_ADDRESS:-sufsKsx4kZ26i7bJXc1TFguysVzjkzsDtE2VDiCEBY2WjyGAj}
+      - --max-pieces-in-sector=10
+      - --node-rpc-url=ws://node:9944
+      - --listen-on=/ip4/0.0.0.0/tcp/30533
+      - path=/var/subspace-farmer,size=${FARM_SIZE:-1.1G}
+    ports:
+      - '30533:30533'
+    environment:
+      - RUST_LOG=${RUST_LOG:-info}
+    volumes:
+      - farmer-data:/var/subspace-farmer
+    user: '0:0' # Run as root to avoid permission issues
+
+volumes:
+  node-data:
+  farmer-data:

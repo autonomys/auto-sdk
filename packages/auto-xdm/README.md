@@ -44,28 +44,28 @@ Below are examples demonstrating how to use the functions provided by `@autonomy
 
 ```ts
 import { activateWallet } from '@autonomys/auto-utils'
-import { transferToDomainAccount20Type } from '@autonomys/auto-xdm'
+import { transporterTransfer } from '@autonomys/auto-xdm'
 
 const api = await activateWallet({ networkId: 'taurus', uri: '//alice' })
-const tx = await transferToDomainAccount20Type(
+const tx = transporterTransfer(
   api,
-  0, // Receiver domain (0 is Auto EVM on Taurus Testnet)
-  '0x1234567890abcdef', // Receiver domain account
+  { domainId: 0 }, // Receiver domain (0 is Auto EVM on Taurus Testnet)
+  { accountId20: '0x1234567890abcdef1234567890abcdef12345678' }, // Receiver domain account (EVM address)
   '1000000000000000000',
 )
 ```
 
-### 2. Transfer from Consensus to Domain using an substrate address
+### 2. Transfer from Consensus to Domain using a Substrate address
 
 ```ts
 import { activateWallet } from '@autonomys/auto-utils'
-import { transferToDomainAccount32Type } from '@autonomys/auto-xdm'
+import { transporterTransfer } from '@autonomys/auto-xdm'
 
 const api = await activateWallet({ networkId: 'taurus', uri: '//alice' })
-const tx = await transferToDomainAccount32Type(
+const tx = transporterTransfer(
   api,
-  0, // Receiver domain (0 is Auto EVM on Taurus Testnet)
-  'su1234567890abcdef', // Receiver domain account
+  { domainId: 0 }, // Receiver domain (0 is Auto EVM on Taurus Testnet)
+  { accountId32: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY' }, // Receiver domain account (Substrate address)
   '1000000000000000000',
 )
 ```
@@ -74,12 +74,13 @@ const tx = await transferToDomainAccount32Type(
 
 ```ts
 import { activateWallet } from '@autonomys/auto-utils'
-import { transferToConsensus } from '@autonomys/auto-xdm'
+import { transporterTransfer } from '@autonomys/auto-xdm'
 
 const api = await activateWallet({ networkId: 'taurus', domainId: 0, uri: '//alice' })
-const tx = await transferToConsensus(
+const tx = transporterTrans fer(
   api,
-  'su1234567890abcdef', // Receiver consensus account,
+  'consensus', // Destination is consensus chain
+  { accountId32: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY' }, // Receiver consensus account (Substrate address)
   '1000000000000000000',
 )
 ```

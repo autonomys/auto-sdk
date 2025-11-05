@@ -1,0 +1,32 @@
+{
+  "name": "@autonomys/integration-tests",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Integration tests for Autonomys SDK packages",
+  "type": "module",
+  "scripts": {
+    "test": "jest --runInBand",
+    "test:watch": "jest --watch --runInBand",
+    "test:verbose": "jest --runInBand --verbose",
+    "wait-for-ready": "tsx scripts/wait-for-ready.ts",
+    "docker:up": "cd docker && docker-compose up -d",
+    "docker:down": "cd docker && docker-compose down -v",
+    "docker:logs": "cd docker && docker-compose logs -f",
+    "docker:restart": "yarn docker:down && yarn docker:up",
+    "docker:ps": "cd docker && docker-compose ps"
+  },
+  "dependencies": {
+    "@autonomys/auto-consensus": "workspace:*",
+    "@autonomys/auto-dag-data": "workspace:*",
+    "@autonomys/auto-utils": "workspace:*",
+    "@autonomys/auto-xdm": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.11.19",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.2",
+    "tsx": "^4.7.1",
+    "typescript": "^5.3.3"
+  }
+}
