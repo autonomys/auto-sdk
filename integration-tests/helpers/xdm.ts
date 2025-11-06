@@ -1,5 +1,5 @@
 import { setupWallet, signAndSendTx, type ApiPromise } from '@autonomys/auto-utils'
-import { chainAllowlist, channels, nextChannelId } from '@autonomys/auto-xdm'
+import { chainAllowlist, channels, initiateChannel, nextChannelId } from '@autonomys/auto-xdm'
 import { waitForBlocks, waitUntil } from './chain'
 
 /**
@@ -74,8 +74,7 @@ export const setupXDM = async (
 
   if (!channelExists) {
     console.log(`Step 3/3: Initiating channel to domain ${domainId}`)
-    // Use ChainId format (lowercase 'domain') for transaction
-    const callInitiateChannel = consensusApi.tx.messenger.initiateChannel({ domain: domainId })
+    const callInitiateChannel = initiateChannel(consensusApi, { domainId })
     await signAndSendTx(owner.keyringPair, callInitiateChannel, {}, [], false)
 
     // Wait for channel to be open (similar to official Subspace test pattern)
