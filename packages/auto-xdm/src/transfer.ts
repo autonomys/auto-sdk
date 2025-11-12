@@ -1,5 +1,3 @@
-// file: src/transfer.ts
-
 import type { StringNumberOrBigInt } from '@autonomys/auto-consensus'
 import {
   ApiPromise,
@@ -8,6 +6,8 @@ import {
   createDomainsChainIdType,
   createMultiAccountIdType,
   createTransporterLocationType,
+  type ISubmittableResult,
+  type SubmittableExtrinsic,
 } from '@autonomys/auto-utils'
 import type { Chain, TransferAccount } from './types'
 
@@ -40,7 +40,7 @@ export const transporterTransfer = (
   destination: Chain,
   account: TransferAccount,
   amount: StringNumberOrBigInt,
-) => {
+): SubmittableExtrinsic<'promise', ISubmittableResult> => {
   // Create chain ID codec
   const chainId =
     destination === 'consensus'
