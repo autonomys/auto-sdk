@@ -1,9 +1,0 @@
-{
-  "tasks": {
-    "dev": "deno run --watch --allow-env --allow-read --allow-net main.ts"
-  },
-  "imports": {
-    "@autonomys/auto-utils": "npm:@autonomys/auto-utils@^1.4.4",
-    "@autonomys/auto-xdm": "npm:@autonomys/auto-xdm@^1.4.4"
-  }
-}
