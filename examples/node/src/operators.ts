@@ -4,9 +4,13 @@ import { setup } from './utils/setup'
 export const operatorsFunction = async () => {
   const { api } = await setup()
 
-  // Query all operators
-  const allOperators = await operators(api)
-  console.log('\x1b[36m%s\x1b[0m', 'allOperators:', allOperators, '\x1b[0m')
+  try {
+    // Query all operators
+    const allOperators = await operators(api)
+    console.log('\x1b[36m%s\x1b[0m', 'allOperators:', allOperators, '\x1b[0m')
+  } finally {
+    await api.disconnect()
+  }
 }
 
 operatorsFunction()

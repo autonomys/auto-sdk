@@ -4,19 +4,23 @@ import { setup, signAndSend } from './utils'
 export const withdrawStakeFunction = async () => {
   const { api, alice } = await setup()
 
-  const operatorId = '1'
-  const operatorOne = await operator(api, operatorId)
+  try {
+    const operatorId = '1'
+    const operatorOne = await operator(api, operatorId)
 
-  const tx = withdrawStake({
-    api,
-    operatorId,
-    shares: operatorOne.currentTotalShares,
-  })
+    const tx = withdrawStake({
+      api,
+      operatorId,
+      shares: operatorOne.currentTotalShares,
+    })
 
-  console.log('\x1b[32m%s\x1b[0m', 'Transaction Prepared! (with hash:', tx.hash.toHex(), ')')
-  console.log('\x1b[33m%s\x1b[0m', 'Now broadcasting transaction!\n')
+    console.log('\x1b[32m%s\x1b[0m', 'Transaction Prepared! (with hash:', tx.hash.toHex(), ')')
+    console.log('\x1b[33m%s\x1b[0m', 'Now broadcasting transaction!\n')
 
-  await signAndSend(alice[0], tx)
+    await signAndSend(alice[0], tx)
+  } finally {
+    await api.disconnect()
+  }
 }
 
 withdrawStakeFunction()

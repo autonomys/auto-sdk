@@ -4,8 +4,12 @@ import { setup } from './utils/setup'
 const main = async () => {
   const { api } = await setup()
 
-  const operatorOne = await operator(api, 1)
-  console.log('\x1b[36m%s\x1b[0m', 'operatorOne:', operatorOne, '\x1b[0m')
+  try {
+    const operatorOne = await operator(api, 1)
+    console.log('\x1b[36m%s\x1b[0m', 'operatorOne:', operatorOne, '\x1b[0m')
+  } finally {
+    await api.disconnect()
+  }
 }
 
 main()
