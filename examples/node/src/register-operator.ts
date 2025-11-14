@@ -19,12 +19,11 @@ export const registerOperatorFunction = async () => {
       'AI3',
       '\x1b[0m',
     )
-    // Transfer 2x10^18 AI3 tokens from Alice to Bob
+    // Register operator with randomUser as the operator
     const amountToStake = BigInt(100 * 10 ** 18)
     const tx = registerOperator({
       api,
-      senderAddress: alice[0].address,
-      Operator: randomUser[0],
+      publicKey: randomUser[0].publicKey,
       domainId: '0',
       amountToStake,
       minimumNominatorStake: BigInt(10 * 10 ** 18),
