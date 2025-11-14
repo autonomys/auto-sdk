@@ -2,6 +2,18 @@
 
 Future changes will appear here.
 
+## [1.6.0] - 2025-11-12
+
+### Features
+
+- improve XDM messenger developer experience ([#492](https://github.com/autonomys/auto-sdk/pull/492)) [@jfrank-summit](https://github.com/jfrank-summit)
+- improved XDM functionality in auto-xdm, add integration tests (⚠️ breaking changes) ([#490](https://github.com/autonomys/auto-sdk/pull/490)) [@jfrank-summit](https://github.com/jfrank-summit)
+
+### Chores
+
+- update CODEOWNERS ([#491](https://github.com/autonomys/auto-sdk/pull/491)) [@jfrank-summit](https://github.com/jfrank-summit)
+- bump version to v1.5.20 ([#489](https://github.com/autonomys/auto-sdk/pull/489)) [@clostao](https://github.com/clostao)
+
 ## [1.5.20] - 2025-10-30
 
 ### Features
@@ -402,5 +414,7 @@ Future changes will appear here.
 [1.5.17]: https://github.com/autonomys/auto-sdk/releases/tag/v1.5.17
 [1.5.18]: https://github.com/autonomys/auto-sdk/releases/tag/v1.5.18
 [1.5.19]: https://github.com/autonomys/auto-sdk/compare/v1.5.19
+
+[Unreleased]: https://github.com/autonomys/auto-sdk/compare/v1.6.0...HEAD
+[1.6.0]: https://github.com/autonomys/auto-sdk/compare/v1.5.20...v1.6.0
 [1.5.20]: https://github.com/autonomys/auto-sdk/releases/tag/v1.5.20
-[Unreleased]: https://github.com/autonomys/auto-sdk/compare/v1.5.20...HEAD

@@ -390,7 +390,9 @@ function rebuildChangelog(sections, header) {
 
   let content = header
   for (const section of sortedSections) {
-    content += section.content + '\n\n'
+    // Normalize section spacing to avoid extra blank lines between sections
+    const normalizedSection = (section.content || '').replace(/\s+$/g, '')
+    content += normalizedSection + '\n\n'
   }
 
   return content.trim()
