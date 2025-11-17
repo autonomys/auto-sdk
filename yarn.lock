@@ -10339,13 +10339,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"commander@npm:^12.1.0":
-  version: 12.1.0
-  resolution: "commander@npm:12.1.0"
-  checksum: 10c0/6e1996680c083b3b897bfc1cfe1c58dfbcd9842fd43e1aaf8a795fbc237f65efcc860a3ef457b318e73f29a4f4a28f6403c3d653d021d960e4632dd45bde54a9
-  languageName: node
-  linkType: hard
-
 "commander@npm:^2.20.0":
   version: 2.20.3
   resolution: "commander@npm:2.20.3"
@@ -12546,6 +12539,15 @@ __metadata:
   checksum: 10c0/074d865ea1c7e29e3243f85a13306e89fca2d775b982dca03fa6bfa75c56827fa89cf1ab9e730db24bd6b104cbdcae074f2b37ba498874e9dd9710fbff4979bb
   languageName: node
   linkType: hard
+
+"examples@workspace:examples":
+  version: 0.0.0-use.local
+  resolution: "examples@workspace:examples"
+  dependencies:
+    "@autonomys/auto-utils": "workspace:*"
+    ethers: "npm:^6.13.5"
+  languageName: unknown
+  linkType: soft
 
 "execa@npm:5.0.0":
   version: 5.0.0
@@ -17116,18 +17118,6 @@ __metadata:
   checksum: 10c0/52a0dbd25ccf545892670d1551690fe0facb6a471e15f2cfa1b20142a5b255b3aa254af5f59d6ecb69c2bec7390bc643c43aa63b13bf5e64b6075952e716b1aa
   languageName: node
   linkType: hard
-
-"node@workspace:examples/node":
-  version: 0.0.0-use.local
-  resolution: "node@workspace:examples/node"
-  dependencies:
-    "@autonomys/auto-consensus": "workspace:*"
-    "@autonomys/auto-utils": "workspace:*"
-    commander: "npm:^12.1.0"
-    dotenv: "npm:^16.4.5"
-    ethers: "npm:^6.13.5"
-  languageName: unknown
-  linkType: soft
 
 "nopt@npm:^7.0.0, nopt@npm:^7.2.1":
   version: 7.2.1

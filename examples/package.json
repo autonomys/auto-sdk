@@ -1,0 +1,23 @@
+{
+  "name": "examples",
+  "version": "0.1",
+  "private": true,
+  "license": "MIT",
+  "packageManager": "yarn@4.2.2",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/autonomys/auto-sdk"
+  },
+  "author": {
+    "name": "Autonomys",
+    "url": "https://www.autonomys.net"
+  },
+  "scripts": {
+    "eth-derivation-demo": "npx ts-node ./eth-derivation-demo.ts",
+    "address": "npx ts-node ./address.ts"
+  },
+  "dependencies": {
+    "@autonomys/auto-utils": "workspace:*",
+    "ethers": "^6.13.5"
+  }
+}

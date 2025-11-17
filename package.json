@@ -5,7 +5,7 @@
   "license": "MIT",
   "workspaces": [
     "packages/**/*",
-    "examples/*",
+    "examples",
     "integration-tests"
   ],
   "scripts": {
