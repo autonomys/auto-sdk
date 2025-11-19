@@ -107,18 +107,18 @@ export const networks: Network[] = [
   {
     id: NetworkId.LOCALHOST,
     name: NetworkName.LOCALHOST,
-    rpcUrls: ['ws://127.0.0.1:9944/ws'],
+    rpcUrls: ['ws://127.0.0.1:9944'],
     explorer: [],
     domains: [
       {
         domainId: '0',
         ...domains[DomainRuntime.AUTO_EVM],
-        rpcUrls: ['ws://127.0.0.1:9945/ws'],
+        rpcUrls: ['ws://127.0.0.1:9945'],
       },
       {
         domainId: '1',
         ...domains[DomainRuntime.AUTO_ID],
-        rpcUrls: ['ws://127.0.0.1:9946/ws'],
+        rpcUrls: ['ws://127.0.0.1:9946'],
       },
     ],
     token: TESTNET_TOKEN,

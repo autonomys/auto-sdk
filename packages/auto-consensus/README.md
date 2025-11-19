@@ -324,6 +324,55 @@ import { activate, activateWallet, signAndSendTx } from '@autonomys/auto-utils'
 
 - A SubmittableExtrinsic transaction object.
 
+#### **Unlock a Nominator**
+
+Release a nominator's stake and storage-fee deposit after an operator has been deregistered and the withdrawal locking period has elapsed.
+
+> **Important:** `unlockNominator` only succeeds when:
+>
+> 1. The operator status is `Deregistered` (call `deregisterOperator` and wait for at least one epoch transition so the status updates).
+> 2. The domain head block number is greater than or equal to the withdrawal’s `unlock_at_confirmed_domain_block_number` (you can read it via `nominatorPosition` and compare it with `apis.domain.rpc.chain.getHeader()` or `latestConfirmedDomainBlock`).
+
+```typescript
+import { unlockNominator } from '@autonomys/auto-consensus'
+import { activate, activateWallet, signAndSendTx } from '@autonomys/auto-utils'
+;(async () => {
+  const api = await activate({ networkId: 'your_network_id' })
+  const { accounts } = await activateWallet({
+    networkId: 'your_network_id',
+    mnemonic: 'nominator_mnemonic',
+  })
+  const nominator = accounts[0]
+
+  const operatorId = '1'
+  const tx = unlockNominator({ api, operatorId })
+
+  await signAndSendTx(nominator, tx)
+})()
+```
+
+#### **Unlock Withdrawn Funds**
+
+For normal withdrawals (when a nominator calls one of the `withdrawStake*` helpers), use `unlockFunds` after the withdrawal’s lock period expires.
+
+```typescript
+import { unlockFunds } from '@autonomys/auto-consensus'
+import { activate, activateWallet, signAndSendTx } from '@autonomys/auto-utils'
+;(async () => {
+  const api = await activate({ networkId: 'your_network_id' })
+  const { accounts } = await activateWallet({
+    networkId: 'your_network_id',
+    mnemonic: 'nominator_mnemonic',
+  })
+  const nominator = accounts[0]
+
+  const operatorId = '1'
+  const tx = unlockFunds({ api, operatorId })
+
+  await signAndSendTx(nominator, tx)
+})()
+```
+
 ### 5. Blockchain Information
 
 #### **Get Block and Network Information**

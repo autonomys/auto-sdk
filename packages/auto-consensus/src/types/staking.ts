@@ -2,6 +2,26 @@ import type { ApiPromise } from '@autonomys/auto-utils'
 
 export type RawOperatorId = string[]
 
+export type DomainEpoch = [number, number]
+
+export type DeregisteredStatus = {
+  domainEpoch: DomainEpoch
+  unlockAtConfirmedDomainBlockNumber: number
+}
+
+export type RegisteredStatus = {
+  domainEpoch: DomainEpoch
+}
+
+export type OperatorPartialStatus = {
+  Registered?: RegisteredStatus
+  Deregistered?: DeregisteredStatus
+  PendingOperator?: RegisteredStatus
+  PendingNominator?: RegisteredStatus
+  Slashed?: { slashPercentage: number }
+  [key: string]: unknown
+}
+
 export type RawOperatorDetails = {
   signingKey: string
   currentDomainId: number
@@ -10,7 +30,7 @@ export type RawOperatorDetails = {
   nominationTax: number
   currentTotalStake: number
   currentTotalShares: number
-  partialStatus: object
+  partialStatus: OperatorPartialStatus
   depositsInEpoch: string
   withdrawalsInEpoch: number
   totalStorageFeeDeposit: string
@@ -34,7 +54,7 @@ export type OperatorDetails = {
   nominationTax: number
   currentTotalStake: bigint
   currentTotalShares: bigint
-  partialStatus: object
+  partialStatus: OperatorPartialStatus
   depositsInEpoch: bigint
   withdrawalsInEpoch: bigint
   totalStorageFeeDeposit: bigint
