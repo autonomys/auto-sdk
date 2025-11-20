@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import Websocket from 'websocket'
 import { connection } from 'websocket'
 import { z } from 'zod'
 import { PromiseOr } from '../utils/types'
@@ -36,6 +37,15 @@ export type MessageResponse = {
 export type MessageResponseQuery = Omit<MessageResponse, 'id' | 'jsonrpc'> & {
   id?: number
   jsonrpc?: string
+}
+
+export type RpcClientCallbacks = {
+  onEveryOpen?: () => void
+  onFirstOpen?: () => void
+  onReconnection?: () => void
+  onError?: (error: Error) => void
+  onClose?: (event: Websocket.ICloseEvent) => void
+  onWrongMessage?: (responder: (message: MessageResponseQuery) => void) => void
 }
 
 type SuccessResponse<T> = {
