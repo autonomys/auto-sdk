@@ -1,7 +1,7 @@
 {
   "name": "@autonomys/file-server",
   "packageManager": "yarn@4.7.0",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "license": "MIT",
   "type": "module",
   "repository": {
@@ -47,9 +47,9 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "@autonomys/asynchronous": "^1.6.0",
-    "@autonomys/auto-dag-data": "^1.6.0",
-    "@autonomys/auto-utils": "^1.6.0",
+    "@autonomys/asynchronous": "^1.6.1",
+    "@autonomys/auto-dag-data": "^1.6.1",
+    "@autonomys/auto-utils": "^1.6.1",
     "@keyvhq/sqlite": "^2.1.7",
     "cache-manager": "^6.4.2",
     "express": "^4.19.2",
