@@ -2,6 +2,20 @@
 
 Future changes will appear here.
 
+## [1.6.1] - 2025-11-20
+
+### Bug Fixes
+
+- expose `onEveryOpen` in RPC Client Callbacks ([#496](https://github.com/autonomys/auto-sdk/pull/496)) [@jfrank-summit](https://github.com/jfrank-summit)
+
+### Code Refactoring
+
+- convert most examples to integration tests ([#494](https://github.com/autonomys/auto-sdk/pull/494)) [@jfrank-summit](https://github.com/jfrank-summit)
+
+### Chores
+
+- release v1.6.0 ([#493](https://github.com/autonomys/auto-sdk/pull/493)) [@jfrank-summit](https://github.com/jfrank-summit)
+
 ## [1.6.0] - 2025-11-12
 
 ### Features
@@ -415,6 +429,8 @@ Future changes will appear here.
 [1.5.18]: https://github.com/autonomys/auto-sdk/releases/tag/v1.5.18
 [1.5.19]: https://github.com/autonomys/auto-sdk/compare/v1.5.19
 
-[Unreleased]: https://github.com/autonomys/auto-sdk/compare/v1.6.0...HEAD
-[1.6.0]: https://github.com/autonomys/auto-sdk/compare/v1.5.20...v1.6.0
 [1.5.20]: https://github.com/autonomys/auto-sdk/releases/tag/v1.5.20
+
+[Unreleased]: https://github.com/autonomys/auto-sdk/compare/v1.6.1...HEAD
+[1.6.1]: https://github.com/autonomys/auto-sdk/compare/v1.6.0...v1.6.1
+[1.6.0]: https://github.com/autonomys/auto-sdk/releases/tag/v1.6.0
