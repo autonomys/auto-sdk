@@ -3,7 +3,13 @@ import Websocket from 'websocket'
 import { randomId } from '../../utils'
 import { createRpcClient } from '../client'
 import { createRpcServer } from '../server'
-import { Message, MessageQuery, RpcParams, TypedRpcNotificationHandler } from '../types'
+import {
+  Message,
+  MessageQuery,
+  RpcClientCallbacks,
+  RpcParams,
+  TypedRpcNotificationHandler,
+} from '../types'
 import { RpcError } from '../utils'
 import {
   ApiDefinition,
@@ -20,9 +26,12 @@ import {
 } from './typing'
 
 export const createApiDefinition = <S extends ApiDefinition>(serverDefinition: S) => {
-  const createClient = <Client extends WsClientType<S>>(
-    clientParams: Parameters<typeof createRpcClient>[0],
-  ): ApiDefinitionClient<S> => {
+  const createClient = <Client extends WsClientType<S>>(clientParams: {
+    endpoint: string
+    callbacks: RpcClientCallbacks
+    reconnectInterval?: number | null
+    debug?: boolean
+  }): ApiDefinitionClient<S> => {
     const client = createRpcClient(clientParams)
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -189,7 +198,7 @@ export const createApiDefinition = <S extends ApiDefinition>(serverDefinition: S
     callbacks,
   }: {
     handlers: ApiServerHandlers<S>
-    callbacks: Parameters<typeof createRpcClient>[0]['callbacks']
+    callbacks: RpcClientCallbacks
   }): ApiMockServerClient<S> => {
     const eventEmitter = new EventEmitter()
 

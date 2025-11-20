@@ -9,6 +9,7 @@ import {
   MessageQuery,
   MessageResponse,
   MessageResponseQuery,
+  RpcClientCallbacks,
 } from './types'
 
 export const createRpcClient = ({
@@ -18,14 +19,7 @@ export const createRpcClient = ({
   debug = false,
 }: {
   endpoint: string
-  callbacks: {
-    onEveryOpen?: () => void
-    onFirstOpen?: () => void
-    onReconnection?: () => void
-    onError?: (error: Error) => void
-    onClose?: (event: Websocket.ICloseEvent) => void
-    onWrongMessage?: (responder: (message: MessageResponseQuery) => void) => void
-  }
+  callbacks: RpcClientCallbacks
   reconnectInterval?: number | null
   debug?: boolean
 }): ClientRPC => {
