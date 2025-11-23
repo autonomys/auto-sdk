@@ -2,84 +2,61 @@ import { CompressionAlgorithm, EncryptionAlgorithm } from '@autonomys/auto-dag-d
 import { Request, Response } from 'express'
 import { ByteRange, DownloadMetadata, DownloadOptions } from '../models.js'
 
-const isExpectedDocument = (req: Request) => {
-  return (
-    req.headers['sec-fetch-site'] === 'none' ||
-    (req.headers['sec-fetch-site'] === 'same-site' && req.headers['sec-fetch-mode'] === 'navigate')
-  )
+const isInlineDocument = (req: Request) => {
+  if ('download' in req.query) return false // explicit opt-out
+  if ('inline' in req.query) return true // explicit opt-in
+
+  const destHeader = req.headers['sec-fetch-dest']
+  const dest = (Array.isArray(destHeader) ? destHeader[0] : (destHeader ?? '')).toLowerCase()
+  if (dest && dest !== 'document') return false // e.g. <img>, fetch(), etc.
+
+  const modeHeader = req.headers['sec-fetch-mode']
+  const mode = (Array.isArray(modeHeader) ? modeHeader[0] : (modeHeader ?? '')).toLowerCase()
+  if (mode && mode !== 'navigate') return false // programmatic fetch
+
+  return true
+}
+
+const buildDisposition = (req: Request, filename: string) => {
+  const encoded = encodeURIComponent(filename || 'download')
+  const type = isInlineDocument(req) ? 'inline' : 'attachment'
+  return `${type}; filename="${encoded}"; filename*=UTF-8''${encoded}`
 }
 
 export const handleDownloadResponseHeaders = (
   req: Request,
   res: Response,
   metadata: DownloadMetadata,
-  options: DownloadOptions,
-) => {
-  const safeName = encodeURIComponent(metadata.name || 'download')
-  const documentExpected = isExpectedDocument(req)
-  const shouldHandleEncoding = req.query.ignoreEncoding
-    ? req.query.ignoreEncoding !== 'true'
-    : documentExpected
-
-  const isEncrypted = metadata.isEncrypted
-  if (metadata.type === 'file') {
-    setFileResponseHeaders(
-      res,
-      metadata,
-      isEncrypted,
-      documentExpected,
-      shouldHandleEncoding,
-      safeName,
-      options,
-    )
-  } else {
-    setFolderResponseHeaders(res, isEncrypted, documentExpected, safeName)
-  }
-}
-
-const setFileResponseHeaders = (
-  res: Response,
-  metadata: DownloadMetadata,
-  isEncrypted: boolean,
-  isExpectedDocument: boolean,
-  shouldHandleEncoding: boolean,
-  safeName: string,
   { byteRange = undefined, rawMode = false }: DownloadOptions,
 ) => {
-  const contentType = (!isEncrypted && !rawMode && metadata.mimeType) || 'application/octet-stream'
-  res.set('Content-Type', contentType)
-  res.set(
-    'Content-Disposition',
-    `${isExpectedDocument ? 'inline' : 'attachment'}; filename="${safeName}"`,
-  )
-  const compressedButNoEncrypted = metadata.isCompressed && !isEncrypted
+  const baseName = metadata.name || 'download'
+  const fileName = metadata.type === 'file' ? baseName : `${baseName}.zip`
 
-  if (compressedButNoEncrypted && shouldHandleEncoding && !rawMode && !byteRange) {
-    res.set('Content-Encoding', 'deflate')
+  if (metadata.type === 'file') {
+    const contentType =
+      (!metadata.isEncrypted && !rawMode && metadata.mimeType) || 'application/octet-stream'
+    res.set('Content-Type', contentType)
+
+    const compressedButNoEncrypted = metadata.isCompressed && !metadata.isEncrypted
+
+    if (compressedButNoEncrypted && !rawMode && !byteRange && req.query.ignoreEncoding !== 'true') {
+      res.set('Content-Encoding', 'deflate')
+    }
+
+    if (byteRange) {
+      res.status(206)
+      res.set('Content-Range', `bytes ${byteRange[0]}-${byteRange[1]}/${metadata.size}`)
+      const upperBound = byteRange[1] ?? Number(metadata.size) - 1
+      res.set('Content-Length', (upperBound - byteRange[0] + 1).toString())
+    } else if (metadata.size) {
+      res.set('Content-Length', metadata.size.toString())
+    }
+  } else {
+    const contentType = metadata.isEncrypted ? 'application/octet-stream' : 'application/zip'
+    res.set('Content-Type', contentType)
   }
 
-  if (byteRange) {
-    res.status(206)
-    res.set('Content-Range', `bytes ${byteRange[0]}-${byteRange[1]}/${metadata.size}`)
-    const upperBound = byteRange[1] ?? Number(metadata.size) - 1
-    res.set('Content-Length', (upperBound - byteRange[0] + 1).toString())
-  } else if (metadata.size) {
-    res.set('Content-Length', metadata.size.toString())
-  }
-}
-
-const setFolderResponseHeaders = (
-  res: Response,
-  isEncrypted: boolean,
-  isExpectedDocument: boolean,
-  safeName: string,
-) => {
-  const contentType = isEncrypted ? 'application/octet-stream' : 'application/zip'
-  res.set('Content-Type', contentType)
-  res.set(
-    'Content-Disposition',
-    `${isExpectedDocument ? 'inline' : 'attachment'}; filename="${safeName}.zip"`,
-  )
+  res.set('Content-Disposition', buildDisposition(req, fileName))
 }
 
 export const handleS3DownloadResponseHeaders = (
