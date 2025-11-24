@@ -145,6 +145,23 @@ describe('handleDownloadResponseHeaders', () => {
         expect.stringMatching(/^attachment;/),
       )
     })
+
+    it('should be inline for video mime types even for non-document destinations (e.g. <video> tags)', () => {
+      const req = createMockReq({ 'sec-fetch-dest': 'video' })
+      const res = createMockRes()
+      const metadata: DownloadMetadata = {
+        ...defaultMetadata,
+        mimeType: 'video/mp4',
+        name: 'example.mp4',
+      }
+
+      handleDownloadResponseHeaders(req as any, res as any, metadata, {})
+
+      expect(res.set).toHaveBeenCalledWith(
+        'Content-Disposition',
+        expect.stringMatching(/^inline; filename="example\.mp4"; filename\*=UTF-8''example\.mp4$/),
+      )
+    })
   })
 
   describe('Content-Type', () => {

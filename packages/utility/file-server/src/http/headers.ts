@@ -7,23 +7,74 @@ import { ByteRange, DownloadMetadata, DownloadOptions } from '../models.js'
 const isDocumentNavigation = (req: Request) => {
   const destHeader = req.headers['sec-fetch-dest']
   const dest = (Array.isArray(destHeader) ? destHeader[0] : (destHeader ?? '')).toLowerCase()
-  if (dest && dest !== 'document') return false // e.g. <img>, fetch(), etc.
+  if (dest && dest !== 'document') return false // e.g. <img>, <video>, fetch(), etc.
 
   const modeHeader = req.headers['sec-fetch-mode']
   const mode = (Array.isArray(modeHeader) ? modeHeader[0] : (modeHeader ?? '')).toLowerCase()
-  if (mode && mode !== 'navigate') return false // programmatic fetch
+  if (mode && mode !== 'navigate') return false // programmatic fetch / subresource
 
   return true
 }
 
-const isInlineDocument = (req: Request) => {
-  // Check explicit query parameters - treat presence as boolean flag
+// Decide if this file type is something browsers can usually render inline via URL
+// (mirrors the logic in canDisplayDirectly but on DownloadMetadata)
+const isPreviewableInline = (metadata: DownloadMetadata) => {
+  if (metadata.isEncrypted) return false
+
+  const mimeType = metadata.mimeType?.toLowerCase() ?? ''
+  const extension = metadata.name?.split('.').pop()?.toLowerCase() ?? ''
+
+  const directDisplayTypes = ['image/', 'video/', 'audio/']
+  const directDisplayExtensions = [
+    // Images
+    'jpg',
+    'jpeg',
+    'png',
+    'gif',
+    'svg',
+    'webp',
+    'bmp',
+    'ico',
+    // Videos
+    'mp4',
+    'webm',
+    'avi',
+    'mov',
+    'mkv',
+    'flv',
+    'wmv',
+    // Audio
+    'mp3',
+    'wav',
+    'ogg',
+    'flac',
+    'm4a',
+    'aac',
+    // PDFs
+    'pdf',
+  ]
+
+  return (
+    directDisplayTypes.some((type) => mimeType.startsWith(type)) ||
+    mimeType === 'application/pdf' ||
+    directDisplayExtensions.includes(extension)
+  )
+}
+
+const isInlineDisposition = (req: Request, metadata: DownloadMetadata) => {
+  // Explicit query overrides - treat presence as boolean flag
   // ?download or ?download=true triggers attachment, ?download=false is ignored
   if (req.query.download === 'true' || req.query.download === '') return false
   // ?inline or ?inline=true triggers inline, ?inline=false is ignored
   if (req.query.inline === 'true' || req.query.inline === '') return true
 
-  // Fall back to header-based detection
+  // Folders (served as zip) should default to attachment
+  if (metadata.type !== 'file') return false
+
+  // For media / PDFs that browsers can render directly, prefer inline even for subresources
+  if (isPreviewableInline(metadata)) return true
+
+  // Fallback to header-based detection: top-level document navigations are inline
   return isDocumentNavigation(req)
 }
 
@@ -39,10 +90,10 @@ const rfc5987Encode = (str: string) =>
     .replace(/['()]/g, (c) => '%' + c.charCodeAt(0).toString(16).toUpperCase())
     .replace(/\*/g, '%2A')
 
-const buildDisposition = (req: Request, filename: string) => {
+const buildDisposition = (req: Request, metadata: DownloadMetadata, filename: string) => {
   const fallbackName = toAsciiFallback(filename || 'download')
   const encoded = rfc5987Encode(filename || 'download')
-  const type = isInlineDocument(req) ? 'inline' : 'attachment'
+  const type = isInlineDisposition(req, metadata) ? 'inline' : 'attachment'
   return `${type}; filename="${fallbackName}"; filename*=UTF-8''${encoded}`
 }
 
@@ -60,10 +111,15 @@ export const handleDownloadResponseHeaders = (
       (!metadata.isEncrypted && !rawMode && metadata.mimeType) || 'application/octet-stream'
     res.set('Content-Type', contentType)
 
+    // Advertise range support for files so browsers like Chrome can seek in media
+    if (metadata.size != null) {
+      res.set('Accept-Ranges', 'bytes')
+    }
+
     const compressedButNotEncrypted = metadata.isCompressed && !metadata.isEncrypted
 
     // Only set Content-Encoding for document navigations where browsers auto-decompress
-    // Don't set it for <img>, fetch(), etc. as browsers won't auto-decompress those
+    // Don't set it for <img>, <video>, fetch(), etc. as browsers won't auto-decompress those
     const shouldHandleEncoding = req.query.ignoreEncoding
       ? req.query.ignoreEncoding !== 'true'
       : isDocumentNavigation(req)
@@ -85,7 +141,7 @@ export const handleDownloadResponseHeaders = (
     res.set('Content-Type', contentType)
   }
 
-  res.set('Content-Disposition', buildDisposition(req, fileName))
+  res.set('Content-Disposition', buildDisposition(req, metadata, fileName))
 }
 
 export const handleS3DownloadResponseHeaders = (
