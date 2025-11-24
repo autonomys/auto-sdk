@@ -2,13 +2,9 @@ import { CompressionAlgorithm, EncryptionAlgorithm } from '@autonomys/auto-dag-d
 import { Request, Response } from 'express'
 import { ByteRange, DownloadMetadata, DownloadOptions } from '../models.js'
 
-const isInlineDocument = (req: Request) => {
-  // Check explicit query parameters - treat presence as boolean flag
-  // ?download or ?download=true triggers attachment, ?download=false is ignored
-  if (req.query.download === 'true' || req.query.download === '') return false
-  // ?inline or ?inline=true triggers inline, ?inline=false is ignored
-  if (req.query.inline === 'true' || req.query.inline === '') return true
-
+// Check if this is actually a document navigation (based on headers only)
+// Used to determine if browser will auto-decompress Content-Encoding
+const isDocumentNavigation = (req: Request) => {
   const destHeader = req.headers['sec-fetch-dest']
   const dest = (Array.isArray(destHeader) ? destHeader[0] : (destHeader ?? '')).toLowerCase()
   if (dest && dest !== 'document') return false // e.g. <img>, fetch(), etc.
@@ -18,6 +14,17 @@ const isInlineDocument = (req: Request) => {
   if (mode && mode !== 'navigate') return false // programmatic fetch
 
   return true
+}
+
+const isInlineDocument = (req: Request) => {
+  // Check explicit query parameters - treat presence as boolean flag
+  // ?download or ?download=true triggers attachment, ?download=false is ignored
+  if (req.query.download === 'true' || req.query.download === '') return false
+  // ?inline or ?inline=true triggers inline, ?inline=false is ignored
+  if (req.query.inline === 'true' || req.query.inline === '') return true
+
+  // Fall back to header-based detection
+  return isDocumentNavigation(req)
 }
 
 // Helper to create an ASCII-safe fallback for filename parameter (RFC 2183/6266)
@@ -55,7 +62,13 @@ export const handleDownloadResponseHeaders = (
 
     const compressedButNoEncrypted = metadata.isCompressed && !metadata.isEncrypted
 
-    if (compressedButNoEncrypted && !rawMode && !byteRange && req.query.ignoreEncoding !== 'true') {
+    // Only set Content-Encoding for document navigations where browsers auto-decompress
+    // Don't set it for <img>, fetch(), etc. as browsers won't auto-decompress those
+    const shouldHandleEncoding = req.query.ignoreEncoding
+      ? req.query.ignoreEncoding !== 'true'
+      : isDocumentNavigation(req)
+
+    if (compressedButNoEncrypted && shouldHandleEncoding && !rawMode && !byteRange) {
       res.set('Content-Encoding', 'deflate')
     }
 

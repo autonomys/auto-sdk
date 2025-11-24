@@ -218,6 +218,49 @@ describe('handleDownloadResponseHeaders', () => {
 
       expect(res.set).not.toHaveBeenCalledWith('Content-Encoding', 'deflate')
     })
+
+    it('should NOT set deflate for non-document requests (e.g. <img> tags)', () => {
+      const req = createMockReq({ 'sec-fetch-dest': 'image' })
+      const res = createMockRes()
+      const metadata = { ...defaultMetadata, isCompressed: true }
+
+      handleDownloadResponseHeaders(req as any, res as any, metadata, {})
+
+      expect(res.set).not.toHaveBeenCalledWith('Content-Encoding', 'deflate')
+    })
+
+    it('should NOT set deflate for non-navigate requests (e.g. fetch API)', () => {
+      const req = createMockReq({ 'sec-fetch-mode': 'cors' })
+      const res = createMockRes()
+      const metadata = { ...defaultMetadata, isCompressed: true }
+
+      handleDownloadResponseHeaders(req as any, res as any, metadata, {})
+
+      expect(res.set).not.toHaveBeenCalledWith('Content-Encoding', 'deflate')
+    })
+
+    it('should NOT set deflate for non-document requests even with ?inline override', () => {
+      // Even if ?inline=true forces inline disposition, Content-Encoding should
+      // only be set for actual document navigations (browsers won't auto-decompress for <img>)
+      const req = createMockReq({ 'sec-fetch-dest': 'image' }, { inline: 'true' })
+      const res = createMockRes()
+      const metadata = { ...defaultMetadata, isCompressed: true }
+
+      handleDownloadResponseHeaders(req as any, res as any, metadata, {})
+
+      // Should NOT set Content-Encoding because it's not a document navigation
+      expect(res.set).not.toHaveBeenCalledWith('Content-Encoding', 'deflate')
+    })
+
+    it('should set deflate for actual document navigations', () => {
+      const req = createMockReq({ 'sec-fetch-dest': 'document', 'sec-fetch-mode': 'navigate' })
+      const res = createMockRes()
+      const metadata = { ...defaultMetadata, isCompressed: true }
+
+      handleDownloadResponseHeaders(req as any, res as any, metadata, {})
+
+      expect(res.set).toHaveBeenCalledWith('Content-Encoding', 'deflate')
+    })
   })
 
   describe('Range Requests', () => {
