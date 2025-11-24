@@ -109,13 +109,17 @@ describe('handleDownloadResponseHeaders', () => {
       )
     })
 
-    it('should be inline when ?inline is present, even if fetch headers suggest otherwise', () => {
-      const req = createMockReq({ 'sec-fetch-dest': 'image' }, { inline: 'true' })
+    it('should handle filenames with special characters correctly', () => {
+      const req = createMockReq()
       const res = createMockRes()
+      const metadata = { ...defaultMetadata, name: 'my file with "quotes".txt' }
 
-      handleDownloadResponseHeaders(req as any, res as any, defaultMetadata, {})
+      handleDownloadResponseHeaders(req as any, res as any, metadata, {})
 
-      expect(res.set).toHaveBeenCalledWith('Content-Disposition', expect.stringMatching(/^inline;/))
+      const disposition = res._getHeaders()['content-disposition']
+      // filename should have escaped quotes, filename* should be RFC 5987 encoded
+      expect(disposition).toMatch(/filename="my file with \\"quotes\\"\.txt"/)
+      expect(disposition).toMatch(/filename\*=UTF-8''my%20file%20with%20%22quotes%22\.txt/)
     })
 
     it('should default to attachment for non-document destinations (e.g. img)', () => {

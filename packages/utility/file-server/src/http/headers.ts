@@ -20,10 +20,23 @@ const isInlineDocument = (req: Request) => {
   return true
 }
 
+// Helper to create an ASCII-safe fallback for filename parameter (RFC 2183/6266)
+const toAsciiFallback = (name: string) =>
+  name
+    .replace(/[^\x20-\x7E]+/g, '_') // replace non-ASCII with underscore
+    .replace(/["\\]/g, '\\$&') // escape quotes and backslashes
+
+// RFC 5987 encoding for filename* parameter
+const rfc5987Encode = (str: string) =>
+  encodeURIComponent(str)
+    .replace(/['()]/g, (c) => '%' + c.charCodeAt(0).toString(16).toUpperCase())
+    .replace(/\*/g, '%2A')
+
 const buildDisposition = (req: Request, filename: string) => {
-  const encoded = encodeURIComponent(filename || 'download')
+  const fallbackName = toAsciiFallback(filename || 'download')
+  const encoded = rfc5987Encode(filename || 'download')
   const type = isInlineDocument(req) ? 'inline' : 'attachment'
-  return `${type}; filename="${encoded}"; filename*=UTF-8''${encoded}`
+  return `${type}; filename="${fallbackName}"; filename*=UTF-8''${encoded}`
 }
 
 export const handleDownloadResponseHeaders = (
