@@ -74,10 +74,14 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if ${{ inputs.prerelease }}; then
+          if [ "${{ inputs.prerelease }}" = "true" ]; then
+            BUMP_TYPE="prerelease"
             PRERELEASE_FLAG="--preid beta"
-          else 
+            PUBLISH_FLAGS="--yes --force-publish --dist-tag beta"
+          else
+            BUMP_TYPE="${{ inputs.releaseType }}"
             PRERELEASE_FLAG=""
+            PUBLISH_FLAGS="--yes --force-publish"
           fi
 
           # Ensure npm config has auth token for @autonomys scope
@@ -87,14 +91,14 @@ jobs:
           git add CHANGELOG.md
           git commit -m "docs: update CHANGELOG.md for release" || echo "No changes to commit"
 
-          yarn lerna version ${{ inputs.releaseType }} --yes --no-push --force-publish $PRERELEASE_FLAG
+          yarn lerna version $BUMP_TYPE --yes --no-push --force-publish $PRERELEASE_FLAG
 
           # Get the new version after bumping
           NEW_VERSION=$(node -p "require('./lerna.json').version")
           echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
           git push --follow-tags --force-with-lease
-          yarn lerna publish from-package --yes --force-publish
+          yarn lerna publish from-package $PUBLISH_FLAGS
 
       - name: Create GitHub Release
         if: ${{ !inputs.dryRun }}
