@@ -60,7 +60,7 @@ export const handleDownloadResponseHeaders = (
       (!metadata.isEncrypted && !rawMode && metadata.mimeType) || 'application/octet-stream'
     res.set('Content-Type', contentType)
 
-    const compressedButNoEncrypted = metadata.isCompressed && !metadata.isEncrypted
+    const compressedButNotEncrypted = metadata.isCompressed && !metadata.isEncrypted
 
     // Only set Content-Encoding for document navigations where browsers auto-decompress
     // Don't set it for <img>, fetch(), etc. as browsers won't auto-decompress those
@@ -68,7 +68,7 @@ export const handleDownloadResponseHeaders = (
       ? req.query.ignoreEncoding !== 'true'
       : isDocumentNavigation(req)
 
-    if (compressedButNoEncrypted && shouldHandleEncoding && !rawMode && !byteRange) {
+    if (compressedButNotEncrypted && shouldHandleEncoding && !rawMode && !byteRange) {
       res.set('Content-Encoding', 'deflate')
     }
 
