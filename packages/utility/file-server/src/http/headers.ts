@@ -3,8 +3,11 @@ import { Request, Response } from 'express'
 import { ByteRange, DownloadMetadata, DownloadOptions } from '../models.js'
 
 const isInlineDocument = (req: Request) => {
-  if ('download' in req.query) return false // explicit opt-out
-  if ('inline' in req.query) return true // explicit opt-in
+  // Check explicit query parameters - treat presence as boolean flag
+  // ?download or ?download=true triggers attachment, ?download=false is ignored
+  if (req.query.download === 'true' || req.query.download === '') return false
+  // ?inline or ?inline=true triggers inline, ?inline=false is ignored
+  if (req.query.inline === 'true' || req.query.inline === '') return true
 
   const destHeader = req.headers['sec-fetch-dest']
   const dest = (Array.isArray(destHeader) ? destHeader[0] : (destHeader ?? '')).toLowerCase()

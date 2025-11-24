@@ -52,8 +52,53 @@ describe('handleDownloadResponseHeaders', () => {
       )
     })
 
-    it('should be attachment when ?download is present', () => {
-      const req = createMockReq({}, { download: 'true' })
+    it('should be attachment when ?download=true or ?download is present', () => {
+      const req1 = createMockReq({}, { download: 'true' })
+      const res1 = createMockRes()
+      handleDownloadResponseHeaders(req1 as any, res1 as any, defaultMetadata, {})
+      expect(res1.set).toHaveBeenCalledWith(
+        'Content-Disposition',
+        expect.stringMatching(/^attachment;/),
+      )
+
+      const req2 = createMockReq({}, { download: '' })
+      const res2 = createMockRes()
+      handleDownloadResponseHeaders(req2 as any, res2 as any, defaultMetadata, {})
+      expect(res2.set).toHaveBeenCalledWith(
+        'Content-Disposition',
+        expect.stringMatching(/^attachment;/),
+      )
+    })
+
+    it('should ignore ?download=false and use default behavior', () => {
+      const req = createMockReq({}, { download: 'false' })
+      const res = createMockRes()
+
+      handleDownloadResponseHeaders(req as any, res as any, defaultMetadata, {})
+
+      expect(res.set).toHaveBeenCalledWith('Content-Disposition', expect.stringMatching(/^inline;/))
+    })
+
+    it('should be inline when ?inline=true or ?inline is present, even if fetch headers suggest otherwise', () => {
+      const req1 = createMockReq({ 'sec-fetch-dest': 'image' }, { inline: 'true' })
+      const res1 = createMockRes()
+      handleDownloadResponseHeaders(req1 as any, res1 as any, defaultMetadata, {})
+      expect(res1.set).toHaveBeenCalledWith(
+        'Content-Disposition',
+        expect.stringMatching(/^inline;/),
+      )
+
+      const req2 = createMockReq({ 'sec-fetch-dest': 'image' }, { inline: '' })
+      const res2 = createMockRes()
+      handleDownloadResponseHeaders(req2 as any, res2 as any, defaultMetadata, {})
+      expect(res2.set).toHaveBeenCalledWith(
+        'Content-Disposition',
+        expect.stringMatching(/^inline;/),
+      )
+    })
+
+    it('should ignore ?inline=false and use default behavior', () => {
+      const req = createMockReq({ 'sec-fetch-dest': 'image' }, { inline: 'false' })
       const res = createMockRes()
 
       handleDownloadResponseHeaders(req as any, res as any, defaultMetadata, {})
