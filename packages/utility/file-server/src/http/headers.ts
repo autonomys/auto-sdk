@@ -1,6 +1,24 @@
 import { CompressionAlgorithm, EncryptionAlgorithm } from '@autonomys/auto-dag-data'
 import { Request, Response } from 'express'
 import { ByteRange, DownloadMetadata, DownloadOptions } from '../models.js'
+import { inferMimeType } from '../utils.js'
+
+// Generic mimetypes that should trigger extension-based fallback
+const GENERIC_MIME_TYPES = new Set(['application/octet-stream', 'binary/octet-stream'])
+
+// Get the best mimetype for a file, falling back to extension-based inference
+// when the stored mimetype is missing or generic
+const getMimeType = (metadata: DownloadMetadata): string => {
+  const storedMime = metadata.mimeType?.toLowerCase()
+
+  // If we have a meaningful mimetype, use it
+  if (storedMime && !GENERIC_MIME_TYPES.has(storedMime)) {
+    return metadata.mimeType!
+  }
+
+  // Otherwise, infer from filename extension
+  return inferMimeType(metadata.name)
+}
 
 // Check if this is actually a document navigation (based on headers only)
 // Used to determine if browser will auto-decompress Content-Encoding
@@ -21,43 +39,13 @@ const isDocumentNavigation = (req: Request) => {
 const isPreviewableInline = (metadata: DownloadMetadata) => {
   if (metadata.isEncrypted) return false
 
-  const mimeType = metadata.mimeType?.toLowerCase() ?? ''
-  const extension = metadata.name?.split('.').pop()?.toLowerCase() ?? ''
+  // Use getMimeType to get the best available mimetype (with extension fallback)
+  const mimeType = getMimeType(metadata).toLowerCase()
 
   const directDisplayTypes = ['image/', 'video/', 'audio/']
-  const directDisplayExtensions = [
-    // Images
-    'jpg',
-    'jpeg',
-    'png',
-    'gif',
-    'svg',
-    'webp',
-    'bmp',
-    'ico',
-    // Videos
-    'mp4',
-    'webm',
-    'avi',
-    'mov',
-    'mkv',
-    'flv',
-    'wmv',
-    // Audio
-    'mp3',
-    'wav',
-    'ogg',
-    'flac',
-    'm4a',
-    'aac',
-    // PDFs
-    'pdf',
-  ]
 
   return (
-    directDisplayTypes.some((type) => mimeType.startsWith(type)) ||
-    mimeType === 'application/pdf' ||
-    directDisplayExtensions.includes(extension)
+    directDisplayTypes.some((type) => mimeType.startsWith(type)) || mimeType === 'application/pdf'
   )
 }
 
@@ -108,7 +96,7 @@ export const handleDownloadResponseHeaders = (
 
   if (metadata.type === 'file') {
     const contentType =
-      (!metadata.isEncrypted && !rawMode && metadata.mimeType) || 'application/octet-stream'
+      !metadata.isEncrypted && !rawMode ? getMimeType(metadata) : 'application/octet-stream'
     res.set('Content-Type', contentType)
 
     // Advertise range support for files so browsers like Chrome can seek in media
