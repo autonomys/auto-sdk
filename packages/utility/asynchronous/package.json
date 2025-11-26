@@ -1,7 +1,7 @@
 {
   "name": "@autonomys/asynchronous",
   "packageManager": "yarn@4.7.0",
-  "version": "1.6.2-beta.1",
+  "version": "1.6.2-beta.2",
   "license": "MIT",
   "repository": {
     "type": "git",
