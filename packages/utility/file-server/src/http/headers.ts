@@ -85,24 +85,24 @@ const buildDisposition = (req: Request, metadata: DownloadMetadata, filename: st
   return `${type}; filename="${fallbackName}"; filename*=UTF-8''${encoded}`
 }
 
+export type DownloadHeaderResult = {
+  shouldDecompressBody: boolean
+}
+
 export const handleDownloadResponseHeaders = (
   req: Request,
   res: Response,
   metadata: DownloadMetadata,
   { byteRange = undefined, rawMode = false }: DownloadOptions,
-) => {
+): DownloadHeaderResult => {
   const baseName = metadata.name || 'download'
   const fileName = metadata.type === 'file' ? baseName : `${baseName}.zip`
+  let shouldDecompressBody = false
 
   if (metadata.type === 'file') {
     const contentType =
       !metadata.isEncrypted && !rawMode ? getMimeType(metadata) : 'application/octet-stream'
     res.set('Content-Type', contentType)
-
-    // Advertise range support for files so browsers like Chrome can seek in media
-    if (metadata.size != null) {
-      res.set('Accept-Ranges', 'bytes')
-    }
 
     const compressedButNotEncrypted = metadata.isCompressed && !metadata.isEncrypted
 
@@ -112,22 +112,42 @@ export const handleDownloadResponseHeaders = (
       ? req.query.ignoreEncoding !== 'true'
       : isDocumentNavigation(req)
 
-    if (compressedButNotEncrypted && shouldHandleEncoding && !rawMode && !byteRange) {
-      // Never set Content-Encoding for media types that need range support for seeking
-      const mimeType = contentType.toLowerCase()
-      const isMediaType = mimeType.startsWith('video/') || mimeType.startsWith('audio/')
+    const mimeType = contentType.toLowerCase()
+    const isMediaType = mimeType.startsWith('video/') || mimeType.startsWith('audio/')
 
-      if (!isMediaType) {
-        res.set('Content-Encoding', 'deflate')
-      }
+    const mustDecompress =
+      compressedButNotEncrypted &&
+      (!shouldHandleEncoding || rawMode || byteRange != null || isMediaType)
+    const canAdvertiseRanges = metadata.size != null && !mustDecompress
+    if (canAdvertiseRanges) {
+      res.set('Accept-Ranges', 'bytes')
+    } else {
+      res.set('Accept-Ranges', 'none')
     }
 
-    if (byteRange) {
+    if (
+      compressedButNotEncrypted &&
+      shouldHandleEncoding &&
+      !rawMode &&
+      !byteRange &&
+      !isMediaType
+    ) {
+      res.set('Content-Encoding', 'deflate')
+    } else if (mustDecompress) {
+      shouldDecompressBody = true
+    }
+
+    if (byteRange && !mustDecompress) {
       res.status(206)
       res.set('Content-Range', `bytes ${byteRange[0]}-${byteRange[1]}/${metadata.size}`)
       const upperBound = byteRange[1] ?? Number(metadata.size) - 1
       res.set('Content-Length', (upperBound - byteRange[0] + 1).toString())
-    } else if (metadata.size) {
+    } else if (byteRange && mustDecompress && metadata.size != null) {
+      const maxIndex = Number(metadata.size) - 1
+      res.status(206)
+      res.set('Content-Range', `bytes 0-${maxIndex}/${metadata.size}`)
+      res.set('Content-Length', metadata.size.toString())
+    } else if (metadata.size != null) {
       res.set('Content-Length', metadata.size.toString())
     }
   } else {
@@ -136,6 +156,8 @@ export const handleDownloadResponseHeaders = (
   }
 
   res.set('Content-Disposition', buildDisposition(req, metadata, fileName))
+
+  return { shouldDecompressBody }
 }
 
 export const handleS3DownloadResponseHeaders = (

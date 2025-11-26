@@ -211,8 +211,9 @@ describe('handleDownloadResponseHeaders', () => {
       const res = createMockRes()
       const metadata = { ...defaultMetadata, isCompressed: true }
 
-      handleDownloadResponseHeaders(req as any, res as any, metadata, {})
+      const result = handleDownloadResponseHeaders(req as any, res as any, metadata, {})
 
+      expect(result.shouldDecompressBody).toBe(false)
       expect(res.set).toHaveBeenCalledWith('Content-Encoding', 'deflate')
     })
 
@@ -241,9 +242,10 @@ describe('handleDownloadResponseHeaders', () => {
       const res = createMockRes()
       const metadata = { ...defaultMetadata, isCompressed: true }
 
-      handleDownloadResponseHeaders(req as any, res as any, metadata, {})
+      const result = handleDownloadResponseHeaders(req as any, res as any, metadata, {})
 
       expect(res.set).not.toHaveBeenCalledWith('Content-Encoding', 'deflate')
+      expect(result.shouldDecompressBody).toBe(true)
     })
 
     it('should NOT set deflate for non-navigate requests (e.g. fetch API)', () => {
@@ -251,9 +253,10 @@ describe('handleDownloadResponseHeaders', () => {
       const res = createMockRes()
       const metadata = { ...defaultMetadata, isCompressed: true }
 
-      handleDownloadResponseHeaders(req as any, res as any, metadata, {})
+      const result = handleDownloadResponseHeaders(req as any, res as any, metadata, {})
 
       expect(res.set).not.toHaveBeenCalledWith('Content-Encoding', 'deflate')
+      expect(result.shouldDecompressBody).toBe(true)
     })
 
     it('should NOT set deflate for non-document requests even with ?inline override', () => {
@@ -263,10 +266,11 @@ describe('handleDownloadResponseHeaders', () => {
       const res = createMockRes()
       const metadata = { ...defaultMetadata, isCompressed: true }
 
-      handleDownloadResponseHeaders(req as any, res as any, metadata, {})
+      const result = handleDownloadResponseHeaders(req as any, res as any, metadata, {})
 
       // Should NOT set Content-Encoding because it's not a document navigation
       expect(res.set).not.toHaveBeenCalledWith('Content-Encoding', 'deflate')
+      expect(result.shouldDecompressBody).toBe(true)
     })
 
     it('should set deflate for actual document navigations', () => {
@@ -274,9 +278,25 @@ describe('handleDownloadResponseHeaders', () => {
       const res = createMockRes()
       const metadata = { ...defaultMetadata, isCompressed: true }
 
-      handleDownloadResponseHeaders(req as any, res as any, metadata, {})
+      const result = handleDownloadResponseHeaders(req as any, res as any, metadata, {})
 
       expect(res.set).toHaveBeenCalledWith('Content-Encoding', 'deflate')
+      expect(result.shouldDecompressBody).toBe(false)
+    })
+
+    it('should flag decompression for media types even when encoding skipped', () => {
+      const req = createMockReq({ 'sec-fetch-dest': 'video', 'sec-fetch-mode': 'no-cors' })
+      const res = createMockRes()
+      const metadata: DownloadMetadata = {
+        ...defaultMetadata,
+        isCompressed: true,
+        mimeType: 'video/mp4',
+      }
+
+      const result = handleDownloadResponseHeaders(req as any, res as any, metadata, {})
+
+      expect(result.shouldDecompressBody).toBe(true)
+      expect(res.set).not.toHaveBeenCalledWith('Content-Encoding', 'deflate')
     })
   })
 
