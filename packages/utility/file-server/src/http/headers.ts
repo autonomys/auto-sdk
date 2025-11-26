@@ -113,7 +113,13 @@ export const handleDownloadResponseHeaders = (
       : isDocumentNavigation(req)
 
     if (compressedButNotEncrypted && shouldHandleEncoding && !rawMode && !byteRange) {
-      res.set('Content-Encoding', 'deflate')
+      // Never set Content-Encoding for media types that need range support for seeking
+      const mimeType = contentType.toLowerCase()
+      const isMediaType = mimeType.startsWith('video/') || mimeType.startsWith('audio/')
+
+      if (!isMediaType) {
+        res.set('Content-Encoding', 'deflate')
+      }
     }
 
     if (byteRange) {
