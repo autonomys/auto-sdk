@@ -2,6 +2,24 @@ import { CompressionAlgorithm, EncryptionAlgorithm } from '@autonomys/auto-dag-d
 import { Request, Response } from 'express'
 import { ByteRange, DownloadMetadata, DownloadOptions } from '../models.js'
 
+// Helper to create an ASCII-safe fallback for filename parameter (RFC 2183/6266)
+const toAsciiFallback = (name: string) =>
+  name
+    .replace(/[^\x20-\x7E]+/g, '_') // replace non-ASCII with underscore
+    .replace(/["\\]/g, '\\$&') // escape quotes and backslashes
+
+// RFC 5987 encoding for filename* parameter
+const rfc5987Encode = (str: string) =>
+  encodeURIComponent(str)
+    .replace(/['()]/g, (c) => '%' + c.charCodeAt(0).toString(16).toUpperCase())
+    .replace(/\*/g, '%2A')
+
+const buildDisposition = (type: 'inline' | 'attachment', filename: string) => {
+  const fallbackName = toAsciiFallback(filename || 'download')
+  const encoded = rfc5987Encode(filename || 'download')
+  return `${type}; filename="${fallbackName}"; filename*=UTF-8''${encoded}`
+}
+
 const isExpectedDocument = (req: Request) => {
   return (
     req.headers['sec-fetch-site'] === 'none' ||
@@ -15,7 +33,7 @@ export const handleDownloadResponseHeaders = (
   metadata: DownloadMetadata,
   options: DownloadOptions,
 ) => {
-  const safeName = encodeURIComponent(metadata.name || 'download')
+  const fileName = metadata.name || 'download'
   const documentExpected = isExpectedDocument(req)
   const shouldHandleEncoding = req.query.ignoreEncoding
     ? req.query.ignoreEncoding !== 'true'
@@ -29,11 +47,11 @@ export const handleDownloadResponseHeaders = (
       isEncrypted,
       documentExpected,
       shouldHandleEncoding,
-      safeName,
+      fileName,
       options,
     )
   } else {
-    setFolderResponseHeaders(res, isEncrypted, documentExpected, safeName)
+    setFolderResponseHeaders(res, isEncrypted, documentExpected, fileName)
   }
 }
 
@@ -43,14 +61,14 @@ const setFileResponseHeaders = (
   isEncrypted: boolean,
   isExpectedDocument: boolean,
   shouldHandleEncoding: boolean,
-  safeName: string,
+  fileName: string,
   { byteRange = undefined, rawMode = false }: DownloadOptions,
 ) => {
   const contentType = (!isEncrypted && !rawMode && metadata.mimeType) || 'application/octet-stream'
   res.set('Content-Type', contentType)
   res.set(
     'Content-Disposition',
-    `${isExpectedDocument ? 'inline' : 'attachment'}; filename="${safeName}"`,
+    buildDisposition(isExpectedDocument ? 'inline' : 'attachment', fileName),
   )
   const compressedButNoEncrypted = metadata.isCompressed && !isEncrypted
 
@@ -72,13 +90,13 @@ const setFolderResponseHeaders = (
   res: Response,
   isEncrypted: boolean,
   isExpectedDocument: boolean,
-  safeName: string,
+  fileName: string,
 ) => {
   const contentType = isEncrypted ? 'application/octet-stream' : 'application/zip'
   res.set('Content-Type', contentType)
   res.set(
     'Content-Disposition',
-    `${isExpectedDocument ? 'inline' : 'attachment'}; filename="${safeName}.zip"`,
+    buildDisposition(isExpectedDocument ? 'inline' : 'attachment', `${fileName}.zip`),
   )
 }
 
