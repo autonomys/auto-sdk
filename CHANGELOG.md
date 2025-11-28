@@ -2,6 +2,16 @@
 
 Future changes will appear here.
 
+## [1.6.3] - 2025-11-28
+
+### Chores
+
+- update mime-types package to 3.0.2 ([#499](https://github.com/autonomys/auto-sdk/pull/499)) [@jfrank-summit](https://github.com/jfrank-summit)
+
+## [1.6.2] - 2025-11-28
+
+No changes in this version.
+
 ## [1.6.1] - 2025-11-20
 
 ### Bug Fixes
@@ -431,6 +441,9 @@ Future changes will appear here.
 
 [1.5.20]: https://github.com/autonomys/auto-sdk/releases/tag/v1.5.20
 
-[Unreleased]: https://github.com/autonomys/auto-sdk/compare/v1.6.1...HEAD
 [1.6.1]: https://github.com/autonomys/auto-sdk/compare/v1.6.0...v1.6.1
 [1.6.0]: https://github.com/autonomys/auto-sdk/releases/tag/v1.6.0
+
+[Unreleased]: https://github.com/autonomys/auto-sdk/compare/v1.6.3...HEAD
+[1.6.3]: https://github.com/autonomys/auto-sdk/compare/v1.6.2...v1.6.3
+[1.6.2]: https://github.com/autonomys/auto-sdk/releases/tag/v1.6.2
