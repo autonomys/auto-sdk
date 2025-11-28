@@ -112,35 +112,25 @@ export const handleDownloadResponseHeaders = (
     const mimeType = contentType.toLowerCase()
     const isMediaType = mimeType.startsWith('video/') || mimeType.startsWith('audio/')
 
-    const mustDecompress =
-      compressedButNotEncrypted &&
-      (!shouldHandleEncoding || rawMode || byteRange != null || isMediaType)
-    // Always advertise range support if we have size, even for compressed media
-    // because we'll decompress them on-the-fly to support seeking
-    const canAdvertiseRanges = metadata.size != null
-    if (canAdvertiseRanges) {
-      res.set('Accept-Ranges', 'bytes')
-    } else {
-      res.set('Accept-Ranges', 'none')
-    }
+    // Determine compression handling: either browser decompresses via Content-Encoding,
+    // or we decompress server-side
+    const canUseBrowserDecompression =
+      compressedButNotEncrypted && shouldHandleEncoding && !rawMode && !byteRange && !isMediaType
 
-    if (
-      compressedButNotEncrypted &&
-      shouldHandleEncoding &&
-      !rawMode &&
-      !byteRange &&
-      !isMediaType
-    ) {
+    if (canUseBrowserDecompression) {
       res.set('Content-Encoding', 'deflate')
-    } else if (mustDecompress) {
+    } else if (compressedButNotEncrypted) {
       shouldDecompressBody = true
     }
 
-    if (mustDecompress) {
+    // Set Accept-Ranges once based on final decompression decision
+    // Can't advertise ranges when decompressing (can't seek in stream) or when size unknown
+    const canAdvertiseRanges = !shouldDecompressBody && metadata.size != null
+    res.set('Accept-Ranges', canAdvertiseRanges ? 'bytes' : 'none')
+
+    if (shouldDecompressBody) {
       // When decompressing, we can't know the output size upfront
       // Don't set Content-Length - this will use chunked transfer encoding
-      // Also don't advertise ranges since we can't seek in decompressed stream
-      res.set('Accept-Ranges', 'none')
     } else if (byteRange && metadata.size != null) {
       // For range requests on non-compressed content
       res.status(206)
