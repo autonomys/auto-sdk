@@ -82,14 +82,19 @@ const buildDisposition = (req: Request, metadata: DownloadMetadata, filename: st
   return `${type}; filename="${fallbackName}"; filename*=UTF-8''${encoded}`
 }
 
+export type DownloadHeaderResult = {
+  shouldDecompressBody: boolean
+}
+
 export const handleDownloadResponseHeaders = (
   req: Request,
   res: Response,
   metadata: DownloadMetadata,
   { byteRange = undefined, rawMode = false }: DownloadOptions,
-) => {
+): DownloadHeaderResult => {
   const baseName = metadata.name || 'download'
   const fileName = metadata.type === 'file' ? baseName : `${baseName}.zip`
+  let shouldDecompressBody = false
 
   if (metadata.type === 'file') {
     const contentType =
@@ -99,20 +104,50 @@ export const handleDownloadResponseHeaders = (
     const compressedButNotEncrypted = metadata.isCompressed && !metadata.isEncrypted
 
     // Only set Content-Encoding for document navigations where browsers auto-decompress
+    // Don't set it for <img>, <video>, fetch(), etc. as browsers won't auto-decompress those
     const shouldHandleEncoding = req.query.ignoreEncoding
       ? req.query.ignoreEncoding !== 'true'
       : isDocumentNavigation(req)
 
-    if (compressedButNotEncrypted && shouldHandleEncoding && !rawMode && !byteRange) {
-      res.set('Content-Encoding', 'deflate')
+    const mimeType = contentType.toLowerCase()
+    const isMediaType = mimeType.startsWith('video/') || mimeType.startsWith('audio/')
+
+    const mustDecompress =
+      compressedButNotEncrypted &&
+      (!shouldHandleEncoding || rawMode || byteRange != null || isMediaType)
+    // Always advertise range support if we have size, even for compressed media
+    // because we'll decompress them on-the-fly to support seeking
+    const canAdvertiseRanges = metadata.size != null
+    if (canAdvertiseRanges) {
+      res.set('Accept-Ranges', 'bytes')
+    } else {
+      res.set('Accept-Ranges', 'none')
     }
 
-    if (byteRange) {
+    if (
+      compressedButNotEncrypted &&
+      shouldHandleEncoding &&
+      !rawMode &&
+      !byteRange &&
+      !isMediaType
+    ) {
+      res.set('Content-Encoding', 'deflate')
+    } else if (mustDecompress) {
+      shouldDecompressBody = true
+    }
+
+    if (mustDecompress) {
+      // When decompressing, we can't know the output size upfront
+      // Don't set Content-Length - this will use chunked transfer encoding
+      // Also don't advertise ranges since we can't seek in decompressed stream
+      res.set('Accept-Ranges', 'none')
+    } else if (byteRange && metadata.size != null) {
+      // For range requests on non-compressed content
       res.status(206)
-      res.set('Content-Range', `bytes ${byteRange[0]}-${byteRange[1]}/${metadata.size}`)
       const upperBound = byteRange[1] ?? Number(metadata.size) - 1
+      res.set('Content-Range', `bytes ${byteRange[0]}-${upperBound}/${metadata.size}`)
       res.set('Content-Length', (upperBound - byteRange[0] + 1).toString())
-    } else if (metadata.size) {
+    } else if (metadata.size != null) {
       res.set('Content-Length', metadata.size.toString())
     }
   } else {
@@ -121,6 +156,8 @@ export const handleDownloadResponseHeaders = (
   }
 
   res.set('Content-Disposition', buildDisposition(req, metadata, fileName))
+
+  return { shouldDecompressBody }
 }
 
 export const handleS3DownloadResponseHeaders = (
