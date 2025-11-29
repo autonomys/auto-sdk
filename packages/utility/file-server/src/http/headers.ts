@@ -1,85 +1,153 @@
 import { CompressionAlgorithm, EncryptionAlgorithm } from '@autonomys/auto-dag-data'
 import { Request, Response } from 'express'
 import { ByteRange, DownloadMetadata, DownloadOptions } from '../models.js'
+import { inferMimeType } from '../utils.js'
 
-const isExpectedDocument = (req: Request) => {
+// Generic mimetypes that should trigger extension-based fallback
+const GENERIC_MIME_TYPES = new Set(['application/octet-stream', 'binary/octet-stream'])
+
+// Get the best mimetype for a file, falling back to extension-based inference
+// when the stored mimetype is missing or generic
+const getMimeType = (metadata: DownloadMetadata): string => {
+  const storedMime = metadata.mimeType?.toLowerCase()
+
+  // If we have a meaningful mimetype, use it
+  if (storedMime && !GENERIC_MIME_TYPES.has(storedMime)) {
+    return metadata.mimeType!
+  }
+
+  // Otherwise, infer from filename extension
+  return inferMimeType(metadata.name)
+}
+
+// Helper to create an ASCII-safe fallback for filename parameter (RFC 2183/6266)
+const toAsciiFallback = (name: string) =>
+  name
+    .replace(/[^\x20-\x7E]+/g, '_') // replace non-ASCII with underscore
+    .replace(/["\\]/g, '\\$&') // escape quotes and backslashes
+
+// RFC 5987 encoding for filename* parameter
+const rfc5987Encode = (str: string) =>
+  encodeURIComponent(str)
+    .replace(/['()]/g, (c) => '%' + c.charCodeAt(0).toString(16).toUpperCase())
+    .replace(/\*/g, '%2A')
+
+// Check if this is actually a document navigation (based on headers only)
+// Used to determine if browser will auto-decompress Content-Encoding
+const isDocumentNavigation = (req: Request) => {
+  const destHeader = req.headers['sec-fetch-dest']
+  const dest = (Array.isArray(destHeader) ? destHeader[0] : (destHeader ?? '')).toLowerCase()
+  if (dest && dest !== 'document') return false // e.g. <img>, <video>, fetch(), etc.
+
+  const modeHeader = req.headers['sec-fetch-mode']
+  const mode = (Array.isArray(modeHeader) ? modeHeader[0] : (modeHeader ?? '')).toLowerCase()
+  if (mode && mode !== 'navigate') return false // programmatic fetch / subresource
+
+  return true
+}
+
+// Decide if this file type is something browsers can usually render inline via URL
+const isPreviewableInline = (metadata: DownloadMetadata) => {
+  if (metadata.isEncrypted) return false
+
+  const mimeType = getMimeType(metadata).toLowerCase()
+  const directDisplayTypes = ['image/', 'video/', 'audio/']
+
   return (
-    req.headers['sec-fetch-site'] === 'none' ||
-    (req.headers['sec-fetch-site'] === 'same-site' && req.headers['sec-fetch-mode'] === 'navigate')
+    directDisplayTypes.some((type) => mimeType.startsWith(type)) || mimeType === 'application/pdf'
   )
+}
+
+const isInlineDisposition = (req: Request, metadata: DownloadMetadata) => {
+  // Explicit query overrides - treat presence as boolean flag
+  // ?download or ?download=true triggers attachment, ?download=false is ignored
+  if (req.query.download === 'true' || req.query.download === '') return false
+  // ?inline or ?inline=true triggers inline, ?inline=false is ignored
+  if (req.query.inline === 'true' || req.query.inline === '') return true
+
+  // Folders (served as zip) should default to attachment
+  if (metadata.type !== 'file') return false
+
+  // For media / PDFs that browsers can render directly, prefer inline even for subresources
+  if (isPreviewableInline(metadata)) return true
+
+  // Fallback to header-based detection: top-level document navigations are inline
+  return isDocumentNavigation(req)
+}
+
+const buildDisposition = (req: Request, metadata: DownloadMetadata, filename: string) => {
+  const fallbackName = toAsciiFallback(filename || 'download')
+  const encoded = rfc5987Encode(filename || 'download')
+  const type = isInlineDisposition(req, metadata) ? 'inline' : 'attachment'
+  return `${type}; filename="${fallbackName}"; filename*=UTF-8''${encoded}`
+}
+
+export type DownloadHeaderResult = {
+  shouldDecompressBody: boolean
 }
 
 export const handleDownloadResponseHeaders = (
   req: Request,
   res: Response,
   metadata: DownloadMetadata,
-  options: DownloadOptions,
-) => {
-  const safeName = encodeURIComponent(metadata.name || 'download')
-  const documentExpected = isExpectedDocument(req)
-  const shouldHandleEncoding = req.query.ignoreEncoding
-    ? req.query.ignoreEncoding !== 'true'
-    : documentExpected
-
-  const isEncrypted = metadata.isEncrypted
-  if (metadata.type === 'file') {
-    setFileResponseHeaders(
-      res,
-      metadata,
-      isEncrypted,
-      documentExpected,
-      shouldHandleEncoding,
-      safeName,
-      options,
-    )
-  } else {
-    setFolderResponseHeaders(res, isEncrypted, documentExpected, safeName)
-  }
-}
-
-const setFileResponseHeaders = (
-  res: Response,
-  metadata: DownloadMetadata,
-  isEncrypted: boolean,
-  isExpectedDocument: boolean,
-  shouldHandleEncoding: boolean,
-  safeName: string,
   { byteRange = undefined, rawMode = false }: DownloadOptions,
-) => {
-  const contentType = (!isEncrypted && !rawMode && metadata.mimeType) || 'application/octet-stream'
-  res.set('Content-Type', contentType)
-  res.set(
-    'Content-Disposition',
-    `${isExpectedDocument ? 'inline' : 'attachment'}; filename="${safeName}"`,
-  )
-  const compressedButNoEncrypted = metadata.isCompressed && !isEncrypted
+): DownloadHeaderResult => {
+  const baseName = metadata.name || 'download'
+  const fileName = metadata.type === 'file' ? baseName : `${baseName}.zip`
+  let shouldDecompressBody = false
 
-  if (compressedButNoEncrypted && shouldHandleEncoding && !rawMode && !byteRange) {
-    res.set('Content-Encoding', 'deflate')
+  if (metadata.type === 'file') {
+    const contentType =
+      !metadata.isEncrypted && !rawMode ? getMimeType(metadata) : 'application/octet-stream'
+    res.set('Content-Type', contentType)
+
+    const compressedButNotEncrypted = metadata.isCompressed && !metadata.isEncrypted
+
+    // Only set Content-Encoding for document navigations where browsers auto-decompress
+    // Don't set it for <img>, <video>, fetch(), etc. as browsers won't auto-decompress those
+    const shouldHandleEncoding = req.query.ignoreEncoding
+      ? req.query.ignoreEncoding !== 'true'
+      : isDocumentNavigation(req)
+
+    const mimeType = contentType.toLowerCase()
+    const isMediaType = mimeType.startsWith('video/') || mimeType.startsWith('audio/')
+
+    // Determine compression handling: either browser decompresses via Content-Encoding,
+    // or we decompress server-side
+    const canUseBrowserDecompression =
+      compressedButNotEncrypted && shouldHandleEncoding && !rawMode && !byteRange && !isMediaType
+
+    if (canUseBrowserDecompression) {
+      res.set('Content-Encoding', 'deflate')
+    } else if (compressedButNotEncrypted) {
+      shouldDecompressBody = true
+    }
+
+    // Set Accept-Ranges once based on final decompression decision
+    // Can't advertise ranges when decompressing (can't seek in stream) or when size unknown
+    const canAdvertiseRanges = !shouldDecompressBody && metadata.size != null
+    res.set('Accept-Ranges', canAdvertiseRanges ? 'bytes' : 'none')
+
+    if (shouldDecompressBody) {
+      // When decompressing, we can't know the output size upfront
+      // Don't set Content-Length - this will use chunked transfer encoding
+    } else if (byteRange && metadata.size != null) {
+      // For range requests on non-compressed content
+      res.status(206)
+      const upperBound = byteRange[1] ?? Number(metadata.size) - 1
+      res.set('Content-Range', `bytes ${byteRange[0]}-${upperBound}/${metadata.size}`)
+      res.set('Content-Length', (upperBound - byteRange[0] + 1).toString())
+    } else if (metadata.size != null) {
+      res.set('Content-Length', metadata.size.toString())
+    }
+  } else {
+    const contentType = metadata.isEncrypted ? 'application/octet-stream' : 'application/zip'
+    res.set('Content-Type', contentType)
   }
 
-  if (byteRange) {
-    res.status(206)
-    res.set('Content-Range', `bytes ${byteRange[0]}-${byteRange[1]}/${metadata.size}`)
-    const upperBound = byteRange[1] ?? Number(metadata.size) - 1
-    res.set('Content-Length', (upperBound - byteRange[0] + 1).toString())
-  } else if (metadata.size) {
-    res.set('Content-Length', metadata.size.toString())
-  }
-}
+  res.set('Content-Disposition', buildDisposition(req, metadata, fileName))
 
-const setFolderResponseHeaders = (
-  res: Response,
-  isEncrypted: boolean,
-  isExpectedDocument: boolean,
-  safeName: string,
-) => {
-  const contentType = isEncrypted ? 'application/octet-stream' : 'application/zip'
-  res.set('Content-Type', contentType)
-  res.set(
-    'Content-Disposition',
-    `${isExpectedDocument ? 'inline' : 'attachment'}; filename="${safeName}.zip"`,
-  )
+  return { shouldDecompressBody }
 }
 
 export const handleS3DownloadResponseHeaders = (

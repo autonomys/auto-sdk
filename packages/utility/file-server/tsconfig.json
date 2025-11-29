@@ -5,7 +5,8 @@
     "rootDir": "./src",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "isolatedModules": true
   },
   "include": ["src"]
 }
