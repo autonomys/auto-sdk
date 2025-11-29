@@ -2,6 +2,16 @@
 
 Future changes will appear here.
 
+## [1.6.4] - 2025-11-29
+
+### Features
+
+- download improvements ([#501](https://github.com/autonomys/auto-sdk/pull/501)) [@jfrank-summit](https://github.com/jfrank-summit)
+
+### Chores
+
+- release v1.6.3 ([#500](https://github.com/autonomys/auto-sdk/pull/500)) [@jfrank-summit](https://github.com/jfrank-summit)
+
 ## [1.6.3] - 2025-11-28
 
 ### Chores
@@ -444,6 +454,8 @@ No changes in this version.
 [1.6.1]: https://github.com/autonomys/auto-sdk/compare/v1.6.0...v1.6.1
 [1.6.0]: https://github.com/autonomys/auto-sdk/releases/tag/v1.6.0
 
-[Unreleased]: https://github.com/autonomys/auto-sdk/compare/v1.6.3...HEAD
-[1.6.3]: https://github.com/autonomys/auto-sdk/compare/v1.6.2...v1.6.3
 [1.6.2]: https://github.com/autonomys/auto-sdk/releases/tag/v1.6.2
+
+[Unreleased]: https://github.com/autonomys/auto-sdk/compare/v1.6.4...HEAD
+[1.6.4]: https://github.com/autonomys/auto-sdk/compare/v1.6.3...v1.6.4
+[1.6.3]: https://github.com/autonomys/auto-sdk/releases/tag/v1.6.3
