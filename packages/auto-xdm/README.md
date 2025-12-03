@@ -13,6 +13,7 @@ The **Autonomys Auto XDM SDK** (`@autonomys/auto-xdm`) provides functionalities 
 ## Features
 
 - **Cross-Domain Transfer**: Transfer tokens between consensus and domain accounts.
+- **EVM Precompile Support**: Transfer from EVM domains to consensus using the Transporter Precompile.
 - **TypeScript Support**: Fully typed for enhanced developer experience.
 
 ## Installation
@@ -70,17 +71,94 @@ const tx = transporterTransfer(
 )
 ```
 
-### 3. Transfer from Domain to Consensus
+### 3. Transfer from Domain to Consensus (Substrate RPC)
 
 ```ts
 import { activateWallet } from '@autonomys/auto-utils'
 import { transporterTransfer } from '@autonomys/auto-xdm'
 
 const api = await activateWallet({ networkId: 'taurus', domainId: 0, uri: '//alice' })
-const tx = transporterTrans fer(
+const tx = transporterTransfer(
   api,
   'consensus', // Destination is consensus chain
   { accountId32: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY' }, // Receiver consensus account (Substrate address)
   '1000000000000000000',
 )
+```
+
+### 4. Transfer from EVM Domain to Consensus (Precompile)
+
+The Transporter Precompile allows EVM users to transfer funds to the consensus chain without using Substrate RPCs. This is useful for:
+
+- EVM-native wallets (MetaMask, WalletConnect, etc.)
+- Smart contracts that need to bridge funds
+- Applications that only interact with EVM JSON-RPC
+
+**Note:** To use precompile functions, install `ethers` as a peer dependency:
+
+```bash
+npm install ethers
+# or
+yarn add ethers
+```
+
+```ts
+import { JsonRpcProvider, Wallet } from 'ethers'
+import {
+  transferToConsensus,
+  getMinimumTransferAmount,
+  TRANSPORTER_PRECOMPILE_ADDRESS,
+} from '@autonomys/auto-xdm'
+
+// Setup provider and wallet
+const provider = new JsonRpcProvider('https://auto-evm.mainnet.autonomys.xyz/ws')
+const wallet = new Wallet(privateKey, provider)
+
+// Check minimum transfer amount
+const minAmount = await getMinimumTransferAmount(provider)
+console.log(`Minimum transfer: ${minAmount / 10n ** 18n} AI3`)
+
+// Transfer 10 AI3 to a consensus account
+const result = await transferToConsensus(
+  wallet,
+  'sufsKsx4kZ26i7bJXc1TFguysVzjkzsDtE2VDiCEBY2WjyGAj', // Recipient SS58 address
+  10n * 10n ** 18n, // 10 AI3 in wei
+)
+
+console.log(`Transfer tx: ${result.transactionHash}`)
+console.log(`Block: ${result.blockNumber}`)
+```
+
+### 5. Low-level Precompile Access
+
+For more control, you can create the transaction data manually:
+
+```ts
+import { Contract } from 'ethers'
+import {
+  createTransferToConsensusTxData,
+  encodeAccountId32ToBytes32,
+  getTransporterPrecompileAbi,
+  TRANSPORTER_PRECOMPILE_ADDRESS,
+} from '@autonomys/auto-xdm'
+
+// Option A: Create raw transaction data
+const txData = createTransferToConsensusTxData(
+  'sufsKsx4kZ26i7bJXc1TFguysVzjkzsDtE2VDiCEBY2WjyGAj',
+  10n * 10n ** 18n,
+)
+
+// Use for gas estimation
+const gasEstimate = await provider.estimateGas({ ...txData, from: wallet.address })
+
+// Option B: Use ethers Contract directly
+const contract = new Contract(
+  TRANSPORTER_PRECOMPILE_ADDRESS,
+  getTransporterPrecompileAbi(),
+  wallet,
+)
+
+const accountId32 = encodeAccountId32ToBytes32('sufsKsx4kZ26i7bJXc1TFguysVzjkzsDtE2VDiCEBY2WjyGAj')
+const tx = await contract.transfer_to_consensus_v1(accountId32, 10n * 10n ** 18n)
+await tx.wait()
 ```
