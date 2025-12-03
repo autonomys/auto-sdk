@@ -1,0 +1,42 @@
+# Docker Compose configuration for farmerless dev node integration tests
+# This is a lightweight setup ideal for CI and local testing
+#
+# Benefits:
+# - No farmer required - much faster startup
+# - Configurable block production interval (configurable via BLOCK_INTERVAL_MS)
+# - Lower resource usage
+
+services:
+  farmerless-node:
+    image: ghcr.io/autonomys/farmerless-dev-node:${NODE_VERSION:-mainnet-2025-dec-02}
+    container_name: auto-sdk-farmerless-node
+    command:
+      # Consensus configuration
+      - --rpc-host=0.0.0.0
+      - --rpc-port=9944
+      # Domain configuration (enable EVM domain)
+      - --domain
+      - --domain-rpc-host=0.0.0.0
+      - --domain-rpc-port=9945
+      # Block production interval in ms
+      - --block-interval-ms=${BLOCK_INTERVAL_MS:-100}
+    ports:
+      - '${CONSENSUS_RPC_PORT:-9944}:9944'
+      - '${DOMAIN_RPC_PORT:-9945}:9945'
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'curl -sf -H ''Content-Type: application/json'' -d ''{"id":1,"jsonrpc":"2.0","method":"system_health","params":[]}'' http://localhost:9944 || exit 1',
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
+    environment:
+      - RUST_LOG=${RUST_LOG:-info}
+    volumes:
+      - farmerless-data:/var/subspace
+
+volumes:
+  farmerless-data:

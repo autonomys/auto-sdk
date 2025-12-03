@@ -1,0 +1,64 @@
+name: Integration Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  integration-tests:
+    runs-on: ubuntu-latest
+    name: Run integration tests with farmerless dev node
+    timeout-minutes: 30
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Set Yarn version to Berry
+        run: corepack prepare yarn@4.7.0 --activate
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build all packages 🔧
+        run: yarn build
+
+      - name: Start farmerless dev node 🐳
+        working-directory: integration-tests
+        run: yarn docker:up
+        env:
+          BLOCK_INTERVAL_MS: 100
+
+      - name: Wait for node to be ready
+        working-directory: integration-tests
+        run: |
+          timeout 120 bash -c 'until curl -sf -H "Content-Type: application/json" -d "{\"id\":1,\"jsonrpc\":\"2.0\",\"method\":\"system_health\",\"params\":[]}" http://localhost:9944 > /dev/null; do sleep 2; done'
+        continue-on-error: false
+
+      - name: Run integration tests 🧪
+        run: yarn test:integration
+        env:
+          TEST_MODE: farmerless
+          CONSENSUS_RPC_URL: ws://127.0.0.1:9944
+          DOMAIN_RPC_URL: ws://127.0.0.1:9945
+
+      - name: Show logs on failure
+        if: failure()
+        working-directory: integration-tests
+        run: yarn docker:logs
+
+      - name: Cleanup containers
+        if: always()
+        working-directory: integration-tests
+        run: yarn docker:down
