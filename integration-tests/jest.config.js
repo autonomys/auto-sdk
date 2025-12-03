@@ -21,5 +21,5 @@ export default {
   testTimeout: 60000, // 60 seconds for integration tests
   maxWorkers: 1, // Run tests serially for integration tests
   verbose: true,
+  forceExit: true,
 }
-
