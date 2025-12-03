@@ -18,7 +18,8 @@
     "@autonomys/auto-consensus": "workspace:*",
     "@autonomys/auto-dag-data": "workspace:*",
     "@autonomys/auto-utils": "workspace:*",
-    "@autonomys/auto-xdm": "workspace:*"
+    "@autonomys/auto-xdm": "workspace:*",
+    "ethers": "^6.13.5"
   },
   "devDependencies": {
     "@types/jest": "^29.5.12",
