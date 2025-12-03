@@ -12551,7 +12551,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "examples@workspace:examples"
   dependencies:
+    "@autonomys/auto-consensus": "workspace:*"
     "@autonomys/auto-utils": "workspace:*"
+    "@autonomys/auto-xdm": "workspace:*"
+    dotenv: "npm:^16.4.5"
     ethers: "npm:^6.13.5"
   languageName: unknown
   linkType: soft
