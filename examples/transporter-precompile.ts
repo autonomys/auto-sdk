@@ -2,7 +2,6 @@ import { balance } from '@autonomys/auto-consensus'
 import {
   createConnection,
   cryptoWaitReady,
-  decode,
   setupWallet,
   signAndSendTx,
   type ApiPromise,
@@ -10,8 +9,13 @@ import {
 import {
   chainAllowlist,
   channels,
+  encodeAccountId32ToBytes32,
+  getMinimumTransferAmount,
   initiateChannel,
+  isPrecompileDeployed,
   nextChannelId,
+  transferToConsensus,
+  TRANSPORTER_PRECOMPILE_ADDRESS,
   transporterTransfer,
 } from '@autonomys/auto-xdm'
 import 'dotenv/config'
@@ -78,85 +82,25 @@ import {
 // ============================================================================
 
 const CONFIG = {
-  // RPC endpoints
   consensusRpcUrl: process.env.CONSENSUS_RPC_URL || 'ws://127.0.0.1:9944',
   domainRpcUrl: process.env.DOMAIN_RPC_URL || 'ws://127.0.0.1:9945',
   evmRpcUrl: process.env.EVM_RPC_URL || 'http://127.0.0.1:9945',
-
-  // Domain ID (0 = Auto-EVM)
   domainId: 0,
-
-  // Wallet configuration
-  // Consensus sender (funds the EVM wallet)
   consensusSenderUri: process.env.CONSENSUS_SENDER_URI || '//Alice',
   consensusSenderMnemonic: process.env.CONSENSUS_SENDER_MNEMONIC,
-
-  // Consensus recipient (receives funds from EVM via precompile)
   consensusRecipientUri: process.env.CONSENSUS_RECIPIENT_URI || '//Bob',
   consensusRecipientMnemonic: process.env.CONSENSUS_RECIPIENT_MNEMONIC,
-
-  // EVM wallet
   evmMnemonic:
     process.env.EVM_MNEMONIC || 'test test test test test test test test test test test junk',
   evmPrivateKey: process.env.EVM_PRIVATE_KEY,
-
-  // Transfer amounts (in AI3, converted to wei)
   consensusToEvmAmount: BigInt(process.env.TRANSFER_TO_EVM_AMOUNT || '10') * 10n ** 18n,
   evmToConsensusAmount: BigInt(process.env.TRANSFER_TO_CONSENSUS_AMOUNT || '5') * 10n ** 18n,
-
-  // XDM setup configuration (for dev networks only)
-  // On production networks, XDM is already configured
   skipXdmSetup: process.env.SKIP_XDM_SETUP === 'true',
   sudoUri: process.env.SUDO_URI || '//Alice',
 }
 
-// Precompile address: 0x0800 (2048 in decimal)
-const TRANSPORTER_PRECOMPILE_ADDRESS = '0x0000000000000000000000000000000000000800'
-
-// ABI for the transporter precompile functions
-const TRANSPORTER_PRECOMPILE_ABI = [
-  {
-    name: 'minimum_transfer_amount',
-    type: 'function',
-    stateMutability: 'view',
-    inputs: [],
-    outputs: [{ name: '', type: 'uint256' }],
-  },
-  {
-    name: 'transfer_to_consensus_v1',
-    type: 'function',
-    stateMutability: 'nonpayable',
-    inputs: [
-      { name: 'accountId32', type: 'bytes32' },
-      { name: 'amount', type: 'uint256' },
-    ],
-    outputs: [],
-  },
-] as const
-
-// ============================================================================
-// Helper Functions
-// ============================================================================
-
 const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms))
 
-/**
- * Encodes a Substrate AccountId32 address (SS58 format) to bytes32
- * for use with the transporter precompile.
- */
-const encodeAccountId32ToBytes32 = (ss58Address: string): string => {
-  const publicKeyBytes = decode(ss58Address)
-  return (
-    '0x' +
-    Array.from(publicKeyBytes)
-      .map((byte) => byte.toString(16).padStart(2, '0'))
-      .join('')
-  )
-}
-
-/**
- * Wait until a condition is met
- */
 const waitUntil = async (
   condition: () => Promise<boolean>,
   timeoutMs = 300000,
@@ -170,9 +114,6 @@ const waitUntil = async (
   throw new Error(`Condition not met within ${timeoutMs}ms`)
 }
 
-/**
- * Wait for N blocks to be produced
- */
 const waitForBlocks = async (api: ApiPromise, count: number, timeoutMs = 60000): Promise<void> => {
   const initialHeader = await api.rpc.chain.getHeader()
   const targetBlockNumber = initialHeader.number.toNumber() + count
@@ -186,9 +127,6 @@ const waitForBlocks = async (api: ApiPromise, count: number, timeoutMs = 60000):
   throw new Error(`Did not reach block ${targetBlockNumber} within ${timeoutMs}ms`)
 }
 
-/**
- * Check if balance has increased
- */
 const balanceIncreased = async (
   api: ApiPromise,
   address: string,
@@ -198,22 +136,13 @@ const balanceIncreased = async (
   return currentBalance.free > balanceBefore
 }
 
-// ============================================================================
-// XDM Setup (required for cross-domain messaging)
-// ============================================================================
-
-/**
- * Sets up XDM (Cross-Domain Messaging) between consensus and domain.
- * This is required before any cross-domain transfers can occur.
- * On production networks, XDM is already configured - set SKIP_XDM_SETUP=true.
- */
 const setupXDM = async (
   consensusApi: ApiPromise,
   domainApi: ApiPromise,
   domainId: number,
   sudoUri: string,
 ): Promise<void> => {
-  console.log('\n📡 Setting up XDM (Cross-Domain Messaging)...')
+  console.log('\n📡 Setting up XDM...')
 
   const sudo = setupWallet({ uri: sudoUri })
   const owner = setupWallet({ uri: sudoUri })
@@ -222,14 +151,13 @@ const setupXDM = async (
     throw new Error('Keyring pairs not initialized')
   }
 
-  // Step 1: Add domain to consensus allowlist
   const consensusAllowlist = await chainAllowlist(consensusApi)
   const domainInAllowlist = consensusAllowlist.some(
     (entry) => typeof entry !== 'string' && entry.domainId === domainId,
   )
 
   if (!domainInAllowlist) {
-    console.log(`   Step 1/3: Adding domain ${domainId} to consensus allowlist...`)
+    console.log(`   Adding domain ${domainId} to consensus allowlist...`)
     const allowAddDomain = { Add: { domain: domainId } }
     const callUpdateAllowlist =
       consensusApi.tx.messenger.updateConsensusChainAllowlist(allowAddDomain)
@@ -237,15 +165,14 @@ const setupXDM = async (
     await signAndSendTx(sudo.keyringPair, sudoWrapped, {}, [], false)
     await waitForBlocks(consensusApi, 1)
   } else {
-    console.log(`   Step 1/3: ✓ Domain ${domainId} already in allowlist`)
+    console.log(`   ✓ Domain ${domainId} already in allowlist`)
   }
 
-  // Step 2: Add consensus to domain allowlist
   const domainAllowlist = await chainAllowlist(domainApi)
   const consensusInAllowlist = domainAllowlist.some((entry) => entry === 'consensus')
 
   if (!consensusInAllowlist) {
-    console.log(`   Step 2/3: Adding consensus to domain ${domainId} allowlist...`)
+    console.log(`   Adding consensus to domain ${domainId} allowlist...`)
     const allowAddConsensus = { Add: { consensus: null } }
     const callInitiateDomainUpdate = consensusApi.tx.messenger.initiateDomainUpdateChainAllowlist(
       domainId,
@@ -254,15 +181,14 @@ const setupXDM = async (
     await signAndSendTx(owner.keyringPair, callInitiateDomainUpdate, {}, [], false)
     await waitForBlocks(consensusApi, 1)
   } else {
-    console.log('   Step 2/3: ✓ Consensus already in domain allowlist')
+    console.log('   ✓ Consensus already in domain allowlist')
   }
 
-  // Step 3: Initialize channel
   const nextId = await nextChannelId(consensusApi, { domainId })
   const channelExists = nextId > 0n
 
   if (!channelExists) {
-    console.log(`   Step 3/3: Initiating channel to domain ${domainId}...`)
+    console.log(`   Initiating channel to domain ${domainId}...`)
     const callInitiateChannel = initiateChannel(consensusApi, { domainId })
     await signAndSendTx(owner.keyringPair, callInitiateChannel, {}, [], false)
 
@@ -271,21 +197,14 @@ const setupXDM = async (
       const channel = await channels(consensusApi, { domainId }, 0n)
       return channel !== null && channel.state === 'Open'
     })
-    console.log('   ✓ Channel opened successfully')
+    console.log('   ✓ Channel opened')
   } else {
-    console.log(`   Step 3/3: ✓ Channel to domain ${domainId} already exists`)
+    console.log(`   ✓ Channel to domain ${domainId} already exists`)
   }
 
   console.log('   ✅ XDM setup completed\n')
 }
 
-// ============================================================================
-// Transfer Functions
-// ============================================================================
-
-/**
- * Transfer from Consensus to EVM Domain using SDK transporterTransfer
- */
 const transferConsensusToEvm = async (
   consensusApi: ApiPromise,
   domainApi: ApiPromise,
@@ -293,18 +212,16 @@ const transferConsensusToEvm = async (
   evmRecipientAddress: string,
   amount: bigint,
 ): Promise<void> => {
-  console.log('\n💸 Step 1: Transfer from Consensus → EVM Domain')
+  console.log('\n💸 Step 1: Consensus → EVM Domain')
   console.log('─'.repeat(50))
 
-  // Get balances before
   const senderBalanceBefore = await balance(consensusApi, senderWallet.address)
   const receiverBalanceBefore = await balance(domainApi, evmRecipientAddress)
 
-  console.log(`   Sender (Alice) balance: ${Number(senderBalanceBefore.free) / 1e18} AI3`)
-  console.log(`   Receiver (EVM) balance: ${Number(receiverBalanceBefore.free) / 1e18} AI3`)
-  console.log(`   Transfer amount: ${Number(amount) / 1e18} AI3`)
+  console.log(`   Sender balance: ${Number(senderBalanceBefore.free) / 1e18} AI3`)
+  console.log(`   Receiver balance: ${Number(receiverBalanceBefore.free) / 1e18} AI3`)
+  console.log(`   Amount: ${Number(amount) / 1e18} AI3`)
 
-  // Create and send transfer transaction
   const tx = transporterTransfer(
     consensusApi,
     { domainId: CONFIG.domainId },
@@ -312,138 +229,89 @@ const transferConsensusToEvm = async (
     amount,
   )
 
-  console.log('\n   Sending transaction...')
+  console.log('\n   Sending...')
   await signAndSendTx(senderWallet.keyringPair!, tx)
-  console.log('   ✓ Transaction submitted')
+  console.log('   ✓ Submitted')
 
-  // Wait for funds to arrive on domain
-  console.log('   Waiting for XDM to process...')
+  console.log('   Waiting for XDM...')
   await waitUntil(() =>
     balanceIncreased(domainApi, evmRecipientAddress, receiverBalanceBefore.free),
   )
 
-  // Verify final balances
   const senderBalanceAfter = await balance(consensusApi, senderWallet.address)
   const receiverBalanceAfter = await balance(domainApi, evmRecipientAddress)
 
-  console.log('\n   Final balances:')
-  console.log(`   Sender (Alice) balance: ${Number(senderBalanceAfter.free) / 1e18} AI3`)
-  console.log(`   Receiver (EVM) balance: ${Number(receiverBalanceAfter.free) / 1e18} AI3`)
-  console.log('   ✅ Transfer to EVM domain completed!\n')
+  console.log(`\n   Sender balance: ${Number(senderBalanceAfter.free) / 1e18} AI3`)
+  console.log(`   Receiver balance: ${Number(receiverBalanceAfter.free) / 1e18} AI3`)
+  console.log('   ✅ Done\n')
 }
 
-/**
- * Transfer from EVM Domain to Consensus using the Transporter Precompile
- */
 const transferEvmToConsensusViaPrecompile = async (
   consensusApi: ApiPromise,
   evmWallet: Wallet,
   consensusRecipientAddress: string,
   amount: bigint,
 ): Promise<void> => {
-  console.log('\n💸 Step 2: Transfer from EVM Domain → Consensus (via Precompile)')
+  console.log('\n💸 Step 2: EVM Domain → Consensus (via Precompile)')
   console.log('─'.repeat(50))
 
-  // Get consensus balance before
   const recipientBalanceBefore = await balance(consensusApi, consensusRecipientAddress)
-  console.log(
-    `   Recipient (Bob) consensus balance: ${Number(recipientBalanceBefore.free) / 1e18} AI3`,
-  )
+  console.log(`   Recipient balance: ${Number(recipientBalanceBefore.free) / 1e18} AI3`)
 
-  // Check if precompile exists at the expected address
   console.log(`\n   Checking precompile at ${TRANSPORTER_PRECOMPILE_ADDRESS}...`)
-  const code = await evmWallet.provider!.getCode(TRANSPORTER_PRECOMPILE_ADDRESS)
-  console.log(`   Precompile code: ${code}`)
-  if (code === '0x' || code === '0x0' || !code) {
-    console.log('   ⚠️  WARNING: No code at precompile address!')
-    console.log('   The transporter precompile may not be deployed on this node version.')
-    console.log('   Make sure you are using a node version that includes PR #3714.')
-    throw new Error(
-      `Transporter precompile not found at ${TRANSPORTER_PRECOMPILE_ADDRESS}. ` +
-        'This feature requires a node version with the transporter precompile deployed.',
-    )
+  const deployed = await isPrecompileDeployed(evmWallet.provider!)
+  if (!deployed) {
+    throw new Error(`Transporter precompile not found. Requires node version with PR #3714.`)
   }
+  console.log('   ✓ Available')
 
-  // Create contract instance for the precompile
-  const transporterPrecompile = new Contract(
-    TRANSPORTER_PRECOMPILE_ADDRESS,
-    TRANSPORTER_PRECOMPILE_ABI,
-    evmWallet,
-  )
-
-  // Query minimum transfer amount
-  console.log('\n   Querying minimum transfer amount...')
-  const minimumAmount = await transporterPrecompile.minimum_transfer_amount()
+  const minimumAmount = await getMinimumTransferAmount(evmWallet.provider!)
   console.log(`   Minimum: ${Number(minimumAmount) / 1e18} AI3`)
 
   if (amount < minimumAmount) {
-    throw new Error(`Transfer amount ${amount} is below minimum ${minimumAmount.toString()}`)
+    throw new Error(`Amount ${amount} below minimum ${minimumAmount}`)
   }
 
-  // Encode recipient address
   const encodedAccountId32 = encodeAccountId32ToBytes32(consensusRecipientAddress)
-  console.log(`\n   Recipient SS58: ${consensusRecipientAddress}`)
-  console.log(`   Encoded bytes32: ${encodedAccountId32}`)
+  console.log(`\n   Recipient: ${consensusRecipientAddress}`)
+  console.log(`   Encoded: ${encodedAccountId32}`)
 
-  // Get EVM balance before
   const evmBalanceBefore = await evmWallet.provider!.getBalance(evmWallet.address)
-  console.log(`   Sender (EVM) balance: ${Number(evmBalanceBefore) / 1e18} AI3`)
-  console.log(`   Transfer amount: ${Number(amount) / 1e18} AI3`)
+  console.log(`   Sender balance: ${Number(evmBalanceBefore) / 1e18} AI3`)
+  console.log(`   Amount: ${Number(amount) / 1e18} AI3`)
 
-  // Execute precompile call
-  console.log('\n   Calling transporter precompile...')
-  const tx = await transporterPrecompile.transfer_to_consensus_v1(encodedAccountId32, amount)
-  console.log(`   Transaction hash: ${tx.hash}`)
-  console.log('   Waiting for confirmation...')
+  console.log('\n   Calling precompile...')
+  const result = await transferToConsensus(evmWallet, consensusRecipientAddress, amount)
+  console.log(`   Tx: ${result.transactionHash}`)
+  console.log(`   ✓ Block ${result.blockNumber}, gas ${result.gasUsed}`)
 
-  const receipt = await tx.wait()
-  console.log(`   ✓ Confirmed in block ${receipt.blockNumber}`)
-  console.log(`   Gas used: ${receipt.gasUsed.toString()}`)
-
-  // Wait for XDM to process and funds to arrive on consensus
-  console.log('\n   Waiting for XDM to process...')
+  console.log('\n   Waiting for XDM...')
   await waitUntil(() =>
     balanceIncreased(consensusApi, consensusRecipientAddress, recipientBalanceBefore.free),
   )
 
-  // Verify final balances
   const recipientBalanceAfter = await balance(consensusApi, consensusRecipientAddress)
   const evmBalanceAfter = await evmWallet.provider!.getBalance(evmWallet.address)
 
-  console.log('\n   Final balances:')
-  console.log(`   Sender (EVM) balance: ${Number(evmBalanceAfter) / 1e18} AI3`)
-  console.log(
-    `   Recipient (Bob) consensus balance: ${Number(recipientBalanceAfter.free) / 1e18} AI3`,
-  )
-  console.log('   ✅ Transfer to consensus completed!\n')
+  console.log(`\n   Sender balance: ${Number(evmBalanceAfter) / 1e18} AI3`)
+  console.log(`   Recipient balance: ${Number(recipientBalanceAfter.free) / 1e18} AI3`)
+  console.log('   ✅ Done\n')
 }
-
-// ============================================================================
-// Main
-// ============================================================================
 
 const main = async (): Promise<void> => {
   console.log('🚀 Transporter Precompile Round-Trip Example')
   console.log('═'.repeat(50))
-  console.log('This example demonstrates:')
-  console.log('1. Consensus → EVM Domain transfer (SDK transporterTransfer)')
-  console.log('2. EVM Domain → Consensus transfer (Transporter Precompile)')
-  console.log('═'.repeat(50))
 
-  // Initialize WASM crypto
   await cryptoWaitReady()
 
-  // Setup consensus sender wallet (funds the EVM wallet)
   const senderWallet = CONFIG.consensusSenderMnemonic
     ? setupWallet({ mnemonic: CONFIG.consensusSenderMnemonic })
     : setupWallet({ uri: CONFIG.consensusSenderUri })
 
-  // Setup consensus recipient wallet (receives funds from EVM)
   const recipientWallet = CONFIG.consensusRecipientMnemonic
     ? setupWallet({ mnemonic: CONFIG.consensusRecipientMnemonic })
     : setupWallet({ uri: CONFIG.consensusRecipientUri })
 
-  // Setup EVM wallet (using SDK for address derivation)
   const evmWallet = setupWallet({
     mnemonic: CONFIG.evmMnemonic,
     type: 'ethereum',
@@ -453,49 +321,38 @@ const main = async (): Promise<void> => {
     throw new Error('Failed to initialize wallets')
   }
 
-  console.log('\n📋 Wallet Addresses:')
-  console.log(`   Sender (Consensus):    ${senderWallet.address}`)
-  console.log(`   Recipient (Consensus): ${recipientWallet.address}`)
-  console.log(`   EVM Wallet:            ${evmWallet.address}`)
+  console.log('\n📋 Wallets:')
+  console.log(`   Sender:    ${senderWallet.address}`)
+  console.log(`   Recipient: ${recipientWallet.address}`)
+  console.log(`   EVM:       ${evmWallet.address}`)
 
-  // Connect to chains
-  console.log('\n📡 Connecting to chains...')
-  console.log(`   Consensus: ${CONFIG.consensusRpcUrl}`)
-  console.log(`   Domain:    ${CONFIG.domainRpcUrl}`)
-
+  console.log('\n📡 Connecting...')
   const consensusApi = await createConnection(CONFIG.consensusRpcUrl)
   const domainApi = await createConnection(CONFIG.domainRpcUrl)
 
-  // Setup EVM provider and wallet for ethers.js
-  // Note: batchMaxCount: 1 disables batching (Substrate EVM nodes don't support batched requests)
+  // batchMaxCount: 1 disables batching (Substrate EVM nodes don't support it)
   const evmProvider = CONFIG.evmRpcUrl.startsWith('http')
     ? new JsonRpcProvider(CONFIG.evmRpcUrl, undefined, { batchMaxCount: 1 })
     : new WebSocketProvider(CONFIG.evmRpcUrl)
 
-  // Create ethers wallet - use private key if provided, otherwise derive from mnemonic
   let ethersWallet: Wallet
   if (CONFIG.evmPrivateKey) {
     ethersWallet = new Wallet(CONFIG.evmPrivateKey, evmProvider)
   } else {
-    // SDK uses master key (m) derivation by default for ethereum type wallets
     const ethersMnemonic = Mnemonic.fromPhrase(CONFIG.evmMnemonic)
     const hdWallet = HDNodeWallet.fromMnemonic(ethersMnemonic, 'm')
     ethersWallet = new Wallet(hdWallet.privateKey, evmProvider)
   }
 
-  console.log(`   ✓ Connected to both chains`)
-  console.log(`   EVM wallet ethers address: ${ethersWallet.address}`)
+  console.log('   ✓ Connected')
 
   try {
-    // Setup XDM (required for cross-domain transfers)
-    // Skip on production networks where XDM is already configured
     if (!CONFIG.skipXdmSetup) {
       await setupXDM(consensusApi, domainApi, CONFIG.domainId, CONFIG.sudoUri)
     } else {
-      console.log('\n📡 Skipping XDM setup (SKIP_XDM_SETUP=true)')
+      console.log('\n📡 Skipping XDM setup')
     }
 
-    // Step 1: Transfer from Consensus to EVM Domain
     await transferConsensusToEvm(
       consensusApi,
       domainApi,
@@ -504,7 +361,6 @@ const main = async (): Promise<void> => {
       CONFIG.consensusToEvmAmount,
     )
 
-    // Step 2: Transfer from EVM Domain to Consensus via Precompile
     await transferEvmToConsensusViaPrecompile(
       consensusApi,
       ethersWallet,
@@ -513,10 +369,9 @@ const main = async (): Promise<void> => {
     )
 
     console.log('═'.repeat(50))
-    console.log('✨ Round-trip transfer completed successfully!')
+    console.log('✨ Round-trip completed!')
     console.log('═'.repeat(50))
   } finally {
-    // Cleanup
     await consensusApi.disconnect()
     await domainApi.disconnect()
     if (evmProvider instanceof WebSocketProvider) {
@@ -525,13 +380,12 @@ const main = async (): Promise<void> => {
   }
 }
 
-// Run the example
 main()
   .then(() => {
-    console.log('\n✅ Example completed successfully')
+    console.log('\n✅ Done')
     process.exit(0)
   })
-  .catch((error) => {
-    console.error('\n❌ Example failed:', error)
+  .catch((e) => {
+    console.error('\n❌ Error:', e)
     process.exit(1)
   })
