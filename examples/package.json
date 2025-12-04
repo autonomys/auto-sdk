@@ -14,10 +14,14 @@
   },
   "scripts": {
     "eth-derivation-demo": "npx ts-node ./eth-derivation-demo.ts",
-    "address": "npx ts-node ./address.ts"
+    "address": "npx ts-node ./address.ts",
+    "transporter-precompile": "npx ts-node ./transporter-precompile.ts"
   },
   "dependencies": {
+    "@autonomys/auto-consensus": "workspace:*",
     "@autonomys/auto-utils": "workspace:*",
+    "@autonomys/auto-xdm": "workspace:*",
+    "dotenv": "^16.4.5",
     "ethers": "^6.13.5"
   }
 }

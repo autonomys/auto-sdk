@@ -14,7 +14,7 @@
 services:
   # Node running both consensus and domain operator
   node:
-    image: ghcr.io/autonomys/node:${NODE_VERSION:-mainnet-2025-aug-20}
+    image: ghcr.io/autonomys/node:${NODE_VERSION:-mainnet-2025-dec-02}
     container_name: auto-sdk-node
     command:
       # Consensus node configuration
@@ -60,7 +60,7 @@ services:
   # Farmer
   # Note: Uses same version as node by default (defined above)
   farmer:
-    image: ghcr.io/autonomys/farmer:${FARMER_VERSION:-${NODE_VERSION:-mainnet-2025-aug-20}}
+    image: ghcr.io/autonomys/farmer:${FARMER_VERSION:-${NODE_VERSION:-mainnet-2025-dec-02}}
     container_name: auto-sdk-farmer
     depends_on:
       node:

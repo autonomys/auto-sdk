@@ -28,9 +28,18 @@
     "@autonomys/auto-consensus": "^1.6.4",
     "@autonomys/auto-utils": "^1.6.4"
   },
+  "peerDependencies": {
+    "ethers": "^6.0.0"
+  },
+  "peerDependenciesMeta": {
+    "ethers": {
+      "optional": true
+    }
+  },
   "devDependencies": {
     "@types/jest": "^29.5.14",
     "eslint": "^9.25.1",
+    "ethers": "^6.13.5",
     "jest": "^29.7.0",
     "prettier": "^3.5.3",
     "ts-jest": "^29.3.1",
