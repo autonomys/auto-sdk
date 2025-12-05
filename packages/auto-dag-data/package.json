@@ -4,6 +4,7 @@
   "version": "1.6.4",
   "license": "MIT",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "type": "module",
   "repository": {
     "type": "git",
@@ -24,8 +25,17 @@
     "test": "yarn node --experimental-vm-modules $(yarn bin jest)"
   },
   "exports": {
-    ".": "./dist/index.js",
-    "./protobuf": "./dist/metadata/onchain/protobuf/onchainMetadata.js"
+    ".": {
+      "browser": "./dist/index.js",
+      "node": "./dist/index.js",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./protobuf": {
+      "browser": "./dist/metadata/onchain/protobuf/onchainMetadata.js",
+      "node": "./dist/metadata/onchain/protobuf/onchainMetadata.js",
+      "default": "./dist/metadata/onchain/protobuf/onchainMetadata.js"
+    }
   },
   "engines": {
     "node": ">=20.8.0"
