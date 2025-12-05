@@ -14,6 +14,21 @@ The **Autonomys Auto Dag Data SDK** (`@autonomys/auto-dag-data`) provides utilit
 
 Check [this tutorial](https://dev.to/mangadev/set-up-a-backend-nodejs-typescript-jest-using-es-modules-1530) in how to setup a ES module application.
 
+### Browser Compatibility
+
+This package is fully compatible with browser environments. All IPLD DAG operations, CID handling, and metadata processing work in the browser:
+
+```typescript
+// Works the same in browser as in Node.js
+import { cidOfNode, cidToString, encodeNode, decodeNode } from '@autonomys/auto-dag-data'
+import { MemoryBlockstore } from 'blockstore-core/memory'
+
+const blockstore = new MemoryBlockstore()
+// Create and manipulate DAGs in the browser...
+```
+
+Note: File system operations (`fs.createReadStream`, etc.) shown in examples are Node.js-specific. In browser environments, use the [File API](https://developer.mozilla.org/en-US/docs/Web/API/File_API) or `Blob` objects instead.
+
 ## Features
 
 - **File Chunking and DAG Creation**: Efficiently split large files into smaller chunks and create IPLD DAGs.

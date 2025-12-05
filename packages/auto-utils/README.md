@@ -44,9 +44,37 @@ yarn add @autonomys/auto-utils
 
 ### Prerequisites
 
-- **Node.js** (version 14 or higher)
+- **Node.js** (version 14 or higher) or a modern browser
 - **TypeScript** (optional, but recommended for development)
 - Familiarity with async/await and promise handling in JavaScript/TypeScript.
+
+### Browser Compatibility
+
+This package is fully compatible with browser environments. It works out of the box with modern bundlers:
+
+**Vite / Webpack / esbuild / Rollup:**
+
+```typescript
+// Works the same as Node.js
+import { activateWallet, networks } from '@autonomys/auto-utils'
+```
+
+**React / Vue / Svelte / Next.js:**
+
+```typescript
+import { activateWallet } from '@autonomys/auto-utils'
+
+// Example: Connect wallet in a React component
+const connectWallet = async () => {
+  const { api, accounts } = await activateWallet({
+    networkId: 'mainnet',
+    mnemonic: userMnemonic,
+  })
+  // Use api and accounts...
+}
+```
+
+The package uses `@polkadot/api` which provides browser-compatible cryptographic operations via WebAssembly.
 
 ## Usage Examples
 

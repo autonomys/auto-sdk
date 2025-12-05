@@ -43,10 +43,25 @@ yarn add @autonomys/auto-consensus
 
 ### Prerequisites
 
-- **Node.js** (version 14 or higher)
+- **Node.js** (version 14 or higher) or a modern browser
 - **TypeScript** (optional, but recommended for development)
 - Familiarity with async/await and promise handling in JavaScript/TypeScript.
 - **@autonomys/auto-utils** package installed (as it provides utility functions and API activation).
+
+### Browser Compatibility
+
+This package is fully compatible with browser environments. It works out of the box with modern bundlers:
+
+```typescript
+// Works the same in browser as in Node.js
+import { balance, transfer, blockNumber } from '@autonomys/auto-consensus'
+import { activate } from '@autonomys/auto-utils'
+
+const api = await activate({ networkId: 'mainnet' })
+const currentBlock = await blockNumber()
+```
+
+All consensus operations (balance queries, transfers, staking) work in browser environments via WebSocket connections to the network.
 
 ### Importing the SDK
 

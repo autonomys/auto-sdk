@@ -32,10 +32,22 @@ yarn add @autonomys/auto-xdm
 
 ### Prerequisites
 
-- **Node.js** (version 14 or higher)
+- **Node.js** (version 14 or higher) or a modern browser
 - **TypeScript** (optional, but recommended for development)
 - Familiarity with async/await and promise handling in JavaScript/TypeScript.
 - **@autonomys/auto-utils** package installed (as it provides utility functions and API activation).
+
+### Browser Compatibility
+
+This package is fully compatible with browser environments. It works out of the box with modern bundlers:
+
+```typescript
+// Works the same in browser as in Node.js
+import { transporterTransfer } from '@autonomys/auto-xdm'
+import { activateWallet } from '@autonomys/auto-utils'
+```
+
+For EVM precompile functions, the `ethers` library is also browser-compatible, making cross-domain transfers possible from browser-based dApps.
 
 ## Usage Examples
 
@@ -154,11 +166,7 @@ const txData = createTransferToConsensusTxData(
 const gasEstimate = await provider.estimateGas({ ...txData, from: wallet.address })
 
 // Option B: Use ethers Contract directly
-const contract = new Contract(
-  TRANSPORTER_PRECOMPILE_ADDRESS,
-  getTransporterPrecompileAbi(),
-  wallet,
-)
+const contract = new Contract(TRANSPORTER_PRECOMPILE_ADDRESS, getTransporterPrecompileAbi(), wallet)
 
 const accountId32 = encodeAccountId32ToBytes32('sufsKsx4kZ26i7bJXc1TFguysVzjkzsDtE2VDiCEBY2WjyGAj')
 const tx = await contract.transfer_to_consensus_v1(accountId32, 10n * 10n ** 18n)
