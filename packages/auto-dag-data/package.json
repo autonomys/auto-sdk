@@ -32,9 +32,10 @@
       "default": "./dist/index.js"
     },
     "./protobuf": {
-      "browser": "./dist/metadata/onchain/protobuf/onchainMetadata.js",
-      "node": "./dist/metadata/onchain/protobuf/onchainMetadata.js",
-      "default": "./dist/metadata/onchain/protobuf/onchainMetadata.js"
+      "browser": "./dist/metadata/onchain/protobuf/OnchainMetadata.js",
+      "node": "./dist/metadata/onchain/protobuf/OnchainMetadata.js",
+      "types": "./dist/metadata/onchain/protobuf/OnchainMetadata.d.ts",
+      "default": "./dist/metadata/onchain/protobuf/OnchainMetadata.js"
     }
   },
   "engines": {
