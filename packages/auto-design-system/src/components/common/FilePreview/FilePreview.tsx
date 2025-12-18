@@ -263,27 +263,16 @@ export const FilePreview = ({
       )
     }
 
-    const sanitizedFileName = fileData.fileName ? sanitizeHTML(fileData.fileName) : undefined
-
     return (
-      <div className='flex flex-col items-center'>
-        <object
-          className='h-[50vh] w-full border dark:border-gray-700'
-          data={fileData.uri}
-          type={fileData.fileType}
-          aria-label={sanitizedFileName}
-          title={sanitizedFileName}
-        />
-        <div className='mt-4 text-sm text-gray-500 dark:text-gray-400'>
-          {fileData.fileType || extension.toUpperCase()} file preview
-        </div>
+      <>
+        <NoPreviewAvailable />
         <DirectGatewayLink
           gatewayUrl={gatewayUrl}
           isEncrypted={!!metadata.uploadOptions?.encryption}
           isAutoDrive={isAutoDrive}
           isAstral={isAstral}
         />
-      </div>
+      </>
     )
   }
 
