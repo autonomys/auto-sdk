@@ -2,15 +2,26 @@
 
 Future changes will appear here.
 
+## [1.6.5] - 2025-12-18
+
+### Features
+
+- add transporter precompile to auto-xdm package ([#504](https://github.com/autonomys/auto-sdk/pull/504)) [@jfrank-summit](https://github.com/jfrank-summit)
+- add farmerless dev node for integration tests ([#503](https://github.com/autonomys/auto-sdk/pull/503)) [@jfrank-summit](https://github.com/jfrank-summit)
+
+### Bug Fixes
+
+- remove object fallback to prevent auto-downloads (#505) ([#506](https://github.com/autonomys/auto-sdk/pull/506)) [@EmilFattakhov](https://github.com/EmilFattakhov)
+
+### Chores
+
+- release v1.6.4 ([#502](https://github.com/autonomys/auto-sdk/pull/502)) [@jfrank-summit](https://github.com/jfrank-summit)
+
 ## [1.6.4] - 2025-11-29
 
 ### Features
 
 - download improvements ([#501](https://github.com/autonomys/auto-sdk/pull/501)) [@jfrank-summit](https://github.com/jfrank-summit)
-
-### Chores
-
-- release v1.6.3 ([#500](https://github.com/autonomys/auto-sdk/pull/500)) [@jfrank-summit](https://github.com/jfrank-summit)
 
 ## [1.6.3] - 2025-11-28
 
@@ -456,6 +467,8 @@ No changes in this version.
 
 [1.6.2]: https://github.com/autonomys/auto-sdk/releases/tag/v1.6.2
 
-[Unreleased]: https://github.com/autonomys/auto-sdk/compare/v1.6.4...HEAD
-[1.6.4]: https://github.com/autonomys/auto-sdk/compare/v1.6.3...v1.6.4
 [1.6.3]: https://github.com/autonomys/auto-sdk/releases/tag/v1.6.3
+
+[Unreleased]: https://github.com/autonomys/auto-sdk/compare/v1.6.5...HEAD
+[1.6.5]: https://github.com/autonomys/auto-sdk/compare/v1.6.4...v1.6.5
+[1.6.4]: https://github.com/autonomys/auto-sdk/releases/tag/v1.6.4

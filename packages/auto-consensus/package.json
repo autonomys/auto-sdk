@@ -1,6 +1,6 @@
 {
   "name": "@autonomys/auto-consensus",
-  "version": "1.6.4",
+  "version": "1.6.5",
   "license": "MIT",
   "main": "dist/index.js",
   "repository": {
@@ -25,7 +25,7 @@
     "README.md"
   ],
   "dependencies": {
-    "@autonomys/auto-utils": "^1.6.4",
+    "@autonomys/auto-utils": "^1.6.5",
     "zod": "^3.24.2"
   },
   "devDependencies": {
