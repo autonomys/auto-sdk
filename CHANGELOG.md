@@ -2,12 +2,21 @@
 
 Future changes will appear here.
 
+## [1.6.6] - 2026-01-14
+
+### Chores
+
+- bump @modelcontextprotocol/sdk from 1.10.2 to 1.25.2 ([#509](https://github.com/autonomys/auto-sdk/pull/509)) [@dependabot[bot]](https://github.com/apps/dependabot)
+- remove CODEOWNERS file ([#508](https://github.com/autonomys/auto-sdk/pull/508)) [@0xjeremyfrank](https://github.com/0xjeremyfrank)
+- release v1.6.5 ([#507](https://github.com/autonomys/auto-sdk/pull/507)) [@EmilFattakhov](https://github.com/EmilFattakhov)
+
 ## [1.6.5] - 2025-12-18
 
 ### Features
 
-- add transporter precompile to auto-xdm package ([#504](https://github.com/autonomys/auto-sdk/pull/504)) [@jfrank-summit](https://github.com/jfrank-summit)
-- add farmerless dev node for integration tests ([#503](https://github.com/autonomys/auto-sdk/pull/503)) [@jfrank-summit](https://github.com/jfrank-summit)
+- add transporter precompile to auto-xdm package ([#504](https://github.com/autonomys/auto-sdk/pull/504)) [@0xjeremyfrank](https://github.com/0xjeremyfrank)
+- add farmerless dev node for integration tests ([#503](https://github.com/autonomys/auto-sdk/pull/503)) [@0xjeremyfrank](https://github.com/0xjeremyfrank)
+- download improvements ([#501](https://github.com/autonomys/auto-sdk/pull/501)) [@0xjeremyfrank](https://github.com/0xjeremyfrank)
 
 ### Bug Fixes
 
@@ -15,7 +24,7 @@ Future changes will appear here.
 
 ### Chores
 
-- release v1.6.4 ([#502](https://github.com/autonomys/auto-sdk/pull/502)) [@jfrank-summit](https://github.com/jfrank-summit)
+- release v1.6.4 ([#502](https://github.com/autonomys/auto-sdk/pull/502)) [@0xjeremyfrank](https://github.com/0xjeremyfrank)
 
 ## [1.6.4] - 2025-11-29
 
@@ -469,6 +478,8 @@ No changes in this version.
 
 [1.6.3]: https://github.com/autonomys/auto-sdk/releases/tag/v1.6.3
 
-[Unreleased]: https://github.com/autonomys/auto-sdk/compare/v1.6.5...HEAD
-[1.6.5]: https://github.com/autonomys/auto-sdk/compare/v1.6.4...v1.6.5
 [1.6.4]: https://github.com/autonomys/auto-sdk/releases/tag/v1.6.4
+
+[Unreleased]: https://github.com/autonomys/auto-sdk/compare/v1.6.6...HEAD
+[1.6.6]: https://github.com/autonomys/auto-sdk/compare/v1.6.5...v1.6.6
+[1.6.5]: https://github.com/autonomys/auto-sdk/releases/tag/v1.6.5
