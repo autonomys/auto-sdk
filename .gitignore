@@ -42,6 +42,8 @@ tsconfig.tsbuildinfo
 
 # Environment variables
 .env
+.tool-versions
+
 
 # Directory use by scripts
 executables/
