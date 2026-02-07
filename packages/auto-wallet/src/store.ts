@@ -66,8 +66,7 @@ export function createWalletStore(userConfig?: Partial<WalletConfig>) {
 
           // Prevent multiple simultaneous connection attempts
           if (isLoading) {
-            console.warn('Connection already in progress, ignoring new attempt');
-            return;
+            throw new Error('Connection already in progress');
           }
 
           set({
@@ -78,6 +77,11 @@ export function createWalletStore(userConfig?: Partial<WalletConfig>) {
 
           try {
             const { accounts, injector } = await connectToWallet(extensionName, config);
+
+            // If the user disconnected while we were awaiting, don't overwrite
+            if (!get().isLoading) {
+              return;
+            }
 
             set({
               isConnected: true,
@@ -138,6 +142,11 @@ export function createWalletStore(userConfig?: Partial<WalletConfig>) {
             }
 
             const { accounts, injector } = await connectToWallet(selectedWallet, config);
+
+            // If the user disconnected while we were awaiting, don't overwrite
+            if (!get().isLoading) {
+              return;
+            }
 
             // Find target account by comparing with stored address (already in correct format)
             const targetAccount = accounts.find(
