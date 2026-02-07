@@ -142,7 +142,7 @@ export const WalletModal: React.FC<WalletModalProps> = ({ open, onOpenChange }) 
                       onClick={clearError}
                       className="h-auto p-0 hover:bg-gray-100"
                     >
-                      \u00D7
+                      ×
                     </Button>
                   </div>
                 </div>

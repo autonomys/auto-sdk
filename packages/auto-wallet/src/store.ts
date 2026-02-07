@@ -226,11 +226,9 @@ export function createWalletStore(userConfig?: Partial<WalletConfig>) {
           if (state?.selectedWallet && state?.selectedAccount) {
             // Auto-initialize connection after rehydration
             setTimeout(() => {
-              try {
-                state.initializeConnection();
-              } catch (error) {
+              state.initializeConnection().catch((error: unknown) => {
                 console.error('Failed to initialize connection:', error);
-              }
+              });
             }, 500);
           }
         },

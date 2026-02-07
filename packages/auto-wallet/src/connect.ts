@@ -10,21 +10,28 @@ export const connectToWallet = async (
   extensionName: string,
   config: Required<WalletConfig>,
 ) => {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
   const timeoutPromise = new Promise<never>((_, reject) => {
-    setTimeout(() => reject(new Error('Connection timeout')), config.connectionTimeout);
+    timeoutId = setTimeout(() => reject(new Error('Connection timeout')), config.connectionTimeout);
   });
 
   const wallet = getWalletBySource(extensionName);
   if (!wallet) {
+    clearTimeout(timeoutId);
     throw new Error(`Wallet not found: ${extensionName}`);
   }
 
   if (!wallet.installed) {
+    clearTimeout(timeoutId);
     throw new Error(`${wallet.title} is not installed. Please install the extension first.`);
   }
 
   // Enable wallet with timeout
-  await Promise.race([wallet.enable(config.dappName), timeoutPromise]);
+  try {
+    await Promise.race([wallet.enable(config.dappName), timeoutPromise]);
+  } finally {
+    clearTimeout(timeoutId);
+  }
 
   if (!wallet.extension) {
     throw new Error(`Extension not available for ${extensionName}`);
