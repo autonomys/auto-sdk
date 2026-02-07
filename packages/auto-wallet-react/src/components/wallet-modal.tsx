@@ -24,6 +24,8 @@ export const WalletModal: React.FC<WalletModalProps> = ({ open, onOpenChange }) 
 
   // Track which specific wallet is being connected for UI feedback
   const [connectingWallet, setConnectingWallet] = React.useState<string | null>(null);
+  // Track the last wallet that failed, so retry targets the correct one
+  const [lastFailedWallet, setLastFailedWallet] = React.useState<string | null>(null);
 
   // Clear connecting state when modal closes or when global loading stops
   React.useEffect(() => {
@@ -32,14 +34,23 @@ export const WalletModal: React.FC<WalletModalProps> = ({ open, onOpenChange }) 
     }
   }, [open, isLoading]);
 
+  // Clear last failed wallet when error is cleared
+  React.useEffect(() => {
+    if (!connectionError) {
+      setLastFailedWallet(null);
+    }
+  }, [connectionError]);
+
   const handleConnect = async (extensionName: string) => {
     try {
       setConnectingWallet(extensionName);
+      setLastFailedWallet(null);
       clearError();
       await connectWallet(extensionName);
       onOpenChange(false);
     } catch (error) {
       console.error('Connection failed in modal:', error);
+      setLastFailedWallet(extensionName);
       // Error is handled by the store, modal stays open to show error
     } finally {
       setConnectingWallet(null);
@@ -115,14 +126,8 @@ export const WalletModal: React.FC<WalletModalProps> = ({ open, onOpenChange }) 
                         size="sm"
                         onClick={() => {
                           clearError();
-                          // Find and retry the failed wallet
-                          const failedWallet = availableWallets.find(
-                            w =>
-                              connectionError.includes(w.title) ||
-                              connectionError.includes('timeout'),
-                          );
-                          if (failedWallet) {
-                            handleConnect(failedWallet.extensionName);
+                          if (lastFailedWallet) {
+                            handleConnect(lastFailedWallet);
                           }
                         }}
                         disabled={isLoading}

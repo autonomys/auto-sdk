@@ -149,6 +149,7 @@ export function createWalletStore(userConfig?: Partial<WalletConfig>) {
                 isConnected: true,
                 isLoading: false,
                 loadingType: null,
+                selectedAccount: targetAccount,
                 accounts: accounts,
                 injector: injector,
                 connectionError: null,
