@@ -37,16 +37,22 @@ export const WalletOption: React.FC<WalletOptionProps> = ({
             <p className="text-sm text-gray-500">Not installed</p>
           </div>
         </div>
-        <Button variant="outline" size="sm" asChild>
-          <a
-            href={wallet.installUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="min-w-[80px]"
-          >
-            Install
-          </a>
-        </Button>
+        {wallet.installUrl ? (
+          <Button variant="outline" size="sm" asChild>
+            <a
+              href={wallet.installUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="min-w-[80px]"
+            >
+              Install
+            </a>
+          </Button>
+        ) : (
+          <Button variant="outline" size="sm" disabled className="min-w-[80px]">
+            Unavailable
+          </Button>
+        )}
       </div>
     );
   }
