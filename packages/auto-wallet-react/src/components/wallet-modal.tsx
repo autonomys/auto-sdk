@@ -131,7 +131,7 @@ export const WalletModal: React.FC<WalletModalProps> = ({ open, onOpenChange }) 
                           }
                         }}
                         disabled={isLoading}
-                        className="h-auto px-2 py-1 text-xs hover:bg-gray-100 disabled:opacity-50"
+                        className="h-auto px-2 py-1 text-xs hover:bg-accent disabled:opacity-50"
                       >
                         Retry
                       </Button>
@@ -140,7 +140,7 @@ export const WalletModal: React.FC<WalletModalProps> = ({ open, onOpenChange }) 
                       variant="ghost"
                       size="sm"
                       onClick={clearError}
-                      className="h-auto p-0 hover:bg-gray-100"
+                      className="h-auto p-0 hover:bg-accent"
                     >
                       ×
                     </Button>
@@ -152,7 +152,7 @@ export const WalletModal: React.FC<WalletModalProps> = ({ open, onOpenChange }) 
 
           {/* No wallets message */}
           {walletOptions.length === 0 && !isInitializing && (
-            <div className="text-center text-gray-500 py-8">
+            <div className="text-center text-muted-foreground py-8">
               <p className="mb-4">No compatible wallets detected.</p>
               <p className="text-sm">Please install one of the supported wallet extensions:</p>
               <div className="mt-4 space-y-2">
@@ -184,7 +184,7 @@ export const WalletModal: React.FC<WalletModalProps> = ({ open, onOpenChange }) 
           {/* Terms notice */}
           {walletOptions.length > 0 && (
             <div className="pt-4 border-t">
-              <p className="text-xs text-gray-500 text-center">
+              <p className="text-xs text-muted-foreground text-center">
                 By connecting a wallet, you agree to the Terms of Service and acknowledge that you
                 have read and understand the Privacy Policy.
               </p>

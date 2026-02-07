@@ -34,7 +34,7 @@ export const WalletOption: React.FC<WalletOptionProps> = ({
           )}
           <div>
             <span className="font-medium">{wallet.title}</span>
-            <p className="text-sm text-gray-500">Not installed</p>
+            <p className="text-sm text-muted-foreground">Not installed</p>
           </div>
         </div>
         {wallet.installUrl ? (
@@ -62,7 +62,7 @@ export const WalletOption: React.FC<WalletOptionProps> = ({
   return (
     <div
       className={`flex items-center justify-between p-4 border rounded-lg transition-colors ${
-        isDisabled ? 'opacity-50' : 'hover:bg-gray-50'
+        isDisabled ? 'opacity-50' : 'hover:bg-accent/50'
       }`}
     >
       <div className="flex items-center space-x-3">
@@ -71,7 +71,7 @@ export const WalletOption: React.FC<WalletOptionProps> = ({
         )}
         <div>
           <span className="font-medium">{wallet.title}</span>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted-foreground">
             {isConnecting ? 'Connecting...' : disabled ? 'Please wait...' : 'Ready to connect'}
           </p>
         </div>

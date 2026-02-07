@@ -33,16 +33,16 @@ const AccountDropdown: React.FC<AccountDropdownProps> = ({
   };
 
   return (
-    <div className="absolute right-0 top-full mt-1 w-64 bg-white border border-gray-200 rounded-md shadow-lg z-50">
+    <div className="absolute right-0 top-full mt-1 w-64 bg-background border border-border rounded-md shadow-lg z-50">
       <div className="p-2">
-        <div className="text-xs text-gray-500 mb-2">Select Account</div>
+        <div className="text-xs text-muted-foreground mb-2">Select Account</div>
         {accounts.map((account: WalletAccount) => (
           <div
             key={account.address}
             className={`w-full text-left px-2 py-1 rounded text-sm ${
               account.address === selectedAccount?.address
-                ? 'bg-blue-50 text-blue-600'
-                : 'hover:bg-gray-50'
+                ? 'bg-accent text-accent-foreground'
+                : 'hover:bg-accent/50'
             }`}
           >
             <div className="flex items-center justify-between">
@@ -54,29 +54,29 @@ const AccountDropdown: React.FC<AccountDropdownProps> = ({
               </button>
               <button
                 onClick={e => handleCopy(e, account.address)}
-                className="p-1 hover:bg-gray-200 rounded transition-colors"
+                className="p-1 hover:bg-accent rounded transition-colors"
                 title="Copy address"
               >
                 {copiedAddress === account.address ? (
                   <Check className="w-3 h-3 text-green-600" />
                 ) : (
-                  <Copy className="w-3 h-3 text-gray-500" />
+                  <Copy className="w-3 h-3 text-muted-foreground" />
                 )}
               </button>
             </div>
             <button
               onClick={() => onSelectAccount(account.address)}
-              className="w-full text-left text-xs text-gray-500 mt-1 hover:opacity-80"
+              className="w-full text-left text-xs text-muted-foreground mt-1 hover:opacity-80"
               title={account.address}
             >
               {shortenAddress(account.address, 8)}
             </button>
           </div>
         ))}
-        <div className="border-t mt-2 pt-2">
+        <div className="border-t border-border mt-2 pt-2">
           <button
             onClick={onDisconnect}
-            className="w-full text-left px-2 py-1 rounded text-sm text-red-600 hover:bg-red-50"
+            className="w-full text-left px-2 py-1 rounded text-sm text-destructive hover:bg-destructive/10"
           >
             Disconnect
           </button>
@@ -119,7 +119,7 @@ export const WalletButton: React.FC<WalletButtonProps> = ({ onOpenModal }) => {
     return (
       <Button disabled className="relative">
         <div className="flex items-center space-x-2">
-          <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+          <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
           <span>{loadingText}</span>
         </div>
       </Button>
@@ -140,7 +140,7 @@ export const WalletButton: React.FC<WalletButtonProps> = ({ onOpenModal }) => {
               <span className="text-sm font-medium">
                 {selectedAccount.name || shortenAddress(selectedAccount.address)}
               </span>
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-muted-foreground">
                 {shortenAddress(selectedAccount.address, 6)}
               </span>
             </div>
