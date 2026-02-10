@@ -1,6 +1,6 @@
 {
   "name": "@autonomys/auto-files",
-  "version": "1.6.7",
+  "version": "1.6.8",
   "packageManager": "yarn@4.7.0",
   "scripts": {
     "build": "tsc"
@@ -21,6 +21,6 @@
     }
   },
   "dependencies": {
-    "@autonomys/auto-drive": "^1.6.7"
+    "@autonomys/auto-drive": "^1.6.8"
   }
 }
