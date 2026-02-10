@@ -326,6 +326,22 @@ Auto-detects installed wallet extensions on mount.
 | `isInitializing` | `boolean` | Whether currently auto-reconnecting |
 | `canConnect` | `boolean` | Whether a new connection can be initiated |
 
+**Performance note:** `useWallet()` subscribes to the entire store, so any state change will re-render all consumers. For most wallet UIs this is perfectly fine. If you need fine-grained subscriptions (e.g., in a performance-critical component that only reads `selectedAccount`), you can access the underlying Zustand store directly via `useWalletStore()` with a selector:
+
+```tsx
+import { useStore } from 'zustand'
+import { useShallow } from 'zustand/react/shallow'
+
+// Only re-renders when selectedAccount changes
+const selectedAccount = useStore(store, (s) => s.selectedAccount)
+
+// Or pick multiple fields with shallow comparison
+const { isConnected, selectedAccount } = useStore(
+  store,
+  useShallow((s) => ({ isConnected: s.isConnected, selectedAccount: s.selectedAccount })),
+)
+```
+
 ### Re-exports
 
 For convenience, the following are re-exported from `@autonomys/auto-wallet`:
