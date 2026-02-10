@@ -2,6 +2,16 @@
 
 Future changes will appear here.
 
+## [1.6.7] - 2026-02-10
+
+### Features
+
+- add @autonomys/auto-wallet and @autonomys/auto-wallet-react packages ([#511](https://github.com/autonomys/auto-sdk/pull/511)) [@jim-counter](https://github.com/jim-counter)
+
+### Chores
+
+- release v1.6.6 ([#510](https://github.com/autonomys/auto-sdk/pull/510)) [@EmilFattakhov](https://github.com/EmilFattakhov)
+
 ## [1.6.6] - 2026-01-14
 
 ### Chores
@@ -480,6 +490,8 @@ No changes in this version.
 
 [1.6.4]: https://github.com/autonomys/auto-sdk/releases/tag/v1.6.4
 
-[Unreleased]: https://github.com/autonomys/auto-sdk/compare/v1.6.6...HEAD
-[1.6.6]: https://github.com/autonomys/auto-sdk/compare/v1.6.5...v1.6.6
 [1.6.5]: https://github.com/autonomys/auto-sdk/releases/tag/v1.6.5
+
+[Unreleased]: https://github.com/autonomys/auto-sdk/compare/v1.6.7...HEAD
+[1.6.7]: https://github.com/autonomys/auto-sdk/compare/v1.6.6...v1.6.7
+[1.6.6]: https://github.com/autonomys/auto-sdk/releases/tag/v1.6.6
