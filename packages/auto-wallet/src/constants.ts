@@ -7,7 +7,7 @@ export const DEFAULT_WALLET_CONFIG: Required<WalletConfig> = {
   supportedWallets: ['talisman', 'subwallet-js', 'polkadot-js'],
   connectionTimeout: 30000,
   installUrls: {
-    talisman:
+    'talisman':
       'https://chrome.google.com/webstore/detail/talisman-polkadot-wallet/fijngjgcjhjmmpcmkeiomlglpeiijkld',
     'subwallet-js':
       'https://chrome.google.com/webstore/detail/subwallet-polkadot-extens/onhogfjeacnfoofkfgppdlbmlmnplgbn',
