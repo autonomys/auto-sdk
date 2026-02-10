@@ -38,6 +38,9 @@ export interface WalletState {
   // Resolved configuration
   config: Required<WalletConfig>;
 
+  /** @internal Monotonically increasing counter to identify the latest connection attempt. */
+  _connectionSeq: number;
+
   // Actions
   connectWallet: (extensionName: string) => Promise<void>;
   disconnectWallet: () => void;

@@ -38,6 +38,7 @@ export function createWalletStore(userConfig?: Partial<WalletConfig>) {
         injector: null,
         availableWallets: [],
         config,
+        _connectionSeq: 0,
 
         // Actions
         detectWallets: () => {
@@ -69,7 +70,9 @@ export function createWalletStore(userConfig?: Partial<WalletConfig>) {
             throw new Error('Connection already in progress');
           }
 
+          const seq = get()._connectionSeq + 1;
           set({
+            _connectionSeq: seq,
             isLoading: true,
             loadingType: 'connecting',
             connectionError: null,
@@ -78,8 +81,8 @@ export function createWalletStore(userConfig?: Partial<WalletConfig>) {
           try {
             const { accounts, injector } = await connectToWallet(extensionName, config);
 
-            // If the user disconnected while we were awaiting, don't overwrite
-            if (!get().isLoading) {
+            // If a newer connection was started or user disconnected, discard this result
+            if (get()._connectionSeq !== seq) {
               return;
             }
 
@@ -94,6 +97,10 @@ export function createWalletStore(userConfig?: Partial<WalletConfig>) {
               connectionError: null,
             });
           } catch (error) {
+            // Only set error if this is still the active connection attempt
+            if (get()._connectionSeq !== seq) {
+              return;
+            }
             const errorMessage = error instanceof Error ? error.message : 'Connection failed';
             console.error('Wallet connection failed:', error);
 
@@ -119,7 +126,9 @@ export function createWalletStore(userConfig?: Partial<WalletConfig>) {
             return;
           }
 
+          const seq = get()._connectionSeq + 1;
           set({
+            _connectionSeq: seq,
             isLoading: true,
             loadingType: 'initializing',
             connectionError: null,
@@ -143,8 +152,8 @@ export function createWalletStore(userConfig?: Partial<WalletConfig>) {
 
             const { accounts, injector } = await connectToWallet(selectedWallet, config);
 
-            // If the user disconnected while we were awaiting, don't overwrite
-            if (!get().isLoading) {
+            // If a newer connection was started or user disconnected, discard this result
+            if (get()._connectionSeq !== seq) {
               return;
             }
 
@@ -193,6 +202,7 @@ export function createWalletStore(userConfig?: Partial<WalletConfig>) {
 
         disconnectWallet: () => {
           set({
+            _connectionSeq: get()._connectionSeq + 1,
             isConnected: false,
             isLoading: false,
             loadingType: null,
