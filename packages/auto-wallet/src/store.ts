@@ -187,15 +187,15 @@ export function createWalletStore(userConfig?: Partial<WalletConfig>) {
               });
             }
           } catch (error) {
-            console.warn('Silent reconnection failed:', error);
-            // Reset connection state but preserve wallet selection for manual retry
+            console.warn('Silent reconnection failed, clearing persisted data:', error);
             set({
               isConnected: false,
               isLoading: false,
               loadingType: null,
+              selectedWallet: null,
+              selectedAccount: null,
               accounts: [],
               injector: null,
-              // Keep selectedWallet and selectedAccount for potential manual reconnection
             });
           }
         },
