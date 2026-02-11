@@ -16,6 +16,9 @@
   "bugs": {
     "url": "https://github.com/autonomys/auto-sdk/issues"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc",
     "clean": "rm -rf dist",
