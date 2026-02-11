@@ -1,6 +1,6 @@
 {
   "name": "@autonomys/auto-wallet-react",
-  "version": "1.6.8",
+  "version": "1.6.9",
   "license": "MIT",
   "description": "React wallet connection components for Autonomys Network dApps",
   "type": "module",
