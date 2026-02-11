@@ -2,6 +2,12 @@
 
 Future changes will appear here.
 
+## [1.6.8] - 2026-02-11
+
+### Chores
+
+- bump lerna version to 1.6.8 for clean 1.6.9 release ([#513](https://github.com/autonomys/auto-sdk/pull/513)) [@jim-counter](https://github.com/jim-counter)
+
 ## [1.6.7] - 2026-02-11
 
 ### Features
@@ -493,6 +499,8 @@ No changes in this version.
 
 [1.6.5]: https://github.com/autonomys/auto-sdk/releases/tag/v1.6.5
 
-[Unreleased]: https://github.com/autonomys/auto-sdk/compare/v1.6.7...HEAD
-[1.6.7]: https://github.com/autonomys/auto-sdk/compare/v1.6.6...v1.6.7
 [1.6.6]: https://github.com/autonomys/auto-sdk/releases/tag/v1.6.6
+
+[Unreleased]: https://github.com/autonomys/auto-sdk/compare/v1.6.8...HEAD
+[1.6.8]: https://github.com/autonomys/auto-sdk/compare/v1.6.7...v1.6.8
+[1.6.7]: https://github.com/autonomys/auto-sdk/releases/tag/v1.6.7
