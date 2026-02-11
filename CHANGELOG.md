@@ -2,6 +2,10 @@
 
 Future changes will appear here.
 
+## [1.6.9] - 2026-02-11
+
+No changes in this version.
+
 ## [1.6.8] - 2026-02-11
 
 ### Chores
@@ -501,6 +505,8 @@ No changes in this version.
 
 [1.6.6]: https://github.com/autonomys/auto-sdk/releases/tag/v1.6.6
 
-[Unreleased]: https://github.com/autonomys/auto-sdk/compare/v1.6.8...HEAD
-[1.6.8]: https://github.com/autonomys/auto-sdk/compare/v1.6.7...v1.6.8
 [1.6.7]: https://github.com/autonomys/auto-sdk/releases/tag/v1.6.7
+
+[Unreleased]: https://github.com/autonomys/auto-sdk/compare/v1.6.9...HEAD
+[1.6.9]: https://github.com/autonomys/auto-sdk/compare/v1.6.8...v1.6.9
+[1.6.8]: https://github.com/autonomys/auto-sdk/releases/tag/v1.6.8
