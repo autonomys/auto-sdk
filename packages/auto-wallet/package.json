@@ -1,6 +1,6 @@
 {
   "name": "@autonomys/auto-wallet",
-  "version": "1.6.6",
+  "version": "1.6.7",
   "license": "MIT",
   "description": "Framework-agnostic wallet connection core for Autonomys Network dApps",
   "main": "dist/index.js",
@@ -30,7 +30,7 @@
     "README.md"
   ],
   "dependencies": {
-    "@autonomys/auto-utils": "^1.6.6",
+    "@autonomys/auto-utils": "^1.6.7",
     "@talismn/connect-wallets": "^1.2.8",
     "zustand": "^5.0.0"
   },
