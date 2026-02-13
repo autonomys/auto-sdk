@@ -106,16 +106,17 @@ export const signAndSendTx = async <TError>(
     let settled = false
     let unsub: (() => void) | undefined
 
-    const cleanup = () => {
+    const tryUnsub = () => {
       if (unsub) {
         try { unsub() } catch { /* ignore */ }
+        unsub = undefined
       }
     }
     const safeResolve = (v: SubmittableResult) => {
-      if (!settled) { settled = true; cleanup(); resolve(v) }
+      if (!settled) { settled = true; tryUnsub(); resolve(v) }
     }
     const safeReject = (e: unknown) => {
-      if (!settled) { settled = true; cleanup(); reject(e) }
+      if (!settled) { settled = true; tryUnsub(); reject(e) }
     }
 
     try {
@@ -169,10 +170,15 @@ export const signAndSendTx = async <TError>(
         }
       })
 
-      // The outer promise resolves to an unsubscribe fn on success,
+      // The outer promise resolves to the unsubscribe fn once signing succeeds,
       // but rejects if the wallet denies the signing request.
       outerPromise.then(
-        (fn) => { unsub = fn },
+        (fn) => {
+          // If the promise already settled (fast callback), unsubscribe immediately.
+          // Otherwise store it for safeResolve/safeReject to call later.
+          if (settled) { try { fn() } catch { /* ignore */ } }
+          else unsub = fn
+        },
         safeReject,
       )
     } catch (err) {
