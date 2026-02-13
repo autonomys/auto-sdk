@@ -103,55 +103,84 @@ export const signAndSendTx = async <TError>(
   let identifier: string | null = null
 
   const receipt: SubmittableResult = await new Promise((resolve, reject) => {
-    tx.signAndSend(sender, options, async (result: SubmittableResult) => {
-      const { events = [], status, dispatchError } = result
+    let settled = false
+    let unsub: (() => void) | undefined
 
-      if (status.isInBlock || status.isFinalized) {
-        txHashHex = result.txHash.toHex()
-        blockHash = status.isInBlock ? status.asInBlock.toHex() : status.asFinalized.toHex()
-        if (log) console.log('Successful tx', txHashHex, 'in block', blockHash)
-
-        success = detectTxSuccess(events)
-
-        if (eventsExpected.length > 0) {
-          const _events = validateEvents(events, eventsExpected, txHashHex, blockHash, log)
-          if (_events.expected.length === 0) resolve(result)
-          else reject(new Error('Events not found'))
-        } else {
-          try {
-            events.forEach(({ event: { section, method, data } }) => {
-              if (section === 'system' && method === 'ExtrinsicFailed') {
-                const dispatchErrorJson = JSON.parse(dispatchError!.toString())
-                const errorEnum = mapErrorCodeToEnum?.(dispatchErrorJson.module.error)
-                reject(
-                  new Error(
-                    `Extrinsic failed: ${errorEnum} in block #${blockHash} with error: ${dispatchErrorJson}`,
-                  ),
-                )
-              }
-              if (section === 'autoId' && method === 'NewAutoIdRegistered') {
-                identifier = data[0].toString()
-              }
-            })
-            resolve(result)
-          } catch (err: unknown) {
-            reject(
-              new Error(
-                `Failed to retrieve block information: ${err instanceof Error ? err.message : String(err)}`,
-              ),
-            )
-          }
-        }
-      } else if (
-        status.isRetracted ||
-        status.isFinalityTimeout ||
-        status.isDropped ||
-        status.isInvalid
-      ) {
-        if (log) console.error('Transaction failed')
-        reject(new Error('Transaction failed'))
+    const cleanup = () => {
+      if (unsub) {
+        try { unsub() } catch { /* ignore */ }
       }
-    })
+    }
+    const safeResolve = (v: SubmittableResult) => {
+      if (!settled) { settled = true; cleanup(); resolve(v) }
+    }
+    const safeReject = (e: unknown) => {
+      if (!settled) { settled = true; cleanup(); reject(e) }
+    }
+
+    try {
+      const outerPromise = tx.signAndSend(sender, options, async (result: SubmittableResult) => {
+        const { events = [], status, dispatchError } = result
+
+        if (status.isInBlock || status.isFinalized) {
+          txHashHex = result.txHash.toHex()
+          blockHash = status.isInBlock ? status.asInBlock.toHex() : status.asFinalized.toHex()
+          if (log) console.log('Successful tx', txHashHex, 'in block', blockHash)
+
+          success = detectTxSuccess(events)
+
+          if (eventsExpected.length > 0) {
+            const _events = validateEvents(events, eventsExpected, txHashHex, blockHash, log)
+            if (_events.expected.length === 0) safeResolve(result)
+            else safeReject(new Error('Events not found'))
+          } else {
+            try {
+              events.forEach(({ event: { section, method, data } }) => {
+                if (section === 'system' && method === 'ExtrinsicFailed') {
+                  const dispatchErrorJson = JSON.parse(dispatchError!.toString())
+                  const errorEnum = mapErrorCodeToEnum?.(dispatchErrorJson.module.error)
+                  safeReject(
+                    new Error(
+                      `Extrinsic failed: ${errorEnum} in block #${blockHash} with error: ${dispatchErrorJson}`,
+                    ),
+                  )
+                }
+                if (section === 'autoId' && method === 'NewAutoIdRegistered') {
+                  identifier = data[0].toString()
+                }
+              })
+              safeResolve(result)
+            } catch (err: unknown) {
+              safeReject(
+                new Error(
+                  `Failed to retrieve block information: ${err instanceof Error ? err.message : String(err)}`,
+                ),
+              )
+            }
+          }
+        } else if (
+          status.isRetracted ||
+          status.isFinalityTimeout ||
+          status.isDropped ||
+          status.isInvalid
+        ) {
+          if (log) console.error('Transaction failed')
+          safeReject(new Error('Transaction failed'))
+        }
+      })
+
+      // The outer promise resolves to an unsubscribe fn on success,
+      // but rejects if the wallet denies the signing request.
+      if (outerPromise && typeof (outerPromise as unknown as Promise<unknown>).then === 'function') {
+        ;(outerPromise as unknown as Promise<unknown>).then(
+          (fn) => { if (typeof fn === 'function') unsub = fn as () => void },
+          safeReject,
+        )
+      }
+    } catch (err) {
+      // Synchronous throw from signAndSend (some wallet extension implementations)
+      safeReject(err)
+    }
   })
 
   return { success, txHash: txHashHex, blockHash, events: eventsValidated, receipt, identifier }
