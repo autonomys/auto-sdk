@@ -171,12 +171,10 @@ export const signAndSendTx = async <TError>(
 
       // The outer promise resolves to an unsubscribe fn on success,
       // but rejects if the wallet denies the signing request.
-      if (outerPromise && typeof (outerPromise as unknown as Promise<unknown>).then === 'function') {
-        ;(outerPromise as unknown as Promise<unknown>).then(
-          (fn) => { if (typeof fn === 'function') unsub = fn as () => void },
-          safeReject,
-        )
-      }
+      outerPromise.then(
+        (fn) => { unsub = fn },
+        safeReject,
+      )
     } catch (err) {
       // Synchronous throw from signAndSend (some wallet extension implementations)
       safeReject(err)
