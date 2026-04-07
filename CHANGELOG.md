@@ -2,6 +2,27 @@
 
 Future changes will appear here.
 
+## [1.6.9] - 2026-02-11
+
+No changes in this version.
+
+## [1.6.8] - 2026-02-11
+
+### Chores
+
+- bump lerna version to 1.6.8 for clean 1.6.9 release ([#513](https://github.com/autonomys/auto-sdk/pull/513)) [@jim-counter](https://github.com/jim-counter)
+
+## [1.6.7] - 2026-02-11
+
+### Features
+
+- add @autonomys/auto-wallet and @autonomys/auto-wallet-react packages ([#511](https://github.com/autonomys/auto-sdk/pull/511)) [@jim-counter](https://github.com/jim-counter)
+
+### Chores
+
+- add publishConfig for wallet packages ([#512](https://github.com/autonomys/auto-sdk/pull/512)) [@jim-counter](https://github.com/jim-counter)
+- release v1.6.6 ([#510](https://github.com/autonomys/auto-sdk/pull/510)) [@EmilFattakhov](https://github.com/EmilFattakhov)
+
 ## [1.6.6] - 2026-01-14
 
 ### Chores
@@ -480,6 +501,12 @@ No changes in this version.
 
 [1.6.4]: https://github.com/autonomys/auto-sdk/releases/tag/v1.6.4
 
-[Unreleased]: https://github.com/autonomys/auto-sdk/compare/v1.6.6...HEAD
-[1.6.6]: https://github.com/autonomys/auto-sdk/compare/v1.6.5...v1.6.6
 [1.6.5]: https://github.com/autonomys/auto-sdk/releases/tag/v1.6.5
+
+[1.6.6]: https://github.com/autonomys/auto-sdk/releases/tag/v1.6.6
+
+[1.6.7]: https://github.com/autonomys/auto-sdk/releases/tag/v1.6.7
+
+[Unreleased]: https://github.com/autonomys/auto-sdk/compare/v1.6.9...HEAD
+[1.6.9]: https://github.com/autonomys/auto-sdk/compare/v1.6.8...v1.6.9
+[1.6.8]: https://github.com/autonomys/auto-sdk/releases/tag/v1.6.8
