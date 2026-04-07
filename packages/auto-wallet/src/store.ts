@@ -63,7 +63,7 @@ export function createWalletStore(userConfig?: Partial<WalletConfig>) {
         },
 
         connectWallet: async (extensionName: string) => {
-          const { isLoading } = get();
+          const { isLoading, availableWallets } = get();
 
           // Prevent multiple simultaneous connection attempts
           if (isLoading) {
@@ -79,7 +79,12 @@ export function createWalletStore(userConfig?: Partial<WalletConfig>) {
           });
 
           try {
-            const { accounts, injector } = await connectToWallet(extensionName, config);
+            // Use the wallet from our filtered availableWallets list to avoid ambiguity
+            // when multiple wallet classes share the same extensionName (e.g. Nova and Polkadot.js)
+            const resolvedWallet = availableWallets.find(
+              (w) => w.extensionName === extensionName,
+            );
+            const { accounts, injector } = await connectToWallet(extensionName, config, resolvedWallet);
 
             // If a newer connection was started or user disconnected, discard this result
             if (get()._connectionSeq !== seq) {
@@ -135,9 +140,13 @@ export function createWalletStore(userConfig?: Partial<WalletConfig>) {
           });
 
           try {
-            // Check if wallet is still installed before attempting connection
-            const wallet = getWalletBySource(selectedWallet);
-            if (!wallet?.installed) {
+            // Use the wallet from our filtered availableWallets list to avoid ambiguity
+            // when multiple wallet classes share the same extensionName
+            const { availableWallets } = get();
+            const resolvedWallet = availableWallets.find(
+              (w) => w.extensionName === selectedWallet,
+            ) ?? getWalletBySource(selectedWallet);
+            if (!resolvedWallet?.installed) {
               // Clear invalid persisted data
               console.log('Wallet no longer installed, clearing persisted data');
               set({
@@ -150,7 +159,7 @@ export function createWalletStore(userConfig?: Partial<WalletConfig>) {
               return;
             }
 
-            const { accounts, injector } = await connectToWallet(selectedWallet, config);
+            const { accounts, injector } = await connectToWallet(selectedWallet, config, resolvedWallet);
 
             // If a newer connection was started or user disconnected, discard this result
             if (get()._connectionSeq !== seq) {
