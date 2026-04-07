@@ -47,7 +47,7 @@ export const connectToWallet = async (
 
   const rawAccounts = await wallet.getAccounts();
   if (!rawAccounts || rawAccounts.length === 0) {
-    throw new Error(`No accounts found in ${wallet.title}. Please create an account first.`);
+    throw new Error(`No accounts found in ${wallet.title}. Please create or connect an account first.`);
   }
 
   // Convert all account addresses to the configured SS58 format
