@@ -1,21 +1,29 @@
 import { getWalletBySource } from '@talismn/connect-wallets';
+import type { Wallet } from '@talismn/connect-wallets';
 import { address } from '@autonomys/auto-utils';
 import type { WalletConfig } from './types';
 
 /**
  * Core wallet connection logic. Connects to a browser wallet extension,
  * enables it, fetches accounts, and converts addresses to the configured SS58 format.
+ *
+ * @param extensionName - The wallet extension name (e.g. 'polkadot-js')
+ * @param config - Resolved wallet configuration
+ * @param resolvedWallet - Optional pre-resolved wallet object. When provided, this wallet is used
+ *   directly instead of looking up by extensionName. This avoids ambiguity when multiple wallet
+ *   classes share the same extensionName (e.g. NovaWallet and PolkadotjsWallet both use 'polkadot-js').
  */
 export const connectToWallet = async (
   extensionName: string,
   config: Required<WalletConfig>,
+  resolvedWallet?: Wallet,
 ) => {
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
   const timeoutPromise = new Promise<never>((_, reject) => {
     timeoutId = setTimeout(() => reject(new Error('Connection timeout')), config.connectionTimeout);
   });
 
-  const wallet = getWalletBySource(extensionName);
+  const wallet = resolvedWallet ?? getWalletBySource(extensionName);
   if (!wallet) {
     clearTimeout(timeoutId);
     throw new Error(`Wallet not found: ${extensionName}`);
