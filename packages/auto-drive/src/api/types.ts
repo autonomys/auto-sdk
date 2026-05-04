@@ -192,7 +192,7 @@ export interface AutoDriveApi extends AutoDriveApiHandler {
    * `intent.ai3AmountWei` to the Credits Receiver contract via `payIntent(intent.intentId)`,
    * then call `watchPaymentTransaction` to notify Auto Drive.
    *
-   * @param sizeBytes - Upload size in bytes. Used **locally** to compute
+   * @param sizeBytes - Upload size in bytes. Used **by the SDK** to compute
    *   `ai3AmountWei = shannonsPerByte × sizeBytes`. It is not sent to the server —
    *   the POST `/intents` endpoint accepts no request body.
    * @returns {Promise<PaymentIntent>} Intent details including amount, contract address, and expiry.
