@@ -40,6 +40,11 @@ export const getPaymentContractInfo = async (
  * The returned `ai3AmountWei` is the exact value to pass as `msg.value`
  * when calling `payIntent(intentId)` on the Credits Receiver contract.
  *
+ * Note: `sizeBytes` is **not** sent to the Auto Drive API. The POST `/intents`
+ * endpoint accepts no request body — it returns the current `shannonsPerByte`
+ * rate. This function multiplies that rate by `sizeBytes` locally to produce
+ * `ai3AmountWei`, saving the caller from doing the BigInt arithmetic themselves.
+ *
  * Flow:
  * 1. Call `createPaymentIntent(api, sizeBytes)` — locks the price
  * 2. Send `intent.ai3AmountWei` to `intent.contractAddress` via `payIntent(intent.intentId)`
