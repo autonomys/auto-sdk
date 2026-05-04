@@ -5,6 +5,7 @@ import {
   PaymentIntentStatus,
   PaymentIntentTerminalStatus,
   PollOptions,
+  StoragePrice,
 } from '../models/payment'
 import { AutoDriveApiHandler } from '../types'
 
@@ -14,6 +15,26 @@ const TERMINAL_STATUSES: PaymentIntentTerminalStatus[] = [
   'FAILED',
   'OVER_CAP',
 ]
+
+/**
+ * Returns the current live storage price without creating a price-locked intent.
+ *
+ * This is a public endpoint — no API key is required.
+ * Use it to show a cost estimate to users before they commit to a payment.
+ *
+ * @returns `shannonsPerByte` — the raw on-chain price, and `ai3PerGb` — a
+ *   pre-computed display value in AI3 per gigabyte.
+ */
+export const getStoragePrice = async (api: AutoDriveApiHandler): Promise<StoragePrice> => {
+  const response = await api.sendAPIRequest('/intents/price', { method: 'GET' })
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch storage price: ${response.status} ${response.statusText}`)
+  }
+
+  const { price, pricePerGB } = await response.json()
+  return { shannonsPerByte: price, ai3PerGb: pricePerGB }
+}
 
 /**
  * Fetches the EVM chain ID, contract address, and ABI needed to call `payIntent(bytes32)`.

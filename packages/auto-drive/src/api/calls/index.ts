@@ -15,6 +15,7 @@ export const apiCalls = {
 // Re-export payment utilities as named exports so callers can use them
 // as standalone functions without going through the apiCalls object.
 export {
+  getStoragePrice,
   getPaymentContractInfo,
   createPaymentIntent,
   watchPaymentTransaction,

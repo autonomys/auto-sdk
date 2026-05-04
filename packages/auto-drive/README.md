@@ -316,9 +316,10 @@ try {
 
 Storage on the Autonomys Network is paid for with AI3 tokens via an on-chain payment intent flow. The SDK handles all of the Auto Drive API interactions; you supply the on-chain transaction using your preferred EVM wallet library (wagmi, viem, ethers, etc.).
 
-#### The four-step flow
+#### The flow
 
 ```
+0. getStoragePrice(api)                  → optional: show live price estimate before payment
 1. createPaymentIntent(api, sizeBytes)   → locks price, returns amount + contract details
 2. send ai3AmountWei to contractAddress  → payIntent(intentId) on-chain (your wallet code)
 3. watchPaymentTransaction(api, id, tx)  → notifies Auto Drive of your tx hash
@@ -327,7 +328,18 @@ Storage on the Autonomys Network is paid for with AI3 tokens via an on-chain pay
 
 #### Important: keep your API key server-side
 
-`createPaymentIntent`, `watchPaymentTransaction`, and `getPaymentIntentStatus` all require an API key. In a web application these calls must be made from your server (e.g. a Next.js API route, an Express handler), not from the browser. `getPaymentContractInfo` is a public endpoint and can be called from anywhere.
+`createPaymentIntent`, `watchPaymentTransaction`, and `getPaymentIntentStatus` all require an API key. In a web application these calls must be made from your server (e.g. a Next.js API route, an Express handler), not from the browser. `getStoragePrice` and `getPaymentContractInfo` are public endpoints and can be called from anywhere.
+
+#### Getting a live price estimate
+
+```typescript
+// Public endpoint — no API key required. Good for showing a cost estimate
+// before the user connects a wallet or commits to a payment.
+const publicApi = createAutoDriveApi({ apiKey: null, network: NetworkId.MAINNET })
+const { shannonsPerByte, ai3PerGb } = await publicApi.getStoragePrice()
+
+console.log(`Current price: ${ai3PerGb} AI3/GB`)
+```
 
 #### Server-side example (Node / Next.js API route)
 

@@ -8,6 +8,7 @@ import {
   PaymentIntentStatus,
   PaymentIntentTerminalStatus,
   PollOptions,
+  StoragePrice,
 } from './models/payment'
 import { SubscriptionInfo, UserInfo } from './models/user'
 import { AutoDriveNetwork } from './networks'
@@ -174,6 +175,16 @@ export interface AutoDriveApi extends AutoDriveApiHandler {
   // ---------------------------------------------------------------------------
   // Pay with AI3 — credit purchase via on-chain payment intent
   // ---------------------------------------------------------------------------
+
+  /**
+   * Returns the current live storage price without creating a price-locked intent.
+   *
+   * This is a public endpoint — no API key required.
+   * Use it to display a cost estimate to users before they commit to a payment.
+   *
+   * @returns {Promise<StoragePrice>} Current price per byte and a pre-computed AI3/GB display value.
+   */
+  getStoragePrice: () => Promise<StoragePrice>
 
   /**
    * Fetches the EVM chain ID, contract address, and ABI for the Credits Receiver contract.

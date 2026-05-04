@@ -1,4 +1,16 @@
 /**
+ * Current storage price, returned by `getStoragePrice`.
+ * This is a live read of the on-chain byte fee — no API key required.
+ * Use it to display a cost estimate before creating a price-locked intent.
+ */
+export type StoragePrice = {
+  /** Current price per byte in shannons */
+  shannonsPerByte: number
+  /** Pre-computed display price in AI3 per gigabyte */
+  ai3PerGb: number
+}
+
+/**
  * Information about the EVM smart contract used to pay for storage intents.
  * Returned by the public `/intents/contract` endpoint — no API key required.
  */

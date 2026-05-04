@@ -321,6 +321,8 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
     return me.subscription
   }
 
+  const getStoragePrice = () => apiCalls.getStoragePrice(api)
+
   const getPaymentContractInfo = () => apiCalls.getPaymentContractInfo(api)
 
   const createPaymentIntent = (sizeBytes: number) =>
@@ -387,6 +389,7 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
     downloadFile,
     getPendingCredits,
     getSubscriptionInfo,
+    getStoragePrice,
     getPaymentContractInfo,
     createPaymentIntent,
     watchPaymentTransaction,
