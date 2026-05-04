@@ -10,6 +10,7 @@ import mime from 'mime-types'
 import { progressToPercentage } from '../utils/misc'
 import { publicDownloadUrl } from './calls/download'
 import { apiCalls } from './calls/index'
+import { PollOptions } from './models/payment'
 import { ObjectSummary, Scope } from './models'
 import { DownloadStatus } from './models/asyncDownloads'
 import { PaginatedResult } from './models/common'
@@ -320,6 +321,20 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
     return me.subscription
   }
 
+  const getPaymentContractInfo = () => apiCalls.getPaymentContractInfo(api)
+
+  const createPaymentIntent = (sizeBytes: number) =>
+    apiCalls.createPaymentIntent(api, sizeBytes)
+
+  const watchPaymentTransaction = (intentId: string, txHash: string) =>
+    apiCalls.watchPaymentTransaction(api, intentId, txHash)
+
+  const getPaymentIntentStatus = (intentId: string) =>
+    apiCalls.getPaymentIntentStatus(api, intentId)
+
+  const waitForPaymentCompletion = (intentId: string, options?: PollOptions) =>
+    apiCalls.waitForPaymentCompletion(api, intentId, options)
+
   const publishObject = async (cid: string): Promise<string> => {
     const result = await apiCalls.publishObject(api, { cid })
 
@@ -372,6 +387,11 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
     downloadFile,
     getPendingCredits,
     getSubscriptionInfo,
+    getPaymentContractInfo,
+    createPaymentIntent,
+    watchPaymentTransaction,
+    getPaymentIntentStatus,
+    waitForPaymentCompletion,
     publishObject,
     getMyFiles,
     searchByNameOrCIDInMyFiles,
