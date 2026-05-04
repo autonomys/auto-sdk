@@ -2,7 +2,22 @@
 
 Future changes will appear here.
 
-## [1.6.9] - 2026-02-11
+## [1.6.10] - 2026-05-04
+
+### Features
+
+- add Pay with AI3 payment intent methods ([#530](https://github.com/autonomys/auto-sdk/pull/530)) [@jim-counter](https://github.com/jim-counter)
+
+### Bug Fixes
+
+- wallet name misidentification ([#517](https://github.com/autonomys/auto-sdk/pull/517)) [@jim-counter](https://github.com/jim-counter)
+- handle wallet rejection and unsubscribe in signAndSendTx ([#515](https://github.com/autonomys/auto-sdk/pull/515)) [@jim-counter](https://github.com/jim-counter)
+
+### Chores
+
+- release v1.6.9 ([#514](https://github.com/autonomys/auto-sdk/pull/514)) [@jim-counter](https://github.com/jim-counter)
+
+## [1.6.9] - 2026-05-04
 
 No changes in this version.
 
@@ -507,6 +522,8 @@ No changes in this version.
 
 [1.6.7]: https://github.com/autonomys/auto-sdk/releases/tag/v1.6.7
 
-[Unreleased]: https://github.com/autonomys/auto-sdk/compare/v1.6.9...HEAD
-[1.6.9]: https://github.com/autonomys/auto-sdk/compare/v1.6.8...v1.6.9
 [1.6.8]: https://github.com/autonomys/auto-sdk/releases/tag/v1.6.8
+
+[Unreleased]: https://github.com/autonomys/auto-sdk/compare/v1.6.10...HEAD
+[1.6.10]: https://github.com/autonomys/auto-sdk/compare/v1.6.9...v1.6.10
+[1.6.9]: https://github.com/autonomys/auto-sdk/releases/tag/v1.6.9
