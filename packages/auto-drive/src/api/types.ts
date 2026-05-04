@@ -2,6 +2,14 @@ import { ObjectSummary } from './models'
 import { AsyncDownload } from './models/asyncDownloads'
 import { PaginatedResult } from './models/common'
 import { GenericFile, GenericFileWithinFolder } from './models/file'
+import {
+  PaymentContractInfo,
+  PaymentIntent,
+  PaymentIntentStatus,
+  PaymentIntentTerminalStatus,
+  PollOptions,
+  StoragePrice,
+} from './models/payment'
 import { SubscriptionInfo, UserInfo } from './models/user'
 import { AutoDriveNetwork } from './networks'
 
@@ -163,6 +171,79 @@ export interface AutoDriveApi extends AutoDriveApiHandler {
    * @returns {Promise<SubscriptionInfo>} A promise that resolves to the subscription info.
    */
   getSubscriptionInfo: () => Promise<SubscriptionInfo>
+
+  // ---------------------------------------------------------------------------
+  // Pay with AI3 — credit purchase via on-chain payment intent
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Returns the current live storage price without creating a price-locked intent.
+   *
+   * This is a public endpoint — no API key required.
+   * Use it to display a cost estimate to users before they commit to a payment.
+   *
+   * @returns {Promise<StoragePrice>} Current price per byte and a pre-computed AI3/GB display value.
+   */
+  getStoragePrice: () => Promise<StoragePrice>
+
+  /**
+   * Fetches the EVM chain ID, contract address, and ABI for the Credits Receiver contract.
+   *
+   * This is a public endpoint — no API key required. The result is stable per network
+   * and safe to cache for the lifetime of the application.
+   *
+   * @returns {Promise<PaymentContractInfo>} Chain details needed to call `payIntent(bytes32)`.
+   */
+  getPaymentContractInfo: () => Promise<PaymentContractInfo>
+
+  /**
+   * Creates a price-locked payment intent for a given upload size.
+   *
+   * The intent locks the current storage price for 10 minutes. Send exactly
+   * `intent.ai3AmountWei` to the Credits Receiver contract via `payIntent(intent.intentId)`,
+   * then call `watchPaymentTransaction` to notify Auto Drive.
+   *
+   * @param sizeBytes - Upload size in bytes. Used **by the SDK** to compute
+   *   `ai3AmountWei = shannonsPerByte × sizeBytes`. It is not sent to the server —
+   *   the POST `/intents` endpoint accepts no request body.
+   * @returns {Promise<PaymentIntent>} Intent details including amount, contract address, and expiry.
+   */
+  createPaymentIntent: (sizeBytes: number) => Promise<PaymentIntent>
+
+  /**
+   * Notifies Auto Drive that an on-chain transaction has been submitted for a payment intent.
+   *
+   * Auto Drive will watch the transaction and automatically apply storage credits
+   * to your account once confirmed on-chain.
+   *
+   * @param intentId - The intent ID from `createPaymentIntent`.
+   * @param txHash   - The on-chain transaction hash.
+   */
+  watchPaymentTransaction: (intentId: string, txHash: string) => Promise<void>
+
+  /**
+   * Returns the current status of a payment intent.
+   *
+   * Possible statuses: PENDING | CONFIRMED | COMPLETED | EXPIRED | FAILED | OVER_CAP
+   *
+   * @param intentId - The intent ID from `createPaymentIntent`.
+   */
+  getPaymentIntentStatus: (intentId: string) => Promise<{ id: string; status: PaymentIntentStatus }>
+
+  /**
+   * Polls a payment intent until it reaches a terminal state.
+   *
+   * Returns the terminal status: COMPLETED | EXPIRED | FAILED | OVER_CAP.
+   * Throws if the timeout is exceeded before a terminal state is reached.
+   *
+   * @param intentId - The intent ID from `createPaymentIntent`.
+   * @param options  - Optional poll interval and timeout (defaults: 3 s / 5 min).
+   */
+  waitForPaymentCompletion: (
+    intentId: string,
+    options?: PollOptions,
+  ) => Promise<PaymentIntentTerminalStatus>
+
   /**
    * Publishes an object by sending a request to the server.
    *

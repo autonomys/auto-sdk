@@ -312,6 +312,108 @@ try {
 }
 ```
 
+### Pay with AI3 — purchasing storage credits
+
+Storage on the Autonomys Network is paid for with AI3 tokens via an on-chain payment intent flow. The SDK handles all of the Auto Drive API interactions; you supply the on-chain transaction using your preferred EVM wallet library (wagmi, viem, ethers, etc.).
+
+#### The flow
+
+```
+0. getStoragePrice(api)                  → optional: show live price estimate before payment
+1. createPaymentIntent(api, sizeBytes)   → locks price, returns amount + contract details
+2. send ai3AmountWei to contractAddress  → payIntent(intentId) on-chain (your wallet code)
+3. watchPaymentTransaction(api, id, tx)  → notifies Auto Drive of your tx hash
+4. waitForPaymentCompletion(api, id)     → polls until COMPLETED (credits applied)
+```
+
+#### Important: keep your API key server-side
+
+`createPaymentIntent`, `watchPaymentTransaction`, and `getPaymentIntentStatus` all require an API key. In a web application these calls must be made from your server (e.g. a Next.js API route, an Express handler), not from the browser. `getStoragePrice` and `getPaymentContractInfo` are public endpoints and can be called from anywhere.
+
+#### Getting a live price estimate
+
+```typescript
+// Public endpoint — no API key required. Good for showing a cost estimate
+// before the user connects a wallet or commits to a payment.
+const publicApi = createAutoDriveApi({ apiKey: null, network: NetworkId.MAINNET })
+const { shannonsPerByte, ai3PerGb } = await publicApi.getStoragePrice()
+
+console.log(`Current price: ${ai3PerGb} AI3/GB`)
+```
+
+#### Server-side example (Node / Next.js API route)
+
+```typescript
+import { createAutoDriveApi } from '@autonomys/auto-drive'
+import { NetworkId } from '@autonomys/auto-utils'
+
+// Run on your server — never expose your API key to the browser
+const api = createAutoDriveApi({ apiKey: process.env.AUTO_DRIVE_API_KEY!, network: NetworkId.MAINNET })
+
+// Step 1 — create a price-locked intent for the content you want to store
+const intent = await api.createPaymentIntent(contentSizeBytes)
+// intent.ai3AmountWei  — exact amount to send (as a BigInt-safe string)
+// intent.ai3Amount     — human-readable amount, e.g. "0.00123"
+// intent.contractAddress — Credits Receiver contract on Auto EVM
+// intent.intentId      — pass as the bytes32 arg to payIntent()
+// intent.expiresAt     — ISO timestamp, intent expires after 10 minutes
+
+// Step 2 — your client sends the on-chain transaction (see below)
+// const txHash = await walletClient.writeContract({ ... })
+
+// Step 3 — submit the tx hash so Auto Drive can watch it
+await api.watchPaymentTransaction(intent.intentId, txHash)
+
+// Step 4 — poll until credits are applied (or intent expires/fails)
+const result = await api.waitForPaymentCompletion(intent.intentId)
+// result: 'COMPLETED' | 'EXPIRED' | 'FAILED' | 'OVER_CAP'
+
+if (result === 'COMPLETED') {
+  console.log('Credits applied — ready to upload')
+}
+```
+
+#### Client-side example (browser, using viem)
+
+```typescript
+import { createAutoDriveApi } from '@autonomys/auto-drive'
+import { NetworkId } from '@autonomys/auto-utils'
+import { createWalletClient, custom, parseGwei } from 'viem'
+
+// Step 1 — fetch contract details (public endpoint, no API key needed)
+const publicApi = createAutoDriveApi({ apiKey: null, network: NetworkId.MAINNET })
+const contractInfo = await publicApi.getPaymentContractInfo()
+
+// Step 2 — send the on-chain transaction with your wallet
+const walletClient = createWalletClient({ transport: custom(window.ethereum) })
+const [account] = await walletClient.requestAddresses()
+
+const txHash = await walletClient.writeContract({
+  address: contractInfo.contractAddress as `0x${string}`,
+  abi: contractInfo.payIntentAbi,
+  functionName: 'payIntent',
+  args: [intent.intentId as `0x${string}`],
+  value: BigInt(intent.ai3AmountWei),
+})
+// Then call your server route to run steps 3 and 4
+```
+
+#### Polling with custom options
+
+```typescript
+const result = await api.waitForPaymentCompletion(intent.intentId, {
+  pollIntervalMs: 5_000,  // check every 5 seconds (default: 3 000)
+  timeoutMs: 120_000,     // give up after 2 minutes (default: 300 000)
+})
+```
+
+#### Checking intent status manually
+
+```typescript
+const { id, status } = await api.getPaymentIntentStatus(intent.intentId)
+// status: 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'EXPIRED' | 'FAILED' | 'OVER_CAP'
+```
+
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
