@@ -74,6 +74,16 @@ describe('buildListResult', () => {
     expect(result.isTruncated).toBe(false)
   })
 
+  it('does not crash and returns no entries when maxKeys is 0', () => {
+    // MaxKeys=0 is a valid S3 existence probe. The loop breaks before scanning
+    // anything, so there is no prior key to build a continuation token from.
+    const result = buildListResult(rows('a', 'b', 'c'), '', null, 0)
+    expect(result.objects).toEqual([])
+    expect(result.commonPrefixes).toEqual([])
+    expect(result.isTruncated).toBe(true)
+    expect(result.nextContinuationToken).toBeNull()
+  })
+
   it('handles an empty input', () => {
     const result = buildListResult([], '', '/', 10)
     expect(result.objects).toEqual([])

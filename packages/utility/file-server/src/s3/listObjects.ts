@@ -107,7 +107,10 @@ export const buildListResult = (
   }
 
   const isTruncated = scanIdx < sortedObjects.length
-  const nextContinuationToken = isTruncated ? sortedObjects[scanIdx - 1].key : null
+  // scanIdx === 0 means nothing was scanned (e.g. maxKeys <= 0, a valid S3
+  // existence probe). There is no prior key to resume from, so omit the token
+  // rather than indexing sortedObjects[-1].
+  const nextContinuationToken = isTruncated && scanIdx > 0 ? sortedObjects[scanIdx - 1].key : null
 
   return {
     objects,
