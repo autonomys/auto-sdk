@@ -52,6 +52,12 @@ describe('buildListResult', () => {
     expect(result.isTruncated).toBe(false)
   })
 
+  it('folds correctly with a multi-character delimiter', () => {
+    const result = buildListResult(rows('a::1', 'a::2', 'b::1', 'c'), '', '::', 10)
+    expect(result.objects.map((o) => o.key)).toEqual(['c'])
+    expect(result.commonPrefixes).toEqual(['a::', 'b::'])
+  })
+
   it('respects the prefix when computing folded prefixes', () => {
     const result = buildListResult(rows('docs/a/1', 'docs/a/2', 'docs/b'), 'docs/', '/', 10)
     expect(result.objects.map((o) => o.key)).toEqual(['docs/b'])
@@ -125,6 +131,15 @@ describe('finalizeListObjects', () => {
     expect(result.isTruncated).toBe(true)
     expect(result.nextContinuationToken).toBe('a/￿')
     expect(result.commonPrefixes).toEqual(['a/'])
+  })
+
+  it('builds the sentinel token with the full multi-character delimiter', () => {
+    const p = params({ delimiter: '::', maxKeys: 10 })
+    const fetched = rows('a::1', 'a::2', 'a::3')
+    const result = finalizeListObjects(p, fetched, fetched.length)
+    expect(result.isTruncated).toBe(true)
+    expect(result.nextContinuationToken).toBe('a::￿')
+    expect(result.commonPrefixes).toEqual(['a::'])
   })
 
   it('uses the last key as the token when the override fires without a delimiter', () => {

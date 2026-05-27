@@ -80,7 +80,7 @@ export const buildListResult = (
       const afterPrefix = key.slice(prefix.length)
       const delimIdx = afterPrefix.indexOf(delimiter)
       if (delimIdx >= 0) {
-        foldedPrefix = prefix + afterPrefix.slice(0, delimIdx + 1)
+        foldedPrefix = prefix + afterPrefix.slice(0, delimIdx + delimiter.length)
       }
     }
 
@@ -164,7 +164,7 @@ export const finalizeListObjects = (
       const afterPrefix = lastKey.slice(prefix.length)
       const delimIdx = afterPrefix.indexOf(delimiter)
       if (delimIdx >= 0) {
-        const lastFoldedPrefix = prefix + afterPrefix.slice(0, delimIdx + 1)
+        const lastFoldedPrefix = prefix + afterPrefix.slice(0, delimIdx + delimiter.length)
         nextContinuationToken = lastFoldedPrefix + '￿'
       } else {
         nextContinuationToken = lastKey
