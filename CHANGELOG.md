@@ -2,6 +2,16 @@
 
 Future changes will appear here.
 
+## [1.6.12] - 2026-05-28
+
+### Bug Fixes
+
+- add optional md5 field to S3ObjectListing ([#539](https://github.com/autonomys/auto-sdk/pull/539)) [@jim-counter](https://github.com/jim-counter)
+
+### Chores
+
+- release v1.6.11 ([#538](https://github.com/autonomys/auto-sdk/pull/538)) [@jim-counter](https://github.com/jim-counter)
+
 ## [1.6.11] - 2026-05-28
 
 ### Features
@@ -541,6 +551,8 @@ No changes in this version.
 
 [1.6.9]: https://github.com/autonomys/auto-sdk/releases/tag/v1.6.9
 
-[Unreleased]: https://github.com/autonomys/auto-sdk/compare/v1.6.11...HEAD
-[1.6.11]: https://github.com/autonomys/auto-sdk/compare/v1.6.10...v1.6.11
 [1.6.10]: https://github.com/autonomys/auto-sdk/releases/tag/v1.6.10
+
+[Unreleased]: https://github.com/autonomys/auto-sdk/compare/v1.6.12...HEAD
+[1.6.12]: https://github.com/autonomys/auto-sdk/compare/v1.6.11...v1.6.12
+[1.6.11]: https://github.com/autonomys/auto-sdk/releases/tag/v1.6.11
