@@ -90,6 +90,18 @@ describe('buildListResult', () => {
     expect(result.nextContinuationToken).toBeNull()
   })
 
+  it('preserves the optional md5 field on returned objects', () => {
+    const withMd5: S3ObjectListing = {
+      key: 'a.txt',
+      cid: 'cid-a',
+      size: 0n,
+      lastModified: new Date(0),
+      md5: 'd41d8cd98f00b204e9800998ecf8427e',
+    }
+    const result = buildListResult([withMd5], '', null, 10)
+    expect(result.objects[0].md5).toBe('d41d8cd98f00b204e9800998ecf8427e')
+  })
+
   it('handles an empty input', () => {
     const result = buildListResult([], '', '/', 10)
     expect(result.objects).toEqual([])
