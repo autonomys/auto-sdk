@@ -2,6 +2,21 @@
 
 Future changes will appear here.
 
+## [1.6.11] - 2026-05-28
+
+### Features
+
+- add S3 ListObjectsV2 and ETag helpers ([#535](https://github.com/autonomys/auto-sdk/pull/535)) [@jim-counter](https://github.com/jim-counter)
+
+### Bug Fixes
+
+- detectTxSuccess always returns false (forEach → some) ([#533](https://github.com/autonomys/auto-sdk/pull/533)) [@jim-counter](https://github.com/jim-counter)
+
+### Chores
+
+- bump vulnerable direct deps in published packages ([#536](https://github.com/autonomys/auto-sdk/pull/536)) [@jim-counter](https://github.com/jim-counter)
+- release v1.6.10 ([#531](https://github.com/autonomys/auto-sdk/pull/531)) [@jim-counter](https://github.com/jim-counter)
+
 ## [1.6.10] - 2026-05-04
 
 ### Features
@@ -524,6 +539,8 @@ No changes in this version.
 
 [1.6.8]: https://github.com/autonomys/auto-sdk/releases/tag/v1.6.8
 
-[Unreleased]: https://github.com/autonomys/auto-sdk/compare/v1.6.10...HEAD
-[1.6.10]: https://github.com/autonomys/auto-sdk/compare/v1.6.9...v1.6.10
 [1.6.9]: https://github.com/autonomys/auto-sdk/releases/tag/v1.6.9
+
+[Unreleased]: https://github.com/autonomys/auto-sdk/compare/v1.6.11...HEAD
+[1.6.11]: https://github.com/autonomys/auto-sdk/compare/v1.6.10...v1.6.11
+[1.6.10]: https://github.com/autonomys/auto-sdk/releases/tag/v1.6.10
