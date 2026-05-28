@@ -9,6 +9,13 @@ export interface S3ObjectListing {
   /** Object size in bytes; 0 when not yet indexed. */
   size: bigint
   lastModified: Date
+  /**
+   * MD5 stored at upload, used to populate the per-object ETag in the
+   * ListObjectsV2 response. Optional because not every S3-compatible backend
+   * tracks per-object MD5, and null on backends that do but for objects
+   * uploaded before MD5 support was introduced.
+   */
+  md5?: string | null
 }
 
 export interface ListObjectsParams {
