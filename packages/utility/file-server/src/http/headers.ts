@@ -83,6 +83,18 @@ const buildDisposition = (req: Request, metadata: DownloadMetadata, filename: st
 }
 
 export type DownloadHeaderResult = {
+  /**
+   * When true, the caller MUST decompress the response body server-side before
+   * writing it to the wire (e.g. by piping through `zlib.createInflate()`).
+   *
+   * In this case no `Content-Encoding` header is set, so clients will NOT
+   * auto-decompress. Shipping the raw (deflate) `FileResponse` body without
+   * inflating it sends compressed bytes labeled with a decompressed
+   * `Content-Type`, corrupting the response (broken images, failed
+   * `JSON.parse`, content-decoding errors).
+   *
+   * Prefer {@link createResponseBodyTransform} so this can't be forgotten.
+   */
   shouldDecompressBody: boolean
 }
 
@@ -117,20 +129,32 @@ export const handleDownloadResponseHeaders = (
     const canUseBrowserDecompression =
       compressedButNotEncrypted && shouldHandleEncoding && !rawMode && !byteRange && !isMediaType
 
+    // When true, the compressed (deflate) bytes are streamed verbatim on the wire
+    // and the browser is expected to auto-decompress via Content-Encoding.
+    let bodyIsCompressedOnWire = false
     if (canUseBrowserDecompression) {
       res.set('Content-Encoding', 'deflate')
+      bodyIsCompressedOnWire = true
     } else if (compressedButNotEncrypted) {
       shouldDecompressBody = true
     }
 
-    // Set Accept-Ranges once based on final decompression decision
-    // Can't advertise ranges when decompressing (can't seek in stream) or when size unknown
-    const canAdvertiseRanges = !shouldDecompressBody && metadata.size != null
+    // Set Accept-Ranges once based on the final body decision.
+    // Can't advertise ranges when decompressing server-side (can't seek in stream),
+    // when the on-the-wire body is compressed (offsets map to compressed bytes, not
+    // the decompressed size we'd advertise), or when the size is unknown.
+    const canAdvertiseRanges =
+      !shouldDecompressBody && !bodyIsCompressedOnWire && metadata.size != null
     res.set('Accept-Ranges', canAdvertiseRanges ? 'bytes' : 'none')
 
-    if (shouldDecompressBody) {
-      // When decompressing, we can't know the output size upfront
-      // Don't set Content-Length - this will use chunked transfer encoding
+    if (shouldDecompressBody || bodyIsCompressedOnWire) {
+      // bodyIsCompressedOnWire: the compressed bytes are sent verbatim with
+      //   Content-Encoding: deflate, and the compressed length is not known here, so
+      //   advertising metadata.size (the decompressed size) would mismatch the wire body.
+      // shouldDecompressBody: we inflate server-side and stream the result; rather than
+      //   trusting metadata.size to exactly match the inflated byte count, we stream it.
+      // In both cases, omit Content-Length and rely on chunked transfer encoding so the
+      // advertised length can never disagree with the bytes actually placed on the wire.
     } else if (byteRange && metadata.size != null) {
       // For range requests on non-compressed content
       res.status(206)
