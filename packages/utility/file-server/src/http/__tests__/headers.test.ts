@@ -386,6 +386,32 @@ describe('handleDownloadResponseHeaders', () => {
       expect(result.shouldDecompressBody).toBe(false)
     })
 
+    it('should NOT advertise the decompressed Content-Length when Content-Encoding is set', () => {
+      // Regression: Content-Length must describe the encoded (compressed) length on the
+      // wire, not the decompressed metadata.size. Since the compressed length is unknown
+      // here, omit Content-Length and rely on chunked transfer encoding.
+      const req = createMockReq({ 'sec-fetch-dest': 'document', 'sec-fetch-mode': 'navigate' })
+      const res = createMockRes()
+      const metadata = { ...defaultMetadata, isCompressed: true }
+
+      handleDownloadResponseHeaders(req as any, res as any, metadata, {})
+
+      expect(res.set).toHaveBeenCalledWith('Content-Encoding', 'deflate')
+      const headers = res._getHeaders()
+      expect(headers['content-length']).toBeUndefined()
+    })
+
+    it('should NOT advertise byte ranges when Content-Encoding is set (compressed body on wire)', () => {
+      const req = createMockReq({ 'sec-fetch-dest': 'document', 'sec-fetch-mode': 'navigate' })
+      const res = createMockRes()
+      const metadata = { ...defaultMetadata, isCompressed: true }
+
+      handleDownloadResponseHeaders(req as any, res as any, metadata, {})
+
+      expect(res.set).toHaveBeenCalledWith('Content-Encoding', 'deflate')
+      expect(res.set).toHaveBeenCalledWith('Accept-Ranges', 'none')
+    })
+
     it('should flag decompression for media types even when encoding skipped', () => {
       const req = createMockReq({ 'sec-fetch-dest': 'video', 'sec-fetch-mode': 'no-cors' })
       const res = createMockRes()
@@ -425,6 +451,22 @@ describe('handleDownloadResponseHeaders', () => {
 
       expect(result.shouldDecompressBody).toBe(true)
       expect(res.set).not.toHaveBeenCalledWith('Content-Encoding', 'deflate')
+    })
+
+    it('should not emit 206/Content-Length/Content-Range for a compressed range request', () => {
+      // Compressed files decompress server-side, so the requested byte range can't be
+      // honored against the decompressed body: we fall back to a full chunked response.
+      const req = createMockReq()
+      const res = createMockRes()
+      const metadata = { ...defaultMetadata, isCompressed: true }
+      const options = { byteRange: [0, 49] as [number, number] }
+
+      handleDownloadResponseHeaders(req as any, res as any, metadata, options)
+
+      expect(res.status).not.toHaveBeenCalledWith(206)
+      expect(res.set).not.toHaveBeenCalledWith('Content-Range', expect.anything())
+      expect(res._getHeaders()['content-length']).toBeUndefined()
+      expect(res.set).toHaveBeenCalledWith('Accept-Ranges', 'none')
     })
   })
 
