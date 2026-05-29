@@ -2,6 +2,16 @@
 
 Future changes will appear here.
 
+## [1.6.13] - 2026-05-29
+
+### Bug Fixes
+
+- don't advertise decompressed Content-Length for com… ([#542](https://github.com/autonomys/auto-sdk/pull/542)) [@EmilFattakhov](https://github.com/EmilFattakhov)
+
+### Chores
+
+- release v1.6.12 ([#540](https://github.com/autonomys/auto-sdk/pull/540)) [@jim-counter](https://github.com/jim-counter)
+
 ## [1.6.12] - 2026-05-28
 
 ### Bug Fixes
@@ -553,6 +563,8 @@ No changes in this version.
 
 [1.6.10]: https://github.com/autonomys/auto-sdk/releases/tag/v1.6.10
 
-[Unreleased]: https://github.com/autonomys/auto-sdk/compare/v1.6.12...HEAD
-[1.6.12]: https://github.com/autonomys/auto-sdk/compare/v1.6.11...v1.6.12
 [1.6.11]: https://github.com/autonomys/auto-sdk/releases/tag/v1.6.11
+
+[Unreleased]: https://github.com/autonomys/auto-sdk/compare/v1.6.13...HEAD
+[1.6.13]: https://github.com/autonomys/auto-sdk/compare/v1.6.12...v1.6.13
+[1.6.12]: https://github.com/autonomys/auto-sdk/releases/tag/v1.6.12
