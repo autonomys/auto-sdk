@@ -350,7 +350,7 @@ __metadata:
     "@rollup/plugin-typescript": "npm:^11.1.6"
     "@tailwindcss/forms": "npm:^0.5.7"
     autoprefixer: "npm:^10.4.16"
-    cssnano: "npm:^6.0.1"
+    cssnano: "npm:^6.1.2"
     fs-extra: "npm:^11.1.1"
     postcss: "npm:^8.4.31"
     postcss-import: "npm:^15.1.0"
@@ -11417,7 +11417,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cssnano@npm:^6.0.1":
+"cssnano@npm:^6.1.2":
   version: 6.1.2
   resolution: "cssnano@npm:6.1.2"
   dependencies:
