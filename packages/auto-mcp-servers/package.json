@@ -37,8 +37,8 @@
     "zod": "^3.25 || ^4.0"
   },
   "devDependencies": {
-    "@types/node": "22.14.0",
-    "ts-node": "^10.9.1",
+    "@types/node": "22.19.19",
+    "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
   },
   "gitHead": "ef4c21d683cad697f7015e52becd399a8ca2ed84"
