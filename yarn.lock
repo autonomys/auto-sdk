@@ -230,8 +230,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-sdk@workspace:."
   dependencies:
-    "@commitlint/cli": "npm:^19.2.1"
-    "@commitlint/config-conventional": "npm:^19.1.0"
+    "@commitlint/cli": "npm:^19.8.1"
+    "@commitlint/config-conventional": "npm:^19.8.1"
     "@octokit/rest": "npm:^21.1.1"
     "@types/jest": "npm:^29.5.14"
     conventional-changelog-cli: "npm:^4.1.0"
@@ -2106,7 +2106,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@commitlint/cli@npm:^19.2.1":
+"@commitlint/cli@npm:^19.8.1":
   version: 19.8.1
   resolution: "@commitlint/cli@npm:19.8.1"
   dependencies:
@@ -2123,7 +2123,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@commitlint/config-conventional@npm:^19.1.0":
+"@commitlint/config-conventional@npm:^19.8.1":
   version: 19.8.1
   resolution: "@commitlint/config-conventional@npm:19.8.1"
   dependencies:
