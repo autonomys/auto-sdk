@@ -399,7 +399,7 @@ __metadata:
     "@autonomys/auto-dag-data": "workspace:*"
     "@autonomys/auto-utils": "workspace:*"
     "@autonomys/auto-xdm": "workspace:*"
-    "@types/jest": "npm:^29.5.12"
+    "@types/jest": "npm:^29.5.14"
     "@types/node": "npm:^20.11.19"
     ethers: "npm:^6.13.5"
     jest: "npm:^29.7.0"
@@ -8440,7 +8440,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/jest@npm:^29.5.12, @types/jest@npm:^29.5.14":
+"@types/jest@npm:^29.5.14":
   version: 29.5.14
   resolution: "@types/jest@npm:29.5.14"
   dependencies:
