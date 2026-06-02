@@ -148,7 +148,7 @@ __metadata:
     events: "npm:^3.3.0"
     lucide-react: "npm:^0.510.0"
     next: "npm:^15.3.2"
-    postcss: "npm:^8.4.31"
+    postcss: "npm:^8.5.15"
     postcss-cli: "npm:^10.1.0"
     postcss-loader: "npm:^8.1.1"
     process: "npm:^0.11.10"
@@ -352,7 +352,7 @@ __metadata:
     autoprefixer: "npm:^10.4.16"
     cssnano: "npm:^6.1.2"
     fs-extra: "npm:^11.3.5"
-    postcss: "npm:^8.4.31"
+    postcss: "npm:^8.5.15"
     postcss-import: "npm:^15.1.0"
     rollup: "npm:^4.1.4"
     tailwindcss: "npm:^3.3.5"
@@ -19103,7 +19103,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss@npm:^8.4.31, postcss@npm:^8.4.33, postcss@npm:^8.4.47":
+"postcss@npm:^8.4.33, postcss@npm:^8.4.47, postcss@npm:^8.5.15":
   version: 8.5.15
   resolution: "postcss@npm:8.5.15"
   dependencies:
