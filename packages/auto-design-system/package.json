@@ -82,7 +82,7 @@
     "autoprefixer": "^10.4.16",
     "babel-loader": "^10.0.0",
     "buffer": "^6.0.3",
-    "concurrently": "^8.2.0",
+    "concurrently": "^8.2.2",
     "events": "^3.3.0",
     "postcss": "^8.4.31",
     "postcss-cli": "^10.1.0",

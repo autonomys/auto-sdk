@@ -143,7 +143,7 @@ __metadata:
     buffer: "npm:^6.0.3"
     class-variance-authority: "npm:^0.7.0"
     clsx: "npm:^2.1.0"
-    concurrently: "npm:^8.2.0"
+    concurrently: "npm:^8.2.2"
     dompurify: "npm:^3.4.0"
     events: "npm:^3.3.0"
     lucide-react: "npm:^0.510.0"
@@ -10763,7 +10763,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"concurrently@npm:^8.2.0":
+"concurrently@npm:^8.2.2":
   version: 8.2.2
   resolution: "concurrently@npm:8.2.2"
   dependencies:
