@@ -72,7 +72,7 @@
     "@storybook/react": "^7.6.10",
     "@storybook/react-webpack5": "^7.6.10",
     "@storybook/testing-library": "^0.2.2",
-    "@types/babel__core": "^7",
+    "@types/babel__core": "^7.20.5",
     "@types/babel__preset-env": "^7",
     "@types/events": "^3",
     "@types/react": "^18.2.0",

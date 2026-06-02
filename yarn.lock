@@ -131,7 +131,7 @@ __metadata:
     "@storybook/react": "npm:^7.6.10"
     "@storybook/react-webpack5": "npm:^7.6.10"
     "@storybook/testing-library": "npm:^0.2.2"
-    "@types/babel__core": "npm:^7"
+    "@types/babel__core": "npm:^7.20.5"
     "@types/babel__preset-env": "npm:^7"
     "@types/events": "npm:^3"
     "@types/react": "npm:^18.2.0"
@@ -8156,7 +8156,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/babel__core@npm:^7, @types/babel__core@npm:^7.0.0, @types/babel__core@npm:^7.1.14, @types/babel__core@npm:^7.18.0":
+"@types/babel__core@npm:^7.0.0, @types/babel__core@npm:^7.1.14, @types/babel__core@npm:^7.18.0, @types/babel__core@npm:^7.20.5":
   version: 7.20.5
   resolution: "@types/babel__core@npm:7.20.5"
   dependencies:
