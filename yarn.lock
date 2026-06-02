@@ -133,7 +133,7 @@ __metadata:
     "@storybook/testing-library": "npm:^0.2.2"
     "@types/babel__core": "npm:^7.20.5"
     "@types/babel__preset-env": "npm:^7.10.0"
-    "@types/events": "npm:^3"
+    "@types/events": "npm:^3.0.3"
     "@types/react": "npm:^18.2.0"
     "@types/react-dom": "npm:^18.2.0"
     "@types/react-is": "npm:^19"
@@ -8322,7 +8322,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/events@npm:^3":
+"@types/events@npm:^3.0.3":
   version: 3.0.3
   resolution: "@types/events@npm:3.0.3"
   checksum: 10c0/3a56f8c51eb4ebc0d05dcadca0c6636c816acc10216ce36c976fad11e54a01f4bb979a07211355686015884753b37f17d74bfdc7aaf4ebb027c1e8a501c7b21d
