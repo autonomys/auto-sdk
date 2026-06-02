@@ -120,7 +120,7 @@ __metadata:
     "@radix-ui/react-select": "npm:^2.2.4"
     "@radix-ui/react-slot": "npm:^1.0.2"
     "@radix-ui/react-use-callback-ref": "npm:^1.1.1"
-    "@rollup/plugin-commonjs": "npm:^25.0.4"
+    "@rollup/plugin-commonjs": "npm:^25.0.8"
     "@rollup/plugin-node-resolve": "npm:^15.2.1"
     "@rollup/plugin-typescript": "npm:^11.1.5"
     "@storybook/addon-a11y": "npm:^7.6.10"
@@ -271,7 +271,7 @@ __metadata:
   dependencies:
     "@radix-ui/react-dialog": "npm:^1.1.13"
     "@radix-ui/react-slot": "npm:^1.0.2"
-    "@rollup/plugin-commonjs": "npm:^25.0.4"
+    "@rollup/plugin-commonjs": "npm:^25.0.8"
     "@rollup/plugin-node-resolve": "npm:^15.2.1"
     "@rollup/plugin-typescript": "npm:^11.1.5"
     "@types/react": "npm:^18.2.0"
@@ -345,7 +345,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@autonomys/design-tokens@workspace:packages/utility/design-tokens"
   dependencies:
-    "@rollup/plugin-commonjs": "npm:^25.0.4"
+    "@rollup/plugin-commonjs": "npm:^25.0.8"
     "@rollup/plugin-node-resolve": "npm:^15.2.1"
     "@rollup/plugin-typescript": "npm:^11.1.5"
     "@tailwindcss/forms": "npm:^0.5.7"
@@ -6439,7 +6439,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rollup/plugin-commonjs@npm:^25.0.4":
+"@rollup/plugin-commonjs@npm:^25.0.8":
   version: 25.0.8
   resolution: "@rollup/plugin-commonjs@npm:25.0.8"
   dependencies:
