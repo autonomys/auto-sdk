@@ -3,6 +3,7 @@ import type { AwaitIterable } from 'interface-store'
 import { CID } from 'multiformats'
 import { cidOfNode } from '../cid/index.js'
 import { decodeIPLDNodeData, FileUploadOptions, OffchainMetadata } from '../metadata/index.js'
+import { isZlibCompressed } from '../utils/compression.js'
 import { stringifyMetadata } from '../utils/metadata.js'
 import { Builders, fileBuilders, metadataBuilders } from './builders.js'
 import { createFolderInlinkIpldNode, createFolderIpldNode } from './nodes.js'
@@ -167,12 +168,43 @@ export const processBufferToIPLDFormatFromChunks = async (
     CIDs.push(chunk)
   }
 
+  // The compression flag is a caller-supplied claim about the bytes, not a
+  // guarantee that the bytes were actually compressed. A head node flagged
+  // `compression: ZLIB` whose stored bytes are plaintext produces permanently
+  // unreadable objects downstream (e.g. `ERR_CONTENT_DECODING_FAILED`). Before
+  // stamping the flag onto the head node, verify the first stored chunk is a
+  // valid zlib stream and downgrade to "uncompressed" if it is not.
+  //
+  // Only validate when encryption is disabled: with encryption the stored bytes
+  // are ciphertext (compression happens before encryption in the pipeline), so
+  // a zlib-header test would always fail and would wrongly strip the flag.
+  //
+  // Fail safe: if the bytes cannot be inspected (missing chunk, empty data,
+  // decode error), drop the flag rather than throw. A file served as
+  // plaintext-but-unflagged is correct; flagged-but-plaintext is broken.
+  let effectiveCompression = compression
+  if (effectiveCompression && !encryption) {
+    const firstCID = CIDs[0]
+    if (!firstCID) {
+      effectiveCompression = undefined
+    } else {
+      try {
+        const firstBytes = decodeIPLDNodeData(await blockstore.get(firstCID)).data
+        if (!firstBytes || firstBytes.length === 0 || !isZlibCompressed(firstBytes)) {
+          effectiveCompression = undefined
+        }
+      } catch {
+        effectiveCompression = undefined
+      }
+    }
+  }
+
   if (CIDs.length === 1) {
     const nodeBytes = await blockstore.get(CIDs[0])
     await blockstore.delete(CIDs[0])
     const data = decodeIPLDNodeData(nodeBytes)
     const singleNode = builders.single(Buffer.from(data.data!), filename, {
-      compression,
+      compression: effectiveCompression,
       encryption,
     })
     await blockstore.put(cidOfNode(singleNode), encodeNode(singleNode))
@@ -196,7 +228,7 @@ export const processBufferToIPLDFormatFromChunks = async (
     CIDs = newCIDs
   }
   const head = builders.root(CIDs, totalSize, depth, filename, maxNodeSize, {
-    compression,
+    compression: effectiveCompression,
     encryption,
   })
   const headCID = cidOfNode(head)
