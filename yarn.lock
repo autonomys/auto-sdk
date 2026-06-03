@@ -157,7 +157,7 @@ __metadata:
     react-icons: "npm:^5.5.0"
     react-is: "npm:^19.1.0"
     react-json-view: "npm:^1.21.3"
-    rollup: "npm:^4.1.4"
+    rollup: "npm:^4.60.4"
     rollup-plugin-peer-deps-external: "npm:^2.2.4"
     storybook: "npm:^7.6.10"
     stream-browserify: "npm:^3.0.0"
@@ -279,7 +279,7 @@ __metadata:
     class-variance-authority: "npm:^0.7.0"
     clsx: "npm:^2.1.0"
     lucide-react: "npm:^0.510.0"
-    rollup: "npm:^4.1.4"
+    rollup: "npm:^4.60.4"
     rollup-plugin-peer-deps-external: "npm:^2.2.4"
     tailwind-merge: "npm:^2.2.1"
     tslib: "npm:^2.8.1"
@@ -354,7 +354,7 @@ __metadata:
     fs-extra: "npm:^11.3.5"
     postcss: "npm:^8.5.15"
     postcss-import: "npm:^15.1.0"
-    rollup: "npm:^4.1.4"
+    rollup: "npm:^4.60.4"
     tailwindcss: "npm:^3.3.5"
     typescript: "npm:^5.3.3"
   languageName: unknown
@@ -20335,7 +20335,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rollup@npm:^4.1.4":
+"rollup@npm:^4.60.4":
   version: 4.61.0
   resolution: "rollup@npm:4.61.0"
   dependencies:
