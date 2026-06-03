@@ -166,7 +166,7 @@ __metadata:
     tailwindcss-animate: "npm:^1.0.7"
     typescript: "npm:^5.3.3"
     util: "npm:^0.12.5"
-    webpack: "npm:^5.99.8"
+    webpack: "npm:^5.107.2"
   peerDependencies:
     react: ^18.2.0
     react-dom: ^18.2.0
@@ -23002,7 +23002,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"webpack@npm:5, webpack@npm:^5.99.8":
+"webpack@npm:5, webpack@npm:^5.107.2":
   version: 5.107.2
   resolution: "webpack@npm:5.107.2"
   dependencies:
