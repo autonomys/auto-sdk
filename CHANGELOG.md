@@ -2,6 +2,44 @@
 
 Future changes will appear here.
 
+## [1.6.14] - 2026-06-04
+
+### Bug Fixes
+
+- validate zlib stream before stamping compression … ([#568](https://github.com/autonomys/auto-sdk/pull/568)) [@EmilFattakhov](https://github.com/EmilFattakhov)
+- update dependency @floating-ui/react to ^0.27.19 ([#525](https://github.com/autonomys/auto-sdk/pull/525)) [@renovate[bot]](https://github.com/apps/renovate)
+
+### Chores
+
+- update storybook monorepo to ^7.6.24 ([#566](https://github.com/autonomys/auto-sdk/pull/566)) [@renovate[bot]](https://github.com/apps/renovate)
+- update lerna monorepo to ^8.2.4 ([#562](https://github.com/autonomys/auto-sdk/pull/562)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency webpack to ^5.107.2 ([#561](https://github.com/autonomys/auto-sdk/pull/561)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency ts-node to ^10.9.2 ([#560](https://github.com/autonomys/auto-sdk/pull/560)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency rollup to ^4.60.4 ([#559](https://github.com/autonomys/auto-sdk/pull/559)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency postcss to ^8.5.15 ([#558](https://github.com/autonomys/auto-sdk/pull/558)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency interface-store to ^6.0.3 ([#557](https://github.com/autonomys/auto-sdk/pull/557)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency fs-extra to ^11.3.5 ([#556](https://github.com/autonomys/auto-sdk/pull/556)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency eslint-config-prettier to ^10.1.8 ([#555](https://github.com/autonomys/auto-sdk/pull/555)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency cssnano to ^6.1.2 ([#554](https://github.com/autonomys/auto-sdk/pull/554)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency concurrently to ^8.2.2 ([#553](https://github.com/autonomys/auto-sdk/pull/553)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency @types/stream-fork to ^1.0.5 ([#552](https://github.com/autonomys/auto-sdk/pull/552)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency @types/jest to ^29.5.14 ([#551](https://github.com/autonomys/auto-sdk/pull/551)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency @types/events to ^3.0.3 ([#550](https://github.com/autonomys/auto-sdk/pull/550)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency @types/babel__preset-env to ^7.10.0 ([#549](https://github.com/autonomys/auto-sdk/pull/549)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency @types/babel__core to ^7.20.5 ([#548](https://github.com/autonomys/auto-sdk/pull/548)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency @rollup/plugin-typescript to ^11.1.6 ([#547](https://github.com/autonomys/auto-sdk/pull/547)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency @rollup/plugin-node-resolve to ^15.3.1 ([#546](https://github.com/autonomys/auto-sdk/pull/546)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency @rollup/plugin-commonjs to ^28.0.9 ([#545](https://github.com/autonomys/auto-sdk/pull/545)) [@renovate[bot]](https://github.com/apps/renovate)
+- release v1.6.13 ([#544](https://github.com/autonomys/auto-sdk/pull/544)) [@jim-counter](https://github.com/jim-counter)
+- update dependency @rollup/plugin-commonjs to ^25.0.8 ([#537](https://github.com/autonomys/auto-sdk/pull/537)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency postcss to v8.5.10 [security] ([#532](https://github.com/autonomys/auto-sdk/pull/532)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency eslint-plugin-prettier to ^5.5.6 ([#527](https://github.com/autonomys/auto-sdk/pull/527)) [@renovate[bot]](https://github.com/apps/renovate)
+- update commitlint monorepo to ^19.8.1 ([#524](https://github.com/autonomys/auto-sdk/pull/524)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency webpack to v5.104.1 [security] ([#523](https://github.com/autonomys/auto-sdk/pull/523)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency rollup to v4.59.0 [security] ([#522](https://github.com/autonomys/auto-sdk/pull/522)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency next to v15.5.18 [security] ([#521](https://github.com/autonomys/auto-sdk/pull/521)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency storybook to v7.6.21 [security] ([#518](https://github.com/autonomys/auto-sdk/pull/518)) [@renovate[bot]](https://github.com/apps/renovate)
+
 ## [1.6.13] - 2026-05-29
 
 ### Bug Fixes
@@ -565,6 +603,8 @@ No changes in this version.
 
 [1.6.11]: https://github.com/autonomys/auto-sdk/releases/tag/v1.6.11
 
-[Unreleased]: https://github.com/autonomys/auto-sdk/compare/v1.6.13...HEAD
-[1.6.13]: https://github.com/autonomys/auto-sdk/compare/v1.6.12...v1.6.13
 [1.6.12]: https://github.com/autonomys/auto-sdk/releases/tag/v1.6.12
+
+[Unreleased]: https://github.com/autonomys/auto-sdk/compare/v1.6.14...HEAD
+[1.6.14]: https://github.com/autonomys/auto-sdk/compare/v1.6.13...v1.6.14
+[1.6.13]: https://github.com/autonomys/auto-sdk/releases/tag/v1.6.13
