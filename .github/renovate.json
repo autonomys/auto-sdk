@@ -5,16 +5,16 @@
   "rangeStrategy": "bump",
   "packageRules": [
     {
-      "matchPackagePatterns": ["prettier"],
-      "labels": ["formatter"]
+      "labels": ["formatter"],
+      "matchPackageNames": ["/prettier/"]
     },
     {
-      "matchPackagePatterns": ["eslint"],
-      "labels": ["linting"]
+      "labels": ["linting"],
+      "matchPackageNames": ["/eslint/"]
     },
     {
-      "matchPackagePatterns": ["@types", "typescript"],
-      "labels": ["types"]
+      "labels": ["types"],
+      "matchPackageNames": ["/@types/", "/typescript/"]
     },
     {
       "matchDepTypes": ["optionalDependencies"],
@@ -27,21 +27,20 @@
     },
     {
       "groupName": "Autonomys Auto-SDK",
-      "matchPackagePatterns": ["^@autonomys/"],
       "groupSlug": "auto-sdk",
-      "automerge": false
+      "automerge": false,
+      "matchPackageNames": ["/^@autonomys//"]
     },
     {
-      "matchPackagePatterns": ["^react", "^@react", "redux", "^@redux"],
       "groupName": "react packages",
-      "separateMinorPatch": false
+      "separateMinorPatch": false,
+      "matchPackageNames": ["/^react/", "/^@react/", "/redux/", "/^@redux/"]
     },
     {
       "matchDepTypes": ["peerDependencies"],
       "enabled": false
     }
   ],
-  "updateLockFiles": true,
   "lockFileMaintenance": {
     "enabled": true,
     "schedule": ["before 5am on monday"]
@@ -50,8 +49,8 @@
   "dependencyDashboard": true,
   "prHourlyLimit": 2,
   "prConcurrentLimit": 10,
-  "stabilityDays": 3,
+  "minimumReleaseAge": "3 days",
   "major": {
-    "stabilityDays": 7
+    "minimumReleaseAge": "7 days"
   }
 }
