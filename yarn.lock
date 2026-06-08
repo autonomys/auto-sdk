@@ -110,7 +110,7 @@ __metadata:
     "@babel/preset-react": "npm:^7.27.1"
     "@babel/preset-typescript": "npm:^7.27.1"
     "@floating-ui/react": "npm:^0.27.19"
-    "@headlessui/react": "npm:^2.2.3"
+    "@headlessui/react": "npm:^2.2.10"
     "@heroicons/react": "npm:^2.2.0"
     "@polkadot/react-identicon": "npm:^3.13.1"
     "@radix-ui/react-accordion": "npm:^1.2.10"
@@ -2915,19 +2915,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@headlessui/react@npm:^2.2.3":
-  version: 2.2.3
-  resolution: "@headlessui/react@npm:2.2.3"
+"@headlessui/react@npm:^2.2.10":
+  version: 2.2.10
+  resolution: "@headlessui/react@npm:2.2.10"
   dependencies:
     "@floating-ui/react": "npm:^0.26.16"
     "@react-aria/focus": "npm:^3.20.2"
     "@react-aria/interactions": "npm:^3.25.0"
-    "@tanstack/react-virtual": "npm:^3.13.6"
+    "@tanstack/react-virtual": "npm:^3.13.9"
     use-sync-external-store: "npm:^1.5.0"
   peerDependencies:
     react: ^18 || ^19 || ^19.0.0-rc
     react-dom: ^18 || ^19 || ^19.0.0-rc
-  checksum: 10c0/8f54836b7d2d621270266fed7ca2f6645c1a3d40f46fab397412d61fec201c7ee1b49d32643ea730e1f69bf387ee04c003ddf80361df4e1d700af44c50183eae
+  checksum: 10c0/e4c61f0246549d4f9b42cb2b5e3fcb30661f2ad733753ba3d5cd25b987e5155e8b7c725048956de93cef09a7fc3b15bb5aaf23ecf96f3430ff1b143b3fae35a8
   languageName: node
   linkType: hard
 
@@ -8014,22 +8014,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tanstack/react-virtual@npm:^3.13.6":
-  version: 3.13.8
-  resolution: "@tanstack/react-virtual@npm:3.13.8"
+"@tanstack/react-virtual@npm:^3.13.9":
+  version: 3.14.2
+  resolution: "@tanstack/react-virtual@npm:3.14.2"
   dependencies:
-    "@tanstack/virtual-core": "npm:3.13.8"
+    "@tanstack/virtual-core": "npm:3.17.0"
   peerDependencies:
     react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
     react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-  checksum: 10c0/1604227dad2f1c8d3b8246f8afe9bc37998da8f97ed7ef1b5d703fe3417c8a54541592a9091e7c8e63521002672268292d347c5c17fe1e1e82b9d0b297ddd1b4
+  checksum: 10c0/6d42161f17fc037663270d68d14340e8d2561bd1b8ea17c295477adf99fa6d5ba4e4cde2ee050047c673217f7f71db92749159d25885530de1c78ca18ef6536d
   languageName: node
   linkType: hard
 
-"@tanstack/virtual-core@npm:3.13.8":
-  version: 3.13.8
-  resolution: "@tanstack/virtual-core@npm:3.13.8"
-  checksum: 10c0/4b76b5d87fb26c928939a58d3887b9191574f029f60f9146eb05fd591f8b96a69bd3c7a1d64dd9d6cbfbfc85a0bd22b49a79fa4d3abab64eee595db9ad94f3ea
+"@tanstack/virtual-core@npm:3.17.0":
+  version: 3.17.0
+  resolution: "@tanstack/virtual-core@npm:3.17.0"
+  checksum: 10c0/313c5762343ad93ec0569b528c111a43f9615acc572293a71efc6dcf94ff9d791c97f1ada32b7dfbda79ed7d472834b14315ebe54d74b0221224732e501def6f
   languageName: node
   linkType: hard
 
