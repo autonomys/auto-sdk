@@ -214,7 +214,7 @@ __metadata:
   dependencies:
     "@autonomys/auto-agents": "npm:^1.6.14"
     "@autonomys/auto-drive": "npm:^1.6.14"
-    "@modelcontextprotocol/sdk": "npm:^1.26.0"
+    "@modelcontextprotocol/sdk": "npm:^1.29.0"
     "@types/node": "npm:22.14.0"
     ts-node: "npm:^10.9.2"
     typescript: "npm:^5.8.3"
@@ -4998,7 +4998,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@modelcontextprotocol/sdk@npm:^1.26.0":
+"@modelcontextprotocol/sdk@npm:^1.29.0":
   version: 1.29.0
   resolution: "@modelcontextprotocol/sdk@npm:1.29.0"
   dependencies:
