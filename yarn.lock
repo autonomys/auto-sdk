@@ -81,7 +81,7 @@ __metadata:
   resolution: "@autonomys/auto-dag-data@workspace:packages/auto-dag-data"
   dependencies:
     "@autonomys/asynchronous": "npm:^1.6.14"
-    "@ipld/dag-pb": "npm:^4.1.3"
+    "@ipld/dag-pb": "npm:^4.1.7"
     "@peculiar/webcrypto": "npm:^1.5.0"
     "@types/jest": "npm:^29.5.14"
     "@webbuf/blake3": "npm:^3.0.26"
@@ -4422,12 +4422,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ipld/dag-pb@npm:^4.1.3":
-  version: 4.1.3
-  resolution: "@ipld/dag-pb@npm:4.1.3"
+"@ipld/dag-pb@npm:^4.1.7":
+  version: 4.1.7
+  resolution: "@ipld/dag-pb@npm:4.1.7"
   dependencies:
-    multiformats: "npm:^13.1.0"
-  checksum: 10c0/c785c8e291c7c417618b43381a57672feda61e1fed8aaf3365e306f29b31d4770cf54f68a4de4fac03775a768d93c2be11690a008e0856851a5b64a4b7d27efc
+    multiformats: "npm:^14.0.0"
+  checksum: 10c0/93c68778c05749f021393c2a98f7966700ab921216ca632c7dded7ae8191e98770dafe15623755d4ea04c690d73d3980ef3b2ca08448fb7950353d071bdad133
   languageName: node
   linkType: hard
 
@@ -18609,10 +18609,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"multiformats@npm:^13.0.0, multiformats@npm:^13.1.0, multiformats@npm:^13.2.3, multiformats@npm:^13.3.1, multiformats@npm:^13.3.2":
+"multiformats@npm:^13.0.0, multiformats@npm:^13.2.3, multiformats@npm:^13.3.1, multiformats@npm:^13.3.2":
   version: 13.3.2
   resolution: "multiformats@npm:13.3.2"
   checksum: 10c0/a2c6f17b04d6a9cd5d0cb7d07e32dc4f3be82804d44fc056357a98e449340a7ad37d0789da41186ccd8c953e0cf783be3b71f03a00b0a84788689f544ecade46
+  languageName: node
+  linkType: hard
+
+"multiformats@npm:^14.0.0":
+  version: 14.0.0
+  resolution: "multiformats@npm:14.0.0"
+  checksum: 10c0/ec4b7d5ffa9dfb5b18274afb41c105c2d410e758b2c9242fdfbd938972c3a9796cabba74c214158b8732a41e1b5ba3c106c9dd5f1b7b19c4669c8f45b91db5cd
   languageName: node
   linkType: hard
 
