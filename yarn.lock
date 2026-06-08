@@ -147,7 +147,7 @@ __metadata:
     dompurify: "npm:^3.4.0"
     events: "npm:^3.3.0"
     lucide-react: "npm:^0.510.0"
-    next: "npm:^15.3.2"
+    next: "npm:^15.5.19"
     postcss: "npm:^8.5.15"
     postcss-cli: "npm:^10.1.0"
     postcss-loader: "npm:^8.1.1"
@@ -17427,7 +17427,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"next@npm:^15.3.2":
+"next@npm:^15.5.19":
   version: 15.5.19
   resolution: "next@npm:15.5.19"
   dependencies:
