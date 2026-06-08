@@ -26,10 +26,10 @@
   ],
   "dependencies": {
     "@polkadot/api": "^15.10.2",
-    "@polkadot/extension-dapp": "^0.63.1"
+    "@polkadot/extension-dapp": "^0.58.6"
   },
   "devDependencies": {
-    "@polkadot/extension-inject": "^0.63.1",
+    "@polkadot/extension-inject": "^0.58.9",
     "@polkadot/types": "^15.10.2",
     "@polkadot/types-codec": "^15.10.2",
     "@types/jest": "^29.5.14",
