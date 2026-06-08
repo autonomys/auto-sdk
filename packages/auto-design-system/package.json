@@ -54,7 +54,7 @@
     "react-icons": "^5.5.0",
     "react-is": "^19.1.0",
     "react-json-view": "^1.21.3",
-    "tailwind-merge": "^2.2.1"
+    "tailwind-merge": "^2.6.1"
   },
   "devDependencies": {
     "@babel/core": "^7.27.1",
