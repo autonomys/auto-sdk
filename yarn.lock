@@ -40,7 +40,7 @@ __metadata:
     jest: "npm:^29.7.0"
     prettier: "npm:^3.8.3"
     stream-fork: "npm:^1.0.5"
-    ts-jest: "npm:^29.3.1"
+    ts-jest: "npm:^29.4.11"
     typescript: "npm:^5.8.3"
   languageName: unknown
   linkType: soft
@@ -56,7 +56,7 @@ __metadata:
     ethers: "npm:6.13.5"
     jest: "npm:^29.7.0"
     prettier: "npm:^3.8.3"
-    ts-jest: "npm:^29.3.1"
+    ts-jest: "npm:^29.4.11"
     typescript: "npm:^5.8.3"
   languageName: unknown
   linkType: soft
@@ -70,7 +70,7 @@ __metadata:
     eslint: "npm:^9.25.1"
     jest: "npm:^29.7.0"
     prettier: "npm:^3.8.3"
-    ts-jest: "npm:^29.3.1"
+    ts-jest: "npm:^29.4.11"
     typescript: "npm:^5.8.3"
     zod: "npm:^3.24.2"
   languageName: unknown
@@ -95,7 +95,7 @@ __metadata:
     protobufjs: "npm:^7.6.2"
     protons: "npm:^7.6.0"
     protons-runtime: "npm:^5.5.0"
-    ts-jest: "npm:^29.3.1"
+    ts-jest: "npm:^29.4.11"
     typescript: "npm:^5.8.3"
   languageName: unknown
   linkType: soft
@@ -242,7 +242,7 @@ __metadata:
     jest: "npm:^29.7.0"
     lerna: "npm:^8.2.4"
     prettier: "npm:^3.8.3"
-    ts-jest: "npm:^29.3.1"
+    ts-jest: "npm:^29.4.11"
     typescript: "npm:^5.8.3"
   languageName: unknown
   linkType: soft
@@ -260,7 +260,7 @@ __metadata:
     eslint: "npm:^9.25.1"
     jest: "npm:^29.7.0"
     prettier: "npm:^3.8.3"
-    ts-jest: "npm:^29.3.1"
+    ts-jest: "npm:^29.4.11"
     typescript: "npm:^5.8.3"
   languageName: unknown
   linkType: soft
@@ -302,7 +302,7 @@ __metadata:
     "@types/jest": "npm:^29.5.14"
     jest: "npm:^29.7.0"
     prettier: "npm:^3.8.3"
-    ts-jest: "npm:^29.3.1"
+    ts-jest: "npm:^29.4.11"
     typescript: "npm:^5.8.3"
     zustand: "npm:^5.0.14"
   languageName: unknown
@@ -319,7 +319,7 @@ __metadata:
     ethers: "npm:^6.13.5"
     jest: "npm:^29.7.0"
     prettier: "npm:^3.8.3"
-    ts-jest: "npm:^29.3.1"
+    ts-jest: "npm:^29.4.11"
     typescript: "npm:^5.8.3"
   peerDependencies:
     ethers: ^6.0.0
@@ -403,7 +403,7 @@ __metadata:
     "@types/node": "npm:^20.11.19"
     ethers: "npm:^6.13.5"
     jest: "npm:^29.7.0"
-    ts-jest: "npm:^29.1.2"
+    ts-jest: "npm:^29.4.11"
     tsx: "npm:^4.7.1"
     typescript: "npm:^5.3.3"
   languageName: unknown
@@ -416,7 +416,7 @@ __metadata:
     "@types/jest": "npm:^29.5.14"
     "@types/websocket": "npm:^1.0.10"
     jest: "npm:^29.7.0"
-    ts-jest: "npm:^29.3.1"
+    ts-jest: "npm:^29.4.11"
     typescript: "npm:^5.8.3"
     websocket: "npm:^1.0.35"
     zod: "npm:^3.24.2"
@@ -13445,7 +13445,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ejs@npm:^3.1.10, ejs@npm:^3.1.7, ejs@npm:^3.1.8":
+"ejs@npm:^3.1.7, ejs@npm:^3.1.8":
   version: 3.1.10
   resolution: "ejs@npm:3.1.10"
   dependencies:
@@ -15507,7 +15507,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"handlebars@npm:^4.7.7, handlebars@npm:^4.7.8":
+"handlebars@npm:^4.7.7":
   version: 4.7.8
   resolution: "handlebars@npm:4.7.8"
   dependencies:
@@ -15522,6 +15522,24 @@ __metadata:
   bin:
     handlebars: bin/handlebars
   checksum: 10c0/7aff423ea38a14bb379316f3857fe0df3c5d66119270944247f155ba1f08e07a92b340c58edaa00cfe985c21508870ee5183e0634dcb53dd405f35c93ef7f10d
+  languageName: node
+  linkType: hard
+
+"handlebars@npm:^4.7.9":
+  version: 4.7.9
+  resolution: "handlebars@npm:4.7.9"
+  dependencies:
+    minimist: "npm:^1.2.5"
+    neo-async: "npm:^2.6.2"
+    source-map: "npm:^0.6.1"
+    uglify-js: "npm:^3.1.4"
+    wordwrap: "npm:^1.0.0"
+  dependenciesMeta:
+    uglify-js:
+      optional: true
+  bin:
+    handlebars: bin/handlebars
+  checksum: 10c0/22f8105a7e68e81aff2662bb434edf05f757d21d850731d71cec886d69c10cd33d3c43e34b2892968ec62de8241611851d3d0674c8ef324ea3e01dc66262faa9
   languageName: node
   linkType: hard
 
@@ -17088,7 +17106,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jest-util@npm:^29.0.0, jest-util@npm:^29.7.0":
+"jest-util@npm:^29.7.0":
   version: 29.7.0
   resolution: "jest-util@npm:29.7.0"
   dependencies:
@@ -22157,7 +22175,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"semver@npm:^7.0.0, semver@npm:^7.1.1, semver@npm:^7.1.2, semver@npm:^7.3.4, semver@npm:^7.3.5, semver@npm:^7.3.7, semver@npm:^7.3.8, semver@npm:^7.5.2, semver@npm:^7.5.3, semver@npm:^7.5.4, semver@npm:^7.6.0, semver@npm:^7.7.1":
+"semver@npm:^7.0.0, semver@npm:^7.1.1, semver@npm:^7.1.2, semver@npm:^7.3.4, semver@npm:^7.3.5, semver@npm:^7.3.7, semver@npm:^7.3.8, semver@npm:^7.5.2, semver@npm:^7.5.3, semver@npm:^7.5.4, semver@npm:^7.6.0":
   version: 7.7.1
   resolution: "semver@npm:7.7.1"
   bin:
@@ -22166,7 +22184,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"semver@npm:^7.6.2":
+"semver@npm:^7.6.2, semver@npm:^7.8.0":
   version: 7.8.3
   resolution: "semver@npm:7.8.3"
   bin:
@@ -23611,17 +23629,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ts-jest@npm:^29.1.2":
-  version: 29.4.5
-  resolution: "ts-jest@npm:29.4.5"
+"ts-jest@npm:^29.4.11":
+  version: 29.4.11
+  resolution: "ts-jest@npm:29.4.11"
   dependencies:
     bs-logger: "npm:^0.2.6"
     fast-json-stable-stringify: "npm:^2.1.0"
-    handlebars: "npm:^4.7.8"
+    handlebars: "npm:^4.7.9"
     json5: "npm:^2.2.3"
     lodash.memoize: "npm:^4.1.2"
     make-error: "npm:^1.3.6"
-    semver: "npm:^7.7.3"
+    semver: "npm:^7.8.0"
     type-fest: "npm:^4.41.0"
     yargs-parser: "npm:^21.1.1"
   peerDependencies:
@@ -23631,7 +23649,7 @@ __metadata:
     babel-jest: ^29.0.0 || ^30.0.0
     jest: ^29.0.0 || ^30.0.0
     jest-util: ^29.0.0 || ^30.0.0
-    typescript: ">=4.3 <6"
+    typescript: ">=4.3 <7"
   peerDependenciesMeta:
     "@babel/core":
       optional: true
@@ -23647,45 +23665,7 @@ __metadata:
       optional: true
   bin:
     ts-jest: cli.js
-  checksum: 10c0/789f00666ba785ac425606d42601cbdc03015e46f228a0b333f06c6658d80865819bae0ddd59c762285352d2b14d0aa50912574ec699ba6369ddb0d400a49ac0
-  languageName: node
-  linkType: hard
-
-"ts-jest@npm:^29.3.1":
-  version: 29.3.2
-  resolution: "ts-jest@npm:29.3.2"
-  dependencies:
-    bs-logger: "npm:^0.2.6"
-    ejs: "npm:^3.1.10"
-    fast-json-stable-stringify: "npm:^2.1.0"
-    jest-util: "npm:^29.0.0"
-    json5: "npm:^2.2.3"
-    lodash.memoize: "npm:^4.1.2"
-    make-error: "npm:^1.3.6"
-    semver: "npm:^7.7.1"
-    type-fest: "npm:^4.39.1"
-    yargs-parser: "npm:^21.1.1"
-  peerDependencies:
-    "@babel/core": ">=7.0.0-beta.0 <8"
-    "@jest/transform": ^29.0.0
-    "@jest/types": ^29.0.0
-    babel-jest: ^29.0.0
-    jest: ^29.0.0
-    typescript: ">=4.3 <6"
-  peerDependenciesMeta:
-    "@babel/core":
-      optional: true
-    "@jest/transform":
-      optional: true
-    "@jest/types":
-      optional: true
-    babel-jest:
-      optional: true
-    esbuild:
-      optional: true
-  bin:
-    ts-jest: cli.js
-  checksum: 10c0/84762720dbef45c1644348d67d0dcb8b7ad6369a16628c4752aceeb47f0ccdad63ae14485048b641c20ce096337a160ab816881361ef5517325bac6a5b3756e0
+  checksum: 10c0/f9e6ab3235f33088c4d6441da97d4b03b1fe9c21f4d859d7acf3f325ea36471a6c1ea9301f445b2670efa1a391dcddc31ecd8641a2d673752d074136311b8480
   languageName: node
   linkType: hard
 
@@ -23878,13 +23858,6 @@ __metadata:
   version: 4.41.0
   resolution: "type-fest@npm:4.41.0"
   checksum: 10c0/f5ca697797ed5e88d33ac8f1fec21921839871f808dc59345c9cf67345bfb958ce41bd821165dbf3ae591cedec2bf6fe8882098dfdd8dc54320b859711a2c1e4
-  languageName: node
-  linkType: hard
-
-"type-fest@npm:^4.39.1":
-  version: 4.40.1
-  resolution: "type-fest@npm:4.40.1"
-  checksum: 10c0/590cb7d4dcd3da83efe49b5b52cd041661f6fa29f18cb76650fe1fdeb4090688e92955656e9d981e606abb13d25c0418be8c6c6504d80e87fe18dc9ca0888392
   languageName: node
   linkType: hard
 
