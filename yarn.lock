@@ -376,7 +376,7 @@ __metadata:
     "@rollup/plugin-typescript": "npm:^12.1.2"
     "@types/express": "npm:^5.0.0"
     "@types/mime-types": "npm:^2.1.4"
-    cache-manager: "npm:^6.4.2"
+    cache-manager: "npm:^6.4.3"
     express: "npm:^4.19.2"
     jszip: "npm:^3.10.1"
     keyv: "npm:^5.6.0"
@@ -11572,12 +11572,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cache-manager@npm:^6.4.2":
-  version: 6.4.2
-  resolution: "cache-manager@npm:6.4.2"
+"cache-manager@npm:^6.4.3":
+  version: 6.4.3
+  resolution: "cache-manager@npm:6.4.3"
   dependencies:
-    keyv: "npm:^5.3.2"
-  checksum: 10c0/18f65665a15b890d150976c1c320134b21629343cad553d7e3c89f3d395c535617da005383fb4429d71a1a03924208549d10d92d63a7062a8562326ce597e85b
+    keyv: "npm:^5.3.3"
+  checksum: 10c0/eb5af37e2206cf01390bf61ddd86d3cb86f281700a2621393835ac4f9bdd5872a618765f643fce76d1cbb56f512a13cef502665fb6259be9c16d5121c713a1f7
   languageName: node
   linkType: hard
 
@@ -17493,7 +17493,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"keyv@npm:^5.3.2, keyv@npm:^5.6.0":
+"keyv@npm:^5.3.3, keyv@npm:^5.6.0":
   version: 5.6.0
   resolution: "keyv@npm:5.6.0"
   dependencies:
