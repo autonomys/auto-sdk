@@ -1,6 +1,6 @@
 {
   "name": "@autonomys/auto-mcp-servers",
-  "packageManager": "yarn@4.7.0",
+  "packageManager": "yarn@4.16.0",
   "version": "1.6.14",
   "description": "Autonomys Network MCP servers",
   "repository": {
