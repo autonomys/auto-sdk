@@ -367,7 +367,7 @@ __metadata:
     "@autonomys/asynchronous": "npm:^1.6.14"
     "@autonomys/auto-dag-data": "npm:^1.6.14"
     "@autonomys/auto-utils": "npm:^1.6.14"
-    "@keyvhq/sqlite": "npm:^2.1.7"
+    "@keyvhq/sqlite": "npm:^2.2.0"
     "@prerenderer/rollup-plugin": "npm:^0.3.12"
     "@rollup/plugin-commonjs": "npm:^28.0.9"
     "@rollup/plugin-json": "npm:^6.1.0"
@@ -4865,23 +4865,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@keyvhq/sql@npm:2.1.7":
-  version: 2.1.7
-  resolution: "@keyvhq/sql@npm:2.1.7"
+"@keyvhq/sql@npm:2.2.0":
+  version: 2.2.0
+  resolution: "@keyvhq/sql@npm:2.2.0"
   dependencies:
     sql-ts: "npm:7"
-  checksum: 10c0/1cee6e9695319295285f4f80c38ef957aafe18906f92ba2ce37f0ca481d5734ab43bd1f3ac060c4f0422e2a2ced8a45042c4df50390bb488e38704fe0f8b3dcf
+  checksum: 10c0/2881957bcf45ab492cab2779d5ea987440fb50331c43d516a4b7e36ac06e046ab73541ec032e1008f064a86d4f53f7eac43b58ff2361b093229957a6d7ea813b
   languageName: node
   linkType: hard
 
-"@keyvhq/sqlite@npm:^2.1.7":
-  version: 2.1.7
-  resolution: "@keyvhq/sqlite@npm:2.1.7"
+"@keyvhq/sqlite@npm:^2.2.0":
+  version: 2.2.0
+  resolution: "@keyvhq/sqlite@npm:2.2.0"
   dependencies:
-    "@keyvhq/sql": "npm:2.1.7"
-    "@vscode/sqlite3": "npm:5.1.8-vscode"
+    "@keyvhq/sql": "npm:2.2.0"
+    "@vscode/sqlite3": "npm:5.1.12-vscode"
     pify: "npm:~5.0.0"
-  checksum: 10c0/67b15dcaf09d1860077c9b621370e1e406ef531b0ed94486d5ec1fb794c04b97afb6f1e7aa7ec8496bd5ec7a7981d22a8ed45fa99714c6544131c0d1fb1340b7
+  checksum: 10c0/69f5ac2bef8e9040fd93a04ac123360619f1232d835f69631689a1241c58a7f83bfd2a97638b7aaa4d4acb4c5d5621c590cca349bcc812614fa7f0f29e5f491c
   languageName: node
   linkType: hard
 
@@ -10196,14 +10196,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vscode/sqlite3@npm:5.1.8-vscode":
-  version: 5.1.8-vscode
-  resolution: "@vscode/sqlite3@npm:5.1.8-vscode"
+"@vscode/sqlite3@npm:5.1.12-vscode":
+  version: 5.1.12-vscode
+  resolution: "@vscode/sqlite3@npm:5.1.12-vscode"
   dependencies:
     node-addon-api: "npm:^8.2.0"
     node-gyp: "npm:latest"
-    tar: "npm:^6.1.11"
-  checksum: 10c0/eb70c0e6588a4620ab06aa51fe519b6928611f362a4cdbf95e6330ff0ea1eee1b08c1f018c1e314c84454968c7c4a369d8b7266690a80d1d9eb71c00202fd248
+    tar: "npm:^7.5.4"
+  checksum: 10c0/64e556c2731af333ddbfa29abeb6d4b4fa48a5e65a6909f9093bfe68033d75593ce75fdce5edf717581964f59f78d5b7505e19aa473c5c43c2f3ca59b6fbe513
   languageName: node
   linkType: hard
 
@@ -18645,6 +18645,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"minizlib@npm:^3.1.0":
+  version: 3.1.0
+  resolution: "minizlib@npm:3.1.0"
+  dependencies:
+    minipass: "npm:^7.1.2"
+  checksum: 10c0/5aad75ab0090b8266069c9aabe582c021ae53eb33c6c691054a13a45db3b4f91a7fb1bd79151e6b4e9e9a86727b522527c0a06ec7d45206b745d54cd3097bcec
+  languageName: node
+  linkType: hard
+
 "mkdirp-classic@npm:^0.5.2":
   version: 0.5.3
   resolution: "mkdirp-classic@npm:0.5.3"
@@ -23311,6 +23320,19 @@ __metadata:
     mkdirp: "npm:^3.0.1"
     yallist: "npm:^5.0.0"
   checksum: 10c0/d4679609bb2a9b48eeaf84632b6d844128d2412b95b6de07d53d8ee8baf4ca0857c9331dfa510390a0727b550fd543d4d1a10995ad86cdf078423fbb8d99831d
+  languageName: node
+  linkType: hard
+
+"tar@npm:^7.5.4":
+  version: 7.5.16
+  resolution: "tar@npm:7.5.16"
+  dependencies:
+    "@isaacs/fs-minipass": "npm:^4.0.0"
+    chownr: "npm:^3.0.0"
+    minipass: "npm:^7.1.2"
+    minizlib: "npm:^3.1.0"
+    yallist: "npm:^5.0.0"
+  checksum: 10c0/4f37f3c4bd2ca2755fd736a5df1d573c1a868ec1b1e893346aeafa95ac510f9e2fd1469420bd866cc7904799e5bd4ac62b5d4f03fe27747d6e1e373b44505c5c
   languageName: node
   linkType: hard
 
