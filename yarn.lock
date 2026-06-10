@@ -84,7 +84,7 @@ __metadata:
     "@ipld/dag-pb": "npm:^4.1.7"
     "@peculiar/webcrypto": "npm:^1.5.0"
     "@types/jest": "npm:^29.5.14"
-    "@webbuf/blake3": "npm:^3.0.26"
+    "@webbuf/blake3": "npm:^3.8.0"
     "@webbuf/fixedbuf": "npm:^3.0.26"
     "@webbuf/webbuf": "npm:^3.0.26"
     blockstore-core: "npm:^5.0.4"
@@ -10358,13 +10358,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@webbuf/blake3@npm:^3.0.26":
-  version: 3.0.26
-  resolution: "@webbuf/blake3@npm:3.0.26"
+"@webbuf/blake3@npm:^3.8.0":
+  version: 3.8.0
+  resolution: "@webbuf/blake3@npm:3.8.0"
   peerDependencies:
-    "@webbuf/fixedbuf": ^3.0.26
-    "@webbuf/webbuf": ^3.0.26
-  checksum: 10c0/2c50bdede8d2ba278409f41c465d4891a08b16e60b0e67e1be5310b94a98540aaaac6d2280bcb77780f165aba49883ffd7dbcc204779c813c62f314f9cb5589e
+    "@webbuf/fixedbuf": ^3.8.0
+    "@webbuf/webbuf": ^3.8.0
+  checksum: 10c0/b0538b787f425a3e3330ff0761f1814cecf59f1531826431848d008f56060b4ffcd91e720295393d7f5e57df1c0f877b5a4579e2286f629a5b97309031e720d9
   languageName: node
   linkType: hard
 
