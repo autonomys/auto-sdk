@@ -38,7 +38,7 @@
     "@floating-ui/react": "^0.27.19",
     "@headlessui/react": "^2.2.10",
     "@heroicons/react": "^2.2.0",
-    "@polkadot/react-identicon": "^3.13.1",
+    "@polkadot/react-identicon": "^3.16.7",
     "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-dismissable-layer": "^1.1.11",
