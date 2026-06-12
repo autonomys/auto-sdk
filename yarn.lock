@@ -146,7 +146,7 @@ __metadata:
     concurrently: "npm:^8.2.2"
     dompurify: "npm:^3.4.8"
     events: "npm:^3.3.0"
-    lucide-react: "npm:^0.510.0"
+    lucide-react: "npm:^0.577.0"
     next: "npm:^15.5.19"
     postcss: "npm:^8.5.15"
     postcss-cli: "npm:^10.1.0"
@@ -278,7 +278,7 @@ __metadata:
     "@types/react-dom": "npm:^18.3.7"
     class-variance-authority: "npm:^0.7.1"
     clsx: "npm:^2.1.1"
-    lucide-react: "npm:^0.510.0"
+    lucide-react: "npm:^0.577.0"
     rollup: "npm:^4.61.1"
     rollup-plugin-peer-deps-external: "npm:^2.2.4"
     tailwind-merge: "npm:^2.6.1"
@@ -18315,12 +18315,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lucide-react@npm:^0.510.0":
-  version: 0.510.0
-  resolution: "lucide-react@npm:0.510.0"
+"lucide-react@npm:^0.577.0":
+  version: 0.577.0
+  resolution: "lucide-react@npm:0.577.0"
   peerDependencies:
     react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
-  checksum: 10c0/00b3efed64c370cd5ae97023583996ff83939baf6f4af11393d536ca9e520b0cc1a82a81aa6d0350625bff398daaa69357df74383631f2c3a0aeb6974f4237c7
+  checksum: 10c0/f5f56d66d5072b69ab74af2196833e35b888c18d92906d75aff81afc0aeabf00a4092a5b9dbc1bddd250bf54ec3c5d5933c7353589b5cb7efd75b21651cda399
   languageName: node
   linkType: hard
 
