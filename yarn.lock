@@ -85,7 +85,7 @@ __metadata:
     "@peculiar/webcrypto": "npm:^1.5.0"
     "@types/jest": "npm:^29.5.14"
     "@webbuf/blake3": "npm:^3.8.0"
-    "@webbuf/fixedbuf": "npm:^3.0.26"
+    "@webbuf/fixedbuf": "npm:^3.8.0"
     "@webbuf/webbuf": "npm:^3.0.26"
     blockstore-core: "npm:^5.0.4"
     fflate: "npm:^0.8.3"
@@ -10580,12 +10580,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@webbuf/fixedbuf@npm:^3.0.26":
-  version: 3.0.26
-  resolution: "@webbuf/fixedbuf@npm:3.0.26"
+"@webbuf/fixedbuf@npm:^3.8.0":
+  version: 3.8.0
+  resolution: "@webbuf/fixedbuf@npm:3.8.0"
   peerDependencies:
-    "@webbuf/webbuf": ^3.0.26
-  checksum: 10c0/5dd6031dd223b06f4f384e69dd3be3bd824b6edd4f9e11d6bff5dfbeae6e862da8d9d8a77578e91697be91455e7910bd1f5a8e4890d9f03e10af59000e446120
+    "@webbuf/webbuf": ^3.8.0
+  checksum: 10c0/641389c0bcef2b7ceb065cc6f33401741e85d5712c0cb02a08906e90bee91224caccf4f5c0e735f23d030c054707c775f1dad7ce46e1a229fe0604b4769f215b
   languageName: node
   linkType: hard
 
