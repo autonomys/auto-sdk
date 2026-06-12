@@ -86,7 +86,7 @@ __metadata:
     "@types/jest": "npm:^29.5.14"
     "@webbuf/blake3": "npm:^3.8.0"
     "@webbuf/fixedbuf": "npm:^3.8.0"
-    "@webbuf/webbuf": "npm:^3.0.26"
+    "@webbuf/webbuf": "npm:^3.8.0"
     blockstore-core: "npm:^5.0.4"
     fflate: "npm:^0.8.3"
     interface-store: "npm:^6.0.3"
@@ -10589,10 +10589,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@webbuf/webbuf@npm:^3.0.26":
-  version: 3.0.26
-  resolution: "@webbuf/webbuf@npm:3.0.26"
-  checksum: 10c0/3f9ef7078c220a46250ab5ad0ce249f63b05b949291d88a42113355d60de6c3ddb705b960d57912f2631f8aa6ce3c36b42fca5dd5d8401ebf71b6cf4fa629ca8
+"@webbuf/webbuf@npm:^3.8.0":
+  version: 3.8.0
+  resolution: "@webbuf/webbuf@npm:3.8.0"
+  checksum: 10c0/7538b4414f3e4c1d7dd65d0f7bc3e3bf1437b003b5739238c3ce67199fa5af4cd04e4b6517ca5cec556df6672c59b078dcacb5d8aaf6178bbc452eca570ef03d
   languageName: node
   linkType: hard
 
