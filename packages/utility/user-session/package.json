@@ -34,7 +34,7 @@
     "@autonomys/asynchronous": "^1.6.14",
     "@autonomys/auto-dag-data": "^1.6.14",
     "@autonomys/auto-drive": "^1.6.14",
-    "ethers": "6.13.5"
+    "ethers": "6.16.0"
   },
   "gitHead": "ef4c21d683cad697f7015e52becd399a8ca2ed84"
 }
