@@ -43,7 +43,7 @@
     "postcss": "^8.5.15",
     "postcss-import": "^15.1.0",
     "rollup": "^4.61.1",
-    "typescript": "^5.3.3"
+    "typescript": "^5.9.3"
   },
   "gitHead": "ef4c21d683cad697f7015e52becd399a8ca2ed84"
 }
