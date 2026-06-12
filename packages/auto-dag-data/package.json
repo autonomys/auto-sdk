@@ -49,7 +49,7 @@
     "fflate": "^0.8.3",
     "multiformats": "^13.4.2",
     "protobufjs": "^7.6.2",
-    "protons": "^7.6.0",
+    "protons": "^7.7.0",
     "protons-runtime": "^5.5.0"
   },
   "gitHead": "ef4c21d683cad697f7015e52becd399a8ca2ed84"
