@@ -53,7 +53,7 @@
     "@autonomys/auto-utils": "^1.6.14",
     "@keyvhq/sqlite": "^2.2.0",
     "cache-manager": "^6.4.3",
-    "express": "^4.19.2",
+    "express": "^4.22.2",
     "jszip": "^3.10.1",
     "keyv": "^5.6.0",
     "mime-types": "^3.0.2",
