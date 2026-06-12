@@ -94,7 +94,7 @@ __metadata:
     multiformats: "npm:^13.4.2"
     protobufjs: "npm:^7.6.2"
     protons: "npm:^7.7.0"
-    protons-runtime: "npm:^5.5.0"
+    protons-runtime: "npm:^5.6.0"
     ts-jest: "npm:^29.4.11"
     typescript: "npm:^5.8.3"
   languageName: unknown
@@ -21263,7 +21263,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"protons-runtime@npm:^5.0.0, protons-runtime@npm:^5.5.0":
+"protons-runtime@npm:^5.0.0":
   version: 5.5.0
   resolution: "protons-runtime@npm:5.5.0"
   dependencies:
@@ -21271,6 +21271,17 @@ __metadata:
     uint8arraylist: "npm:^2.4.3"
     uint8arrays: "npm:^5.0.1"
   checksum: 10c0/577588eb47c20136d1d41a1aa2c6ae8bef7d2504cf81e1e2ed15afb3cee97ea0a8743106c83cedd72fa7f4ffeb270d9c9e16479c1ad5ad79879a0b11218baf4d
+  languageName: node
+  linkType: hard
+
+"protons-runtime@npm:^5.6.0":
+  version: 5.6.0
+  resolution: "protons-runtime@npm:5.6.0"
+  dependencies:
+    uint8-varint: "npm:^2.0.2"
+    uint8arraylist: "npm:^2.4.3"
+    uint8arrays: "npm:^5.0.1"
+  checksum: 10c0/f6961e0ce30d7018b6bf35183384fdf540e58db4b3051342d616bb6a5ffefec0aaca168c5356ce6cf0d6b92cb736149c30f42a7558a76cbb8da9a5ba90827892
   languageName: node
   linkType: hard
 
