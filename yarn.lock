@@ -93,7 +93,7 @@ __metadata:
     jest: "npm:^29.7.0"
     multiformats: "npm:^13.4.2"
     protobufjs: "npm:^7.6.2"
-    protons: "npm:^7.6.0"
+    protons: "npm:^7.7.0"
     protons-runtime: "npm:^5.5.0"
     ts-jest: "npm:^29.4.11"
     typescript: "npm:^5.8.3"
@@ -21274,16 +21274,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"protons@npm:^7.6.0":
-  version: 7.6.0
-  resolution: "protons@npm:7.6.0"
+"protons@npm:^7.7.0":
+  version: 7.7.0
+  resolution: "protons@npm:7.7.0"
   dependencies:
     meow: "npm:^13.1.0"
     protobufjs-cli: "npm:^1.0.0"
     protons-runtime: "npm:^5.0.0"
   bin:
     protons: dist/bin/protons.js
-  checksum: 10c0/06ee3914fc47b701f216cac1af3f3d5c9d7d103e0ac76278d803508607638eeeb5eb12dd9c543cb31a7bb6b0d5f99c7c7df1e8869166f79a3d411126ec915d3a
+  checksum: 10c0/180c6b3be456f5847cf378e1adca5b8b45fe87764072976770a406209bba954a0ae2706141fff9789b5187a08750e6e9b52ff8642ef09c2ade29681c404d79fc
   languageName: node
   linkType: hard
 
