@@ -38,7 +38,7 @@
     },
     {
       "groupName": "node.js",
-      "matchPackageNames": ["node"]
+      "matchPackageNames": ["node", "actions/node-versions"]
     },
     {
       "matchDepTypes": ["peerDependencies"],
