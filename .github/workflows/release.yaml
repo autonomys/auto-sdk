@@ -41,7 +41,7 @@ jobs:
           clean: true
 
       - name: Setup Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v6
         with:
           node-version: '20.20.2'
           registry-url: 'https://registry.npmjs.org'
