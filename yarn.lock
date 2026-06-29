@@ -91,7 +91,7 @@ __metadata:
     interface-store: "npm:^6.0.3"
     jest: "npm:^29.7.0"
     multiformats: "npm:^13.4.2"
-    protobufjs: "npm:^7.6.2"
+    protobufjs: "npm:^7.6.4"
     protons: "npm:^7.7.0"
     protons-runtime: "npm:^5.6.0"
     ts-jest: "npm:^29.4.11"
@@ -21222,7 +21222,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"protobufjs@npm:^7.6.2":
+"protobufjs@npm:^7.6.4":
   version: 7.6.4
   resolution: "protobufjs@npm:7.6.4"
   dependencies:

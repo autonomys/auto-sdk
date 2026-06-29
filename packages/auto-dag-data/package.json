@@ -35,7 +35,7 @@
     "blockstore-core": "^5.0.4",
     "interface-store": "^6.0.3",
     "jest": "^29.7.0",
-    "protobufjs": "^7.6.2",
+    "protobufjs": "^7.6.4",
     "ts-jest": "^29.4.11",
     "typescript": "^5.9.3"
   },
@@ -47,7 +47,7 @@
     "@webbuf/webbuf": "^3.8.0",
     "fflate": "^0.8.3",
     "multiformats": "^13.4.2",
-    "protobufjs": "^7.6.2",
+    "protobufjs": "^7.6.4",
     "protons": "^7.7.0",
     "protons-runtime": "^5.6.0"
   },
