@@ -98,7 +98,7 @@
     "tailwindcss-animate": "^1.0.7",
     "typescript": "^5.9.3",
     "util": "^0.12.5",
-    "webpack": "^5.107.2"
+    "webpack": "^5.108.1"
   },
   "peerDependencies": {
     "react": "^18.2.0",
