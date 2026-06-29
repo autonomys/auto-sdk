@@ -156,7 +156,7 @@ export const uploadFileChunk = async (
   }: ArgsWithoutPagination<{ uploadId: string; chunk: Buffer; index: number }>,
 ): Promise<void> => {
   const formData = new FormData()
-  formData.append('file', new Blob([chunk]))
+  formData.append('file', new Blob([chunk as BlobPart]))
   formData.append('index', index.toString())
 
   const response = await api.sendAPIRequest(

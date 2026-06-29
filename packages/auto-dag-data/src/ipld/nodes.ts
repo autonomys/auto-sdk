@@ -1,3 +1,4 @@
+import type { PBLink } from '@ipld/dag-pb'
 import { CID } from 'multiformats/cid'
 import { FileUploadOptions, OffchainMetadata } from '../metadata/index.js'
 import { encodeIPLDNodeData, MetadataType } from '../metadata/onchain/index.js'
@@ -43,7 +44,7 @@ export const createChunkedFileIpldNode = (
         linkDepth,
         uploadOptions,
       }),
-      links.map((cid) => ({ Hash: cid })),
+      links.map((cid) => ({ Hash: cid }) as PBLink),
     ),
     maxNodeSize,
   )
@@ -62,7 +63,7 @@ export const createFileInlinkIpldNode = (
         size: BigInt(size).valueOf(),
         linkDepth,
       }),
-      links.map((cid) => ({ Hash: cid })),
+      links.map((cid) => ({ Hash: cid }) as PBLink),
     ),
     maxNodeSize,
   )
@@ -107,7 +108,7 @@ export const createMetadataInlinkIpldNode = (
         size: BigInt(size).valueOf(),
         linkDepth,
       }),
-      links.map((cid) => ({ Hash: cid })),
+      links.map((cid) => ({ Hash: cid }) as PBLink),
     ),
     maxNodeSize,
   )
@@ -158,7 +159,7 @@ export const createChunkedMetadataIpldNode = (
         size,
         linkDepth,
       }),
-      links.map((cid) => ({ Hash: cid })),
+      links.map((cid) => ({ Hash: cid }) as PBLink),
     ),
     maxNodeSize,
   )
@@ -183,7 +184,7 @@ export const createFolderIpldNode = (
         linkDepth,
         uploadOptions,
       }),
-      links.map((cid) => ({ Hash: cid })),
+      links.map((cid) => ({ Hash: cid }) as PBLink),
     ),
     maxNodeSize,
   )
@@ -199,7 +200,7 @@ export const createFolderInlinkIpldNode = (
         type: MetadataType.FolderInlink,
         linkDepth,
       }),
-      links.map((cid) => ({ Hash: cid })),
+      links.map((cid) => ({ Hash: cid }) as PBLink),
     ),
     maxNodeSize,
   )

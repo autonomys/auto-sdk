@@ -28,7 +28,7 @@ export const getKeyFromPassword = async ({ password, salt }: PasswordGenerationO
   return crypto.subtle.deriveKey(
     {
       name: 'PBKDF2',
-      salt: saltHash,
+      salt: saltHash as BufferSource,
       iterations: 100000,
       hash: 'SHA-256',
     },
@@ -55,7 +55,7 @@ export const encryptFile = async function* (
 
   for await (const chunk of asyncByChunk(file, chunkSize)) {
     const iv = crypto.getRandomValues(new Uint8Array(IV_SIZE))
-    const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, chunk)
+    const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, chunk as BufferSource)
     yield Buffer.concat([Buffer.from(iv), Buffer.from(encrypted)])
   }
 }
@@ -83,7 +83,11 @@ export const decryptFile = async function* (
     while (key && chunks.length >= chunkSize) {
       const iv = chunks.subarray(0, IV_SIZE)
       const encryptedChunk = chunks.subarray(IV_SIZE, chunkSize)
-      const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, encryptedChunk)
+      const decrypted = await crypto.subtle.decrypt(
+        { name: 'AES-GCM', iv },
+        key,
+        encryptedChunk as BufferSource,
+      )
       chunks = chunks.subarray(chunkSize)
       yield Buffer.from(decrypted)
     }
@@ -92,7 +96,11 @@ export const decryptFile = async function* (
   if (key && chunks.length > 0) {
     const iv = chunks.subarray(0, IV_SIZE)
     const chunk = chunks.subarray(IV_SIZE, chunkSize)
-    const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, chunk)
+    const decrypted = await crypto.subtle.decrypt(
+      { name: 'AES-GCM', iv },
+      key,
+      chunk as BufferSource,
+    )
     yield Buffer.from(decrypted)
   }
 }
