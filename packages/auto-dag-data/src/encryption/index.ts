@@ -1,11 +1,13 @@
 import { asyncByChunk } from '@autonomys/asynchronous'
-import { Crypto } from '@peculiar/webcrypto'
 import { AwaitIterable } from 'interface-store'
 import { EncryptionAlgorithm, EncryptionOptions } from '../metadata/index.js'
 import type { PickPartial } from '../utils/types.js'
 import { PasswordGenerationOptions } from './types.js'
 
-export const crypto = typeof window === 'undefined' ? new Crypto() : window.crypto
+// Web Crypto is exposed as globalThis.crypto in browsers and in Node 20+.
+// The repo's engines.node floor is 20.20.2 (see root package.json), so the
+// polyfill that @peculiar/webcrypto used to provide is no longer needed.
+export const crypto = globalThis.crypto
 
 export const ENCRYPTING_CHUNK_SIZE = 1024 * 1024
 const IV_SIZE = 16
