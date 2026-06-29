@@ -42,7 +42,6 @@
   "dependencies": {
     "@autonomys/asynchronous": "^1.6.14",
     "@ipld/dag-pb": "^4.1.7",
-    "@peculiar/webcrypto": "^1.5.0",
     "@webbuf/blake3": "^3.8.0",
     "@webbuf/fixedbuf": "^3.8.0",
     "@webbuf/webbuf": "^3.8.0",

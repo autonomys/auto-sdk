@@ -1,11 +1,10 @@
 import { asyncByChunk } from '@autonomys/asynchronous'
-import { Crypto } from '@peculiar/webcrypto'
 import { AwaitIterable } from 'interface-store'
 import { EncryptionAlgorithm, EncryptionOptions } from '../metadata/index.js'
 import type { PickPartial } from '../utils/types.js'
 import { PasswordGenerationOptions } from './types.js'
 
-export const crypto = typeof window === 'undefined' ? new Crypto() : window.crypto
+export const crypto = globalThis.crypto
 
 export const ENCRYPTING_CHUNK_SIZE = 1024 * 1024
 const IV_SIZE = 16
