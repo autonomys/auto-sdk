@@ -12,6 +12,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@adraffy/ens-normalize@npm:1.11.1":
+  version: 1.11.1
+  resolution: "@adraffy/ens-normalize@npm:1.11.1"
+  checksum: 10c0/b364e2a57131db278ebf2f22d1a1ac6d8aea95c49dd2bbbc1825870b38aa91fd8816aba580a1f84edc50a45eb6389213dacfd1889f32893afc8549a82d304767
+  languageName: node
+  linkType: hard
+
 "@alloc/quick-lru@npm:^5.2.0":
   version: 5.2.0
   resolution: "@alloc/quick-lru@npm:5.2.0"
@@ -53,7 +60,7 @@ __metadata:
     "@autonomys/auto-drive": "npm:^1.6.14"
     "@types/jest": "npm:^29.5.14"
     eslint: "npm:^9.39.4"
-    ethers: "npm:6.16.0"
+    ethers: "npm:6.17.0"
     jest: "npm:^29.7.0"
     prettier: "npm:^3.8.5"
     ts-jest: "npm:^29.4.11"
@@ -315,7 +322,7 @@ __metadata:
     "@autonomys/auto-utils": "npm:^1.6.14"
     "@types/jest": "npm:^29.5.14"
     eslint: "npm:^9.39.4"
-    ethers: "npm:^6.16.0"
+    ethers: "npm:^6.17.0"
     jest: "npm:^29.7.0"
     prettier: "npm:^3.8.5"
     ts-jest: "npm:^29.4.11"
@@ -333,7 +340,7 @@ __metadata:
   resolution: "@autonomys/contracts@workspace:packages/utility/contracts"
   dependencies:
     eslint: "npm:^9.39.4"
-    ethers: "npm:6.16.0"
+    ethers: "npm:6.17.0"
     prettier: "npm:^3.8.5"
     ts-node: "npm:^10.9.2"
     typescript: "npm:^5.9.3"
@@ -400,7 +407,7 @@ __metadata:
     "@autonomys/auto-xdm": "workspace:*"
     "@types/jest": "npm:^29.5.14"
     "@types/node": "npm:^20.19.43"
-    ethers: "npm:^6.16.0"
+    ethers: "npm:^6.17.0"
     jest: "npm:^29.7.0"
     ts-jest: "npm:^29.4.11"
     tsx: "npm:^4.22.4"
@@ -430,7 +437,7 @@ __metadata:
     "@autonomys/auto-dag-data": "npm:^1.6.14"
     "@autonomys/auto-drive": "npm:^1.6.14"
     eslint: "npm:^9.39.4"
-    ethers: "npm:6.16.0"
+    ethers: "npm:6.17.0"
     prettier: "npm:^3.8.5"
     ts-node: "npm:^10.9.2"
     typescript: "npm:^5.9.3"
@@ -14471,18 +14478,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ethers@npm:6.16.0, ethers@npm:^6.16.0":
-  version: 6.16.0
-  resolution: "ethers@npm:6.16.0"
+"ethers@npm:6.17.0, ethers@npm:^6.17.0":
+  version: 6.17.0
+  resolution: "ethers@npm:6.17.0"
   dependencies:
-    "@adraffy/ens-normalize": "npm:1.10.1"
+    "@adraffy/ens-normalize": "npm:1.11.1"
     "@noble/curves": "npm:1.2.0"
     "@noble/hashes": "npm:1.3.2"
     "@types/node": "npm:22.7.5"
     aes-js: "npm:4.0.0-beta.5"
     tslib: "npm:2.7.0"
-    ws: "npm:8.17.1"
-  checksum: 10c0/65c0ff7016b1592b1961c3b68508902b89fc75e1ad025bab3a722df1b5699fd077551875a7285e65b2d0cfea9a85b2459bb84010a0fa4e4494d231848aee3a73
+    ws: "npm:8.21.0"
+  checksum: 10c0/0a75f3b4cedaaddb95ba31fecdfca04202735564e66512f202069dd1a11946e01c310a158e3a1299b994274e9d9fe11db10c6f7997222a28d79dfecb8f1fd162
   languageName: node
   linkType: hard
 
@@ -25343,6 +25350,21 @@ __metadata:
     utf-8-validate:
       optional: true
   checksum: 10c0/f4a49064afae4500be772abdc2211c8518f39e1c959640457dcee15d4488628620625c783902a52af2dd02f68558da2868fd06e6fd0e67ebcd09e6881b1b5bfe
+  languageName: node
+  linkType: hard
+
+"ws@npm:8.21.0":
+  version: 8.21.0
+  resolution: "ws@npm:8.21.0"
+  peerDependencies:
+    bufferutil: ^4.0.1
+    utf-8-validate: ">=5.0.2"
+  peerDependenciesMeta:
+    bufferutil:
+      optional: true
+    utf-8-validate:
+      optional: true
+  checksum: 10c0/ef4a243476283fc49bc7550966c4af4aa0eef56273837211e700de3b664e08604a760cdddcb5ba43c049140e74ccfec5b0ee0bb439e08c2adf9138902fdde5f9
   languageName: node
   linkType: hard
 
