@@ -102,7 +102,7 @@ jobs:
 
       - name: Create GitHub Release
         if: ${{ !inputs.dryRun }}
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v3
         with:
           body_path: CHANGELOG.md
           tag_name: v${{ steps.version_bump.outputs.version }}
