@@ -97,7 +97,7 @@ __metadata:
     fflate: "npm:^0.8.3"
     interface-store: "npm:^6.0.3"
     jest: "npm:^29.7.0"
-    multiformats: "npm:^13.4.2"
+    multiformats: "npm:^14.0.2"
     protobufjs: "npm:^7.6.4"
     protons: "npm:^7.7.0"
     protons-runtime: "npm:^5.6.0"
@@ -19072,7 +19072,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"multiformats@npm:^13.3.6, multiformats@npm:^13.4.2":
+"multiformats@npm:^13.3.6":
   version: 13.4.2
   resolution: "multiformats@npm:13.4.2"
   checksum: 10c0/b7be09b8bf8198d601c8f8c9a358b9a6aca5a14d61239a84f88d8266322e4e7c3015fe7bdf88b589b9993a4abb752defabb932719d1b457a53277e264c4cee11
@@ -19083,6 +19083,13 @@ __metadata:
   version: 14.0.0
   resolution: "multiformats@npm:14.0.0"
   checksum: 10c0/ec4b7d5ffa9dfb5b18274afb41c105c2d410e758b2c9242fdfbd938972c3a9796cabba74c214158b8732a41e1b5ba3c106c9dd5f1b7b19c4669c8f45b91db5cd
+  languageName: node
+  linkType: hard
+
+"multiformats@npm:^14.0.2":
+  version: 14.0.3
+  resolution: "multiformats@npm:14.0.3"
+  checksum: 10c0/5487c0175eca8f941df73762c315c43598a37402a4a3a0f1b69e566b8c4be4465bd5df97a80614b8ec154d33252345dd749549ecd05f174b0ae3e1d3b4fa99cb
   languageName: node
   linkType: hard
 
