@@ -84,7 +84,7 @@
     "buffer": "^6.0.3",
     "concurrently": "^8.2.2",
     "events": "^3.3.0",
-    "postcss": "^8.5.15",
+    "postcss": "^8.5.16",
     "postcss-cli": "^10.1.0",
     "postcss-loader": "^8.2.1",
     "process": "^0.11.10",
