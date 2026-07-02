@@ -28,7 +28,7 @@
     "./protobuf": "./dist/metadata/onchain/protobuf/onchainMetadata.js"
   },
   "engines": {
-    "node": ">=20.20.2"
+    "node": ">=24.18.0"
   },
   "devDependencies": {
     "@types/jest": "^29.5.14",
