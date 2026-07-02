@@ -40,7 +40,7 @@
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^16.0.3",
     "@rollup/plugin-terser": "^1.0.0",
-    "@rollup/plugin-typescript": "^12.1.2",
+    "@rollup/plugin-typescript": "^12.3.0",
     "@types/express": "^5.0.0",
     "@types/mime-types": "^2.1.4",
     "rollup-plugin-jscc": "^2.0.0",
