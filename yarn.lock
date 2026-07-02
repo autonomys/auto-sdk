@@ -127,7 +127,7 @@ __metadata:
     "@radix-ui/react-slot": "npm:^1.3.0"
     "@radix-ui/react-use-callback-ref": "npm:^1.1.2"
     "@rollup/plugin-commonjs": "npm:^29.0.3"
-    "@rollup/plugin-node-resolve": "npm:^15.3.1"
+    "@rollup/plugin-node-resolve": "npm:^16.0.3"
     "@rollup/plugin-typescript": "npm:^11.1.6"
     "@storybook/addon-a11y": "npm:^7.6.24"
     "@storybook/addon-essentials": "npm:^7.6.24"
@@ -189,7 +189,7 @@ __metadata:
     "@prerenderer/rollup-plugin": "npm:^0.3.12"
     "@rollup/plugin-commonjs": "npm:^29.0.3"
     "@rollup/plugin-json": "npm:^6.1.0"
-    "@rollup/plugin-node-resolve": "npm:^16.0.1"
+    "@rollup/plugin-node-resolve": "npm:^16.0.3"
     "@rollup/plugin-terser": "npm:^1.0.0"
     "@rollup/plugin-typescript": "npm:^12.1.2"
     "@types/mime-types": "npm:^3.0.1"
@@ -278,7 +278,7 @@ __metadata:
     "@radix-ui/react-dialog": "npm:^1.1.17"
     "@radix-ui/react-slot": "npm:^1.3.0"
     "@rollup/plugin-commonjs": "npm:^29.0.3"
-    "@rollup/plugin-node-resolve": "npm:^15.3.1"
+    "@rollup/plugin-node-resolve": "npm:^16.0.3"
     "@rollup/plugin-typescript": "npm:^11.1.6"
     "@types/react": "npm:^18.3.31"
     "@types/react-dom": "npm:^18.3.7"
@@ -352,7 +352,7 @@ __metadata:
   resolution: "@autonomys/design-tokens@workspace:packages/utility/design-tokens"
   dependencies:
     "@rollup/plugin-commonjs": "npm:^29.0.3"
-    "@rollup/plugin-node-resolve": "npm:^15.3.1"
+    "@rollup/plugin-node-resolve": "npm:^16.0.3"
     "@rollup/plugin-typescript": "npm:^11.1.6"
     "@tailwindcss/forms": "npm:^0.5.11"
     autoprefixer: "npm:^10.5.2"
@@ -377,7 +377,7 @@ __metadata:
     "@prerenderer/rollup-plugin": "npm:^0.3.12"
     "@rollup/plugin-commonjs": "npm:^29.0.3"
     "@rollup/plugin-json": "npm:^6.1.0"
-    "@rollup/plugin-node-resolve": "npm:^16.0.1"
+    "@rollup/plugin-node-resolve": "npm:^16.0.3"
     "@rollup/plugin-terser": "npm:^1.0.0"
     "@rollup/plugin-typescript": "npm:^12.1.2"
     "@types/express": "npm:^5.0.0"
@@ -7974,9 +7974,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rollup/plugin-node-resolve@npm:^15.3.1":
-  version: 15.3.1
-  resolution: "@rollup/plugin-node-resolve@npm:15.3.1"
+"@rollup/plugin-node-resolve@npm:^16.0.3":
+  version: 16.0.3
+  resolution: "@rollup/plugin-node-resolve@npm:16.0.3"
   dependencies:
     "@rollup/pluginutils": "npm:^5.0.1"
     "@types/resolve": "npm:1.20.2"
@@ -7988,25 +7988,7 @@ __metadata:
   peerDependenciesMeta:
     rollup:
       optional: true
-  checksum: 10c0/ecf3abe890fc98ad665fdbfb1ea245253e0d1f2bc6d9f4e8f496f212c76a2ce7cd4b9bc0abd21e6bcaa16f72d1c67cc6b322ea12a6ec68e8a8834df8242a5ecd
-  languageName: node
-  linkType: hard
-
-"@rollup/plugin-node-resolve@npm:^16.0.1":
-  version: 16.0.1
-  resolution: "@rollup/plugin-node-resolve@npm:16.0.1"
-  dependencies:
-    "@rollup/pluginutils": "npm:^5.0.1"
-    "@types/resolve": "npm:1.20.2"
-    deepmerge: "npm:^4.2.2"
-    is-module: "npm:^1.0.0"
-    resolve: "npm:^1.22.1"
-  peerDependencies:
-    rollup: ^2.78.0||^3.0.0||^4.0.0
-  peerDependenciesMeta:
-    rollup:
-      optional: true
-  checksum: 10c0/54d33282321492fafec29b49c66dd1efd90c72a24f9d1569dcb57a72ab8de8a782810f39fdb917b96ec6a598c18f3416588b419bf7af331793a010de1fe28c60
+  checksum: 10c0/5bafff8e51cd28b5b3b8f415c30a893f5bfdb1a54469e00b3dc6530f26051620f3dfa172f40544361948b46cc3070cb34fd44ade66d38c0677d74c846fbc58dc
   languageName: node
   linkType: hard
 
