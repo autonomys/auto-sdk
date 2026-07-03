@@ -382,7 +382,7 @@ __metadata:
     "@rollup/plugin-typescript": "npm:^12.3.0"
     "@types/express": "npm:^5.0.0"
     "@types/mime-types": "npm:^3.0.1"
-    cache-manager: "npm:^7.2.8"
+    cache-manager: "npm:^7.2.9"
     express: "npm:^4.22.2"
     jszip: "npm:^3.10.1"
     keyv: "npm:^5.6.0"
@@ -11925,7 +11925,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cache-manager@npm:^7.2.8":
+"cache-manager@npm:^7.2.9":
   version: 7.2.9
   resolution: "cache-manager@npm:7.2.9"
   dependencies:
