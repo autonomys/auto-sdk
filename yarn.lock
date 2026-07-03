@@ -43,7 +43,7 @@ __metadata:
     "@types/jest": "npm:^29.5.14"
     "@types/stream-fork": "npm:^1.0.5"
     eslint: "npm:^9.39.4"
-    interface-store: "npm:^6.0.3"
+    interface-store: "npm:^8.0.0"
     jest: "npm:^29.7.0"
     prettier: "npm:^3.9.4"
     stream-fork: "npm:^1.0.5"
@@ -95,7 +95,7 @@ __metadata:
     "@webbuf/webbuf": "npm:^3.8.0"
     blockstore-core: "npm:^5.0.4"
     fflate: "npm:^0.8.3"
-    interface-store: "npm:^6.0.3"
+    interface-store: "npm:^8.0.0"
     jest: "npm:^29.7.0"
     multiformats: "npm:^13.4.2"
     protobufjs: "npm:^7.6.4"
@@ -10765,6 +10765,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"abort-error@npm:^1.0.2":
+  version: 1.0.2
+  resolution: "abort-error@npm:1.0.2"
+  checksum: 10c0/d5934130be3fd8556d1011076c1a1ef1198e9fa9a6a7b2c227d5db327a4cb14c2046fb85359fcf5c3561ad194254a867fa0898fbff4680e4caa9902bc8ffa40b
+  languageName: node
+  linkType: hard
+
 "accepts@npm:^2.0.0":
   version: 2.0.0
   resolution: "accepts@npm:2.0.0"
@@ -16634,10 +16641,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"interface-store@npm:^6.0.3":
-  version: 6.0.3
-  resolution: "interface-store@npm:6.0.3"
-  checksum: 10c0/aa7b978fccb0cee55a18e391c22b7b72a85abdb281f6d816ca6316df3af778e0e69b3a1db094b8dbb851cd0ca7edd4cc65f4b689f87fbab6e44439c20252ef18
+"interface-store@npm:^8.0.0":
+  version: 8.0.0
+  resolution: "interface-store@npm:8.0.0"
+  dependencies:
+    abort-error: "npm:^1.0.2"
+  checksum: 10c0/6680a5eb906d64fae4054d78bea3e1db1788d07a026c57a29fcbd2079c0f98be6d925d388258299584e5a3418efb8c58ea2de78e248a5c84cc9aa562635ce263
   languageName: node
   linkType: hard
 
