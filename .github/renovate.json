@@ -21,11 +21,6 @@
       "addLabels": ["optional"]
     },
     {
-      "matchDepTypes": ["minor", "patch", "devDependencies"],
-      "automerge": true,
-      "automergeType": "pr"
-    },
-    {
       "groupName": "Autonomys Auto-SDK",
       "groupSlug": "auto-sdk",
       "automerge": false,
@@ -42,6 +37,10 @@
     },
     {
       "matchDepTypes": ["peerDependencies"],
+      "enabled": false
+    },
+    {
+      "matchDepTypes": ["engines"],
       "enabled": false
     }
   ],
