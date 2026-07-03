@@ -31,7 +31,7 @@ export const createFileCache = (config: BaseCacheConfig) => {
     nonBlocking: false,
   })
 
-  const deserialize = (data: Omit<FileResponse, 'data'> | null) => {
+  const deserialize = (data: UncheckedFileCacheEntry) => {
     if (!data) {
       return null
     }
