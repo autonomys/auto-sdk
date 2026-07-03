@@ -52,7 +52,7 @@
     "@autonomys/auto-dag-data": "^1.6.14",
     "@autonomys/auto-utils": "^1.6.14",
     "@keyvhq/sqlite": "^2.2.0",
-    "cache-manager": "^7.2.8",
+    "cache-manager": "^7.2.9",
     "express": "^4.22.2",
     "jszip": "^3.10.1",
     "keyv": "^5.6.0",
