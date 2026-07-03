@@ -357,7 +357,7 @@ __metadata:
     "@tailwindcss/forms": "npm:^0.5.11"
     autoprefixer: "npm:^10.5.2"
     cssnano: "npm:^8.0.2"
-    fs-extra: "npm:^11.3.5"
+    fs-extra: "npm:^11.3.6"
     postcss: "npm:^8.5.16"
     postcss-import: "npm:^15.1.0"
     rollup: "npm:^4.62.2"
@@ -15213,14 +15213,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fs-extra@npm:^11.3.5":
-  version: 11.3.5
-  resolution: "fs-extra@npm:11.3.5"
+"fs-extra@npm:^11.3.6":
+  version: 11.3.6
+  resolution: "fs-extra@npm:11.3.6"
   dependencies:
     graceful-fs: "npm:^4.2.0"
     jsonfile: "npm:^6.0.1"
     universalify: "npm:^2.0.0"
-  checksum: 10c0/33e80bad6b5d17308faa197e5ede99ecba4b6f6cb4aa4645d52745476c75afc57665bdf39ec75b2ebb38b97b7110f634a8dcc0a546e248eb4de059275cf5ac90
+  checksum: 10c0/191c96bf71519fe08595f7920b6e568f6e44b48ed968624f35cb3bb7f4f9b05718b99cd6bf81938c0f7b1daa6d151383c33e0cbfdfe4d95419d7ea121de8e91a
   languageName: node
   linkType: hard
 
