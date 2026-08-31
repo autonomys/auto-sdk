@@ -25,7 +25,7 @@
     "README.md"
   ],
   "devDependencies": {
-    "eslint": "^9.39.4",
+    "eslint": "^10.9.1",
     "prettier": "^3.9.4",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
