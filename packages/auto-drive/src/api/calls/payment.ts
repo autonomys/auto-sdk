@@ -1,5 +1,6 @@
 import { shannonsToAi3 } from '@autonomys/auto-utils'
 import {
+  CreditCapExceededError,
   PaymentContractInfo,
   PaymentIntent,
   PaymentIntentStatus,
@@ -48,7 +49,9 @@ export const getPaymentContractInfo = async (
   const response = await api.sendAPIRequest('/intents/contract', { method: 'GET' })
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch payment contract info: ${response.status} ${response.statusText}`)
+    throw new Error(
+      `Failed to fetch payment contract info: ${response.status} ${response.statusText}`,
+    )
   }
 
   return response.json()
@@ -61,10 +64,11 @@ export const getPaymentContractInfo = async (
  * The returned `ai3AmountWei` is the exact value to pass as `msg.value`
  * when calling `payIntent(intentId)` on the Credits Receiver contract.
  *
- * Note: `sizeBytes` is **not** sent to the Auto Drive API. The POST `/intents`
- * endpoint accepts no request body — it returns the current `shannonsPerByte`
- * rate. The SDK multiplies that rate by `sizeBytes` to produce `ai3AmountWei`,
- * saving the caller from doing the BigInt arithmetic themselves.
+ * Note: `sizeBytes` is validated as a positive safe integer and sent to the Auto Drive API
+ * as `requestedBytes` in the POST `/intents` request body. The server checks the requested
+ * size against the user's credit cap and returns a price-locked intent or rejects with 403
+ * `CREDIT_CAP_EXCEEDED` (throwing a {@link CreditCapExceededError}). The SDK computes
+ * `ai3AmountWei` from `shannonsPerByte` and `sizeBytes`.
  *
  * Flow:
  * 1. Call `createPaymentIntent(api, sizeBytes)` — locks the price
@@ -76,14 +80,37 @@ export const createPaymentIntent = async (
   api: AutoDriveApiHandler,
   sizeBytes: number,
 ): Promise<PaymentIntent> => {
+  if (!Number.isSafeInteger(sizeBytes) || sizeBytes <= 0) {
+    throw new TypeError(`sizeBytes must be a positive integer, received: ${sizeBytes}`)
+  }
+
   const [contractInfo, intentRes] = await Promise.all([
     getPaymentContractInfo(api),
-    api.sendAPIRequest('/intents', { method: 'POST' }),
+    api.sendAPIRequest(
+      '/intents',
+      {
+        method: 'POST',
+        headers: new Headers({ 'Content-Type': 'application/json' }),
+      },
+      JSON.stringify({ requestedBytes: sizeBytes.toString() }),
+    ),
   ])
 
   if (!intentRes.ok) {
     const body = await intentRes.text()
-    throw new Error(`Failed to create payment intent: ${intentRes.status} ${body}`)
+    let parsed: { error?: string; message?: string } | null = null
+    try {
+      parsed = JSON.parse(body)
+    } catch {
+      // Body is not JSON
+    }
+
+    if (intentRes.status === 403 && parsed?.error === 'CREDIT_CAP_EXCEEDED') {
+      throw new CreditCapExceededError(parsed.message || 'Credit cap exceeded')
+    }
+
+    const errorMessage = parsed?.message || body
+    throw new Error(`Failed to create payment intent: ${intentRes.status} ${errorMessage}`)
   }
 
   const intent = await intentRes.json()

@@ -45,12 +45,7 @@ export type PaymentIntent = {
 
 /** All possible states a payment intent can be in */
 export type PaymentIntentStatus =
-  | 'PENDING'
-  | 'CONFIRMED'
-  | 'COMPLETED'
-  | 'EXPIRED'
-  | 'FAILED'
-  | 'OVER_CAP'
+  'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'EXPIRED' | 'FAILED' | 'OVER_CAP'
 
 /** States that indicate the intent lifecycle has ended */
 export type PaymentIntentTerminalStatus = Extract<
@@ -64,4 +59,18 @@ export type PollOptions = {
   pollIntervalMs?: number
   /** Maximum time to wait before throwing. Default: 300 000 ms (5 minutes) */
   timeoutMs?: number
+}
+
+/**
+ * Error thrown when creating a payment intent fails because the requested upload size
+ * would exceed the user's per-user credit cap.
+ */
+export class CreditCapExceededError extends Error {
+  readonly code = 'CREDIT_CAP_EXCEEDED' as const
+
+  constructor(message: string) {
+    super(message)
+    this.name = 'CreditCapExceededError'
+    Object.setPrototypeOf(this, CreditCapExceededError.prototype)
+  }
 }
