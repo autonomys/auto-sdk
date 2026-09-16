@@ -27,7 +27,7 @@
   },
   "packageManager": "yarn@4.17.0",
   "engines": {
-    "node": ">=22.0.0"
+    "node": "^22.13.0 || >=24"
   },
   "repository": {
     "type": "git",
@@ -53,13 +53,13 @@
     "@commitlint/cli": "^19.8.1",
     "@commitlint/config-conventional": "^19.8.1",
     "@eslint/eslintrc": "^3.3.7",
-    "@eslint/js": "^9.21.0",
+    "@eslint/js": "^10.0.1",
     "@octokit/rest": "^22.0.1",
     "@types/jest": "^29.5.14",
     "@typescript-eslint/eslint-plugin": "^8.70.0",
     "@typescript-eslint/parser": "^8.70.0",
     "conventional-changelog-cli": "^5.0.0",
-    "eslint": "^9.39.4",
+    "eslint": "^10.10.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.6",
     "globals": "^17.12.0",
