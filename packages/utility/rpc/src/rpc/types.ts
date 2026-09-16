@@ -1,8 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import http from 'http'
 import Websocket from 'websocket'
 import { connection } from 'websocket'
 import { z } from 'zod'
 import { PromiseOr } from '../utils/types'
+import { CreateWsServerParams, WsServer, WsServerCallbacks } from '../ws/types'
 import { ApiDefinition, ApiServerNotificationHandlers } from './api'
 
 export type ClientRPC = {
@@ -108,8 +110,18 @@ export type RpcHandlerList = RpcHandler<any, RpcResponse>[]
 
 export type TypedRpcHandlerList<S extends ApiDefinition> = TypedRPCHandler<any, RpcResponse, S>[]
 
+export type CreateRpcServerParams = {
+  server?: WsServer | CreateWsServerParams
+  httpServer?: http.Server | http.RequestListener
+  callbacks?: WsServerCallbacks
+  onConnection?: (connection: Websocket.connection) => void
+  port?: number
+  initialHandlers?: RpcHandlerList
+}
+
 export type RpcServer = {
   addRpcHandler: (handler: RpcHandler<any, RpcResponse>) => void
   close: () => void
   listen: (port: number, cb?: () => void) => void
+  httpServer: http.Server
 }

@@ -1,31 +1,22 @@
 import http from 'http'
 import Websocket from 'websocket'
-import { WsMessageCallback, WsServer } from './types'
+import { CreateWsServerParams, WsMessageCallback, WsServer } from './types'
 
-export const createWsServer = ({
-  httpServer,
-  callbacks: { onConnectionError, onClose, connectionAcceptance },
-  onConnection,
-}: {
-  httpServer: http.Server
-  callbacks: {
-    onConnectionError?: (error: Error) => void
-    onClose?: (connection: Websocket.connection, reason: number, description: string) => void
-    connectionAcceptance?: (connection: Websocket.request) => void
-  }
-  onConnection?: (connection: Websocket.connection) => void
-}): WsServer => {
-  const messageCallbacks: WsMessageCallback[] = []
+const isHttpServer = (s: unknown): s is http.Server =>
+  s instanceof http.Server ||
+  (typeof s === 'object' &&
+    s !== null &&
+    'listeners' in s &&
+    typeof (s as http.Server).listen === 'function')
 
-  const internalHttpServer = http.createServer(httpServer)
-  const ws = new Websocket.server({
-    httpServer: internalHttpServer,
-    autoAcceptConnections: false,
-  })
-
-  if (onClose) {
-    ws.on('close', onClose)
-  }
+export const createWsServer = (params: CreateWsServerParams = {}): WsServer => {
+  const {
+    httpServer: rawHttpServer,
+    callbacks = {},
+    onConnection,
+    port,
+  } = params
+  const { onConnectionError, onClose, connectionAcceptance } = callbacks
 
   const wrapRequestListener = (
     fn: (req: http.IncomingMessage, res: http.ServerResponse) => void,
@@ -38,11 +29,30 @@ export const createWsServer = ({
     }
   }
 
-  const listeners = httpServer.listeners('request') as http.RequestListener[]
-  listeners.forEach((listener) => {
-    httpServer.removeListener('request', listener)
-    httpServer.on('request', wrapRequestListener(listener))
+  let httpServer: http.Server
+  if (isHttpServer(rawHttpServer)) {
+    httpServer = rawHttpServer
+    const listeners = httpServer.listeners('request') as http.RequestListener[]
+    listeners.forEach((listener) => {
+      httpServer.removeListener('request', listener)
+      httpServer.on('request', wrapRequestListener(listener))
+    })
+  } else if (typeof rawHttpServer === 'function') {
+    httpServer = http.createServer(wrapRequestListener(rawHttpServer))
+  } else {
+    httpServer = http.createServer()
+  }
+
+  const messageCallbacks: WsMessageCallback[] = []
+
+  const ws = new Websocket.server({
+    httpServer,
+    autoAcceptConnections: false,
   })
+
+  if (onClose) {
+    ws.on('close', onClose)
+  }
 
   if (connectionAcceptance) {
     ws.on('request', connectionAcceptance)
@@ -72,18 +82,26 @@ export const createWsServer = ({
     ws.broadcast(message)
   }
 
-  ws.mount({ httpServer })
-
   const close = (): void => {
     ws.unmount()
     ws.shutDown()
     ws.closeAllConnections()
-    httpServer.close()
-    httpServer.closeAllConnections()
+    if (httpServer.listening) {
+      httpServer.close()
+      httpServer.closeAllConnections?.()
+    }
   }
 
-  const listen = (port: number, cb?: () => void) => {
-    internalHttpServer.listen(port, cb)
+  const listen = (listenPort: number, cb?: () => void) => {
+    if (httpServer.listening) {
+      cb?.()
+      return
+    }
+    httpServer.listen(listenPort, cb)
+  }
+
+  if (typeof port === 'number') {
+    listen(port)
   }
 
   const onHttpRequest = (fn: (req: http.IncomingMessage, res: http.ServerResponse) => void) => {
@@ -100,5 +118,6 @@ export const createWsServer = ({
     close,
     listen,
     onHttpRequest,
+    httpServer,
   }
 }

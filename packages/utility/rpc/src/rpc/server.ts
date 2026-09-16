@@ -7,6 +7,7 @@ import { parseMessage } from '../utils/websocket'
 import { WsServer } from '../ws'
 import { createWsServer } from '../ws/server'
 import {
+  CreateRpcServerParams,
   MessageResponseQuery,
   messageSchema,
   RpcHandler,
@@ -16,20 +17,21 @@ import {
 } from './types'
 import { errorResponse, RpcError, wrapResponse } from './utils'
 
-const isWsServer = (
-  server: WsServer | Parameters<typeof createWsServer>[0],
-): server is WsServer => {
-  return 'broadcastMessage' in server
+const isWsServer = (server: unknown): server is WsServer => {
+  return typeof server === 'object' && server !== null && 'broadcastMessage' in server
 }
 
-export const createRpcServer = ({
-  server,
-  initialHandlers,
-}: {
-  server: WsServer | Parameters<typeof createWsServer>[0]
-  initialHandlers?: RpcHandlerList
-}): RpcServer => {
-  const wsServer = isWsServer(server) ? server : createWsServer(server)
+export const createRpcServer = (params: CreateRpcServerParams = {}): RpcServer => {
+  const { server, initialHandlers, ...restOptions } = params
+
+  let wsServer: WsServer
+  if (isWsServer(server)) {
+    wsServer = server
+  } else if (typeof server === 'object' && server !== null) {
+    wsServer = createWsServer({ ...server, ...restOptions })
+  } else {
+    wsServer = createWsServer(restOptions)
+  }
   const handlers = initialHandlers ?? []
 
   const handleMessage = async ({
@@ -152,5 +154,6 @@ export const createRpcServer = ({
     addRpcHandler,
     close,
     listen,
+    httpServer: wsServer.httpServer,
   }
 }
