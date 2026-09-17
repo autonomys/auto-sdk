@@ -1,3 +1,6 @@
+export * from './deleteMarker.js'
 export * from './etag.js'
+export * from './listingEncoding.js'
 export * from './listObjects.js'
 export * from './listObjectVersions.js'
+export * from './objectLock.js'

@@ -3,8 +3,15 @@ import { createHash } from 'crypto'
 // Compute the hex MD5 digest of a buffer.
 export const md5Hex = (data: Buffer): string => createHash('md5').update(data).digest('hex')
 
-// Format a raw hex MD5 as a quoted S3 ETag: `"<hex>"`.
-export const formatETag = (hex: string): string => `"${hex}"`
+// Format a raw hex MD5 or CID string as a quoted S3 ETag: `"<value>"`.
+export const formatETag = (value: string): string => `"${value}"`
+
+/**
+ * Format an ETag from either the object's MD5 hash (when present) or fallback CID.
+ * Ensures standard quoted formatting: `"<etag>"`.
+ */
+export const objectETag = (md5?: string | null, cid?: string): string =>
+  formatETag(md5 || cid || '')
 
 /**
  * Compute the S3 composite ETag for a multipart upload.

@@ -1,5 +1,5 @@
 import { createHash } from 'crypto'
-import { formatETag, md5Hex, multipartETag } from '../etag.js'
+import { formatETag, md5Hex, multipartETag, objectETag } from '../etag.js'
 
 describe('md5Hex', () => {
   it('computes the MD5 of an empty buffer', () => {
@@ -17,6 +17,23 @@ describe('formatETag', () => {
     expect(formatETag('5d41402abc4b2a76b9719d911017c592')).toBe(
       '"5d41402abc4b2a76b9719d911017c592"',
     )
+  })
+})
+
+describe('objectETag', () => {
+  it('formats MD5 when provided', () => {
+    expect(objectETag('0123456789abcdef0123456789abcdef', 'bafk-cid')).toBe(
+      '"0123456789abcdef0123456789abcdef"',
+    )
+  })
+
+  it('falls back to CID when MD5 is null or undefined', () => {
+    expect(objectETag(null, 'bafk-cid')).toBe('"bafk-cid"')
+    expect(objectETag(undefined, 'bafk-cid')).toBe('"bafk-cid"')
+  })
+
+  it('handles empty fallback when neither is provided', () => {
+    expect(objectETag(null, undefined)).toBe('""')
   })
 })
 
