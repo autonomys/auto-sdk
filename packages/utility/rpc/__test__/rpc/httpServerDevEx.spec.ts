@@ -13,6 +13,9 @@ const TEST_DEVEX_PORT = 19881
 const TEST_DEVEX_PORT_2 = 19882
 const TEST_DEVEX_PORT_3 = 19883
 const TEST_DEVEX_PORT_4 = 19884
+const TEST_DEVEX_PORT_5 = 19885
+const TEST_DEVEX_PORT_6 = 19886
+const TEST_DEVEX_PORT_7 = 19887
 
 describe('RPC HTTP Server DevEx & Type Resolution', () => {
   describe('Issue #356: Underlying HTTP server developer experience', () => {
@@ -215,6 +218,63 @@ describe('RPC HTTP Server DevEx & Type Resolution', () => {
       expect(result).toEqual({ greeting: 'Welcome, Bob!' })
 
       client.close()
+      server.close()
+    })
+
+    it('should return 404 for non-RPC HTTP requests on default server instead of hanging', async () => {
+      const server = createWsServer()
+      await new Promise<void>((resolve) => {
+        server.listen(TEST_DEVEX_PORT_5, () => resolve())
+      })
+
+      const res = await fetch('http://127.0.0.1:' + TEST_DEVEX_PORT_5 + '/unknown-path')
+      expect(res.status).toBe(404)
+      const text = await res.text()
+      expect(text).toBe('Not Found')
+
+      server.close()
+    })
+
+    it('should safely close server during asynchronous listen race without leaking socket', async () => {
+      const server = createWsServer({ port: TEST_DEVEX_PORT_6 })
+      // Call close immediately before the listening event has fired
+      server.close()
+
+      // Give event loop time to verify socket is cleanly closed
+      await new Promise((resolve) => setTimeout(resolve, 50))
+      expect(server.httpServer.listening).toBe(false)
+    })
+
+    it('should handle overlapping listen calls and reject conflicting ports', async () => {
+      const server = createWsServer()
+      let callbackInvoked = false
+
+      // First listen begins pending bind
+      server.listen(TEST_DEVEX_PORT_7)
+
+      // Second listen to same port while first is pending queues callback
+      server.listen(TEST_DEVEX_PORT_7, () => {
+        callbackInvoked = true
+      })
+
+      // Attempting to listen on a different port while pending throws
+      expect(() => {
+        server.listen(TEST_DEVEX_PORT_7 + 10)
+      }).toThrow()
+
+      // Wait until listening is established
+      await new Promise<void>((resolve) => {
+        if (server.httpServer.listening) resolve()
+        else server.httpServer.once('listening', () => resolve())
+      })
+
+      expect(callbackInvoked).toBe(true)
+
+      // Calling listen with a different port once already listening throws
+      expect(() => {
+        server.listen(TEST_DEVEX_PORT_7 + 10)
+      }).toThrow()
+
       server.close()
     })
   })
