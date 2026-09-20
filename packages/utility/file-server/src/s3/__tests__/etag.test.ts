@@ -31,10 +31,6 @@ describe('objectETag', () => {
     expect(objectETag(null, 'bafk-cid')).toBe('"bafk-cid"')
     expect(objectETag(undefined, 'bafk-cid')).toBe('"bafk-cid"')
   })
-
-  it('handles empty fallback when neither is provided', () => {
-    expect(objectETag(null, undefined)).toBe('""')
-  })
 })
 
 describe('multipartETag', () => {

@@ -344,7 +344,7 @@ describe('finalizeListObjectVersions', () => {
     expect(result.deleteMarkers).toHaveLength(0)
   })
 
-  it('sets isTruncated and nextKeyMarker when storage returned a full batch of distinct keys (distinctKeys >= dbLimit)', () => {
+  it('sets isTruncated and nextKeyMarker when storage returns more keys than maxKeys', () => {
     const rows = [row('a.txt', 'cid-a'), row('b.txt', 'cid-b'), row('c.txt', 'cid-c')]
     const params = {
       bucket: 'test-bucket',
@@ -359,5 +359,20 @@ describe('finalizeListObjectVersions', () => {
     expect(result.isTruncated).toBe(true)
     expect(result.nextKeyMarker).toBe('b.txt')
     expect(result.versions.map((v) => v.key)).toEqual(['a.txt', 'b.txt'])
+  })
+
+  it('sets isTruncated and nextKeyMarker when caller under-fetched (distinctKeys >= dbLimit)', () => {
+    const rows = [row('a.txt', 'cid-a'), row('b.txt', 'cid-b')]
+    const params = {
+      bucket: 'test-bucket',
+      prefix: '',
+      keyMarker: null,
+      maxKeys: 2,
+    }
+    // caller under-fetched: asked storage for maxKeys keys (2), not maxKeys + 1
+    const result = finalizeListObjectVersions(params, rows, 2)
+
+    expect(result.isTruncated).toBe(true)
+    expect(result.nextKeyMarker).toBe('b.txt')
   })
 })

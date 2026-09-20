@@ -10,8 +10,8 @@ export const formatETag = (value: string): string => `"${value}"`
  * Format an ETag from either the object's MD5 hash (when present) or fallback CID.
  * Ensures standard quoted formatting: `"<etag>"`.
  */
-export const objectETag = (md5?: string | null, cid?: string): string =>
-  formatETag(md5 || cid || '')
+export const objectETag = (md5: string | null | undefined, cid: string): string =>
+  formatETag(md5 || cid)
 
 /**
  * Compute the S3 composite ETag for a multipart upload.
