@@ -18,8 +18,7 @@
     "node": ">=22.0.0"
   },
   "scripts": {
-    "build": "yarn tsc",
-    "test": "jest"
+    "build": "yarn tsc"
   },
   "main": "./dist/node.js",
   "types": "./dist/node.d.ts",

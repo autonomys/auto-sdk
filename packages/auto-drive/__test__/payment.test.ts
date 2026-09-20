@@ -144,6 +144,23 @@ describe('createPaymentIntent', () => {
       )
     })
 
+    it('surfaces error property directly for uncoded error responses without a message key', async () => {
+      const uncodedPayload = {
+        error: 'Unauthorized access token',
+      }
+
+      const mockApi = createMockApi({
+        ok: false,
+        status: 401,
+        statusText: 'Unauthorized',
+        text: async () => JSON.stringify(uncodedPayload),
+      })
+
+      await expect(createPaymentIntent(mockApi, 1024)).rejects.toThrow(
+        'Failed to create payment intent: 401 Unauthorized access token',
+      )
+    })
+
     it('surfaces raw text error when response body is not valid JSON', async () => {
       const mockApi = createMockApi({
         ok: false,

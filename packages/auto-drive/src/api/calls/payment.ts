@@ -109,7 +109,11 @@ export const createPaymentIntent = async (
       throw new CreditCapExceededError(parsed.message || 'Credit cap exceeded')
     }
 
-    const errorMessage = parsed?.message || body
+    const errorMessage =
+      parsed?.message ||
+      (typeof parsed?.error === 'string' && parsed.error !== 'CREDIT_CAP_EXCEEDED'
+        ? parsed.error
+        : body)
     throw new Error(`Failed to create payment intent: ${intentRes.status} ${errorMessage}`)
   }
 

@@ -45,7 +45,12 @@ export type PaymentIntent = {
 
 /** All possible states a payment intent can be in */
 export type PaymentIntentStatus =
-  'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'EXPIRED' | 'FAILED' | 'OVER_CAP'
+  | 'PENDING'
+  | 'CONFIRMED'
+  | 'COMPLETED'
+  | 'EXPIRED'
+  | 'FAILED'
+  | 'OVER_CAP'
 
 /** States that indicate the intent lifecycle has ended */
 export type PaymentIntentTerminalStatus = Extract<
