@@ -50,6 +50,6 @@ export const queryMethodPath = async <T>(
     return (await method(...params)) as Promise<T>
   } catch (error) {
     console.error(error)
-    throw new Error(`Error querying method path: ${methodPath}`)
+    throw new Error(`Error querying method path: ${methodPath}`, { cause: error })
   }
 }

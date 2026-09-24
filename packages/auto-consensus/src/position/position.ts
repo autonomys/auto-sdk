@@ -69,6 +69,7 @@ export const nominatorPosition = async (
     console.error('Error fetching nominator position:', error)
     throw new Error(
       `Error fetching position for nominator ${nominatorAccountId} in operator ${operatorId}: ${error}`,
+      { cause: error },
     )
   }
 }
