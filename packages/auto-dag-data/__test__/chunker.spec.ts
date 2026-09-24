@@ -171,7 +171,7 @@ describe('chunker', () => {
       const name = 'folder'
       const size = 1000
       const blockstore = new MemoryBlockstore()
-      const headCID = processFolderToIPLDFormat(blockstore, links, name, BigInt(size), {
+      await processFolderToIPLDFormat(blockstore, links, name, BigInt(size), {
         maxLinkPerNode: 4,
       })
 
@@ -198,7 +198,7 @@ describe('chunker', () => {
       const EXPECTED_NODE_COUNT = 4
 
       const blockstore = new MemoryBlockstore()
-      const headCID = processFolderToIPLDFormat(blockstore, links, name, BigInt(size), {
+      await processFolderToIPLDFormat(blockstore, links, name, BigInt(size), {
         maxLinkPerNode: 4,
       })
 
