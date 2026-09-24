@@ -51,8 +51,11 @@ const options: ExperienceManagerOptions = {
   // EVM wallet and contract details for on-chain CID tracking
   walletOptions: {
     privateKey: 'YOUR_AGENT_EVM_PRIVATE_KEY',
-    rpcUrl: 'YOUR_EVM_RPC_URL', // e.g., Polygon Amoy RPC
-    contractAddress: 'YOUR_AUTONOMYS_MEMORY_CONTRACT_ADDRESS', // Address of the deployed Memory contract
+    // Omit contractInfo to track the last CID in local storage only
+    contractInfo: {
+      rpcUrl: 'YOUR_EVM_RPC_URL', // e.g., Polygon Amoy RPC
+      contractAddress: 'YOUR_AUTONOMYS_MEMORY_CONTRACT_ADDRESS', // Address of the deployed Memory contract
+    },
   },
   // Agent identification and local storage path
   agentOptions: {
