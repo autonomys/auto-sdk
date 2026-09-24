@@ -220,7 +220,7 @@ describe('createCidManager', () => {
       localHashLocation,
       // Check that the content includes the new hash and a timestamp
       expect.stringContaining(`"hash": "${newEventHash}"`) &&
-        expect.stringContaining(`"timestamp":`) && // Check timestamp field exists
+        expect.stringContaining('"timestamp":') && // Check timestamp field exists
         expect.any(String), // The actual value is written by writeFileSync
     )
 
