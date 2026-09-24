@@ -38,7 +38,7 @@ export const domains = async (api: Api): Promise<DomainRegistry[]> => {
     return _domains.map((o) => parseDomain(o))
   } catch (error) {
     console.error('error', error)
-    throw new Error('Error querying domains list.' + error)
+    throw new Error('Error querying domains list.' + error, { cause: error })
   }
 }
 
@@ -114,7 +114,7 @@ export async function domainStakingSummary(
     }
   } catch (error) {
     console.error('error', error)
-    throw new Error('Error querying domains staking summary list.' + error)
+    throw new Error('Error querying domains staking summary list.' + error, { cause: error })
   }
 }
 
@@ -155,7 +155,7 @@ export const latestConfirmedDomainBlock = async (api: Api): Promise<ConfirmedDom
     }))
   } catch (error) {
     console.error('error', error)
-    throw new Error('Error querying latest confirmed block list.' + error)
+    throw new Error('Error querying latest confirmed block list.' + error, { cause: error })
   }
 }
 
@@ -200,6 +200,6 @@ export const headDomainNumber = async (
     return result !== null ? Number(result) : undefined
   } catch (error) {
     console.error('error', error)
-    throw new Error('Error querying domain head number.' + error)
+    throw new Error('Error querying domain head number.' + error, { cause: error })
   }
 }

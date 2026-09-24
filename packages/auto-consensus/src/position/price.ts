@@ -67,6 +67,7 @@ export const operatorEpochSharePrice = async (
     console.error('Error fetching operator epoch share price:', error)
     throw new Error(
       `Error fetching share price for operator ${operatorId} at epoch ${domainEpoch}: ${error}`,
+      { cause: error },
     )
   }
 }
@@ -137,6 +138,8 @@ export const instantSharePrice = async (
     return (effectiveStake * BigInt(10 ** 18)) / currentTotalShares
   } catch (error) {
     console.error('Error computing instant share price:', error)
-    throw new Error(`Error computing instant share price for operator ${operatorId}: ${error}`)
+    throw new Error(`Error computing instant share price for operator ${operatorId}: ${error}`, {
+      cause: error,
+    })
   }
 }
