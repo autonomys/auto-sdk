@@ -133,7 +133,7 @@ export const decryptFileData = async (password: string, fileData: FileData): Pro
     fileData.isEncrypted = false
     return fileData
   } catch (error) {
-    throw new Error((error as Error).message)
+    throw new Error((error as Error).message, { cause: error })
   }
 }
 

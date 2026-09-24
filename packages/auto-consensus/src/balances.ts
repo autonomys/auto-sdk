@@ -76,6 +76,6 @@ export const balance = async (api: Api, address: string): Promise<BalanceData> =
     return data
   } catch (error) {
     console.log('error', error)
-    throw new Error('Error getting balance' + error)
+    throw new Error('Error getting balance' + error, { cause: error })
   }
 }
