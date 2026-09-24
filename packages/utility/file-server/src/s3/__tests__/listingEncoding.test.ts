@@ -2,7 +2,6 @@ import {
   encodeS3Key,
   hasXmlIllegalChars,
   planListingEncoding,
-  XML_ILLEGAL_CHARS,
 } from '../listingEncoding.js'
 
 describe('listingEncoding', () => {

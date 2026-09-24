@@ -2,6 +2,7 @@ import { AwaitIterable } from 'interface-store'
 import { compressFile, COMPRESSION_CHUNK_SIZE, CompressionAlgorithm, decompressFile } from '../src'
 
 const awaitIterable = async (it: AwaitIterable<Buffer>) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- only drains the iterable
   for await (const _ of it);
 }
 

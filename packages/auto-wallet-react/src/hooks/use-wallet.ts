@@ -15,7 +15,6 @@ export const useWallet = () => {
   // Auto-detect wallets on hook mount
   useEffect(() => {
     state.detectWallets();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return {

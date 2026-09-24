@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { Button } from './ui/button';
 import { useWallet } from '../hooks/use-wallet';
-import { shortenAddress } from '@autonomys/auto-wallet';
+import { shortenAddress, type WalletAccount } from '@autonomys/auto-wallet';
 import { Copy, Check } from 'lucide-react';
-import type { WalletAccount } from '@autonomys/auto-wallet';
 
 interface AccountDropdownProps {
   accounts: WalletAccount[];

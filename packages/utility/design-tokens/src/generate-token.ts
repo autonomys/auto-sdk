@@ -3,7 +3,7 @@ import shadows from './tokens/shadows'
 import spacing from './tokens/spacing'
 import typography from './tokens/typography'
 
-type TokenValue = string | number | Record<string, any>
+type TokenValue = string | number | { [key: string]: TokenValue }
 
 /**
  * Add prefix to all token keys
@@ -33,6 +33,7 @@ function addPrefixToTokens(
  * Convert all design tokens to a format compatible with Tailwind CSS
  * @returns Object containing all design tokens with 'auto-' prefix
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- public return type of autoTokens
 export function convertTokens(): Record<string, any> {
   return {
     colors: {

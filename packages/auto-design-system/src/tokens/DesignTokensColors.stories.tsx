@@ -1,5 +1,5 @@
 import { autoTokens } from '@autonomys/design-tokens'
-import React, { useState } from 'react'
+import React from 'react'
 
 console.log('autoTokens', autoTokens)
 
