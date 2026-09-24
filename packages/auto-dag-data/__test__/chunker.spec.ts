@@ -1,11 +1,5 @@
 import { BaseBlockstore, MemoryBlockstore } from 'blockstore-core'
-import {
-  cidOfNode,
-  cidToString,
-  createFileChunkIpldNode,
-  createSingleFileIpldNode,
-  fileBuilders,
-} from '../src'
+import { cidOfNode, cidToString, createFileChunkIpldNode, fileBuilders } from '../src'
 import {
   DEFAULT_MAX_CHUNK_SIZE,
   LINK_SIZE_IN_BYTES,
@@ -128,7 +122,7 @@ describe('chunker', () => {
       const EXPECTED_NODE_COUNT = 4
 
       const blockstore = new MemoryBlockstore()
-      const headCID = await processFileToIPLDFormat(
+      await processFileToIPLDFormat(
         blockstore,
         bufferToIterable(Buffer.from(text)),
         BigInt(size),
@@ -171,7 +165,7 @@ describe('chunker', () => {
       const name = 'folder'
       const size = 1000
       const blockstore = new MemoryBlockstore()
-      const headCID = processFolderToIPLDFormat(blockstore, links, name, BigInt(size), {
+      await processFolderToIPLDFormat(blockstore, links, name, BigInt(size), {
         maxLinkPerNode: 4,
       })
 
@@ -198,7 +192,7 @@ describe('chunker', () => {
       const EXPECTED_NODE_COUNT = 4
 
       const blockstore = new MemoryBlockstore()
-      const headCID = processFolderToIPLDFormat(blockstore, links, name, BigInt(size), {
+      await processFolderToIPLDFormat(blockstore, links, name, BigInt(size), {
         maxLinkPerNode: 4,
       })
 
@@ -233,7 +227,6 @@ describe('chunker', () => {
 
   describe('asyncronous file creation', () => {
     it('process chunks to IPLD format should return the leftover buffer', async () => {
-      const filename = 'test.txt'
       const chunkSize = DEFAULT_MAX_CHUNK_SIZE
       const chunksCount = 1.5
       const buffer = Buffer.from(
@@ -249,7 +242,6 @@ describe('chunker', () => {
     })
 
     it('process chunks with exact chunk size len(leftover)=0', async () => {
-      const filename = 'test.txt'
       const chunkSize = DEFAULT_MAX_CHUNK_SIZE
       const chunksCount = 4
       const buffer = Buffer.from(
@@ -356,7 +348,7 @@ describe('chunker', () => {
       }
 
       const blockstore = new MemoryBlockstore()
-      const headCID = await processMetadataToIPLDFormat(blockstore, metadata, {
+      await processMetadataToIPLDFormat(blockstore, metadata, {
         maxNodeSize: 2000,
         maxLinkPerNode: 2,
       })

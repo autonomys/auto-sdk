@@ -8,7 +8,7 @@ export const parseBigInt = (operatorId: string | number | bigint): bigint =>
   typeof operatorId === 'bigint' ? operatorId : BigInt(operatorId)
 
 export const calculateStake = (params: RegisterOperatorParams) => {
-  const { amountToStake, nominationTax } = params
+  const { amountToStake } = params
 
   return (parseBigInt(amountToStake) * BigInt(100 - STORAGE_FEE_DEPOSIT_PERCENTAGE)) / BigInt(100)
   // To-Do: Add the nomination tax

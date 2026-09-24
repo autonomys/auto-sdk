@@ -2,6 +2,7 @@ import { AwaitIterable } from 'interface-store'
 import { decryptFile, encryptFile, EncryptionAlgorithm } from '../src'
 
 const awaitIterable = async (it: AwaitIterable<Buffer>) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- only drains the iterable
   for await (const _ of it);
 }
 
@@ -10,7 +11,6 @@ describe('encryption', () => {
     const chunk = 'hello'
     const file = Buffer.from(chunk.repeat(1000))
     const password = 'password'
-    const salt = 'salt'
 
     const encrypted = encryptFile(
       (async function* () {
@@ -38,7 +38,6 @@ describe('encryption', () => {
     const chunk = 'hello'
     const file = Buffer.from(chunk.repeat(1000))
     const password = 'password'
-    const salt = 'salt'
     const IV_SIZE = 16
     const TAG_SIZE = 16
 

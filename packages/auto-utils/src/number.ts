@@ -178,7 +178,6 @@ export const parseUnits = (
           frac = frac + BigInt(1)
           // handle carry into whole if frac rolls over
           if (frac === base) {
-            frac = BigInt(0)
             return (signIsNegative ? BigInt(-1) : BigInt(1)) * (whole + base)
           }
         }
@@ -189,7 +188,6 @@ export const parseUnits = (
         frac = frac + BigInt(1)
         // handle carry into whole if frac rolls over
         if (frac === base) {
-          frac = BigInt(0)
           return (signIsNegative ? BigInt(-1) : BigInt(1)) * (whole + base)
         }
         break

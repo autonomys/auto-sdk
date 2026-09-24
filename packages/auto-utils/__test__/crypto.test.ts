@@ -1,10 +1,11 @@
+// eslint-disable-next-line camelcase -- published API name
 import { blake2b_256, concatenateUint8Arrays, stringToUint8Array } from '@autonomys/auto-utils'
 
 describe('Verify crypto functions', () => {
   test('Check blake2b_256 return the hash of the data', async () => {
     const message = 'Hello, world!'
-    const message_bytes = stringToUint8Array(message)
-    const hash = blake2b_256(message_bytes)
+    const messageBytes = stringToUint8Array(message)
+    const hash = blake2b_256(messageBytes)
     expect(hash).toEqual('0xb5da441cfe72ae042ef4d2b17742907f675de4da57462d4c3609c2e2ed755970')
   })
 

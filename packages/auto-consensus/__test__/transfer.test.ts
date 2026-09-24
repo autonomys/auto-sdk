@@ -1,6 +1,12 @@
 import { balance, events, transfer } from '@autonomys/auto-consensus'
-import type { ApiPromise, WalletActivated } from '@autonomys/auto-utils'
-import { activate, address, disconnect, mockWallets } from '@autonomys/auto-utils'
+import {
+  type ApiPromise,
+  type WalletActivated,
+  activate,
+  address,
+  disconnect,
+  mockWallets,
+} from '@autonomys/auto-utils'
 import { setup, signAndSendTx } from './helpers'
 
 describe('Verify transfer functions', () => {

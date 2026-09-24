@@ -32,8 +32,10 @@ export type ActivateParams<T> = T & ApiOptions
 
 export const CHAIN_TYPES = {
   Solution: {
+    /* eslint-disable camelcase -- keys must match the on-chain Solution type's fields */
     public_key: 'AccountId32',
     reward_address: 'AccountId32',
+    /* eslint-enable camelcase */
   },
   SubPreDigest: {
     slot: 'u64',
