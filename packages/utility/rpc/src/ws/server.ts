@@ -10,13 +10,8 @@ const isHttpServer = (s: unknown): s is http.Server =>
     typeof (s as http.Server).listen === 'function')
 
 export const createWsServer = (params: CreateWsServerParams = {}): WsServer => {
-  const {
-    httpServer: rawHttpServer,
-    callbacks = {},
-    onConnection,
-    port,
-  } = params
-  const { onConnectionError, onClose, connectionAcceptance } = callbacks
+  const { httpServer: rawHttpServer, callbacks = {}, onConnection, port } = params
+  const { onConnectionError, onClose, connectionAcceptance, onError } = callbacks
 
   const wrapRequestListener = (
     fn: (req: http.IncomingMessage, res: http.ServerResponse) => void,
@@ -94,6 +89,28 @@ export const createWsServer = (params: CreateWsServerParams = {}): WsServer => {
   let isClosed = false
   const pendingListenCallbacks: Array<() => void> = []
 
+  const getBoundPort = (): number | null => {
+    if (boundPort !== null) return boundPort
+    if (httpServer.listening) {
+      const addr = httpServer.address()
+      if (typeof addr === 'object' && addr !== null) {
+        boundPort = addr.port
+        return boundPort
+      }
+    }
+    return null
+  }
+
+  // Populate boundPort if httpServer was already started by caller
+  getBoundPort()
+
+  httpServer.on('error', (err: Error) => {
+    isListenPending = false
+    boundPort = null
+    pendingListenCallbacks.length = 0
+    onError?.(err)
+  })
+
   const close = (): void => {
     isClosed = true
     ws.unmount()
@@ -111,16 +128,18 @@ export const createWsServer = (params: CreateWsServerParams = {}): WsServer => {
     }
 
     if (httpServer.listening) {
-      if (boundPort !== null && boundPort !== listenPort) {
-        throw new Error(`Server is already listening on port ${boundPort}`)
+      const activePort = getBoundPort()
+      if (activePort !== null && activePort !== listenPort) {
+        throw new Error(`Server is already listening on port ${activePort}`)
       }
       cb?.()
       return
     }
 
     if (isListenPending) {
-      if (boundPort !== null && boundPort !== listenPort) {
-        throw new Error(`Server listen is already pending on port ${boundPort}`)
+      const activePort = getBoundPort()
+      if (activePort !== null && activePort !== listenPort) {
+        throw new Error(`Server listen is already pending on port ${activePort}`)
       }
       if (cb) pendingListenCallbacks.push(cb)
       return
