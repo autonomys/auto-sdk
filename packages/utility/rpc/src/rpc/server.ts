@@ -24,13 +24,23 @@ const isWsServer = (server: unknown): server is WsServer => {
 export const createRpcServer = (params: CreateRpcServerParams = {}): RpcServer => {
   const { server, initialHandlers, ...restOptions } = params
 
+  const definedRestOptions: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(restOptions)) {
+    if (value !== undefined) {
+      definedRestOptions[key] = value
+    }
+  }
+
   let wsServer: WsServer
   if (isWsServer(server)) {
     wsServer = server
+    if (typeof definedRestOptions.port === 'number') {
+      wsServer.listen(definedRestOptions.port)
+    }
   } else if (typeof server === 'object' && server !== null) {
-    wsServer = createWsServer({ ...server, ...restOptions })
+    wsServer = createWsServer({ ...server, ...definedRestOptions })
   } else {
-    wsServer = createWsServer(restOptions)
+    wsServer = createWsServer(definedRestOptions)
   }
   const handlers = initialHandlers ?? []
 

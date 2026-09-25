@@ -5,6 +5,7 @@ export type WsServerCallbacks = {
   onConnectionError?: (error: Error) => void
   onClose?: (connection: Websocket.connection, reason: number, description: string) => void
   connectionAcceptance?: (connection: Websocket.request) => void
+  onError?: (error: Error) => void
 }
 
 export type CreateWsServerParams = {

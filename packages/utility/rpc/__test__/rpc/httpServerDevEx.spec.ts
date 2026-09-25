@@ -1,5 +1,6 @@
 /* eslint-disable camelcase */
 import http from 'http'
+import { AddressInfo } from 'net'
 import { z } from 'zod'
 import {
   createApiDefinition,
@@ -9,25 +10,34 @@ import {
   defineUnvalidatedType,
 } from '../../src'
 
-const TEST_DEVEX_PORT = 19881
-const TEST_DEVEX_PORT_2 = 19882
-const TEST_DEVEX_PORT_3 = 19883
-const TEST_DEVEX_PORT_4 = 19884
-const TEST_DEVEX_PORT_5 = 19885
-const TEST_DEVEX_PORT_6 = 19886
-const TEST_DEVEX_PORT_7 = 19887
-
 describe('RPC HTTP Server DevEx & Type Resolution', () => {
+  const serversToClose: Array<{ close: () => void }> = []
+  const clientsToClose: Array<{ close: () => void }> = []
+
+  afterEach(() => {
+    while (clientsToClose.length > 0) {
+      clientsToClose.pop()?.close()
+    }
+    while (serversToClose.length > 0) {
+      serversToClose.pop()?.close()
+    }
+  })
+
+  const getPort = (server: { httpServer: http.Server }): number => {
+    const addr = server.httpServer.address() as AddressInfo
+    return addr.port
+  }
+
   describe('Issue #356: Underlying HTTP server developer experience', () => {
     it('should allow createWsServer with no arguments (default http server and optional callbacks)', () => {
       const server = createWsServer()
+      serversToClose.push(server)
       expect(server.httpServer).toBeInstanceOf(http.Server)
       expect(typeof server.listen).toBe('function')
       expect(typeof server.close).toBe('function')
-      server.close()
     })
 
-    it('should allow createRpcServer with no arguments and listen on port', async () => {
+    it('should allow createRpcServer with no arguments and listen on dynamic port', async () => {
       const rpcServer = createRpcServer({
         initialHandlers: [
           {
@@ -40,17 +50,20 @@ describe('RPC HTTP Server DevEx & Type Resolution', () => {
           },
         ],
       })
+      serversToClose.push(rpcServer)
 
       expect(rpcServer.httpServer).toBeInstanceOf(http.Server)
 
       await new Promise<void>((resolve) => {
-        rpcServer.listen(TEST_DEVEX_PORT, () => resolve())
+        rpcServer.listen(0, () => resolve())
       })
 
+      const port = getPort(rpcServer)
       const client = createRpcClient({
-        endpoint: 'ws://127.0.0.1:' + TEST_DEVEX_PORT,
+        endpoint: 'ws://127.0.0.1:' + port,
         callbacks: {},
       })
+      clientsToClose.push(client)
 
       const response = await client.send({
         jsonrpc: '2.0',
@@ -64,14 +77,11 @@ describe('RPC HTTP Server DevEx & Type Resolution', () => {
         id: 1,
         result: 'pong',
       })
-
-      client.close()
-      rpcServer.close()
     })
 
-    it('should support automatic port binding via options', async () => {
+    it('should support automatic port binding via options (port: 0)', async () => {
       const rpcServer = createRpcServer({
-        port: TEST_DEVEX_PORT_2,
+        port: 0,
         initialHandlers: [
           {
             method: 'hello',
@@ -83,6 +93,7 @@ describe('RPC HTTP Server DevEx & Type Resolution', () => {
           },
         ],
       })
+      serversToClose.push(rpcServer)
 
       if (!rpcServer.httpServer.listening) {
         await new Promise<void>((resolve) => {
@@ -90,10 +101,12 @@ describe('RPC HTTP Server DevEx & Type Resolution', () => {
         })
       }
 
+      const port = getPort(rpcServer)
       const client = createRpcClient({
-        endpoint: 'ws://127.0.0.1:' + TEST_DEVEX_PORT_2,
+        endpoint: 'ws://127.0.0.1:' + port,
         callbacks: {},
       })
+      clientsToClose.push(client)
 
       const response = await client.send({
         jsonrpc: '2.0',
@@ -107,13 +120,9 @@ describe('RPC HTTP Server DevEx & Type Resolution', () => {
         id: 2,
         result: 'Hello, Alice!',
       })
-
-      client.close()
-      rpcServer.close()
     })
 
     it('should support wrapping an Express-like request listener function', async () => {
-      // Simulate an Express app (which is a function (req, res) => void)
       const expressApp: http.RequestListener = (req, res) => {
         if (req.method === 'GET' && req.url === '/health') {
           res.writeHead(200, { 'Content-Type': 'application/json' })
@@ -137,19 +146,22 @@ describe('RPC HTTP Server DevEx & Type Resolution', () => {
           },
         ],
       })
+      serversToClose.push(rpcServer)
 
       await new Promise<void>((resolve) => {
-        rpcServer.listen(TEST_DEVEX_PORT_3, () => resolve())
+        rpcServer.listen(0, () => resolve())
       })
 
+      const port = getPort(rpcServer)
+
       // Test HTTP route handled by the Express-like listener
-      const healthRes = await fetch('http://127.0.0.1:' + TEST_DEVEX_PORT_3 + '/health')
+      const healthRes = await fetch('http://127.0.0.1:' + port + '/health')
       expect(healthRes.status).toBe(200)
       const healthData = await healthRes.json()
       expect(healthData).toEqual({ status: 'ok' })
 
       // Test HTTP RPC route (/ws) handled by RPC server
-      const rpcHttpRes = await fetch('http://127.0.0.1:' + TEST_DEVEX_PORT_3 + '/ws', {
+      const rpcHttpRes = await fetch('http://127.0.0.1:' + port + '/ws', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -169,9 +181,11 @@ describe('RPC HTTP Server DevEx & Type Resolution', () => {
 
       // Test WebSocket RPC connection
       const wsClient = createRpcClient({
-        endpoint: 'ws://127.0.0.1:' + TEST_DEVEX_PORT_3,
+        endpoint: 'ws://127.0.0.1:' + port,
         callbacks: {},
       })
+      clientsToClose.push(wsClient)
+
       const wsRes = await wsClient.send({
         jsonrpc: '2.0',
         method: 'echo',
@@ -183,9 +197,6 @@ describe('RPC HTTP Server DevEx & Type Resolution', () => {
         id: 43,
         result: 'ws integration',
       })
-
-      wsClient.close()
-      rpcServer.close()
     })
 
     it('should allow apiDefinition.createServer without server arguments and listen smoothly', async () => {
@@ -204,39 +215,41 @@ describe('RPC HTTP Server DevEx & Type Resolution', () => {
           greeting: 'Welcome, ' + params.user + '!',
         }),
       })
+      serversToClose.push(server)
 
       await new Promise<void>((resolve) => {
-        server.listen(TEST_DEVEX_PORT_4, () => resolve())
+        server.listen(0, () => resolve())
       })
 
+      const port = getPort(server)
       const client = apiDef.createClient({
-        endpoint: 'ws://127.0.0.1:' + TEST_DEVEX_PORT_4,
+        endpoint: 'ws://127.0.0.1:' + port,
         callbacks: {},
       })
+      clientsToClose.push(client)
 
       const result = await client.api.greet({ user: 'Bob' })
       expect(result).toEqual({ greeting: 'Welcome, Bob!' })
-
-      client.close()
-      server.close()
     })
 
     it('should return 404 for non-RPC HTTP requests on default server instead of hanging', async () => {
       const server = createWsServer()
+      serversToClose.push(server)
+
       await new Promise<void>((resolve) => {
-        server.listen(TEST_DEVEX_PORT_5, () => resolve())
+        server.listen(0, () => resolve())
       })
 
-      const res = await fetch('http://127.0.0.1:' + TEST_DEVEX_PORT_5 + '/unknown-path')
+      const port = getPort(server)
+      const res = await fetch('http://127.0.0.1:' + port + '/unknown-path')
       expect(res.status).toBe(404)
       const text = await res.text()
       expect(text).toBe('Not Found')
-
-      server.close()
     })
 
     it('should safely close server during asynchronous listen race without leaking socket', async () => {
-      const server = createWsServer({ port: TEST_DEVEX_PORT_6 })
+      const server = createWsServer({ port: 0 })
+      serversToClose.push(server)
       // Call close immediately before the listening event has fired
       server.close()
 
@@ -247,19 +260,20 @@ describe('RPC HTTP Server DevEx & Type Resolution', () => {
 
     it('should handle overlapping listen calls and reject conflicting ports', async () => {
       const server = createWsServer()
+      serversToClose.push(server)
       let callbackInvoked = false
 
-      // First listen begins pending bind
-      server.listen(TEST_DEVEX_PORT_7)
+      // First listen begins pending bind on dynamic port 0
+      server.listen(0)
 
       // Second listen to same port while first is pending queues callback
-      server.listen(TEST_DEVEX_PORT_7, () => {
+      server.listen(0, () => {
         callbackInvoked = true
       })
 
-      // Attempting to listen on a different port while pending throws
+      // Attempting to listen on an explicit conflicting port while pending throws
       expect(() => {
-        server.listen(TEST_DEVEX_PORT_7 + 10)
+        server.listen(19999)
       }).toThrow()
 
       // Wait until listening is established
@@ -270,12 +284,100 @@ describe('RPC HTTP Server DevEx & Type Resolution', () => {
 
       expect(callbackInvoked).toBe(true)
 
+      const boundPort = getPort(server)
+
       // Calling listen with a different port once already listening throws
       expect(() => {
-        server.listen(TEST_DEVEX_PORT_7 + 10)
+        server.listen(boundPort + 100)
       }).toThrow()
+    })
 
-      server.close()
+    it('should reset pending state on listen error and notify callbacks.onError without uncaught crash', async () => {
+      // Start server A on an allocated port
+      const serverA = createWsServer()
+      serversToClose.push(serverA)
+      await new Promise<void>((resolve) => serverA.listen(0, () => resolve()))
+      const busyPort = getPort(serverA)
+
+      // Server B tries to bind to the same port
+      let capturedError: Error | null = null
+      const serverB = createWsServer({
+        callbacks: {
+          onError: (err) => {
+            capturedError = err
+          },
+        },
+      })
+      serversToClose.push(serverB)
+
+      serverB.listen(busyPort)
+
+      // Wait for the EADDRINUSE error
+      await new Promise<void>((resolve) => {
+        if (capturedError) resolve()
+        else serverB.httpServer.once('error', () => resolve())
+      })
+
+      expect(capturedError).not.toBeNull()
+      expect((capturedError as any)?.code).toBe('EADDRINUSE')
+
+      // Server B should no longer be stuck in pending state and can successfully listen on a free port
+      await new Promise<void>((resolve) => {
+        serverB.listen(0, () => resolve())
+      })
+      expect(serverB.httpServer.listening).toBe(true)
+    })
+
+    it('should not let top-level undefined options overwrite nested server options', () => {
+      const customHttpServer = http.createServer()
+      serversToClose.push({ close: () => customHttpServer.close() })
+
+      const rpcServer = createRpcServer({
+        server: { httpServer: customHttpServer },
+        httpServer: undefined,
+      })
+      serversToClose.push(rpcServer)
+
+      expect(rpcServer.httpServer).toBe(customHttpServer)
+    })
+
+    it('should listen when server is an existing WsServer and port option is provided', async () => {
+      const existingWsServer = createWsServer()
+      serversToClose.push(existingWsServer)
+
+      const rpcServer = createRpcServer({
+        server: existingWsServer,
+        port: 0,
+      })
+      serversToClose.push(rpcServer)
+
+      await new Promise<void>((resolve) => {
+        if (existingWsServer.httpServer.listening) resolve()
+        else existingWsServer.httpServer.once('listening', () => resolve())
+      })
+
+      expect(existingWsServer.httpServer.listening).toBe(true)
+    })
+
+    it('should detect port from already listening httpServer and reject conflicting listen', async () => {
+      const preStartedServer = http.createServer()
+      await new Promise<void>((resolve) => preStartedServer.listen(0, () => resolve()))
+      const actualPort = (preStartedServer.address() as AddressInfo).port
+
+      const wsServer = createWsServer({ httpServer: preStartedServer })
+      serversToClose.push(wsServer)
+
+      // Calling listen with the correct already bound port should succeed
+      let samePortCallbackCalled = false
+      wsServer.listen(actualPort, () => {
+        samePortCallbackCalled = true
+      })
+      expect(samePortCallbackCalled).toBe(true)
+
+      // Calling listen with a different port should throw
+      expect(() => {
+        wsServer.listen(actualPort + 10)
+      }).toThrow(`Server is already listening on port ${actualPort}`)
     })
   })
 
@@ -343,6 +445,7 @@ describe('RPC HTTP Server DevEx & Type Resolution', () => {
         },
         callbacks: {},
       })
+      clientsToClose.push(mockClient)
 
       const res = await mockClient.api.queryComplexData({
         filter: {
@@ -365,8 +468,6 @@ describe('RPC HTTP Server DevEx & Type Resolution', () => {
 
       const unvalidatedRes = await mockClient.api.unvalidatedMethod({ query: 'test' })
       expect(unvalidatedRes.matched).toBe(true)
-
-      mockClient.close()
     })
   })
 })
