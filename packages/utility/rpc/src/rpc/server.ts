@@ -7,6 +7,7 @@ import { parseMessage } from '../utils/websocket'
 import { WsServer } from '../ws'
 import { createWsServer } from '../ws/server'
 import {
+  CreateRpcServerParams,
   MessageResponseQuery,
   messageSchema,
   RpcHandler,
@@ -16,20 +17,31 @@ import {
 } from './types'
 import { errorResponse, RpcError, wrapResponse } from './utils'
 
-const isWsServer = (
-  server: WsServer | Parameters<typeof createWsServer>[0],
-): server is WsServer => {
-  return 'broadcastMessage' in server
+const isWsServer = (server: unknown): server is WsServer => {
+  return typeof server === 'object' && server !== null && 'broadcastMessage' in server
 }
 
-export const createRpcServer = ({
-  server,
-  initialHandlers,
-}: {
-  server: WsServer | Parameters<typeof createWsServer>[0]
-  initialHandlers?: RpcHandlerList
-}): RpcServer => {
-  const wsServer = isWsServer(server) ? server : createWsServer(server)
+export const createRpcServer = (params: CreateRpcServerParams = {}): RpcServer => {
+  const { server, initialHandlers, ...restOptions } = params
+
+  const definedRestOptions: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(restOptions)) {
+    if (value !== undefined) {
+      definedRestOptions[key] = value
+    }
+  }
+
+  let wsServer: WsServer
+  if (isWsServer(server)) {
+    wsServer = server
+    if (typeof definedRestOptions.port === 'number') {
+      wsServer.listen(definedRestOptions.port)
+    }
+  } else if (typeof server === 'object' && server !== null) {
+    wsServer = createWsServer({ ...server, ...definedRestOptions })
+  } else {
+    wsServer = createWsServer(definedRestOptions)
+  }
   const handlers = initialHandlers ?? []
 
   const handleMessage = async ({
@@ -152,5 +164,6 @@ export const createRpcServer = ({
     addRpcHandler,
     close,
     listen,
+    httpServer: wsServer.httpServer,
   }
 }

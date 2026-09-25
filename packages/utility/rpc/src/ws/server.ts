@@ -1,31 +1,17 @@
 import http from 'http'
 import Websocket from 'websocket'
-import { WsMessageCallback, WsServer } from './types'
+import { CreateWsServerParams, WsMessageCallback, WsServer } from './types'
 
-export const createWsServer = ({
-  httpServer,
-  callbacks: { onConnectionError, onClose, connectionAcceptance },
-  onConnection,
-}: {
-  httpServer: http.Server
-  callbacks: {
-    onConnectionError?: (error: Error) => void
-    onClose?: (connection: Websocket.connection, reason: number, description: string) => void
-    connectionAcceptance?: (connection: Websocket.request) => void
-  }
-  onConnection?: (connection: Websocket.connection) => void
-}): WsServer => {
-  const messageCallbacks: WsMessageCallback[] = []
+const isHttpServer = (s: unknown): s is http.Server =>
+  s instanceof http.Server ||
+  (typeof s === 'object' &&
+    s !== null &&
+    'listeners' in s &&
+    typeof (s as http.Server).listen === 'function')
 
-  const internalHttpServer = http.createServer(httpServer)
-  const ws = new Websocket.server({
-    httpServer: internalHttpServer,
-    autoAcceptConnections: false,
-  })
-
-  if (onClose) {
-    ws.on('close', onClose)
-  }
+export const createWsServer = (params: CreateWsServerParams = {}): WsServer => {
+  const { httpServer: rawHttpServer, callbacks = {}, onConnection, port } = params
+  const { onConnectionError, onClose, connectionAcceptance, onError } = callbacks
 
   const wrapRequestListener = (
     fn: (req: http.IncomingMessage, res: http.ServerResponse) => void,
@@ -38,11 +24,37 @@ export const createWsServer = ({
     }
   }
 
-  const listeners = httpServer.listeners('request') as http.RequestListener[]
-  listeners.forEach((listener) => {
-    httpServer.removeListener('request', listener)
-    httpServer.on('request', wrapRequestListener(listener))
+  const defaultFallbackListener: http.RequestListener = (_req, res) => {
+    if (!res.headersSent) {
+      res.statusCode = 404
+      res.end('Not Found')
+    }
+  }
+
+  let httpServer: http.Server
+  if (isHttpServer(rawHttpServer)) {
+    httpServer = rawHttpServer
+    const listeners = httpServer.listeners('request') as http.RequestListener[]
+    listeners.forEach((listener) => {
+      httpServer.removeListener('request', listener)
+      httpServer.on('request', wrapRequestListener(listener))
+    })
+  } else if (typeof rawHttpServer === 'function') {
+    httpServer = http.createServer(wrapRequestListener(rawHttpServer))
+  } else {
+    httpServer = http.createServer(wrapRequestListener(defaultFallbackListener))
+  }
+
+  const messageCallbacks: WsMessageCallback[] = []
+
+  const ws = new Websocket.server({
+    httpServer,
+    autoAcceptConnections: false,
   })
+
+  if (onClose) {
+    ws.on('close', onClose)
+  }
 
   if (connectionAcceptance) {
     ws.on('request', connectionAcceptance)
@@ -72,18 +84,93 @@ export const createWsServer = ({
     ws.broadcast(message)
   }
 
-  ws.mount({ httpServer })
+  let boundPort: number | null = null
+  let isListenPending = false
+  let isClosed = false
+  const pendingListenCallbacks: Array<() => void> = []
+
+  const getBoundPort = (): number | null => {
+    if (boundPort !== null) return boundPort
+    if (httpServer.listening) {
+      const addr = httpServer.address()
+      if (typeof addr === 'object' && addr !== null) {
+        boundPort = addr.port
+        return boundPort
+      }
+    }
+    return null
+  }
+
+  // Populate boundPort if httpServer was already started by caller
+  getBoundPort()
+
+  httpServer.on('error', (err: Error) => {
+    isListenPending = false
+    boundPort = null
+    pendingListenCallbacks.length = 0
+    onError?.(err)
+  })
 
   const close = (): void => {
+    isClosed = true
     ws.unmount()
     ws.shutDown()
     ws.closeAllConnections()
-    httpServer.close()
-    httpServer.closeAllConnections()
+    if (httpServer.listening) {
+      httpServer.close()
+      httpServer.closeAllConnections?.()
+    }
   }
 
-  const listen = (port: number, cb?: () => void) => {
-    internalHttpServer.listen(port, cb)
+  const listen = (listenPort: number, cb?: () => void) => {
+    if (isClosed) {
+      throw new Error('Cannot listen on a closed server')
+    }
+
+    if (httpServer.listening) {
+      const activePort = getBoundPort()
+      if (activePort !== null && activePort !== listenPort) {
+        throw new Error(`Server is already listening on port ${activePort}`)
+      }
+      cb?.()
+      return
+    }
+
+    if (isListenPending) {
+      const activePort = getBoundPort()
+      if (activePort !== null && activePort !== listenPort) {
+        throw new Error(`Server listen is already pending on port ${activePort}`)
+      }
+      if (cb) pendingListenCallbacks.push(cb)
+      return
+    }
+
+    boundPort = listenPort
+    isListenPending = true
+    if (cb) pendingListenCallbacks.push(cb)
+
+    httpServer.once('listening', () => {
+      isListenPending = false
+      const addr = httpServer.address()
+      if (typeof addr === 'object' && addr !== null) {
+        boundPort = addr.port
+      }
+      if (isClosed) {
+        httpServer.close()
+        httpServer.closeAllConnections?.()
+        return
+      }
+      while (pendingListenCallbacks.length > 0) {
+        const callback = pendingListenCallbacks.shift()
+        callback?.()
+      }
+    })
+
+    httpServer.listen(listenPort)
+  }
+
+  if (typeof port === 'number') {
+    listen(port)
   }
 
   const onHttpRequest = (fn: (req: http.IncomingMessage, res: http.ServerResponse) => void) => {
@@ -100,5 +187,6 @@ export const createWsServer = ({
     close,
     listen,
     onHttpRequest,
+    httpServer,
   }
 }
