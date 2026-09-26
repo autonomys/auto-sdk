@@ -1,5 +1,6 @@
 import {
   blake3HashFromCid,
+  type CID,
   cidFromBlakeHash,
   cidToString,
   stringToCid,
@@ -85,7 +86,7 @@ describe('createCidManager', () => {
     mockEthers.Contract.mockReturnValue(mockContract)
 
     mockEthers.hexlify.mockImplementation((data: ethers.BytesLike) => {
-      if (Buffer.from(data as any).toString() === 'mockBlake3Hash') {
+      if (Buffer.from(data as Uint8Array).toString() === 'mockBlake3Hash') {
         return testHash
       }
       return '0x'
@@ -101,9 +102,9 @@ describe('createCidManager', () => {
 
   const setupMockAutoDagData = () => {
     mockAutoDagData.blake3HashFromCid.mockReturnValue(Buffer.from('mockBlake3Hash'))
-    mockAutoDagData.stringToCid.mockReturnValue(testCid as any)
-    mockAutoDagData.cidFromBlakeHash.mockReturnValue('mockCidFromHash' as any)
-    mockAutoDagData.cidToString.mockImplementation((cid: any): string => String(cid)) // More robust mock
+    mockAutoDagData.stringToCid.mockReturnValue(testCid as unknown as CID)
+    mockAutoDagData.cidFromBlakeHash.mockReturnValue('mockCidFromHash' as unknown as CID)
+    mockAutoDagData.cidToString.mockImplementation((cid: unknown): string => String(cid)) // More robust mock
   }
 
   // --- Test Setup ---
@@ -401,7 +402,7 @@ describe('createCidManager', () => {
 
     // 3. Ensure other mocks are ready
     mockFs.writeFileSync.mockReturnValue(undefined) // Ready to be called
-    mockAutoDagData.cidFromBlakeHash.mockReturnValue('mockCidFromHash' as any)
+    mockAutoDagData.cidFromBlakeHash.mockReturnValue('mockCidFromHash' as unknown as CID)
 
     // Act
     const resultCid = await cidManager.getLastMemoryCid()
@@ -508,12 +509,14 @@ describe('createCidManager', () => {
     const mockTxResponse = {
       wait: jest.fn().mockResolvedValue({ status: 1, transactionHash: '0xmocktxhash' }),
     }
-    currentMockContract.setLastMemoryHash.mockResolvedValue(mockTxResponse as any)
+    currentMockContract.setLastMemoryHash.mockResolvedValue(
+      mockTxResponse as unknown as ethers.ContractTransactionResponse,
+    )
     mockFs.writeFileSync.mockReturnValue(undefined)
     mockUtils.retryWithBackoff.mockImplementation(async (fn) => fn()) // Ensure retry mock is fresh
     mockEthers.hexlify.mockReturnValue(testHash) // Ensure hexlify mock is fresh
     mockAutoDagData.blake3HashFromCid.mockReturnValue(Buffer.from('mockBlake3Hash'))
-    mockAutoDagData.stringToCid.mockReturnValue(testCid as any)
+    mockAutoDagData.stringToCid.mockReturnValue(testCid as unknown as CID)
 
     // Act
     const receipt = await cidManager.saveLastMemoryCid(testCid)
@@ -559,7 +562,7 @@ describe('createCidManager', () => {
     mockFs.writeFileSync.mockReturnValue(undefined)
     mockEthers.hexlify.mockReturnValue(testHash)
     mockAutoDagData.blake3HashFromCid.mockReturnValue(Buffer.from('mockBlake3Hash'))
-    mockAutoDagData.stringToCid.mockReturnValue(testCid as any)
+    mockAutoDagData.stringToCid.mockReturnValue(testCid as unknown as CID)
 
     // Act
     const receipt = await cidManager.saveLastMemoryCid(testCid)

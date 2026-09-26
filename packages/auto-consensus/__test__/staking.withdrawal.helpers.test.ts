@@ -18,7 +18,7 @@ const { nominatorPosition } = jest.requireMock('../src/position') as {
   nominatorPosition: jest.Mock
 }
 
-const makeApi = (): unknown => ({}) as ApiPromise
+const makeApi = (): ApiPromise => ({}) as unknown as ApiPromise
 
 describe('staking.withdrawal.helpers', () => {
   beforeEach(() => {
@@ -34,7 +34,7 @@ describe('staking.withdrawal.helpers', () => {
     })
 
     const api = makeApi()
-    const tx: any = await withdrawStakeAll({ api: api as any, operatorId: '1', account: 'acc' })
+    const tx = await withdrawStakeAll({ api, operatorId: '1', account: 'acc' })
 
     expect(withdrawStake).toHaveBeenCalledWith({ api, operatorId: '1', shares: BigInt(1234) })
     expect(tx.hash.toHex()).toBe('0xdeadbeef')
@@ -48,9 +48,9 @@ describe('staking.withdrawal.helpers', () => {
     })
 
     const api = makeApi()
-    await expect(
-      withdrawStakeAll({ api: api as any, operatorId: '1', account: 'acc' }),
-    ).rejects.toThrow(/No shares to withdraw/)
+    await expect(withdrawStakeAll({ api, operatorId: '1', account: 'acc' })).rejects.toThrow(
+      /No shares to withdraw/,
+    )
   })
 
   test('withdrawStakeByPercent clamps percent and floors shares', async () => {
@@ -63,7 +63,7 @@ describe('staking.withdrawal.helpers', () => {
 
     const api = makeApi()
     await withdrawStakeByPercent({
-      api: api as any,
+      api,
       operatorId: BigInt(2),
       account: 'acc',
       percent: 150,
@@ -74,7 +74,7 @@ describe('staking.withdrawal.helpers', () => {
 
     jest.clearAllMocks()
     await withdrawStakeByPercent({
-      api: api as any,
+      api,
       operatorId: BigInt(2),
       account: 'acc',
       percent: 33,
@@ -92,7 +92,7 @@ describe('staking.withdrawal.helpers', () => {
 
     const api = makeApi()
     await expect(
-      withdrawStakeByPercent({ api: api as any, operatorId: '3', account: 'acc', percent: 0 }),
+      withdrawStakeByPercent({ api, operatorId: '3', account: 'acc', percent: 0 }),
     ).rejects.toThrow(/Computed zero shares/)
   })
 
@@ -105,7 +105,7 @@ describe('staking.withdrawal.helpers', () => {
 
     const api = makeApi()
     await withdrawStakeByValue({
-      api: api as any,
+      api,
       operatorId: '4',
       account: 'acc',
       amountToWithdraw: 2500, // totalPayout=6000 => floor(2500*1000/6000)=416 shares
@@ -115,7 +115,7 @@ describe('staking.withdrawal.helpers', () => {
 
     jest.clearAllMocks()
     await withdrawStakeByValue({
-      api: api as any,
+      api,
       operatorId: '4',
       account: 'acc',
       amountToWithdraw: 999999999, // > totalPayout (6000) => capped to 6000
@@ -128,7 +128,7 @@ describe('staking.withdrawal.helpers', () => {
     const api = makeApi()
     await expect(
       withdrawStakeByValue({
-        api: api as any,
+        api,
         operatorId: '5',
         account: 'acc',
         amountToWithdraw: 0,
@@ -142,7 +142,7 @@ describe('staking.withdrawal.helpers', () => {
     })
     await expect(
       withdrawStakeByValue({
-        api: api as any,
+        api,
         operatorId: '5',
         account: 'acc',
         amountToWithdraw: 1,
@@ -156,7 +156,7 @@ describe('staking.withdrawal.helpers', () => {
     })
     await expect(
       withdrawStakeByValue({
-        api: api as any,
+        api,
         operatorId: '5',
         account: 'acc',
         amountToWithdraw: 1,
@@ -170,7 +170,7 @@ describe('staking.withdrawal.helpers', () => {
     })
     await expect(
       withdrawStakeByValue({
-        api: api as any,
+        api,
         operatorId: '5',
         account: 'acc',
         amountToWithdraw: 1,
@@ -189,7 +189,7 @@ describe('staking.withdrawal.helpers', () => {
 
     const api = makeApi()
     await withdrawStakeByValue({
-      api: api as any,
+      api,
       operatorId: '6',
       account: 'acc',
       amountToWithdraw: 3250,
@@ -209,7 +209,7 @@ describe('staking.withdrawal.helpers', () => {
 
     const api = makeApi()
     await withdrawStakeByValue({
-      api: api as any,
+      api,
       operatorId: '7',
       account: 'acc',
       amountToWithdraw: 2750,
