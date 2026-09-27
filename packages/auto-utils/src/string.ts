@@ -28,8 +28,8 @@
  * // JSON.stringify(data) // TypeError: Do not know how to serialize a BigInt
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const stringify = (value: any) =>
-  JSON.stringify(value, (_, value) => (typeof value === 'bigint' ? value.toString() : value))
+export const stringify = (value: any, space?: string | number) =>
+  JSON.stringify(value, (_, val) => (typeof val === 'bigint' ? val.toString() : val), space)
 
 /**
  * Truncates a string by keeping the beginning and end characters with ellipsis in the middle.
@@ -40,7 +40,7 @@ export const stringify = (value: any) =>
  * @param value - The string to truncate.
  * @param initialLength - Number of characters to keep from the beginning. Defaults to 6.
  * @param endLength - Number of characters to keep from the end (negative number). Defaults to -4.
- * @returns The truncated string with ellipsis in the middle.
+ * @returns The truncated string with ellipsis in the middle, or original string if shorter than truncation length.
  *
  * @example
  * import { shortString } from '@autonomys/auto-utils'
@@ -59,8 +59,12 @@ export const stringify = (value: any) =>
  * const shortHash = shortString(txHash, 10, -8)
  * console.log(shortHash) // Output: "0x12345678...90abcdef"
  */
-export const shortString = (value: string, initialLength = 6, endLength = -4): string =>
-  `${value.slice(0, initialLength)}...${value.slice(endLength)}`
+export const shortString = (value?: string | null, initialLength = 6, endLength = -4): string => {
+  if (!value) return ''
+  const absEnd = Math.abs(endLength)
+  if (value.length <= initialLength + absEnd) return value
+  return `${value.slice(0, initialLength)}...${value.slice(-absEnd)}`
+}
 
 /**
  * Capitalizes the first letter of a string.
@@ -83,7 +87,7 @@ export const shortString = (value: string, initialLength = 6, endLength = -4): s
  * console.log(capitalizeFirstLetter('a')) // Output: "A"
  * console.log(capitalizeFirstLetter('UPPERCASE')) // Output: "UPPERCASE"
  */
-export const capitalizeFirstLetter = (string: string) =>
+export const capitalizeFirstLetter = (string?: string | null) =>
   string ? string.charAt(0).toUpperCase() + string.slice(1) : ''
 
 /**
