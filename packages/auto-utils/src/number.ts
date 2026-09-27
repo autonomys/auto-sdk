@@ -118,13 +118,14 @@ export const formatTokenAmount = (
  * console.log(formatSpacePledged(hugeSpace)) // Output: "1.00 EiB"
  */
 export const formatSpacePledged = (value: bigint, decimals = 2) => {
-  if (typeof value !== 'bigint' || value === BIGINT_ZERO) return '0 Bytes'
+  if (typeof value !== 'bigint' || value <= BIGINT_ZERO) return '0 Bytes'
 
   const k = 1024
   const dm = decimals < 0 ? 0 : decimals
   const sizes = ['Bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB']
 
-  const i = Math.floor(Math.log(Number(value)) / Math.log(k))
+  const rawIndex = Math.floor(Math.log(Number(value)) / Math.log(k))
+  const i = Math.max(0, Math.min(rawIndex, sizes.length - 1))
 
   return (Number(value) / Math.pow(k, i)).toFixed(dm) + ' ' + sizes[i]
 }
@@ -178,7 +179,6 @@ export const parseUnits = (
           frac = frac + BigInt(1)
           // handle carry into whole if frac rolls over
           if (frac === base) {
-            frac = BigInt(0)
             return (signIsNegative ? BigInt(-1) : BigInt(1)) * (whole + base)
           }
         }
@@ -189,7 +189,6 @@ export const parseUnits = (
         frac = frac + BigInt(1)
         // handle carry into whole if frac rolls over
         if (frac === base) {
-          frac = BigInt(0)
           return (signIsNegative ? BigInt(-1) : BigInt(1)) * (whole + base)
         }
         break
