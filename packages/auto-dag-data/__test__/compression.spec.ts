@@ -84,7 +84,8 @@ describe('compression', () => {
 
   it('throws an error if the compression algorithm is not supported', async () => {
     await expect(
-      awaitIterable(compressFile([Buffer.from('hello')], { algorithm: 'efwhhgfew' as any })),
+      // @ts-expect-error: deliberately unsupported algorithm
+      awaitIterable(compressFile([Buffer.from('hello')], { algorithm: 'efwhhgfew' })),
     ).rejects.toThrow('Unsupported compression algorithm')
   })
 
@@ -93,7 +94,8 @@ describe('compression', () => {
       awaitIterable(
         compressFile([Buffer.from('hello')], {
           algorithm: CompressionAlgorithm.ZLIB,
-          level: -1 as any,
+          // @ts-expect-error: deliberately out-of-range level
+          level: -1,
         }),
       ),
     ).rejects.toThrow('Invalid compression level')
@@ -112,7 +114,8 @@ describe('compression', () => {
 
   it('throws an error if the decompression algorithm is not supported', async () => {
     await expect(
-      awaitIterable(decompressFile([Buffer.from('hello')], { algorithm: 'efwhhgfew' as any })),
+      // @ts-expect-error: deliberately unsupported algorithm
+      awaitIterable(decompressFile([Buffer.from('hello')], { algorithm: 'efwhhgfew' })),
     ).rejects.toThrow('Unsupported compression algorithm')
   })
 
@@ -131,7 +134,8 @@ describe('compression', () => {
     await expect(
       awaitIterable(
         decompressFile([Buffer.from('hello')], {
-          level: -1 as any,
+          // @ts-expect-error: deliberately out-of-range level
+          level: -1,
           algorithm: CompressionAlgorithm.ZLIB,
         }),
       ),
