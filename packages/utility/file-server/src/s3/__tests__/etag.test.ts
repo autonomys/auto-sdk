@@ -42,9 +42,7 @@ describe('multipartETag', () => {
       .update(Buffer.concat([Buffer.from(part1, 'hex'), Buffer.from(part2, 'hex')]))
       .digest('hex')
 
-    expect(multipartETag([formatETag(part1), formatETag(part2)])).toBe(
-      `"${expectedComposite}-2"`,
-    )
+    expect(multipartETag([formatETag(part1), formatETag(part2)])).toBe(`"${expectedComposite}-2"`)
   })
 
   it('accepts unquoted part ETags as well', () => {
@@ -55,11 +53,7 @@ describe('multipartETag', () => {
   })
 
   it('appends the part count after a hyphen', () => {
-    const parts = [
-      md5Hex(Buffer.from('1')),
-      md5Hex(Buffer.from('2')),
-      md5Hex(Buffer.from('3')),
-    ]
+    const parts = [md5Hex(Buffer.from('1')), md5Hex(Buffer.from('2')), md5Hex(Buffer.from('3'))]
     expect(multipartETag(parts)).toMatch(/^"[0-9a-f]{32}-3"$/)
   })
 })

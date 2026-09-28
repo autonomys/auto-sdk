@@ -69,4 +69,4 @@ export const MEMORY_ABI = [
     stateMutability: 'nonpayable',
     type: 'function',
   },
-] as const;
+] as const

@@ -11,7 +11,7 @@ export const fontFamilies = {
   mono: 'var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
   display: 'var(--font-roboto-serif), serif',
   body: 'var(--font-libre-franklin), sans-serif',
-};
+}
 
 // Font sizes - following a modular scale
 export const fontSizes = {
@@ -42,7 +42,7 @@ export const fontSizes = {
   // Other sizes
   preTitle: '1.188rem', // 19px
   detail: '1.188rem', // 19px
-};
+}
 
 // Font weights
 export const fontWeights = {
@@ -53,7 +53,7 @@ export const fontWeights = {
   semibold: 600,
   bold: 700,
   extrabold: 800,
-};
+}
 
 // Line heights
 export const lineHeights = {
@@ -63,7 +63,7 @@ export const lineHeights = {
   normal: 1.5,
   relaxed: 1.625,
   loose: 2,
-};
+}
 
 // Letter spacings
 export const letterSpacings = {
@@ -73,7 +73,7 @@ export const letterSpacings = {
   wide: '0.025em',
   wider: '0.05em',
   widest: '0.1em',
-};
+}
 
 // Font styles for specific text elements
 export const textStyles = {
@@ -203,12 +203,12 @@ export const textStyles = {
   },
   title3: {
     fontFamily: fontFamilies.display,
-    fontSize: fontSizes.title3, 
+    fontSize: fontSizes.title3,
     fontWeight: fontWeights.bold,
     lineHeight: lineHeights.tight,
     letterSpacing: letterSpacings.tight,
   },
-};
+}
 
 export default {
   fontFamilies,
@@ -217,4 +217,4 @@ export default {
   lineHeights,
   letterSpacings,
   textStyles,
-};
+}

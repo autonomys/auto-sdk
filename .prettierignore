@@ -1,0 +1,24 @@
+# Prettier also reads the root .gitignore, but not nested .gitignore files or
+# .git/info/exclude, so entries from those are repeated here.
+
+# Rewritten by scripts/generate-pr-changelog.js on every release
+CHANGELOG.md
+
+# Claude Code worktrees, each a full checkout of the repo
+.claude/
+
+.yarn/
+coverage/
+
+# Foundry output and deploy logs
+packages/utility/contracts/broadcast/
+packages/utility/contracts/cache/
+packages/utility/contracts/docs/
+packages/utility/contracts/out/
+packages/utility/user-session/cache/
+packages/utility/user-session/docs/
+packages/utility/user-session/out/
+
+# Written by each package's generate-abi script
+packages/utility/contracts/src/abi/*.json
+packages/utility/user-session/src/abi/*.json

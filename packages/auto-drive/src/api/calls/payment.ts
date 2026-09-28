@@ -48,7 +48,9 @@ export const getPaymentContractInfo = async (
   const response = await api.sendAPIRequest('/intents/contract', { method: 'GET' })
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch payment contract info: ${response.status} ${response.statusText}`)
+    throw new Error(
+      `Failed to fetch payment contract info: ${response.status} ${response.statusText}`,
+    )
   }
 
   return response.json()

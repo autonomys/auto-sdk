@@ -17,12 +17,12 @@ import { validateEvents } from './validateEvents'
 
 /**
  * Signs and sends a transaction to the Autonomys Network, with comprehensive error handling and event validation.
- * 
+ *
  * This function handles the complete transaction lifecycle: signing, sending, monitoring for inclusion,
  * and validating expected events. It provides detailed error handling and supports custom error mapping
  * for domain-specific error handling. The function waits for the transaction to be included in a block
  * and validates that expected events were emitted.
- * 
+ *
  * @param sender - The account to sign and send the transaction. Can be a KeyringPair, address string, or AddressOrPair.
  * @param tx - The submittable extrinsic to sign and send.
  * @param options - Optional signer options including nonce, tip, and other transaction parameters.
@@ -30,23 +30,23 @@ import { validateEvents } from './validateEvents'
  * @param log - Whether to log transaction progress to console. Defaults to false.
  * @param mapErrorCodeToEnum - Optional function to map error codes to custom error enums for better error handling.
  * @returns Promise resolving to transaction results including success status, hashes, events, and receipt.
- * 
+ *
  * @example
  * import { signAndSendTx, activate, setupWallet } from '@autonomys/auto-utils'
- * 
+ *
  * // Basic transaction signing and sending
  * const api = await activate({ networkId: 'taurus' })
  * const wallet = setupWallet({ uri: '//Alice' })
- * 
+ *
  * const tx = api.tx.balances.transfer('5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY', 1000000000000000000n)
- * 
+ *
  * const result = await signAndSendTx(wallet.keyringPair, tx)
  * if (result.success) {
  *   console.log('Transaction successful')
  *   console.log('Transaction hash:', result.txHash)
  *   console.log('Block hash:', result.blockHash)
  * }
- * 
+ *
  * // With custom options and event validation
  * const transferTx = api.tx.balances.transfer(receiverAddress, amount)
  * const transferResult = await signAndSendTx(
@@ -56,7 +56,7 @@ import { validateEvents } from './validateEvents'
  *   ['balances.Transfer'], // Expected events
  *   true // Enable logging
  * )
- * 
+ *
  * // With error mapping for custom error handling
  * const stakingTx = api.tx.domains.nominateOperator(operatorId, amount)
  * const stakingResult = await signAndSendTx(
@@ -74,14 +74,14 @@ import { validateEvents } from './validateEvents'
  *     }
  *   }
  * )
- * 
+ *
  * // Handle Auto-ID registration with identifier extraction
  * const autoIdTx = api.tx.autoId.registerAutoId(autoIdData)
  * const autoIdResult = await signAndSendTx(sender, autoIdTx)
  * if (autoIdResult.identifier) {
  *   console.log('Auto-ID registered with identifier:', autoIdResult.identifier)
  * }
- * 
+ *
  * @throws {Error} When the transaction fails, times out, or expected events are not found.
  * @throws {Error} When the transaction is retracted, dropped, or invalid.
  * @throws {Error} When custom error mapping indicates a specific error condition.
@@ -108,15 +108,27 @@ export const signAndSendTx = async <TError>(
 
     const tryUnsub = () => {
       if (unsub) {
-        try { unsub() } catch { /* ignore */ }
+        try {
+          unsub()
+        } catch {
+          /* ignore */
+        }
         unsub = undefined
       }
     }
     const safeResolve = (v: SubmittableResult) => {
-      if (!settled) { settled = true; tryUnsub(); resolve(v) }
+      if (!settled) {
+        settled = true
+        tryUnsub()
+        resolve(v)
+      }
     }
     const safeReject = (e: unknown) => {
-      if (!settled) { settled = true; tryUnsub(); reject(e) }
+      if (!settled) {
+        settled = true
+        tryUnsub()
+        reject(e)
+      }
     }
 
     try {
@@ -172,15 +184,17 @@ export const signAndSendTx = async <TError>(
 
       // The outer promise resolves to the unsubscribe fn once signing succeeds,
       // but rejects if the wallet denies the signing request.
-      outerPromise.then(
-        (fn) => {
-          // If the promise already settled (fast callback), unsubscribe immediately.
-          // Otherwise store it for safeResolve/safeReject to call later.
-          if (settled) { try { fn() } catch { /* ignore */ } }
-          else unsub = fn
-        },
-        safeReject,
-      )
+      outerPromise.then((fn) => {
+        // If the promise already settled (fast callback), unsubscribe immediately.
+        // Otherwise store it for safeResolve/safeReject to call later.
+        if (settled) {
+          try {
+            fn()
+          } catch {
+            /* ignore */
+          }
+        } else unsub = fn
+      }, safeReject)
     } catch (err) {
       // Synchronous throw from signAndSend (some wallet extension implementations)
       safeReject(err)
