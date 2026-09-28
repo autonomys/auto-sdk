@@ -32,6 +32,9 @@ jobs:
       - name: Lint 🔍
         run: yarn lint
 
+      - name: Check formatting 💅
+        run: yarn format:check
+
       - name: Build all packages 🔧
         run: yarn build
 
