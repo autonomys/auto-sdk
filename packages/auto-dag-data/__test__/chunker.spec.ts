@@ -436,7 +436,7 @@ describe('chunker', () => {
       )
 
       const blockstore = new MemoryBlockstore()
-      processFolderToIPLDFormat(blockstore, links, 'test', BigInt(1000), {
+      await processFolderToIPLDFormat(blockstore, links, 'test', BigInt(1000), {
         maxLinkPerNode,
         maxNodeSize,
       })
