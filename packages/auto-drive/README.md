@@ -26,7 +26,8 @@ To interact with the Auto-Drive API, you'll need to create an API key. Follow th
 - Once you're logged in, click on the developers section in the left sidebar menu.
 - In the developers section, click on 'Create API Key'
 - Read the modal message and click on generate
-Add
+  Add
+
 ### How to upload a file from Buffer?
 
 Here is an example of how to use the `uploadFileFromBuffer` method to upload a Buffer with optional encryption and compression:
@@ -348,7 +349,10 @@ import { createAutoDriveApi } from '@autonomys/auto-drive'
 import { NetworkId } from '@autonomys/auto-utils'
 
 // Run on your server — never expose your API key to the browser
-const api = createAutoDriveApi({ apiKey: process.env.AUTO_DRIVE_API_KEY!, network: NetworkId.MAINNET })
+const api = createAutoDriveApi({
+  apiKey: process.env.AUTO_DRIVE_API_KEY!,
+  network: NetworkId.MAINNET,
+})
 
 // Step 1 — create a price-locked intent for the content you want to store
 const intent = await api.createPaymentIntent(contentSizeBytes)
@@ -402,8 +406,8 @@ const txHash = await walletClient.writeContract({
 
 ```typescript
 const result = await api.waitForPaymentCompletion(intent.intentId, {
-  pollIntervalMs: 5_000,  // check every 5 seconds (default: 3 000)
-  timeoutMs: 120_000,     // give up after 2 minutes (default: 300 000)
+  pollIntervalMs: 5_000, // check every 5 seconds (default: 3 000)
+  timeoutMs: 120_000, // give up after 2 minutes (default: 300 000)
 })
 ```
 

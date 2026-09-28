@@ -2,8 +2,7 @@
 // eslint-disable-next-line no-control-regex
 export const XML_ILLEGAL_CHARS = /[\x00-\x08\x0B\x0C\x0E-\x1F]/
 
-export const hasXmlIllegalChars = (value: string): boolean =>
-  XML_ILLEGAL_CHARS.test(value)
+export const hasXmlIllegalChars = (value: string): boolean => XML_ILLEGAL_CHARS.test(value)
 
 // Inverse of the url.QueryUnescape that encoding-type=url clients (e.g. rclone)
 // apply to every key, so encoding round-trips.

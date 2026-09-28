@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
-import { useStore } from 'zustand';
-import { useWalletStore } from '../provider';
+import { useEffect } from 'react'
+import { useStore } from 'zustand'
+import { useWalletStore } from '../provider'
 
 /**
  * React hook for accessing wallet state and actions.
@@ -9,13 +9,13 @@ import { useWalletStore } from '../provider';
  * Auto-detects installed wallet extensions on mount.
  */
 export const useWallet = () => {
-  const store = useWalletStore();
-  const state = useStore(store);
+  const store = useWalletStore()
+  const state = useStore(store)
 
   // Auto-detect wallets on hook mount
   useEffect(() => {
-    state.detectWallets();
-  }, []);
+    state.detectWallets()
+  }, [])
 
   return {
     // State
@@ -42,5 +42,5 @@ export const useWallet = () => {
     isConnecting: state.isLoading && state.loadingType === 'connecting',
     isInitializing: state.isLoading && state.loadingType === 'initializing',
     canConnect: !state.isLoading && !state.isConnected,
-  };
-};
+  }
+}

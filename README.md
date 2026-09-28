@@ -140,9 +140,7 @@ import { MemoryBlockstore } from 'blockstore-core/memory'
 import { CID } from 'multiformats'
 
 // Example child CIDs and folder information
-const childCIDs: CID[] = [
-  /* array of CIDs */
-]
+const childCIDs: CID[] = [/* array of CIDs */]
 const folderName = 'my-folder'
 const folderSize = 1024 // size in bytes (the sum of their children size)
 
