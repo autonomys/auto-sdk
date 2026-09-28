@@ -19,7 +19,7 @@
     "build": "tsc",
     "clean": "rm -rf dist",
     "format": "prettier --write \"src/**/*.ts\"",
-    "test-local": "jest -i"
+    "test": "jest"
   },
   "files": [
     "dist",
