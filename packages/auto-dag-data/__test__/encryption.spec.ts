@@ -109,8 +109,10 @@ describe('encryption', () => {
   it('throws an error if the encryption algorithm is not supported', async () => {
     await expect(
       awaitIterable(
-        // @ts-expect-error: deliberately unsupported algorithm
-        encryptFile([Buffer.from('hello')], 'password', { algorithm: 'efwhhgfew' }),
+        encryptFile([Buffer.from('hello')], 'password', {
+          // @ts-expect-error - deliberately invalid encryption algorithm
+          algorithm: 'efwhhgfew',
+        }),
       ),
     ).rejects.toThrow('Unsupported encryption algorithm')
   })
@@ -118,8 +120,10 @@ describe('encryption', () => {
   it('throws an error if the decryption algorithm is not supported', async () => {
     await expect(
       awaitIterable(
-        // @ts-expect-error: deliberately unsupported algorithm
-        decryptFile([Buffer.from('hello')], 'password', { algorithm: 'efwhhgfew' }),
+        decryptFile([Buffer.from('hello')], 'password', {
+          // @ts-expect-error - deliberately invalid encryption algorithm
+          algorithm: 'efwhhgfew',
+        }),
       ),
     ).rejects.toThrow('Unsupported encryption algorithm')
   })
