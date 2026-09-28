@@ -69,7 +69,7 @@ describe('Verify wallet functions', () => {
         mnemonic: TEST_MNEMONIC,
         type: 'ethereum',
         derivationPath: "m/44'/60'/0'/0/0",
-      } as any)
+      })
       expect(wallet.keyringPair?.type).toEqual('ethereum')
       expect(wallet.address.startsWith('0x')).toBeTruthy()
       expect(wallet.address).toEqual(TEST_ADDRESS_ETHEREUM_BIP44)

@@ -56,7 +56,6 @@ export default defineConfig([
     },
 
     rules: {
-      '@typescript-eslint/no-explicit-any': 'warn',
       camelcase: 'warn',
       'spaced-comment': 'error',
       quotes: ['error', 'single', { avoidEscape: true }],
