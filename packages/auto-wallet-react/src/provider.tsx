@@ -1,7 +1,5 @@
 import React, { createContext, useContext, useRef } from 'react';
-import { createWalletStore, type WalletConfig, type WalletState } from '@autonomys/auto-wallet';
-import type { StoreApi } from 'zustand';
-import { useStore } from 'zustand';
+import { createWalletStore, type WalletConfig } from '@autonomys/auto-wallet';
 
 type WalletStore = ReturnType<typeof createWalletStore>;
 

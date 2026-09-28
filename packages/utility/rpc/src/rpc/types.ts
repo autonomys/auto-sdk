@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import Websocket from 'websocket'
-import { connection } from 'websocket'
+import Websocket, { connection } from 'websocket'
 import { z } from 'zod'
 import { PromiseOr } from '../utils/types'
 import { ApiDefinition, ApiServerNotificationHandlers } from './api'

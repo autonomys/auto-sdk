@@ -8,6 +8,7 @@ import { blake2AsHex } from '@polkadot/util-crypto'
  * @param data Uint8Array - The data to be hashed.
  * @returns string - The BLAKE2b-256 hash of the data as a hex string.
  */
+// eslint-disable-next-line camelcase -- published API name
 export function blake2b_256(data: Uint8Array): string {
   return blake2AsHex(data, 256)
 }

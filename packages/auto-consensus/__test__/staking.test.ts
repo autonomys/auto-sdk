@@ -8,8 +8,9 @@ import {
   sudo,
   withdrawStake,
 } from '@autonomys/auto-consensus'
-import type { ApiPromise, WalletActivated } from '@autonomys/auto-utils'
 import {
+  type ApiPromise,
+  type WalletActivated,
   ActivateWalletParams,
   activate,
   activateWallet,

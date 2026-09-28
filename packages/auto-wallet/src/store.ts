@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { getWallets, getWalletBySource } from '@talismn/connect-wallets';
-import type { Wallet } from '@talismn/connect-wallets';
+import { getWallets, getWalletBySource, type Wallet } from '@talismn/connect-wallets';
 import type { WalletConfig, WalletState } from './types';
 import { DEFAULT_WALLET_CONFIG } from './constants';
 import { connectToWallet } from './connect';
