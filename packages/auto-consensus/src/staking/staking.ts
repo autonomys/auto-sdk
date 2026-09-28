@@ -25,7 +25,7 @@ export const operators = async (api: Api) => {
     return _operators.map((o) => parseOperator(o))
   } catch (error) {
     console.error('error', error)
-    throw new Error('Error querying operators list.' + error)
+    throw new Error('Error querying operators list.' + error, { cause: error })
   }
 }
 
@@ -38,7 +38,9 @@ export const operator = async (api: Api, operatorId: StringNumberOrBigInt) => {
     return parseOperatorDetails(_operator)
   } catch (error) {
     console.error('error', error)
-    throw new Error(`Error querying operatorId: ${operatorId} with error: ${error}`)
+    throw new Error(`Error querying operatorId: ${operatorId} with error: ${error}`, {
+      cause: error,
+    })
   }
 }
 
@@ -60,7 +62,7 @@ export const deposits = async (
     }
   } catch (error) {
     console.error('error', error)
-    throw new Error('Error querying deposits list.' + error)
+    throw new Error('Error querying deposits list.' + error, { cause: error })
   }
 }
 
@@ -84,7 +86,7 @@ export const withdrawals = async (
     }
   } catch (error) {
     console.error('error', error)
-    throw new Error('Error querying withdrawals list.' + error)
+    throw new Error('Error querying withdrawals list.' + error, { cause: error })
   }
 }
 
@@ -108,7 +110,7 @@ export const registerOperator = (params: RegisterOperatorParams) => {
     })
   } catch (error) {
     console.error('error', error)
-    throw new Error('Error creating register operator tx.' + error)
+    throw new Error('Error creating register operator tx.' + error, { cause: error })
   }
 }
 
@@ -122,7 +124,7 @@ export const nominateOperator = (params: NominateOperatorParams) => {
     return api.tx.domains.nominateOperator(parseString(operatorId), parseString(amountToStake))
   } catch (error) {
     console.error('error', error)
-    throw new Error('Error creating nominate operator tx.' + error)
+    throw new Error('Error creating nominate operator tx.' + error, { cause: error })
   }
 }
 
@@ -138,7 +140,7 @@ export const withdrawStake = (params: WithdrawStakeParams) => {
     return api.tx.domains.withdrawStake(parseString(operatorId), parseString(shares))
   } catch (error) {
     console.error('error', error)
-    throw new Error('Error creating withdraw stake tx.' + error)
+    throw new Error('Error creating withdraw stake tx.' + error, { cause: error })
   }
 }
 
@@ -152,7 +154,7 @@ export const deregisterOperator = (params: StakingParams) => {
     return api.tx.domains.deregisterOperator(parseString(operatorId))
   } catch (error) {
     console.error('error', error)
-    throw new Error('Error creating de-register operator tx.' + error)
+    throw new Error('Error creating de-register operator tx.' + error, { cause: error })
   }
 }
 
@@ -166,7 +168,7 @@ export const unlockFunds = (params: StakingParams) => {
     return api.tx.domains.unlockFunds(parseString(operatorId))
   } catch (error) {
     console.error('error', error)
-    throw new Error('Error creating unlock funds tx.' + error)
+    throw new Error('Error creating unlock funds tx.' + error, { cause: error })
   }
 }
 
@@ -180,6 +182,6 @@ export const unlockNominator = (params: StakingParams) => {
     return api.tx.domains.unlockNominator(parseString(operatorId))
   } catch (error) {
     console.error('error', error)
-    throw new Error('Error creating unlock nominator tx.' + error)
+    throw new Error('Error creating unlock nominator tx.' + error, { cause: error })
   }
 }

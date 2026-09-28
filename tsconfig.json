@@ -5,6 +5,14 @@
     "rootDir": "./packages",
     "module": "commonjs",
     "target": "es6",
+    "lib": [
+      "es2015",
+      "dom",
+      "dom.iterable",
+      "webworker.importscripts",
+      "scripthost",
+      "es2022.error"
+    ],
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,

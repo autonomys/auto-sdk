@@ -36,7 +36,7 @@ const saveHashLocally = (hash: string, location: string): void => {
     }
     writeFileSync(location, JSON.stringify(data, null, 2))
   } catch (error) {
-    throw new Error(`Failed to save hash locally:${error}`)
+    throw new Error(`Failed to save hash locally:${error}`, { cause: error })
   }
 }
 
@@ -54,7 +54,7 @@ const getLocalHash = (location: string): string | undefined => {
     const data = JSON.parse(readFileSync(location, 'utf-8')) as StoredHash
     return data.hash
   } catch (error) {
-    throw new Error(`Failed to get local hash:${error}`)
+    throw new Error(`Failed to get local hash:${error}`, { cause: error })
   }
 }
 
@@ -91,7 +91,7 @@ const getLastMemoryHashSetTimestamp = async (
       hash: (lastEvent as ethers.EventLog).args.hash,
     }
   } catch (error) {
-    throw new Error(`Failed to get last memory hash:${error}`)
+    throw new Error(`Failed to get last memory hash:${error}`, { cause: error })
   }
 }
 

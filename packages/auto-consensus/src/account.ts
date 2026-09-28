@@ -42,6 +42,6 @@ export const account = async (api: Api, address: string): Promise<AccountData> =
     }
   } catch (error) {
     console.log('error', error)
-    throw new Error('Error getting account' + error)
+    throw new Error('Error getting account' + error, { cause: error })
   }
 }
