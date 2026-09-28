@@ -13,7 +13,7 @@
     "build": "lerna run build",
     "clean": "lerna run clean",
     "format": "lerna run format",
-    "lint": "eslint \"packages/**/{src,__test__,__tests__}/**/*.{ts,tsx,js,mjs}\"",
+    "lint": "eslint --max-warnings 0 \"packages/**/{src,__test__,__tests__}/**/*.{ts,tsx,js,mjs}\"",
     "lint:fix": "eslint --fix \"packages/**/{src,__test__,__tests__}/**/*.{ts,tsx,js,mjs}\"",
     "test": "lerna run test",
     "test:unit": "lerna run test --ignore @autonomys/integration-tests",
