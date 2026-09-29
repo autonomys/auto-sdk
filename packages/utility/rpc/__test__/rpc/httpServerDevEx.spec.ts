@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import http from 'http'
 import { AddressInfo } from 'net'
 import { z } from 'zod'
@@ -319,13 +318,22 @@ describe('RPC HTTP Server DevEx & Type Resolution', () => {
       })
 
       expect(capturedError).not.toBeNull()
-      expect((capturedError as any)?.code).toBe('EADDRINUSE')
+      expect((capturedError as NodeJS.ErrnoException)?.code).toBe('EADDRINUSE')
 
       // Server B should no longer be stuck in pending state and can successfully listen on a free port
       await new Promise<void>((resolve) => {
         serverB.listen(0, () => resolve())
       })
       expect(serverB.httpServer.listening).toBe(true)
+    })
+
+    it('should re-throw error when callbacks.onError is not provided', () => {
+      const server = createWsServer()
+      serversToClose.push(server)
+      const testError = new Error('TEST_LISTEN_ERROR')
+      expect(() => {
+        server.httpServer.emit('error', testError)
+      }).toThrow('TEST_LISTEN_ERROR')
     })
 
     it('should not let top-level undefined options overwrite nested server options', () => {

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import http from 'http'
 import Websocket, { connection } from 'websocket'
 import { z } from 'zod'

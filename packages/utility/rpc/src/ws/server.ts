@@ -108,7 +108,8 @@ export const createWsServer = (params: CreateWsServerParams = {}): WsServer => {
     isListenPending = false
     boundPort = null
     pendingListenCallbacks.length = 0
-    onError?.(err)
+    if (onError) onError(err)
+    else throw err
   })
 
   const close = (): void => {

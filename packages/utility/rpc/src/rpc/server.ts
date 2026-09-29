@@ -11,7 +11,6 @@ import {
   MessageResponseQuery,
   messageSchema,
   RpcHandler,
-  RpcHandlerList,
   RpcResponse,
   RpcServer,
 } from './types'
