@@ -23,14 +23,14 @@ on:
         default: false
         type: boolean
 
-permissions:
-  contents: write
-  pull-requests: read
-
 jobs:
   release:
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    permissions:
+      contents: write
+      pull-requests: read
+      id-token: write
     steps:
       - name: Checkout 🛎️
         uses: actions/checkout@v7
@@ -44,8 +44,6 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: '24.18.0'
-          registry-url: 'https://registry.npmjs.org'
-          scope: '@autonomys'
 
       - name: Enable Corepack
         run: corepack enable
@@ -61,6 +59,9 @@ jobs:
       - name: Install dependencies
         run: yarn install
 
+      - name: Verify npm trusted publishing
+        run: node scripts/verify-npm-trusted-publishing.js
+
       - name: Generate PR-based changelog
         if: ${{ !inputs.prerelease && !inputs.dryRun }}
         run: BUMP_TYPE=${{ inputs.releaseType }} yarn changelog
@@ -71,7 +72,6 @@ jobs:
         if: ${{ !inputs.dryRun }}
         id: version_bump
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if [ "${{ inputs.prerelease }}" = "true" ]; then
@@ -83,10 +83,6 @@ jobs:
             PRERELEASE_FLAG=""
             PUBLISH_FLAGS="--yes --force-publish"
           fi
-
-          # Ensure npm config has auth token for @autonomys scope
-          npm config set //registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}
-          npm config set @autonomys:registry https://registry.npmjs.org/
 
           git add CHANGELOG.md
           git commit -m "docs: update CHANGELOG.md for release" || echo "No changes to commit"
