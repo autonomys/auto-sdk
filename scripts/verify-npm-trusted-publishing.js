@@ -56,7 +56,7 @@ const main = async () => {
 
   if (failed.length > 0) {
     const workflowFile = process.env.GITHUB_WORKFLOW_REF.split('@')[0].split('/').pop()
-    console.error(
+    console.log(
       `\nnpm rejected the OIDC token exchange for ${failed.length} of ${packages.length} packages. ` +
         'On npmjs.com, open each package > Settings > Trusted Publisher and add GitHub Actions ' +
         `with repository ${process.env.GITHUB_REPOSITORY} and workflow ${workflowFile}.`,
@@ -67,6 +67,6 @@ const main = async () => {
 }
 
 main().catch((error) => {
-  console.error(error.message)
+  console.log(error.message)
   process.exit(1)
 })
