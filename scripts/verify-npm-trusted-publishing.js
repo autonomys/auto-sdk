@@ -9,6 +9,10 @@
  * exchange as "no OIDC" rather than an error, so without this check a misconfigured package only
  * fails mid-publish: after the release tag is pushed and the packages before it are already out.
  *
+ * It cannot check a trusted publisher's allowed actions: npm issues the same token whether the
+ * publisher may `npm publish` or only `npm stage publish`, and enforces that at publish time.
+ * lerna publishes directly, so every trusted publisher must allow direct publishing.
+ *
  * The exchanged tokens are never read or logged.
  */
 
@@ -59,7 +63,8 @@ const main = async () => {
     console.log(
       `\nnpm rejected the OIDC token exchange for ${failed.length} of ${packages.length} packages. ` +
         'On npmjs.com, open each package > Settings > Trusted Publisher and add GitHub Actions ' +
-        `with repository ${process.env.GITHUB_REPOSITORY} and workflow ${workflowFile}.`,
+        `with repository ${process.env.GITHUB_REPOSITORY} and workflow ${workflowFile}, ` +
+        'allowing it to publish directly.',
     )
     process.exit(1)
   }
