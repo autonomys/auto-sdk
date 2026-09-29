@@ -55,7 +55,11 @@ export const encryptFile = async function* (
 
   for await (const chunk of asyncByChunk(file, chunkSize)) {
     const iv = crypto.getRandomValues(new Uint8Array(IV_SIZE))
-    const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, chunk as BufferSource)
+    const encrypted = await crypto.subtle.encrypt(
+      { name: 'AES-GCM', iv },
+      key,
+      chunk as BufferSource,
+    )
     yield Buffer.concat([Buffer.from(iv), Buffer.from(encrypted)])
   }
 }

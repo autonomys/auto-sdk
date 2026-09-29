@@ -154,11 +154,7 @@ const txData = createTransferToConsensusTxData(
 const gasEstimate = await provider.estimateGas({ ...txData, from: wallet.address })
 
 // Option B: Use ethers Contract directly
-const contract = new Contract(
-  TRANSPORTER_PRECOMPILE_ADDRESS,
-  getTransporterPrecompileAbi(),
-  wallet,
-)
+const contract = new Contract(TRANSPORTER_PRECOMPILE_ADDRESS, getTransporterPrecompileAbi(), wallet)
 
 const accountId32 = encodeAccountId32ToBytes32('sufsKsx4kZ26i7bJXc1TFguysVzjkzsDtE2VDiCEBY2WjyGAj')
 const tx = await contract.transfer_to_consensus_v1(accountId32, 10n * 10n ** 18n)
