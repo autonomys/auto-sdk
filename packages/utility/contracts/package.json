@@ -17,16 +17,14 @@
   "scripts": {
     "build": "tsc",
     "generate-abi": "ts-node scripts/index.ts",
-    "clean": "rm -rf dist",
-    "format": "prettier --write \"src/**/*.ts\""
+    "clean": "rm -rf dist"
   },
   "files": [
     "dist",
     "README.md"
   ],
   "devDependencies": {
-    "eslint": "^9.39.4",
-    "prettier": "^3.9.4",
+    "eslint": "^10.10.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   },

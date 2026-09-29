@@ -1,5 +1,5 @@
 import { createHash } from 'crypto'
-import { formatETag, md5Hex, multipartETag } from '../etag.js'
+import { formatETag, md5Hex, multipartETag, objectETag } from '../etag.js'
 
 describe('md5Hex', () => {
   it('computes the MD5 of an empty buffer', () => {
@@ -20,6 +20,19 @@ describe('formatETag', () => {
   })
 })
 
+describe('objectETag', () => {
+  it('formats MD5 when provided', () => {
+    expect(objectETag('0123456789abcdef0123456789abcdef', 'bafk-cid')).toBe(
+      '"0123456789abcdef0123456789abcdef"',
+    )
+  })
+
+  it('falls back to CID when MD5 is null or undefined', () => {
+    expect(objectETag(null, 'bafk-cid')).toBe('"bafk-cid"')
+    expect(objectETag(undefined, 'bafk-cid')).toBe('"bafk-cid"')
+  })
+})
+
 describe('multipartETag', () => {
   it('computes the AWS composite ETag from quoted part ETags', () => {
     const part1 = md5Hex(Buffer.from('part-one'))
@@ -29,9 +42,7 @@ describe('multipartETag', () => {
       .update(Buffer.concat([Buffer.from(part1, 'hex'), Buffer.from(part2, 'hex')]))
       .digest('hex')
 
-    expect(multipartETag([formatETag(part1), formatETag(part2)])).toBe(
-      `"${expectedComposite}-2"`,
-    )
+    expect(multipartETag([formatETag(part1), formatETag(part2)])).toBe(`"${expectedComposite}-2"`)
   })
 
   it('accepts unquoted part ETags as well', () => {
@@ -42,11 +53,7 @@ describe('multipartETag', () => {
   })
 
   it('appends the part count after a hyphen', () => {
-    const parts = [
-      md5Hex(Buffer.from('1')),
-      md5Hex(Buffer.from('2')),
-      md5Hex(Buffer.from('3')),
-    ]
+    const parts = [md5Hex(Buffer.from('1')), md5Hex(Buffer.from('2')), md5Hex(Buffer.from('3'))]
     expect(multipartETag(parts)).toMatch(/^"[0-9a-f]{32}-3"$/)
   })
 })

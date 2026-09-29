@@ -13,7 +13,7 @@ import {
   processFolderToIPLDFormat,
 } from '../src'
 
-export const stringifyWithBigInt = (obj: any) => {
+export const stringifyWithBigInt = (obj: unknown) => {
   return JSON.stringify(obj, (key, value) => (typeof value === 'bigint' ? value.toString() : value))
 }
 

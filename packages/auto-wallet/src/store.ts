@@ -1,10 +1,9 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import { getWallets, getWalletBySource } from '@talismn/connect-wallets';
-import type { Wallet } from '@talismn/connect-wallets';
-import type { WalletConfig, WalletState } from './types';
-import { DEFAULT_WALLET_CONFIG } from './constants';
-import { connectToWallet } from './connect';
+import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
+import { getWallets, getWalletBySource, type Wallet } from '@talismn/connect-wallets'
+import type { WalletConfig, WalletState } from './types'
+import { DEFAULT_WALLET_CONFIG } from './constants'
+import { connectToWallet } from './connect'
 
 /**
  * Creates a configured Zustand wallet store.
@@ -22,7 +21,7 @@ export function createWalletStore(userConfig?: Partial<WalletConfig>) {
       ...DEFAULT_WALLET_CONFIG.installUrls,
       ...userConfig?.installUrls,
     },
-  };
+  }
 
   return create<WalletState>()(
     persist(
@@ -43,52 +42,54 @@ export function createWalletStore(userConfig?: Partial<WalletConfig>) {
         // Actions
         detectWallets: () => {
           try {
-            const allWallets = getWallets();
+            const allWallets = getWallets()
             const supportedWallets = allWallets
               .filter((wallet: Wallet) => {
                 // Exclude Nova wallet (duplicate of Polkadot.js)
-                if (wallet.title?.toLowerCase().includes('nova')) return false;
-                return config.supportedWallets.includes(wallet.extensionName);
+                if (wallet.title?.toLowerCase().includes('nova')) return false
+                return config.supportedWallets.includes(wallet.extensionName)
               })
               // Remove duplicates by extension name
               .filter(
                 (wallet, index, arr) =>
                   arr.findIndex((w) => w.extensionName === wallet.extensionName) === index,
-              );
-            set({ availableWallets: supportedWallets });
+              )
+            set({ availableWallets: supportedWallets })
           } catch (error) {
-            console.warn('Failed to detect wallets:', error);
-            set({ availableWallets: [] });
+            console.warn('Failed to detect wallets:', error)
+            set({ availableWallets: [] })
           }
         },
 
         connectWallet: async (extensionName: string) => {
-          const { isLoading, availableWallets } = get();
+          const { isLoading, availableWallets } = get()
 
           // Prevent multiple simultaneous connection attempts
           if (isLoading) {
-            throw new Error('Connection already in progress');
+            throw new Error('Connection already in progress')
           }
 
-          const seq = get()._connectionSeq + 1;
+          const seq = get()._connectionSeq + 1
           set({
             _connectionSeq: seq,
             isLoading: true,
             loadingType: 'connecting',
             connectionError: null,
-          });
+          })
 
           try {
             // Use the wallet from our filtered availableWallets list to avoid ambiguity
             // when multiple wallet classes share the same extensionName (e.g. Nova and Polkadot.js)
-            const resolvedWallet = availableWallets.find(
-              (w) => w.extensionName === extensionName,
-            );
-            const { accounts, injector } = await connectToWallet(extensionName, config, resolvedWallet);
+            const resolvedWallet = availableWallets.find((w) => w.extensionName === extensionName)
+            const { accounts, injector } = await connectToWallet(
+              extensionName,
+              config,
+              resolvedWallet,
+            )
 
             // If a newer connection was started or user disconnected, discard this result
             if (get()._connectionSeq !== seq) {
-              return;
+              return
             }
 
             set({
@@ -100,76 +101,78 @@ export function createWalletStore(userConfig?: Partial<WalletConfig>) {
               accounts: accounts,
               injector: injector,
               connectionError: null,
-            });
+            })
           } catch (error) {
             // Only set error if this is still the active connection attempt
             if (get()._connectionSeq !== seq) {
-              return;
+              return
             }
-            const errorMessage = error instanceof Error ? error.message : 'Connection failed';
-            console.error('Wallet connection failed:', error);
+            const errorMessage = error instanceof Error ? error.message : 'Connection failed'
+            console.error('Wallet connection failed:', error)
 
             set({
               isLoading: false,
               loadingType: null,
               connectionError: errorMessage,
-            });
-            throw error;
+            })
+            throw error
           }
         },
 
         initializeConnection: async () => {
-          const { selectedWallet, selectedAccount, isConnected, isLoading } = get();
+          const { selectedWallet, selectedAccount, isConnected, isLoading } = get()
 
           // Prevent multiple simultaneous initialization attempts
           if (isLoading) {
-            return;
+            return
           }
 
           // Skip if no persisted data or already connected
           if (!selectedWallet || !selectedAccount || isConnected) {
-            return;
+            return
           }
 
-          const seq = get()._connectionSeq + 1;
+          const seq = get()._connectionSeq + 1
           set({
             _connectionSeq: seq,
             isLoading: true,
             loadingType: 'initializing',
             connectionError: null,
-          });
+          })
 
           try {
             // Use the wallet from our filtered availableWallets list to avoid ambiguity
             // when multiple wallet classes share the same extensionName
-            const { availableWallets } = get();
-            const resolvedWallet = availableWallets.find(
-              (w) => w.extensionName === selectedWallet,
-            ) ?? getWalletBySource(selectedWallet);
+            const { availableWallets } = get()
+            const resolvedWallet =
+              availableWallets.find((w) => w.extensionName === selectedWallet) ??
+              getWalletBySource(selectedWallet)
             if (!resolvedWallet?.installed) {
               // Clear invalid persisted data
-              console.log('Wallet no longer installed, clearing persisted data');
+              console.log('Wallet no longer installed, clearing persisted data')
               set({
                 selectedWallet: null,
                 selectedAccount: null,
                 isConnected: false,
                 isLoading: false,
                 loadingType: null,
-              });
-              return;
+              })
+              return
             }
 
-            const { accounts, injector } = await connectToWallet(selectedWallet, config, resolvedWallet);
+            const { accounts, injector } = await connectToWallet(
+              selectedWallet,
+              config,
+              resolvedWallet,
+            )
 
             // If a newer connection was started or user disconnected, discard this result
             if (get()._connectionSeq !== seq) {
-              return;
+              return
             }
 
             // Find target account by comparing with stored address (already in correct format)
-            const targetAccount = accounts.find(
-              (acc) => acc.address === selectedAccount.address,
-            );
+            const targetAccount = accounts.find((acc) => acc.address === selectedAccount.address)
 
             if (targetAccount) {
               set({
@@ -180,11 +183,11 @@ export function createWalletStore(userConfig?: Partial<WalletConfig>) {
                 accounts: accounts,
                 injector: injector,
                 connectionError: null,
-              });
-              console.log('Successfully reconnected to wallet');
+              })
+              console.log('Successfully reconnected to wallet')
             } else {
               // Account no longer exists, clear data
-              console.log('Account no longer exists, clearing persisted data');
+              console.log('Account no longer exists, clearing persisted data')
               set({
                 selectedWallet: null,
                 selectedAccount: null,
@@ -193,10 +196,10 @@ export function createWalletStore(userConfig?: Partial<WalletConfig>) {
                 loadingType: null,
                 accounts: [],
                 injector: null,
-              });
+              })
             }
           } catch (error) {
-            console.warn('Silent reconnection failed, clearing persisted data:', error);
+            console.warn('Silent reconnection failed, clearing persisted data:', error)
             set({
               isConnected: false,
               isLoading: false,
@@ -205,7 +208,7 @@ export function createWalletStore(userConfig?: Partial<WalletConfig>) {
               selectedAccount: null,
               accounts: [],
               injector: null,
-            });
+            })
           }
         },
 
@@ -220,27 +223,27 @@ export function createWalletStore(userConfig?: Partial<WalletConfig>) {
             accounts: [],
             injector: null,
             connectionError: null,
-          });
+          })
         },
 
         selectAccount: (targetAddress: string) => {
-          const { accounts, isConnected } = get();
+          const { accounts, isConnected } = get()
           if (!isConnected) {
-            console.warn('Cannot select account when wallet is not connected');
-            return;
+            console.warn('Cannot select account when wallet is not connected')
+            return
           }
 
           // Find account by address (addresses are already in correct format)
-          const account = accounts.find((acc) => acc.address === targetAddress);
+          const account = accounts.find((acc) => acc.address === targetAddress)
           if (account) {
-            set({ selectedAccount: account });
+            set({ selectedAccount: account })
           } else {
-            console.warn('Account not found:', targetAddress);
+            console.warn('Account not found:', targetAddress)
           }
         },
 
         clearError: () => {
-          set({ connectionError: null });
+          set({ connectionError: null })
         },
       }),
       {
@@ -255,12 +258,12 @@ export function createWalletStore(userConfig?: Partial<WalletConfig>) {
             // Auto-initialize connection after rehydration
             setTimeout(() => {
               state.initializeConnection().catch((error: unknown) => {
-                console.error('Failed to initialize connection:', error);
-              });
-            }, 500);
+                console.error('Failed to initialize connection:', error)
+              })
+            }, 500)
           }
         },
       },
     ),
-  );
+  )
 }

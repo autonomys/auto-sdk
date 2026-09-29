@@ -2,7 +2,6 @@ import { FlatCompat } from '@eslint/eslintrc'
 import js from '@eslint/js'
 import typescriptEslint from '@typescript-eslint/eslint-plugin'
 import tsParser from '@typescript-eslint/parser'
-import prettier from 'eslint-plugin-prettier'
 import { defineConfig, globalIgnores } from 'eslint/config'
 import globals from 'globals'
 import path from 'node:path'
@@ -24,7 +23,6 @@ export default defineConfig([
     '**/jest.config.js',
     '**/jest.config.ts',
     '**/examples',
-    '**/__test__/',
     '**/.next/',
     '**/out/',
     '**/dist/',
@@ -38,7 +36,6 @@ export default defineConfig([
 
     plugins: {
       '@typescript-eslint': typescriptEslint,
-      prettier,
     },
 
     languageOptions: {
@@ -59,7 +56,7 @@ export default defineConfig([
     rules: {
       camelcase: 'warn',
       'spaced-comment': 'error',
-      quotes: ['error', 'single'],
+      quotes: ['error', 'single', { avoidEscape: true }],
       'no-duplicate-imports': 'error',
     },
   },

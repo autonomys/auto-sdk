@@ -1,5 +1,6 @@
 import { jest } from '@jest/globals'
-import { DownloadMetadata } from '../../models.js'
+import type { Request, Response } from 'express'
+import { DownloadMetadata, DownloadOptions } from '../../models.js'
 import { handleDownloadResponseHeaders } from '../headers.js'
 
 // Mock Express types
@@ -27,6 +28,20 @@ const createMockRes = () => {
   }
 }
 
+// The handler only touches req.headers/query and res.set/status, which the mocks provide
+const callHandler = (
+  req: ReturnType<typeof createMockReq>,
+  res: ReturnType<typeof createMockRes>,
+  metadata: DownloadMetadata,
+  options: DownloadOptions,
+) =>
+  handleDownloadResponseHeaders(
+    req as unknown as Request,
+    res as unknown as Response,
+    metadata,
+    options,
+  )
+
 describe('handleDownloadResponseHeaders', () => {
   const defaultMetadata: DownloadMetadata = {
     name: 'test-file.txt',
@@ -42,7 +57,7 @@ describe('handleDownloadResponseHeaders', () => {
       const req = createMockReq()
       const res = createMockRes()
 
-      handleDownloadResponseHeaders(req as any, res as any, defaultMetadata, {})
+      callHandler(req, res, defaultMetadata, {})
 
       expect(res.set).toHaveBeenCalledWith(
         'Content-Disposition',
@@ -55,7 +70,7 @@ describe('handleDownloadResponseHeaders', () => {
     it('should be attachment when ?download=true or ?download is present', () => {
       const req1 = createMockReq({}, { download: 'true' })
       const res1 = createMockRes()
-      handleDownloadResponseHeaders(req1 as any, res1 as any, defaultMetadata, {})
+      callHandler(req1, res1, defaultMetadata, {})
       expect(res1.set).toHaveBeenCalledWith(
         'Content-Disposition',
         expect.stringMatching(/^attachment;/),
@@ -63,7 +78,7 @@ describe('handleDownloadResponseHeaders', () => {
 
       const req2 = createMockReq({}, { download: '' })
       const res2 = createMockRes()
-      handleDownloadResponseHeaders(req2 as any, res2 as any, defaultMetadata, {})
+      callHandler(req2, res2, defaultMetadata, {})
       expect(res2.set).toHaveBeenCalledWith(
         'Content-Disposition',
         expect.stringMatching(/^attachment;/),
@@ -74,7 +89,7 @@ describe('handleDownloadResponseHeaders', () => {
       const req = createMockReq({}, { download: 'false' })
       const res = createMockRes()
 
-      handleDownloadResponseHeaders(req as any, res as any, defaultMetadata, {})
+      callHandler(req, res, defaultMetadata, {})
 
       expect(res.set).toHaveBeenCalledWith('Content-Disposition', expect.stringMatching(/^inline;/))
     })
@@ -82,7 +97,7 @@ describe('handleDownloadResponseHeaders', () => {
     it('should be inline when ?inline=true or ?inline is present, even if fetch headers suggest otherwise', () => {
       const req1 = createMockReq({ 'sec-fetch-dest': 'image' }, { inline: 'true' })
       const res1 = createMockRes()
-      handleDownloadResponseHeaders(req1 as any, res1 as any, defaultMetadata, {})
+      callHandler(req1, res1, defaultMetadata, {})
       expect(res1.set).toHaveBeenCalledWith(
         'Content-Disposition',
         expect.stringMatching(/^inline;/),
@@ -90,7 +105,7 @@ describe('handleDownloadResponseHeaders', () => {
 
       const req2 = createMockReq({ 'sec-fetch-dest': 'image' }, { inline: '' })
       const res2 = createMockRes()
-      handleDownloadResponseHeaders(req2 as any, res2 as any, defaultMetadata, {})
+      callHandler(req2, res2, defaultMetadata, {})
       expect(res2.set).toHaveBeenCalledWith(
         'Content-Disposition',
         expect.stringMatching(/^inline;/),
@@ -101,7 +116,7 @@ describe('handleDownloadResponseHeaders', () => {
       const req = createMockReq({ 'sec-fetch-dest': 'image' }, { inline: 'false' })
       const res = createMockRes()
 
-      handleDownloadResponseHeaders(req as any, res as any, defaultMetadata, {})
+      callHandler(req, res, defaultMetadata, {})
 
       expect(res.set).toHaveBeenCalledWith(
         'Content-Disposition',
@@ -114,7 +129,7 @@ describe('handleDownloadResponseHeaders', () => {
       const res = createMockRes()
       const metadata = { ...defaultMetadata, name: 'my file with "quotes".txt' }
 
-      handleDownloadResponseHeaders(req as any, res as any, metadata, {})
+      callHandler(req, res, metadata, {})
 
       const disposition = res._getHeaders()['content-disposition']
       // filename should have escaped quotes, filename* should be RFC 5987 encoded
@@ -127,7 +142,7 @@ describe('handleDownloadResponseHeaders', () => {
       const res = createMockRes()
       const metadata = { ...defaultMetadata, name: '文件.txt' }
 
-      handleDownloadResponseHeaders(req as any, res as any, metadata, {})
+      callHandler(req, res, metadata, {})
 
       const disposition = res._getHeaders()['content-disposition']
       // filename should have consecutive non-ASCII replaced with single underscore (ASCII fallback)
@@ -141,7 +156,7 @@ describe('handleDownloadResponseHeaders', () => {
       const res = createMockRes()
       const metadata = { ...defaultMetadata, name: 'report-отчёт-2024.pdf' }
 
-      handleDownloadResponseHeaders(req as any, res as any, metadata, {})
+      callHandler(req, res, metadata, {})
 
       const disposition = res._getHeaders()['content-disposition']
       // filename should preserve ASCII, replace consecutive non-ASCII with single underscore
@@ -156,7 +171,7 @@ describe('handleDownloadResponseHeaders', () => {
       const req = createMockReq({ 'sec-fetch-dest': 'image' })
       const res = createMockRes()
 
-      handleDownloadResponseHeaders(req as any, res as any, defaultMetadata, {})
+      callHandler(req, res, defaultMetadata, {})
 
       expect(res.set).toHaveBeenCalledWith(
         'Content-Disposition',
@@ -168,7 +183,7 @@ describe('handleDownloadResponseHeaders', () => {
       const req = createMockReq({ 'sec-fetch-mode': 'cors' })
       const res = createMockRes()
 
-      handleDownloadResponseHeaders(req as any, res as any, defaultMetadata, {})
+      callHandler(req, res, defaultMetadata, {})
 
       expect(res.set).toHaveBeenCalledWith(
         'Content-Disposition',
@@ -185,7 +200,7 @@ describe('handleDownloadResponseHeaders', () => {
         name: 'example.mp4',
       }
 
-      handleDownloadResponseHeaders(req as any, res as any, metadata, {})
+      callHandler(req, res, metadata, {})
 
       expect(res.set).toHaveBeenCalledWith(
         'Content-Disposition',
@@ -199,7 +214,7 @@ describe('handleDownloadResponseHeaders', () => {
       const req = createMockReq()
       const res = createMockRes()
 
-      handleDownloadResponseHeaders(req as any, res as any, defaultMetadata, {})
+      callHandler(req, res, defaultMetadata, {})
 
       expect(res.set).toHaveBeenCalledWith('Content-Type', 'text/plain')
     })
@@ -209,7 +224,7 @@ describe('handleDownloadResponseHeaders', () => {
       const res = createMockRes()
       const metadata = { ...defaultMetadata, isEncrypted: true }
 
-      handleDownloadResponseHeaders(req as any, res as any, metadata, {})
+      callHandler(req, res, metadata, {})
 
       expect(res.set).toHaveBeenCalledWith('Content-Type', 'application/octet-stream')
     })
@@ -219,7 +234,7 @@ describe('handleDownloadResponseHeaders', () => {
       const res = createMockRes()
       const metadata = { ...defaultMetadata, type: 'folder' as const }
 
-      handleDownloadResponseHeaders(req as any, res as any, metadata, {})
+      callHandler(req, res, metadata, {})
 
       expect(res.set).toHaveBeenCalledWith('Content-Type', 'application/zip')
     })
@@ -229,7 +244,7 @@ describe('handleDownloadResponseHeaders', () => {
       const res = createMockRes()
       const metadata = { ...defaultMetadata, type: 'folder' as const, isEncrypted: true }
 
-      handleDownloadResponseHeaders(req as any, res as any, metadata, {})
+      callHandler(req, res, metadata, {})
 
       expect(res.set).toHaveBeenCalledWith('Content-Type', 'application/octet-stream')
     })
@@ -244,7 +259,7 @@ describe('handleDownloadResponseHeaders', () => {
           mimeType: 'application/octet-stream',
         }
 
-        handleDownloadResponseHeaders(req as any, res as any, metadata, {})
+        callHandler(req, res, metadata, {})
 
         expect(res.set).toHaveBeenCalledWith('Content-Type', 'video/mp4')
       })
@@ -258,7 +273,7 @@ describe('handleDownloadResponseHeaders', () => {
           mimeType: 'binary/octet-stream',
         }
 
-        handleDownloadResponseHeaders(req as any, res as any, metadata, {})
+        callHandler(req, res, metadata, {})
 
         expect(res.set).toHaveBeenCalledWith('Content-Type', 'image/png')
       })
@@ -272,7 +287,7 @@ describe('handleDownloadResponseHeaders', () => {
           mimeType: 'application/pdf',
         }
 
-        handleDownloadResponseHeaders(req as any, res as any, metadata, {})
+        callHandler(req, res, metadata, {})
 
         expect(res.set).toHaveBeenCalledWith('Content-Type', 'application/pdf')
       })
@@ -286,7 +301,7 @@ describe('handleDownloadResponseHeaders', () => {
           mimeType: undefined,
         }
 
-        handleDownloadResponseHeaders(req as any, res as any, metadata, {})
+        callHandler(req, res, metadata, {})
 
         expect(res.set).toHaveBeenCalledWith('Content-Type', 'audio/mpeg')
       })
@@ -300,7 +315,7 @@ describe('handleDownloadResponseHeaders', () => {
           mimeType: 'APPLICATION/OCTET-STREAM', // uppercase
         }
 
-        handleDownloadResponseHeaders(req as any, res as any, metadata, {})
+        callHandler(req, res, metadata, {})
 
         expect(res.set).toHaveBeenCalledWith('Content-Type', 'application/zip')
       })
@@ -313,7 +328,7 @@ describe('handleDownloadResponseHeaders', () => {
       const res = createMockRes()
       const metadata = { ...defaultMetadata, isCompressed: true }
 
-      const result = handleDownloadResponseHeaders(req as any, res as any, metadata, {})
+      const result = callHandler(req, res, metadata, {})
 
       expect(result.shouldDecompressBody).toBe(false)
       expect(res.set).toHaveBeenCalledWith('Content-Encoding', 'deflate')
@@ -324,7 +339,7 @@ describe('handleDownloadResponseHeaders', () => {
       const res = createMockRes()
       const metadata = { ...defaultMetadata, isCompressed: true, isEncrypted: true }
 
-      handleDownloadResponseHeaders(req as any, res as any, metadata, {})
+      callHandler(req, res, metadata, {})
 
       expect(res.set).not.toHaveBeenCalledWith('Content-Encoding', 'deflate')
     })
@@ -334,7 +349,7 @@ describe('handleDownloadResponseHeaders', () => {
       const res = createMockRes()
       const metadata = { ...defaultMetadata, isCompressed: true }
 
-      handleDownloadResponseHeaders(req as any, res as any, metadata, {})
+      callHandler(req, res, metadata, {})
 
       expect(res.set).not.toHaveBeenCalledWith('Content-Encoding', 'deflate')
     })
@@ -344,7 +359,7 @@ describe('handleDownloadResponseHeaders', () => {
       const res = createMockRes()
       const metadata = { ...defaultMetadata, isCompressed: true }
 
-      const result = handleDownloadResponseHeaders(req as any, res as any, metadata, {})
+      const result = callHandler(req, res, metadata, {})
 
       expect(res.set).not.toHaveBeenCalledWith('Content-Encoding', 'deflate')
       expect(result.shouldDecompressBody).toBe(true)
@@ -355,7 +370,7 @@ describe('handleDownloadResponseHeaders', () => {
       const res = createMockRes()
       const metadata = { ...defaultMetadata, isCompressed: true }
 
-      const result = handleDownloadResponseHeaders(req as any, res as any, metadata, {})
+      const result = callHandler(req, res, metadata, {})
 
       expect(res.set).not.toHaveBeenCalledWith('Content-Encoding', 'deflate')
       expect(result.shouldDecompressBody).toBe(true)
@@ -368,7 +383,7 @@ describe('handleDownloadResponseHeaders', () => {
       const res = createMockRes()
       const metadata = { ...defaultMetadata, isCompressed: true }
 
-      const result = handleDownloadResponseHeaders(req as any, res as any, metadata, {})
+      const result = callHandler(req, res, metadata, {})
 
       // Should NOT set Content-Encoding because it's not a document navigation
       expect(res.set).not.toHaveBeenCalledWith('Content-Encoding', 'deflate')
@@ -380,7 +395,7 @@ describe('handleDownloadResponseHeaders', () => {
       const res = createMockRes()
       const metadata = { ...defaultMetadata, isCompressed: true }
 
-      const result = handleDownloadResponseHeaders(req as any, res as any, metadata, {})
+      const result = callHandler(req, res, metadata, {})
 
       expect(res.set).toHaveBeenCalledWith('Content-Encoding', 'deflate')
       expect(result.shouldDecompressBody).toBe(false)
@@ -394,7 +409,7 @@ describe('handleDownloadResponseHeaders', () => {
       const res = createMockRes()
       const metadata = { ...defaultMetadata, isCompressed: true }
 
-      handleDownloadResponseHeaders(req as any, res as any, metadata, {})
+      callHandler(req, res, metadata, {})
 
       expect(res.set).toHaveBeenCalledWith('Content-Encoding', 'deflate')
       const headers = res._getHeaders()
@@ -406,7 +421,7 @@ describe('handleDownloadResponseHeaders', () => {
       const res = createMockRes()
       const metadata = { ...defaultMetadata, isCompressed: true }
 
-      handleDownloadResponseHeaders(req as any, res as any, metadata, {})
+      callHandler(req, res, metadata, {})
 
       expect(res.set).toHaveBeenCalledWith('Content-Encoding', 'deflate')
       expect(res.set).toHaveBeenCalledWith('Accept-Ranges', 'none')
@@ -421,7 +436,7 @@ describe('handleDownloadResponseHeaders', () => {
         mimeType: 'video/mp4',
       }
 
-      const result = handleDownloadResponseHeaders(req as any, res as any, metadata, {})
+      const result = callHandler(req, res, metadata, {})
 
       expect(result.shouldDecompressBody).toBe(true)
       expect(res.set).not.toHaveBeenCalledWith('Content-Encoding', 'deflate')
@@ -434,7 +449,7 @@ describe('handleDownloadResponseHeaders', () => {
       const res = createMockRes()
       const options = { byteRange: [0, 49] as [number, number] }
 
-      handleDownloadResponseHeaders(req as any, res as any, defaultMetadata, options)
+      callHandler(req, res, defaultMetadata, options)
 
       expect(res.status).toHaveBeenCalledWith(206)
       expect(res.set).toHaveBeenCalledWith('Content-Range', 'bytes 0-49/100')
@@ -447,7 +462,7 @@ describe('handleDownloadResponseHeaders', () => {
       const metadata = { ...defaultMetadata, isCompressed: true }
       const options = { byteRange: [0, 49] as [number, number] }
 
-      const result = handleDownloadResponseHeaders(req as any, res as any, metadata, options)
+      const result = callHandler(req, res, metadata, options)
 
       expect(result.shouldDecompressBody).toBe(true)
       expect(res.set).not.toHaveBeenCalledWith('Content-Encoding', 'deflate')
@@ -461,7 +476,7 @@ describe('handleDownloadResponseHeaders', () => {
       const metadata = { ...defaultMetadata, isCompressed: true }
       const options = { byteRange: [0, 49] as [number, number] }
 
-      handleDownloadResponseHeaders(req as any, res as any, metadata, options)
+      callHandler(req, res, metadata, options)
 
       expect(res.status).not.toHaveBeenCalledWith(206)
       expect(res.set).not.toHaveBeenCalledWith('Content-Range', expect.anything())
@@ -475,7 +490,7 @@ describe('handleDownloadResponseHeaders', () => {
       const req = createMockReq()
       const res = createMockRes()
 
-      handleDownloadResponseHeaders(req as any, res as any, defaultMetadata, {})
+      callHandler(req, res, defaultMetadata, {})
 
       expect(res.set).toHaveBeenCalledWith('Accept-Ranges', 'bytes')
     })
@@ -485,7 +500,7 @@ describe('handleDownloadResponseHeaders', () => {
       const res = createMockRes()
       const metadata = { ...defaultMetadata, size: undefined }
 
-      handleDownloadResponseHeaders(req as any, res as any, metadata, {})
+      callHandler(req, res, metadata, {})
 
       expect(res.set).toHaveBeenCalledWith('Accept-Ranges', 'none')
     })
@@ -495,7 +510,7 @@ describe('handleDownloadResponseHeaders', () => {
       const res = createMockRes()
       const metadata = { ...defaultMetadata, isCompressed: true }
 
-      const result = handleDownloadResponseHeaders(req as any, res as any, metadata, {})
+      const result = callHandler(req, res, metadata, {})
 
       expect(result.shouldDecompressBody).toBe(true)
       expect(res.set).toHaveBeenCalledWith('Accept-Ranges', 'none')
@@ -507,7 +522,7 @@ describe('handleDownloadResponseHeaders', () => {
       const req = createMockReq()
       const res = createMockRes()
 
-      handleDownloadResponseHeaders(req as any, res as any, defaultMetadata, {})
+      callHandler(req, res, defaultMetadata, {})
 
       expect(res.set).toHaveBeenCalledWith('Content-Length', '100')
     })
@@ -517,7 +532,7 @@ describe('handleDownloadResponseHeaders', () => {
       const res = createMockRes()
       const metadata = { ...defaultMetadata, size: undefined }
 
-      handleDownloadResponseHeaders(req as any, res as any, metadata, {})
+      callHandler(req, res, metadata, {})
 
       expect(res.set).not.toHaveBeenCalledWith('Content-Length', expect.anything())
     })
@@ -527,7 +542,7 @@ describe('handleDownloadResponseHeaders', () => {
       const res = createMockRes()
       const metadata = { ...defaultMetadata, isCompressed: true }
 
-      handleDownloadResponseHeaders(req as any, res as any, metadata, {})
+      callHandler(req, res, metadata, {})
 
       // Content-Length should not be set when decompressing
       const headers = res._getHeaders()
@@ -540,7 +555,7 @@ describe('handleDownloadResponseHeaders', () => {
       const req = createMockReq()
       const res = createMockRes()
 
-      handleDownloadResponseHeaders(req as any, res as any, defaultMetadata, { rawMode: true })
+      callHandler(req, res, defaultMetadata, { rawMode: true })
 
       expect(res.set).toHaveBeenCalledWith('Content-Type', 'application/octet-stream')
     })
@@ -550,7 +565,7 @@ describe('handleDownloadResponseHeaders', () => {
       const res = createMockRes()
       const metadata = { ...defaultMetadata, isCompressed: true }
 
-      const result = handleDownloadResponseHeaders(req as any, res as any, metadata, {
+      const result = callHandler(req, res, metadata, {
         rawMode: true,
       })
 
@@ -569,7 +584,7 @@ describe('handleDownloadResponseHeaders', () => {
         name: 'my-folder',
       }
 
-      handleDownloadResponseHeaders(req as any, res as any, metadata, {})
+      callHandler(req, res, metadata, {})
 
       expect(res.set).toHaveBeenCalledWith(
         'Content-Disposition',
@@ -586,7 +601,7 @@ describe('handleDownloadResponseHeaders', () => {
         name: 'my-folder',
       }
 
-      handleDownloadResponseHeaders(req as any, res as any, metadata, {})
+      callHandler(req, res, metadata, {})
 
       const disposition = res._getHeaders()['content-disposition']
       expect(disposition).toMatch(/filename="my-folder\.zip"/)
@@ -603,7 +618,7 @@ describe('handleDownloadResponseHeaders', () => {
         name: 'my-folder',
       }
 
-      handleDownloadResponseHeaders(req as any, res as any, metadata, {})
+      callHandler(req, res, metadata, {})
 
       expect(res.set).toHaveBeenCalledWith('Content-Disposition', expect.stringMatching(/^inline;/))
     })
@@ -618,7 +633,7 @@ describe('handleDownloadResponseHeaders', () => {
         name: '',
       }
 
-      handleDownloadResponseHeaders(req as any, res as any, metadata, {})
+      callHandler(req, res, metadata, {})
 
       const disposition = res._getHeaders()['content-disposition']
       expect(disposition).toMatch(/filename="download"/)
@@ -633,7 +648,7 @@ describe('handleDownloadResponseHeaders', () => {
         name: '',
       }
 
-      handleDownloadResponseHeaders(req as any, res as any, metadata, {})
+      callHandler(req, res, metadata, {})
 
       const disposition = res._getHeaders()['content-disposition']
       expect(disposition).toMatch(/filename="download\.zip"/)
@@ -650,7 +665,7 @@ describe('handleDownloadResponseHeaders', () => {
         name: 'photo.png',
       }
 
-      handleDownloadResponseHeaders(req as any, res as any, metadata, {})
+      callHandler(req, res, metadata, {})
 
       expect(res.set).toHaveBeenCalledWith('Content-Disposition', expect.stringMatching(/^inline;/))
     })
@@ -664,7 +679,7 @@ describe('handleDownloadResponseHeaders', () => {
         name: 'song.mp3',
       }
 
-      handleDownloadResponseHeaders(req as any, res as any, metadata, {})
+      callHandler(req, res, metadata, {})
 
       expect(res.set).toHaveBeenCalledWith('Content-Disposition', expect.stringMatching(/^inline;/))
     })
@@ -678,7 +693,7 @@ describe('handleDownloadResponseHeaders', () => {
         name: 'document.pdf',
       }
 
-      handleDownloadResponseHeaders(req as any, res as any, metadata, {})
+      callHandler(req, res, metadata, {})
 
       expect(res.set).toHaveBeenCalledWith('Content-Disposition', expect.stringMatching(/^inline;/))
     })
@@ -695,7 +710,7 @@ describe('handleDownloadResponseHeaders', () => {
         isEncrypted: true,
       }
 
-      handleDownloadResponseHeaders(req as any, res as any, metadata, {})
+      callHandler(req, res, metadata, {})
 
       expect(res.set).toHaveBeenCalledWith(
         'Content-Disposition',
@@ -715,7 +730,7 @@ describe('handleDownloadResponseHeaders', () => {
         isEncrypted: true,
       }
 
-      handleDownloadResponseHeaders(req as any, res as any, metadata, {})
+      callHandler(req, res, metadata, {})
 
       expect(res.set).toHaveBeenCalledWith('Content-Disposition', expect.stringMatching(/^inline;/))
     })
