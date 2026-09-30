@@ -24,8 +24,11 @@ export type MessageDefinition = {
 
 export type DefinitionType = ZodType | UnvalidatedType<any>
 
-export type DefinitionTypeOutput<T extends DefinitionType> =
-  T extends ZodType<any> ? T['_output'] : T extends UnvalidatedType<infer U> ? U : never
+export type DefinitionTypeOutput<T extends DefinitionType> = T extends { _output: infer O }
+  ? O
+  : T extends UnvalidatedType<infer U>
+    ? U
+    : never
 
 export type ApiDefinition = {
   methods: Record<string, MethodDefinition>

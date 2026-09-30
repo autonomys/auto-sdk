@@ -50,16 +50,27 @@ const apiDefinition = createApiDefinition({
   },
 })
 
-apiDefinition.createServer(
+const server = apiDefinition.createServer({
+  test: (params) => {
+    return {
+      name: params.name,
+    }
+  },
+})
+
+server.listen(8080)
+```
+
+You can also pass an existing HTTP server, Express application, or port:
+
+```ts
+const server = apiDefinition.createServer(
   {
-    test: (params) => {
-      return {
-        name: params.name,
-      }
-    },
+    test: (params) => ({ name: params.name }),
   },
   {
-    // ...WS Server Params
+    httpServer: app, // Express app or http.Server instance
+    port: 8080,
   },
 )
 ```
@@ -90,39 +101,35 @@ client
 
 ## Set Up the RPC Server (w/o type safety)
 
-You can create an RPC server by using the `createRpcServer` function. This function requires a WebSocket server and an optional list of initial handlers. Here’s an example of how to set it up:
+You can create an RPC server by using the `createRpcServer` function with an optional list of initial handlers. You can listen directly on a port or attach to an existing HTTP server / Express app:
 
 ```ts
-# Start Generation Here
-import { createRpcServer, createWsServer } from '../../src'
-import { createBaseHttpServer, TEST_PORT } from '../utils'
+import { createRpcServer } from '@autonomys/rpc'
 
-const setupRpcServer = async () => {
-  const httpServer = await createBaseHttpServer()
-  const rpcServer = createRpcServer({
-    server: createWsServer({
-      httpServer,
-      callbacks: {},
-    }),
-    initialHandlers: [
-      {
-        method: 'test',
-        handler: () => ({
-          jsonrpc: '2.0',
-          result: 'success',
-          id: 1,
-        }),
-      },
-    ],
-  })
-
-  return rpcServer
-}
-
-// Example usage
-const rpcServer = await setupRpcServer()
+const rpcServer = createRpcServer({
+  initialHandlers: [
+    {
+      method: 'test',
+      handler: () => ({
+        jsonrpc: '2.0',
+        result: 'success',
+        id: 1,
+      }),
+    },
+  ],
+})
 
 rpcServer.listen(8080)
+```
+
+Or pass `port` or an Express `app` directly:
+
+```ts
+const rpcServer = createRpcServer({
+  httpServer: app, // optional: Express application or http.Server
+  port: 8080,      // optional: auto-starts listening on port
+  initialHandlers: [...],
+})
 ```
 
 ## Set Up the RPC Client (w/o type safety)
