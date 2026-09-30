@@ -120,19 +120,24 @@ Follow the instructions to create and set up a token with the `repo` scope.
 
 ### Automated Release
 
-1. Go to the GitHub Actions tab in the repository
-2. Select the "Release" workflow
-3. Click "Run workflow"
-4. Select the release type (major, minor, patch)
-5. Choose whether it should be a pre-release
-6. Click "Run workflow"
+Releases run from a `chore-vX.Y.Z` branch, where `X.Y.Z` is the version being released. The workflow publishes to npm with [trusted publishing](https://docs.npmjs.com/trusted-publishers) (OIDC), so no npm token is involved. It runs in the `npm-publish` environment, which refuses runs from any other branch and needs a second person to approve each run.
+
+1. Create a `chore-vX.Y.Z` branch from an up-to-date `main` and push it
+2. Go to the GitHub Actions tab in the repository
+3. Select the "Release" workflow
+4. Click "Run workflow" and select the release branch
+5. Select the release type (major, minor, patch)
+6. Choose whether it should be a pre-release. Tick "Dry run" to check the npm setup without versioning or publishing anything
+7. Click "Run workflow"
+8. Ask one of the `npm-publish` environment's reviewers (Settings > Environments) to approve the run. Nothing runs until then, and you can't approve a run you started
+9. When the run finishes, open a PR from the release branch into `main` titled `chore: release vX.Y.Z`, so the changelog and version bump land on `main`
 
 The GitHub Action will:
 
-- Build and test the code
+- Check that npm trusted publishing is set up for every package
 - Generate the PR-based changelog with the next version at the top
-- Bump the version according to the release type
-- Publish the packages to npm
+- Bump the version according to the release type, and push the commit and tag to the release branch
+- Build and test the code, then publish the packages to npm with provenance
 - Create a GitHub release with the changelog
 
 ## Changelog Format
@@ -159,8 +164,10 @@ After a release is made:
 If you encounter issues during the release process:
 
 1. Check the GitHub Actions logs for any errors
-2. Ensure you have proper permissions for npm publishing
-3. Verify your Git configuration is correct
-4. For changelog generation issues, ensure your GITHUB_TOKEN has adequate permissions
+2. If the run is waiting, it needs approval from an `npm-publish` reviewer other than you. If it was refused, check that it was started from a `chore-v*` branch
+3. If the "Verify npm trusted publishing" step fails, its output lists each package npm rejected and the settings that package's trusted publisher needs on npmjs.com
+4. If publishing fails with an authorization error after that step passed, check that the package's trusted publisher allows publishing directly. The step can't check this, and npm defaults new trusted publishers to staged publishing only
+5. Verify your Git configuration is correct
+6. For changelog generation issues, ensure your GITHUB_TOKEN has adequate permissions
 
 For more assistance, contact the core development team.
