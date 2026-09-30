@@ -156,8 +156,8 @@ If you wish to contribute or work on the SDK locally, follow the steps below to 
 
 ### Prerequisites
 
-- **Node.js** (version 14 or higher)
-- **Yarn** (version 1.22 or higher)
+- **Node.js** (version 22.13+ or 24+)
+- **Yarn** (via Corepack, or a global install of version 1.22 or higher)
 - **Git**
 
 ### Setting Up the Development Environment
@@ -174,13 +174,15 @@ If you wish to contribute or work on the SDK locally, follow the steps below to 
    cd auto-sdk
    ```
 
-3. **Install Yarn 4 (Berry):**
+3. **Enable Yarn:**
 
-   The project uses Yarn 4 for monorepo management.
+   The project uses Yarn 4. The exact version is pinned in `package.json` and committed under `.yarn/releases`, so there is nothing to install or upgrade. Enable Corepack so that `yarn` runs the pinned version:
 
    ```bash
-   yarn set version berry
+   corepack enable
    ```
+
+   If `corepack` isn't available, install it with `npm install -g corepack`. A global Yarn 1.22 or higher also works without Corepack, since it hands off to the committed release.
 
 4. **Install dependencies:**
 
@@ -211,7 +213,7 @@ yarn test
 
 ### Developing with Local Packages
 
-During development, you might want to test changes across packages. To do this, you can use [Yarn workspaces](https://classic.yarnpkg.com/en/docs/workspaces/) which are already set up in this monorepo. Changes in one package will be reflected in dependencies within the monorepo.
+During development, you might want to test changes across packages. To do this, you can use [Yarn workspaces](https://yarnpkg.com/features/workspaces) which are already set up in this monorepo. Changes in one package will be reflected in dependencies within the monorepo.
 
 ### Linting and Formatting
 
