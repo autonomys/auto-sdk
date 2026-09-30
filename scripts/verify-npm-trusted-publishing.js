@@ -59,12 +59,17 @@ const main = async () => {
   }
 
   if (failed.length > 0) {
-    const workflowFile = process.env.GITHUB_WORKFLOW_REF.split('@')[0].split('/').pop()
+    // Read the claims npm matches from the token itself: GitHub sets no env var for the job's
+    // environment, and omitting it from the npm settings would still pass but drop the binding.
+    const idToken = await fetchGitHubIdToken()
+    const claims = JSON.parse(Buffer.from(idToken.split('.')[1], 'base64url').toString())
+    const workflowFile = claims.workflow_ref.split('@')[0].split('/').pop()
     console.log(
       `\nnpm rejected the OIDC token exchange for ${failed.length} of ${packages.length} packages. ` +
         'On npmjs.com, open each package > Settings > Trusted Publisher and add GitHub Actions ' +
-        `with repository ${process.env.GITHUB_REPOSITORY} and workflow ${workflowFile}, ` +
-        'allowing it to publish directly.',
+        `with repository ${claims.repository}, workflow ${workflowFile}` +
+        (claims.environment ? `, environment ${claims.environment}` : '') +
+        ', allowing it to publish directly.',
     )
     process.exit(1)
   }
