@@ -126,7 +126,7 @@ Releases go through a release PR, and merging it publishes the packages. Publish
 2. Select the "Prepare release" workflow
 3. Click "Run workflow" on `main`, select the release type (major, minor, patch), and click "Run workflow"
 4. When the run finishes, open the release PR from the link in its summary. It is titled `chore: release vX.Y.Z` and contains the changelog and the version bump
-5. Get the release PR reviewed, then merge it with a merge commit
+5. Get the release PR reviewed, then merge it. If GitHub asks you to update its branch first, other PRs have merged into `main` since Prepare release ran. They will ship in this release, so add them to `CHANGELOG.md` on the release branch before merging
 6. The merge starts the "Release" workflow, which publishes the new version
 
 Prepare release will:
@@ -138,7 +138,7 @@ Prepare release will:
 Release will:
 
 - Stop straight away unless the version in `lerna.json` has no tag yet, so merges that don't change the version publish nothing
-- Build and test the commit Prepare release made, then pack every package. PRs merged into `main` after Prepare release ran go into the next release
+- Build and test what was merged, then pack every package
 - Check that npm trusted publishing is set up for every package, then publish them to npm with provenance, skipping any version already on npm
 - Tag the release and create a GitHub release with the changelog
 

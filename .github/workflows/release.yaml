@@ -28,7 +28,6 @@ jobs:
       contents: read
     outputs:
       version: ${{ steps.plan.outputs.version }}
-      commit: ${{ steps.plan.outputs.commit }}
       release: ${{ steps.plan.outputs.release }}
     steps:
       - name: Check the branch
@@ -40,7 +39,6 @@ jobs:
       - name: Checkout 🛎️
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          fetch-depth: 0
           persist-credentials: false
 
       - name: Find the version to release
@@ -48,17 +46,6 @@ jobs:
         run: |
           VERSION=$(node -p "require('./lerna.json').version")
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-
-          # Build and tag the commit that set the version, not the merge commit. PRs merged after
-          # Prepare release would otherwise ship in this release but appear in neither its changelog
-          # nor the next one's.
-          COMMIT=$(git log --format=%H -S"\"version\": \"$VERSION\"" -- lerna.json | tail -n 1)
-          if [ -z "$COMMIT" ]; then
-            echo "::error::Could not find the commit that set version $VERSION in lerna.json."
-            exit 1
-          fi
-          echo "commit=$COMMIT" >> "$GITHUB_OUTPUT"
-          echo "v$VERSION was set in $COMMIT."
           if git ls-remote --exit-code --tags origin "refs/tags/v$VERSION" > /dev/null; then
             echo "v$VERSION is already released."
             echo "release=false" >> "$GITHUB_OUTPUT"
@@ -78,7 +65,6 @@ jobs:
       - name: Checkout 🛎️
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ needs.plan.outputs.commit }}
           persist-credentials: false
 
       - name: Setup Node.js
@@ -154,8 +140,6 @@ jobs:
     steps:
       - name: Checkout 🛎️
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: ${{ needs.plan.outputs.commit }}
 
       - name: Tag the release
         env:
