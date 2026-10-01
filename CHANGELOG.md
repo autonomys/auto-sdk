@@ -2,6 +2,120 @@
 
 Future changes will appear here.
 
+## [1.6.15] - 2026-10-01
+
+### Features
+
+- ease underlying HTTP server setup and fix Zod type resolution ([#697](https://github.com/autonomys/auto-sdk/pull/697)) [@yeziR4](https://github.com/yeziR4)
+- add S3 ListObjectVersions and delete marker helpers ([#696](https://github.com/autonomys/auto-sdk/pull/696)) [@yeziR4](https://github.com/yeziR4)
+
+### Bug Fixes
+
+- attach caught errors as cause when rethrowing ([#700](https://github.com/autonomys/auto-sdk/pull/700)) [@jim-counter](https://github.com/jim-counter)
+- update cidManager tests for contractInfo and run them in CI ([#699](https://github.com/autonomys/auto-sdk/pull/699)) [@jim-counter](https://github.com/jim-counter)
+- update dependency react-icons to ^5.7.0 ([#681](https://github.com/autonomys/auto-sdk/pull/681)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency cache-manager to v7 ([#661](https://github.com/autonomys/auto-sdk/pull/661)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency ethers to v6.17.0 ([#642](https://github.com/autonomys/auto-sdk/pull/642)) [@renovate[bot]](https://github.com/apps/renovate)
+- cast at WebCrypto and PBLink boundaries for TS 5.9 compat ([#640](https://github.com/autonomys/auto-sdk/pull/640)) [@jim-counter](https://github.com/jim-counter)
+- update react packages ([#634](https://github.com/autonomys/auto-sdk/pull/634)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency protobufjs to ^7.6.4 ([#632](https://github.com/autonomys/auto-sdk/pull/632)) [@renovate[bot]](https://github.com/apps/renovate)
+- narrow Buffer.from input for TS 5.9 overload resolution ([#631](https://github.com/autonomys/auto-sdk/pull/631)) [@jim-counter](https://github.com/jim-counter)
+- update dependency dompurify to ^3.4.11 ([#630](https://github.com/autonomys/auto-sdk/pull/630)) [@renovate[bot]](https://github.com/apps/renovate)
+- update lucide monorepo to ^0.577.0 ([#623](https://github.com/autonomys/auto-sdk/pull/623)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency zod to ^3.25.76 ([#622](https://github.com/autonomys/auto-sdk/pull/622)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency protons-runtime to ^5.6.0 ([#619](https://github.com/autonomys/auto-sdk/pull/619)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency protons to ^7.7.0 ([#618](https://github.com/autonomys/auto-sdk/pull/618)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency multiformats to ^13.4.2 ([#617](https://github.com/autonomys/auto-sdk/pull/617)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency express to ^4.22.2 ([#616](https://github.com/autonomys/auto-sdk/pull/616)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency ethers to v6.16.0 ([#615](https://github.com/autonomys/auto-sdk/pull/615)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency @webbuf/webbuf to ^3.8.0 ([#614](https://github.com/autonomys/auto-sdk/pull/614)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency @webbuf/fixedbuf to ^3.8.0 ([#613](https://github.com/autonomys/auto-sdk/pull/613)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency @webbuf/blake3 to ^3.8.0 ([#612](https://github.com/autonomys/auto-sdk/pull/612)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency @polkadot/react-identicon to ^3.16.7 ([#611](https://github.com/autonomys/auto-sdk/pull/611)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency @keyvhq/sqlite to ^2.2.0 ([#609](https://github.com/autonomys/auto-sdk/pull/609)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency keyv to ^5.6.0 ([#608](https://github.com/autonomys/auto-sdk/pull/608)) [@renovate[bot]](https://github.com/apps/renovate)
+- update radix-ui-primitives monorepo ([#603](https://github.com/autonomys/auto-sdk/pull/603)) [@renovate[bot]](https://github.com/apps/renovate)
+- update tailwindcss monorepo to ^3.4.19 ([#586](https://github.com/autonomys/auto-sdk/pull/586)) [@renovate[bot]](https://github.com/apps/renovate)
+- update radix-ui-primitives monorepo ([#585](https://github.com/autonomys/auto-sdk/pull/585)) [@renovate[bot]](https://github.com/apps/renovate)
+- update nextjs monorepo to ^15.5.19 ([#584](https://github.com/autonomys/auto-sdk/pull/584)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency zustand to ^5.0.14 ([#583](https://github.com/autonomys/auto-sdk/pull/583)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency tailwind-merge to ^2.6.1 ([#582](https://github.com/autonomys/auto-sdk/pull/582)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency protobufjs to ^7.6.2 ([#581](https://github.com/autonomys/auto-sdk/pull/581)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency fflate to ^0.8.3 ([#580](https://github.com/autonomys/auto-sdk/pull/580)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency dompurify to ^3.4.8 ([#579](https://github.com/autonomys/auto-sdk/pull/579)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency clsx to ^2.1.1 ([#578](https://github.com/autonomys/auto-sdk/pull/578)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency class-variance-authority to ^0.7.1 ([#577](https://github.com/autonomys/auto-sdk/pull/577)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency cache-manager to ^6.4.3 ([#576](https://github.com/autonomys/auto-sdk/pull/576)) [@renovate[bot]](https://github.com/apps/renovate)
+
+### CI
+
+- drop the stale corepack yarn pin from workflows ([#713](https://github.com/autonomys/auto-sdk/pull/713)) [@jim-counter](https://github.com/jim-counter)
+- publish to npm with OIDC trusted publishing ([#711](https://github.com/autonomys/auto-sdk/pull/711)) [@jim-counter](https://github.com/jim-counter)
+- run lint in the build workflow ([#709](https://github.com/autonomys/auto-sdk/pull/709)) [@jim-counter](https://github.com/jim-counter)
+
+### Chores
+
+- remove stale yarn version references ([#712](https://github.com/autonomys/auto-sdk/pull/712)) [@jim-counter](https://github.com/jim-counter)
+- format with prettier and enforce it in CI ([#710](https://github.com/autonomys/auto-sdk/pull/710)) [@jim-counter](https://github.com/jim-counter)
+- remove explicit any from tests and restore the rule to error ([#708](https://github.com/autonomys/auto-sdk/pull/708)) [@jim-counter](https://github.com/jim-counter)
+- clean up unused code, duplicate imports and naming ([#701](https://github.com/autonomys/auto-sdk/pull/701)) [@jim-counter](https://github.com/jim-counter)
+- lint test directories and apply eslint --fix ([#698](https://github.com/autonomys/auto-sdk/pull/698)) [@jim-counter](https://github.com/jim-counter)
+- wire up eslint dependencies and add root lint script ([#695](https://github.com/autonomys/auto-sdk/pull/695)) [@yeziR4](https://github.com/yeziR4)
+- update dependency postcss-import to v16 ([#682](https://github.com/autonomys/auto-sdk/pull/682)) [@renovate[bot]](https://github.com/apps/renovate)
+- disable engines updates and remove automerge ([#679](https://github.com/autonomys/auto-sdk/pull/679)) [@jim-counter](https://github.com/jim-counter)
+- update dependency postcss-cli to v11 ([#678](https://github.com/autonomys/auto-sdk/pull/678)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency lerna to v9 ([#677](https://github.com/autonomys/auto-sdk/pull/677)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency prettier to ^3.9.4 ([#673](https://github.com/autonomys/auto-sdk/pull/673)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency webpack to ^5.108.3 ([#672](https://github.com/autonomys/auto-sdk/pull/672)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency fs-extra to ^11.3.6 ([#671](https://github.com/autonomys/auto-sdk/pull/671)) [@renovate[bot]](https://github.com/apps/renovate)
+- update node.js to v24 ([#670](https://github.com/autonomys/auto-sdk/pull/670)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency cssnano to v8 ([#669](https://github.com/autonomys/auto-sdk/pull/669)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency conventional-changelog-cli to v5 ([#668](https://github.com/autonomys/auto-sdk/pull/668)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency @types/mime-types to v3 ([#666](https://github.com/autonomys/auto-sdk/pull/666)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency @rollup/plugin-typescript to v12.3.0 ([#665](https://github.com/autonomys/auto-sdk/pull/665)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency @rollup/plugin-node-resolve to v16.0.3 ([#664](https://github.com/autonomys/auto-sdk/pull/664)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency @rollup/plugin-terser to v1 ([#663](https://github.com/autonomys/auto-sdk/pull/663)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency @rollup/plugin-commonjs to v29 ([#662](https://github.com/autonomys/auto-sdk/pull/662)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency concurrently to v10 ([#659](https://github.com/autonomys/auto-sdk/pull/659)) [@renovate[bot]](https://github.com/apps/renovate)
+- update softprops/action-gh-release action to v3 ([#658](https://github.com/autonomys/auto-sdk/pull/658)) [@renovate[bot]](https://github.com/apps/renovate)
+- update julienkode/pull-request-name-linter-action action to v20 ([#657](https://github.com/autonomys/auto-sdk/pull/657)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency webpack to ^5.108.2 ([#656](https://github.com/autonomys/auto-sdk/pull/656)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency prettier to ^3.9.3 ([#655](https://github.com/autonomys/auto-sdk/pull/655)) [@renovate[bot]](https://github.com/apps/renovate)
+- align @polkadot/* deps to 16.5.6 / 0.63.1 ([#654](https://github.com/autonomys/auto-sdk/pull/654)) [@jim-counter](https://github.com/jim-counter)
+- raise root Node floor to 20.20.2 ([#653](https://github.com/autonomys/auto-sdk/pull/653)) [@jim-counter](https://github.com/jim-counter)
+- update dependency @octokit/rest to v22 ([#649](https://github.com/autonomys/auto-sdk/pull/649)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency prettier to ^3.9.1 ([#647](https://github.com/autonomys/auto-sdk/pull/647)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency postcss to ^8.5.16 ([#646](https://github.com/autonomys/auto-sdk/pull/646)) [@renovate[bot]](https://github.com/apps/renovate)
+- update actions/setup-node action to v6 ([#644](https://github.com/autonomys/auto-sdk/pull/644)) [@renovate[bot]](https://github.com/apps/renovate)
+- update actions/checkout action to v7 ([#643](https://github.com/autonomys/auto-sdk/pull/643)) [@renovate[bot]](https://github.com/apps/renovate)
+- update yarn to v4.17.0 ([#639](https://github.com/autonomys/auto-sdk/pull/639)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency prettier to ^3.8.5 ([#638](https://github.com/autonomys/auto-sdk/pull/638)) [@renovate[bot]](https://github.com/apps/renovate)
+- drop @peculiar/webcrypto polyfill, use globalThis.crypto ([#636](https://github.com/autonomys/auto-sdk/pull/636)) [@jim-counter](https://github.com/jim-counter)
+- update dependency webpack to ^5.108.1 ([#633](https://github.com/autonomys/auto-sdk/pull/633)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency autoprefixer to ^10.5.2 ([#629](https://github.com/autonomys/auto-sdk/pull/629)) [@renovate[bot]](https://github.com/apps/renovate)
+- update node.js ([#628](https://github.com/autonomys/auto-sdk/pull/628)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency rollup to ^4.62.2 ([#627](https://github.com/autonomys/auto-sdk/pull/627)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency @types/node to v22.20.0 ([#626](https://github.com/autonomys/auto-sdk/pull/626)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency protobufjs to v7.6.3 [security] ([#625](https://github.com/autonomys/auto-sdk/pull/625)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency dompurify to v3.4.11 [security] ([#624](https://github.com/autonomys/auto-sdk/pull/624)) [@renovate[bot]](https://github.com/apps/renovate)
+- align workflow Node versions with engines + extend Renovate scope ([#621](https://github.com/autonomys/auto-sdk/pull/621)) [@jim-counter](https://github.com/jim-counter)
+- update dependency prettier to ^3.8.4 ([#620](https://github.com/autonomys/auto-sdk/pull/620)) [@renovate[bot]](https://github.com/apps/renovate)
+- update yarn monorepo to v4.16.0 ([#607](https://github.com/autonomys/auto-sdk/pull/607)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency @types/node to ^20.19.43 ([#606](https://github.com/autonomys/auto-sdk/pull/606)) [@renovate[bot]](https://github.com/apps/renovate)
+- update eslint monorepo to ^9.39.4 ([#605](https://github.com/autonomys/auto-sdk/pull/605)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency typescript to ^5.9.3 ([#604](https://github.com/autonomys/auto-sdk/pull/604)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency @types/node to v22.19.20 ([#602](https://github.com/autonomys/auto-sdk/pull/602)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency tsx to ^4.22.4 ([#601](https://github.com/autonomys/auto-sdk/pull/601)) [@renovate[bot]](https://github.com/apps/renovate)
+- update react monorepo to ^18.3.31 ([#600](https://github.com/autonomys/auto-sdk/pull/600)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency ts-jest to ^29.4.11 ([#599](https://github.com/autonomys/auto-sdk/pull/599)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency prettier to ^3.8.3 ([#598](https://github.com/autonomys/auto-sdk/pull/598)) [@renovate[bot]](https://github.com/apps/renovate)
+- align @polkadot/* deps to 15.10.2 ([#597](https://github.com/autonomys/auto-sdk/pull/597)) [@jim-counter](https://github.com/jim-counter)
+- update dependency postcss-loader to ^8.2.1 ([#596](https://github.com/autonomys/auto-sdk/pull/596)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency babel-loader to ^10.1.1 ([#595](https://github.com/autonomys/auto-sdk/pull/595)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency autoprefixer to ^10.5.0 ([#592](https://github.com/autonomys/auto-sdk/pull/592)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency @types/node to v22.19.19 ([#591](https://github.com/autonomys/auto-sdk/pull/591)) [@renovate[bot]](https://github.com/apps/renovate)
+- update babel monorepo to ^7.29.7 ([#587](https://github.com/autonomys/auto-sdk/pull/587)) [@renovate[bot]](https://github.com/apps/renovate)
+
 ## [1.6.14] - 2026-06-04
 
 ### Bug Fixes
@@ -605,6 +719,8 @@ No changes in this version.
 
 [1.6.12]: https://github.com/autonomys/auto-sdk/releases/tag/v1.6.12
 
-[Unreleased]: https://github.com/autonomys/auto-sdk/compare/v1.6.14...HEAD
-[1.6.14]: https://github.com/autonomys/auto-sdk/compare/v1.6.13...v1.6.14
 [1.6.13]: https://github.com/autonomys/auto-sdk/releases/tag/v1.6.13
+
+[Unreleased]: https://github.com/autonomys/auto-sdk/compare/v1.6.15...HEAD
+[1.6.15]: https://github.com/autonomys/auto-sdk/compare/v1.6.14...v1.6.15
+[1.6.14]: https://github.com/autonomys/auto-sdk/releases/tag/v1.6.14
