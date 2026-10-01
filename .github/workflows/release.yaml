@@ -23,17 +23,18 @@ on:
         default: false
         type: boolean
 
-permissions:
-  contents: write
-  pull-requests: read
-
 jobs:
   release:
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    environment: npm-publish
+    permissions:
+      contents: write
+      pull-requests: read
+      id-token: write
     steps:
       - name: Checkout 🛎️
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
           ref: ${{ github.ref }}
@@ -41,11 +42,9 @@ jobs:
           clean: true
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
         with:
           node-version: '24.18.0'
-          registry-url: 'https://registry.npmjs.org'
-          scope: '@autonomys'
 
       - name: Enable Corepack
         run: corepack enable
@@ -58,6 +57,9 @@ jobs:
       - name: Install dependencies
         run: yarn install
 
+      - name: Verify npm trusted publishing
+        run: node scripts/verify-npm-trusted-publishing.js
+
       - name: Generate PR-based changelog
         if: ${{ !inputs.prerelease && !inputs.dryRun }}
         run: BUMP_TYPE=${{ inputs.releaseType }} yarn changelog
@@ -68,7 +70,6 @@ jobs:
         if: ${{ !inputs.dryRun }}
         id: version_bump
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if [ "${{ inputs.prerelease }}" = "true" ]; then
@@ -80,10 +81,6 @@ jobs:
             PRERELEASE_FLAG=""
             PUBLISH_FLAGS="--yes --force-publish"
           fi
-
-          # Ensure npm config has auth token for @autonomys scope
-          npm config set //registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}
-          npm config set @autonomys:registry https://registry.npmjs.org/
 
           git add CHANGELOG.md
           git commit -m "docs: update CHANGELOG.md for release" || echo "No changes to commit"
@@ -99,7 +96,7 @@ jobs:
 
       - name: Create GitHub Release
         if: ${{ !inputs.dryRun }}
-        uses: softprops/action-gh-release@v3
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
         with:
           body_path: CHANGELOG.md
           tag_name: v${{ steps.version_bump.outputs.version }}
