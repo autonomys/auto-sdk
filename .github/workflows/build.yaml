@@ -37,3 +37,11 @@ jobs:
 
       - name: Run tests 🧪
         run: yarn lerna run test --ignore @autonomys/integration-tests
+
+      - name: Pack packages 📦
+        run: node scripts/pack-packages.js "$RUNNER_TEMP/tarballs"
+
+      - name: Check what a release would publish
+        run: node scripts/publish-packages.js "$RUNNER_TEMP/tarballs/manifest.json"
+        env:
+          DRY_RUN: 'true'
