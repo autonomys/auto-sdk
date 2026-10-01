@@ -145,10 +145,18 @@ jobs:
         env:
           VERSION: ${{ needs.plan.outputs.version }}
         run: |
-          git config user.name "GitHub Actions Bot"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag -a "v$VERSION" -m "v$VERSION"
-          git push origin "v$VERSION"
+          TAGGED=$(git ls-remote origin "refs/tags/v$VERSION^{}" | cut -f1)
+          if [ -z "$TAGGED" ]; then
+            git config user.name "GitHub Actions Bot"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git tag -a "v$VERSION" -m "v$VERSION"
+            git push origin "v$VERSION"
+          elif [ "$TAGGED" = "$GITHUB_SHA" ]; then
+            echo "v$VERSION already tags $GITHUB_SHA, from an earlier attempt of this run."
+          else
+            echo "::error::v$VERSION already tags $TAGGED, not $GITHUB_SHA."
+            exit 1
+          fi
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
