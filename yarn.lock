@@ -36,7 +36,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@autonomys/asynchronous@npm:^1.6.14, @autonomys/asynchronous@workspace:packages/utility/asynchronous":
+"@autonomys/asynchronous@npm:^1.6.15, @autonomys/asynchronous@workspace:packages/utility/asynchronous":
   version: 0.0.0-use.local
   resolution: "@autonomys/asynchronous@workspace:packages/utility/asynchronous"
   dependencies:
@@ -51,12 +51,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@autonomys/auto-agents@npm:^1.6.14, @autonomys/auto-agents@workspace:packages/auto-agents":
+"@autonomys/auto-agents@npm:^1.6.15, @autonomys/auto-agents@workspace:packages/auto-agents":
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-agents@workspace:packages/auto-agents"
   dependencies:
-    "@autonomys/auto-dag-data": "npm:^1.6.14"
-    "@autonomys/auto-drive": "npm:^1.6.14"
+    "@autonomys/auto-dag-data": "npm:^1.6.15"
+    "@autonomys/auto-drive": "npm:^1.6.15"
     "@types/jest": "npm:^29.5.14"
     eslint: "npm:^10.10.0"
     ethers: "npm:6.17.0"
@@ -66,11 +66,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@autonomys/auto-consensus@npm:^1.6.14, @autonomys/auto-consensus@workspace:*, @autonomys/auto-consensus@workspace:packages/auto-consensus":
+"@autonomys/auto-consensus@npm:^1.6.15, @autonomys/auto-consensus@workspace:*, @autonomys/auto-consensus@workspace:packages/auto-consensus":
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-consensus@workspace:packages/auto-consensus"
   dependencies:
-    "@autonomys/auto-utils": "npm:^1.6.14"
+    "@autonomys/auto-utils": "npm:^1.6.15"
     "@types/jest": "npm:^29.5.14"
     eslint: "npm:^10.10.0"
     jest: "npm:^29.7.0"
@@ -80,11 +80,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@autonomys/auto-dag-data@npm:^1.6.14, @autonomys/auto-dag-data@workspace:*, @autonomys/auto-dag-data@workspace:packages/auto-dag-data":
+"@autonomys/auto-dag-data@npm:^1.6.15, @autonomys/auto-dag-data@workspace:*, @autonomys/auto-dag-data@workspace:packages/auto-dag-data":
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-dag-data@workspace:packages/auto-dag-data"
   dependencies:
-    "@autonomys/asynchronous": "npm:^1.6.14"
+    "@autonomys/asynchronous": "npm:^1.6.15"
     "@ipld/dag-pb": "npm:^4.1.7"
     "@types/jest": "npm:^29.5.14"
     "@webbuf/blake3": "npm:^3.8.0"
@@ -107,7 +107,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-design-system@workspace:packages/auto-design-system"
   dependencies:
-    "@autonomys/design-tokens": "npm:^1.6.14"
+    "@autonomys/design-tokens": "npm:^1.6.15"
     "@babel/core": "npm:^7.29.7"
     "@babel/preset-env": "npm:^7.29.7"
     "@babel/preset-react": "npm:^7.29.7"
@@ -176,13 +176,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@autonomys/auto-drive@npm:^1.6.14, @autonomys/auto-drive@workspace:packages/auto-drive":
+"@autonomys/auto-drive@npm:^1.6.15, @autonomys/auto-drive@workspace:packages/auto-drive":
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-drive@workspace:packages/auto-drive"
   dependencies:
-    "@autonomys/asynchronous": "npm:^1.6.14"
-    "@autonomys/auto-dag-data": "npm:^1.6.14"
-    "@autonomys/auto-utils": "npm:^1.6.14"
+    "@autonomys/asynchronous": "npm:^1.6.15"
+    "@autonomys/auto-dag-data": "npm:^1.6.15"
+    "@autonomys/auto-utils": "npm:^1.6.15"
     "@prerenderer/rollup-plugin": "npm:^0.3.12"
     "@rollup/plugin-commonjs": "npm:^29.0.3"
     "@rollup/plugin-json": "npm:^6.1.0"
@@ -206,7 +206,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-files@workspace:packages/auto-files"
   dependencies:
-    "@autonomys/auto-drive": "npm:^1.6.14"
+    "@autonomys/auto-drive": "npm:^1.6.15"
     typescript: "npm:^5.9.3"
   languageName: unknown
   linkType: soft
@@ -215,8 +215,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-mcp-servers@workspace:packages/auto-mcp-servers"
   dependencies:
-    "@autonomys/auto-agents": "npm:^1.6.14"
-    "@autonomys/auto-drive": "npm:^1.6.14"
+    "@autonomys/auto-agents": "npm:^1.6.15"
+    "@autonomys/auto-drive": "npm:^1.6.15"
     "@modelcontextprotocol/sdk": "npm:^1.29.0"
     "@types/node": "npm:22.20.0"
     ts-node: "npm:^10.9.2"
@@ -254,7 +254,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@autonomys/auto-utils@npm:^1.6.14, @autonomys/auto-utils@workspace:*, @autonomys/auto-utils@workspace:packages/auto-utils":
+"@autonomys/auto-utils@npm:^1.6.15, @autonomys/auto-utils@workspace:*, @autonomys/auto-utils@workspace:packages/auto-utils":
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-utils@workspace:packages/auto-utils"
   dependencies:
@@ -302,7 +302,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-wallet@workspace:packages/auto-wallet"
   dependencies:
-    "@autonomys/auto-utils": "npm:^1.6.14"
+    "@autonomys/auto-utils": "npm:^1.6.15"
     "@polkadot/extension-inject": "npm:^0.63.1"
     "@talismn/connect-wallets": "npm:^1.2.8"
     "@types/jest": "npm:^29.5.14"
@@ -317,8 +317,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-xdm@workspace:packages/auto-xdm"
   dependencies:
-    "@autonomys/auto-consensus": "npm:^1.6.14"
-    "@autonomys/auto-utils": "npm:^1.6.14"
+    "@autonomys/auto-consensus": "npm:^1.6.15"
+    "@autonomys/auto-utils": "npm:^1.6.15"
     "@types/jest": "npm:^29.5.14"
     eslint: "npm:^10.10.0"
     ethers: "npm:^6.17.0"
@@ -344,7 +344,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@autonomys/design-tokens@npm:^1.6.14, @autonomys/design-tokens@workspace:packages/utility/design-tokens":
+"@autonomys/design-tokens@npm:^1.6.15, @autonomys/design-tokens@workspace:packages/utility/design-tokens":
   version: 0.0.0-use.local
   resolution: "@autonomys/design-tokens@workspace:packages/utility/design-tokens"
   dependencies:
@@ -367,9 +367,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@autonomys/file-server@workspace:packages/utility/file-server"
   dependencies:
-    "@autonomys/asynchronous": "npm:^1.6.14"
-    "@autonomys/auto-dag-data": "npm:^1.6.14"
-    "@autonomys/auto-utils": "npm:^1.6.14"
+    "@autonomys/asynchronous": "npm:^1.6.15"
+    "@autonomys/auto-dag-data": "npm:^1.6.15"
+    "@autonomys/auto-utils": "npm:^1.6.15"
     "@keyvhq/sqlite": "npm:^2.2.0"
     "@prerenderer/rollup-plugin": "npm:^0.3.12"
     "@rollup/plugin-commonjs": "npm:^29.0.3"
@@ -430,9 +430,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@autonomys/user-session@workspace:packages/utility/user-session"
   dependencies:
-    "@autonomys/asynchronous": "npm:^1.6.14"
-    "@autonomys/auto-dag-data": "npm:^1.6.14"
-    "@autonomys/auto-drive": "npm:^1.6.14"
+    "@autonomys/asynchronous": "npm:^1.6.15"
+    "@autonomys/auto-dag-data": "npm:^1.6.15"
+    "@autonomys/auto-drive": "npm:^1.6.15"
     eslint: "npm:^10.10.0"
     ethers: "npm:6.17.0"
     ts-node: "npm:^10.9.2"
