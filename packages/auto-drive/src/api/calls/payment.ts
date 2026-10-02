@@ -63,13 +63,8 @@ export const getPaymentContractInfo = async (
  * The returned `ai3AmountWei` is the exact value to pass as `msg.value`
  * when calling `payIntent(intentId)` on the Credits Receiver contract.
  *
- * Note: `sizeBytes` is **not** sent to the Auto Drive API. The POST `/intents`
- * endpoint accepts no request body — it returns the current `shannonsPerByte`
- * rate. The SDK multiplies that rate by `sizeBytes` to produce `ai3AmountWei`,
- * saving the caller from doing the BigInt arithmetic themselves.
- *
  * Flow:
- * 1. Call `createPaymentIntent(api, sizeBytes)` — locks the price
+ * 1. Call `createPaymentIntent(api, sizeBytes)` — validates cap headroom and locks the price
  * 2. Send `intent.ai3AmountWei` to `intent.contractAddress` via `payIntent(intent.intentId)`
  * 3. Call `watchPaymentTransaction(api, intent.intentId, txHash)` — submit the tx hash
  * 4. Call `waitForPaymentCompletion(api, intent.intentId)` — poll until COMPLETED
@@ -78,14 +73,34 @@ export const createPaymentIntent = async (
   api: AutoDriveApiHandler,
   sizeBytes: number,
 ): Promise<PaymentIntent> => {
+  if (!Number.isSafeInteger(sizeBytes) || sizeBytes <= 0) {
+    throw new Error(`sizeBytes must be a positive safe integer, received: ${sizeBytes}`)
+  }
+
   const [contractInfo, intentRes] = await Promise.all([
     getPaymentContractInfo(api),
-    api.sendAPIRequest('/intents', { method: 'POST' }),
+    api.sendAPIRequest(
+      '/intents',
+      {
+        method: 'POST',
+        headers: new Headers({ 'Content-Type': 'application/json' }),
+      },
+      JSON.stringify({ requestedBytes: sizeBytes.toString() }),
+    ),
   ])
 
   if (!intentRes.ok) {
-    const body = await intentRes.text()
-    throw new Error(`Failed to create payment intent: ${intentRes.status} ${body}`)
+    const rawBody = await intentRes.text()
+    let errorMessage = rawBody
+    try {
+      const parsed = JSON.parse(rawBody)
+      if (parsed && typeof parsed.message === 'string') {
+        errorMessage = parsed.message
+      }
+    } catch {
+      // Keep rawBody if not JSON with a message
+    }
+    throw new Error(`Failed to create payment intent: ${intentRes.status} ${errorMessage}`)
   }
 
   const intent = await intentRes.json()
