@@ -42,6 +42,7 @@ export const networks: Network[] = [
       {
         domainId: '0',
         ...domains[DomainRuntime.AUTO_EVM],
+        chainId: 870,
         rpcUrls: ['wss://auto-evm.mainnet.autonomys.xyz/ws'],
       },
     ],
@@ -61,6 +62,7 @@ export const networks: Network[] = [
       {
         domainId: '0',
         ...domains[DomainRuntime.AUTO_EVM],
+        chainId: 8700,
         rpcUrls: ['wss://auto-evm.chronos.autonomys.xyz/ws'],
       },
     ],
@@ -76,6 +78,7 @@ export const networks: Network[] = [
       {
         domainId: '0',
         ...domains[DomainRuntime.AUTO_EVM],
+        chainId: 490000,
         rpcUrls: ['wss://auto-evm.taurus.autonomys.xyz/ws'],
       },
     ],
@@ -92,6 +95,7 @@ export const networks: Network[] = [
       {
         domainId: '0',
         ...domains[DomainRuntime.AUTO_EVM],
+        chainId: 1000,
         rpcUrls: ['wss://auto-evm.devnet.autonomys.xyz/ws'],
       },
       {
@@ -113,6 +117,7 @@ export const networks: Network[] = [
       {
         domainId: '0',
         ...domains[DomainRuntime.AUTO_EVM],
+        chainId: 8700,
         rpcUrls: ['ws://127.0.0.1:9945'],
       },
       {
