@@ -14,4 +14,5 @@ export type Domains = {
 export interface NetworkDomains extends Domain {
   domainId: string
   rpcUrls: string[]
+  chainId?: number
 }
