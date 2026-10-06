@@ -7,7 +7,7 @@ import { mnemonicGenerate } from '@polkadot/util-crypto'
 import { address } from './address'
 import { activate, activateDomain } from './api'
 import { defaultNetwork } from './constants/network'
-import { mockURIs } from './constants/wallet'
+import { DEFAULT_ETHEREUM_DERIVATION_PATH, mockURIs } from './constants/wallet'
 import type { DomainParams, Mnemonic, NetworkParams, URI } from './types'
 import type {
   ActivateWalletParams,
@@ -76,7 +76,13 @@ export const setupWallet = (params: SetupWalletParams): Wallet => {
   } else if ((params as Mnemonic).mnemonic) {
     // Treat as mnemonic
     const base = (params as Mnemonic).mnemonic
-    const withPath = params.derivationPath ? `${base}/${params.derivationPath}` : base
+    const derivationPath =
+      params.derivationPath !== undefined
+        ? params.derivationPath
+        : type === 'ethereum'
+          ? DEFAULT_ETHEREUM_DERIVATION_PATH
+          : undefined
+    const withPath = derivationPath ? `${base}/${derivationPath}` : base
     keyringPair = keyring.addFromUri(withPath)
   } else throw new Error('Invalid mnemonic or private key')
 

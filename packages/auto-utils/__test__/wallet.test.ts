@@ -1,6 +1,7 @@
 import {
   ActivateWalletParams,
   ApiPromise,
+  DEFAULT_ETHEREUM_DERIVATION_PATH,
   NetworkParams,
   WalletActivated,
   activate,
@@ -56,8 +57,16 @@ describe('Verify wallet functions', () => {
       expect(wallet.address).toEqual(address(TEST_ADDRESS))
     })
 
-    test('Check setupWallet return a pair with matching address and public key when provided with a mnemonic (ethereum)', async () => {
+    test('Check setupWallet return a pair with matching address and public key when provided with a mnemonic (ethereum default to BIP44 derivation path)', async () => {
       const wallet = setupWallet({ mnemonic: TEST_MNEMONIC, type: 'ethereum' })
+      expect(wallet.keyringPair?.type).toEqual('ethereum')
+      expect(wallet.address.startsWith('0x')).toBeTruthy()
+      expect(wallet.commonAddress).toEqual(TEST_ADDRESS_ETHEREUM_BIP44)
+      expect(wallet.address).toEqual(TEST_ADDRESS_ETHEREUM_BIP44)
+    })
+
+    test('Check setupWallet allows overriding derivationPath with empty string to derive from master key', async () => {
+      const wallet = setupWallet({ mnemonic: TEST_MNEMONIC, type: 'ethereum', derivationPath: '' })
       expect(wallet.keyringPair?.type).toEqual('ethereum')
       expect(wallet.address.startsWith('0x')).toBeTruthy()
       expect(wallet.commonAddress).toEqual(TEST_ADDRESS_ETHEREUM)
@@ -68,7 +77,7 @@ describe('Verify wallet functions', () => {
       const wallet = setupWallet({
         mnemonic: TEST_MNEMONIC,
         type: 'ethereum',
-        derivationPath: "m/44'/60'/0'/0/0",
+        derivationPath: DEFAULT_ETHEREUM_DERIVATION_PATH,
       })
       expect(wallet.keyringPair?.type).toEqual('ethereum')
       expect(wallet.address.startsWith('0x')).toBeTruthy()
@@ -112,7 +121,7 @@ describe('Verify wallet functions', () => {
       expect(accounts[0].address).toEqual(TEST_ADDRESS)
     }, 15000)
 
-    test('Check activateWallet return an api instance and an account when provided with a test mnemonic (ethereum)', async () => {
+    test('Check activateWallet return an api instance and an account when provided with a test mnemonic (ethereum default to BIP44 derivation path)', async () => {
       const { api, accounts } = await activateWallet({
         ...TEST_NETWORK,
         mnemonic: TEST_MNEMONIC,
@@ -121,7 +130,7 @@ describe('Verify wallet functions', () => {
       expect(api).toBeDefined()
       expect(accounts.length).toBeGreaterThan(0)
       expect(accounts[0].address.startsWith('0x')).toBeTruthy()
-      expect(accounts[0].address).toEqual(TEST_ADDRESS_ETHEREUM)
+      expect(accounts[0].address).toEqual(TEST_ADDRESS_ETHEREUM_BIP44)
     }, 15000)
 
     test('Check activateWallet returns an account with expected address when provided with a test mnemonic (ethereum + BIP44 derivationPath)', async () => {
@@ -129,7 +138,7 @@ describe('Verify wallet functions', () => {
         ...TEST_NETWORK,
         mnemonic: TEST_MNEMONIC,
         type: 'ethereum',
-        derivationPath: "m/44'/60'/0'/0/0",
+        derivationPath: DEFAULT_ETHEREUM_DERIVATION_PATH,
       } as ActivateWalletParams)
       expect(api).toBeDefined()
       expect(accounts.length).toBeGreaterThan(0)
