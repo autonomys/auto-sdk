@@ -320,7 +320,7 @@ Storage on the Autonomys Network is paid for with AI3 tokens via an on-chain pay
 
 ```
 0. getStoragePrice(api)                  → optional: show live price estimate before payment
-1. createPaymentIntent(api, sizeBytes)   → locks price, returns amount + contract details
+1. createPaymentIntent(api, sizeBytes)   → checks credit cap, locks price, returns amount + contract details
 2. send ai3AmountWei to contractAddress  → payIntent(intentId) on-chain (your wallet code)
 3. watchPaymentTransaction(api, id, tx)  → notifies Auto Drive of your tx hash
 4. waitForPaymentCompletion(api, id)     → polls until COMPLETED (credits applied)
@@ -350,7 +350,9 @@ import { NetworkId } from '@autonomys/auto-utils'
 // Run on your server — never expose your API key to the browser
 const api = createAutoDriveApi({ apiKey: process.env.AUTO_DRIVE_API_KEY!, network: NetworkId.MAINNET })
 
-// Step 1 — create a price-locked intent for the content you want to store
+// Step 1 — create a price-locked intent for the content you want to store.
+// Throws CreditCapExceededError (before anything is paid) if the purchase
+// would exceed your per-user credit cap.
 const intent = await api.createPaymentIntent(contentSizeBytes)
 // intent.ai3AmountWei  — exact amount to send (as a BigInt-safe string)
 // intent.ai3Amount     — human-readable amount, e.g. "0.00123"

@@ -65,3 +65,17 @@ export type PollOptions = {
   /** Maximum time to wait before throwing. Default: 300 000 ms (5 minutes) */
   timeoutMs?: number
 }
+
+/**
+ * Thrown by `createPaymentIntent` when Auto Drive refuses the intent because the
+ * requested size would exceed the user's per-user credit cap. Nothing has been
+ * paid at this point — retry with a smaller size.
+ */
+export class CreditCapExceededError extends Error {
+  readonly code = 'CREDIT_CAP_EXCEEDED' as const
+
+  constructor(message: string) {
+    super(message)
+    this.name = 'CreditCapExceededError'
+  }
+}
