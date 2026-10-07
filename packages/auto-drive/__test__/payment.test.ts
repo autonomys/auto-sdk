@@ -185,6 +185,19 @@ describe('createUsdcPaymentIntent', () => {
     })
   })
 
+  it('reports the target error when the target fails but the intent succeeds', async () => {
+    const { api } = createMockApi({
+      'GET /payments/usdc/target': () =>
+        json(403, { error: 'USDC_PAYMENTS_DISABLED', message: 'Not on this deployment.' }),
+      'POST /intents': () => json(200, USDC_INTENT),
+    })
+
+    await expect(createUsdcPaymentIntent(api, 1024)).rejects.toMatchObject({
+      status: 403,
+      code: 'USDC_PAYMENTS_DISABLED',
+    })
+  })
+
   it('throws when the backend returns no USDC quote', async () => {
     const { api } = createMockApi(
       usdcRoutes(() => json(200, { ...USDC_INTENT, quotedTokenAmount: undefined })),
@@ -329,6 +342,32 @@ describe('waitForPaymentCompletion', () => {
     expect(sendAPIRequest).toHaveBeenCalledTimes(8)
   })
 
+  it('measures the grace from the first 410, not from the first poll', async () => {
+    // OK at 0s and 3s, 410 from 6s. The grace runs out at 6s + 12s = 18s.
+    const { api, sendAPIRequest } = statusSequence(ok('pending'), ok('confirmed'), gone)
+    const start = Date.now()
+
+    const result = await run(
+      waitForPaymentCompletion(api, INTENT_ID, {
+        pollIntervalMs: POLL_MS,
+        settleGraceMs: GRACE_MS,
+      }),
+    )
+
+    expect(result).toEqual({ value: 'EXPIRED' })
+    expect(sendAPIRequest).toHaveBeenCalledTimes(7)
+    expect(Date.now() - start).toBe(18_000)
+  })
+
+  it.each([-1, NaN, Infinity])('rejects settleGraceMs %p before polling', async (grace) => {
+    const { api, sendAPIRequest } = statusSequence(gone)
+
+    const result = await run(waitForPaymentCompletion(api, INTENT_ID, { settleGraceMs: grace }))
+
+    expect((result as { error: Error }).error).toBeInstanceOf(TypeError)
+    expect(sendAPIRequest).not.toHaveBeenCalled()
+  })
+
   it('treats the first 410 as terminal when settleGraceMs is 0', async () => {
     const { api, sendAPIRequest } = statusSequence(gone)
 
@@ -387,8 +426,50 @@ describe('AutoDriveApi wiring and ABIs', () => {
     })
   })
 
-  it('exports only the functions the USDC flow needs', () => {
-    expect(usdcReceiverAbi.map((f) => f.name)).toEqual(['payIntentWithToken'])
-    expect(erc20ApprovalAbi.map((f) => f.name)).toEqual(['approve', 'allowance', 'balanceOf'])
+  it('matches AutoDriveUSDCReceiver.payIntentWithToken(bytes32,uint256)', () => {
+    expect(usdcReceiverAbi).toEqual([
+      {
+        type: 'function',
+        name: 'payIntentWithToken',
+        inputs: [
+          { name: 'intentId', type: 'bytes32' },
+          { name: 'amount', type: 'uint256' },
+        ],
+        outputs: [],
+        stateMutability: 'nonpayable',
+      },
+    ])
+  })
+
+  it('exposes only approve, allowance and balanceOf from ERC-20', () => {
+    expect(erc20ApprovalAbi).toEqual([
+      {
+        type: 'function',
+        name: 'approve',
+        inputs: [
+          { name: 'spender', type: 'address' },
+          { name: 'amount', type: 'uint256' },
+        ],
+        outputs: [{ name: '', type: 'bool' }],
+        stateMutability: 'nonpayable',
+      },
+      {
+        type: 'function',
+        name: 'allowance',
+        inputs: [
+          { name: 'owner', type: 'address' },
+          { name: 'spender', type: 'address' },
+        ],
+        outputs: [{ name: '', type: 'uint256' }],
+        stateMutability: 'view',
+      },
+      {
+        type: 'function',
+        name: 'balanceOf',
+        inputs: [{ name: 'account', type: 'address' }],
+        outputs: [{ name: '', type: 'uint256' }],
+        stateMutability: 'view',
+      },
+    ])
   })
 })

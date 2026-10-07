@@ -125,6 +125,7 @@ export const getPaymentContractInfo = async (
  * `{ checkCreditCap: true }` to send it as `requestedBytes`: the server then
  * rejects a purchase that would exceed the per-user credit cap before anything
  * is paid, with a {@link PaymentApiError} whose `code` is `'CREDIT_CAP_EXCEEDED'`.
+ * A single purchase larger than the whole cap is rejected with HTTP 400 and no `code`.
  *
  * Flow:
  * 1. Call `createPaymentIntent(api, sizeBytes)` — locks the price
@@ -192,13 +193,14 @@ export const getUsdcPaymentTarget = async (
 /**
  * Creates a price-locked USDC payment intent for a given purchase size in bytes.
  *
- * The intent locks a USDC amount for 10 minutes. `usdcAmount` is the exact
- * amount to approve and pay, in token base units.
+ * The intent locks a USDC amount until `intent.expiresAt` (10 minutes by
+ * default). `usdcAmount` is the exact amount to approve and pay, in token base units.
  *
  * Flow:
  * 1. Call `createUsdcPaymentIntent(api, sizeBytes)`: locks the price
  * 2. On `intent.chainId`, call `approve(intent.receiverAddress, intent.usdcAmount)` on `intent.tokenAddress`
  * 3. Call `payIntentWithToken(intent.intentId, intent.usdcAmount)` on `intent.receiverAddress`
+ *    and wait for the transaction to be mined
  * 4. Call `watchPaymentTransaction(api, intent.intentId, txHash)` with the hash of step 3, not step 2
  * 5. Call `waitForPaymentCompletion(api, intent.intentId, { settleGraceMs: intent.settleGraceMs })`
  *
@@ -207,6 +209,7 @@ export const getUsdcPaymentTarget = async (
  * @throws {PaymentApiError} With `code` set to `CREDIT_CAP_EXCEEDED`,
  *   `GOOGLE_ACCOUNT_REQUIRED`, `USDC_PAYMENTS_DISABLED`, `USDC_PAYMENTS_UNAVAILABLE`,
  *   `PRICE_ORACLE_UNAVAILABLE` or `PRICE_UNSTABLE` when Auto Drive refuses the quote.
+ *   A 404 with no `code` means that the account cannot buy credits.
  * @throws {TypeError} If `sizeBytes` is not a positive whole number.
  */
 export const createUsdcPaymentIntent = async (
@@ -305,7 +308,9 @@ export const getPaymentIntentStatus = async (
  * With `settleGraceMs` set, an HTTP 410 (price lock lapsed) does not end the
  * wait. Polling continues, because a payment sent near the end of the lock can
  * still be credited. Once the 410 has persisted for `settleGraceMs`, this
- * resolves to `'EXPIRED'`. Without it, a 410 throws a {@link PaymentApiError}.
+ * resolves to `'EXPIRED'`. That result means the SDK stopped waiting, not that
+ * the payment is lost; see {@link PollOptions.settleGraceMs}. Without
+ * `settleGraceMs`, a 410 throws a {@link PaymentApiError}.
  *
  * @param api     - An authenticated AutoDriveApiHandler
  * @param intentId - The intent ID returned by `createPaymentIntent` or `createUsdcPaymentIntent`
@@ -316,6 +321,12 @@ export const waitForPaymentCompletion = async (
   intentId: string,
   { pollIntervalMs = 3_000, timeoutMs = 300_000, settleGraceMs }: PollOptions = {},
 ): Promise<PaymentIntentTerminalStatus> => {
+  if (settleGraceMs !== undefined && !(Number.isFinite(settleGraceMs) && settleGraceMs >= 0)) {
+    throw new TypeError(
+      `settleGraceMs must be a non-negative finite number, received: ${settleGraceMs}`,
+    )
+  }
+
   const deadline = Date.now() + timeoutMs
   // When the current run of 410 responses started; null while the intent reads OK.
   let lapsedSince: number | null = null

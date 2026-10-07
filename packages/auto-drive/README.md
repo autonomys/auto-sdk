@@ -419,7 +419,7 @@ const { id, status } = await api.getPaymentIntentStatus(intent.intentId)
 
 #### Checking the credit cap before payment
 
-By default `createPaymentIntent` does not send the purchase size to Auto Drive. Pass `{ checkCreditCap: true }` to send it. Auto Drive then rejects a purchase that would exceed your per-user credit cap before anything is paid:
+By default `createPaymentIntent` does not send the purchase size to Auto Drive. Pass `{ checkCreditCap: true }` to send it. Auto Drive then rejects a purchase that would exceed your per-user credit cap before anything is paid. A purchase that does not fit in your remaining headroom fails with code `CREDIT_CAP_EXCEEDED` (HTTP 403). A single purchase larger than the whole cap fails with HTTP 400 and no code:
 
 ```typescript
 import { PaymentApiError } from '@autonomys/auto-drive'
@@ -427,7 +427,10 @@ import { PaymentApiError } from '@autonomys/auto-drive'
 try {
   const intent = await api.createPaymentIntent(contentSizeBytes, { checkCreditCap: true })
 } catch (error) {
-  if (error instanceof PaymentApiError && error.code === 'CREDIT_CAP_EXCEEDED') {
+  if (
+    error instanceof PaymentApiError &&
+    (error.code === 'CREDIT_CAP_EXCEEDED' || error.status === 400)
+  ) {
     // Nothing was paid. Try a smaller size.
   }
 }
@@ -478,7 +481,7 @@ const intent = await api.createUsdcPaymentIntent(BigInt(1024) ** BigInt(3))
 // intent.usdcAmount          — exact amount in base units (6 decimals), as a BigInt-safe string
 // intent.usdcAmountFormatted — human-readable amount, e.g. "2.500001"
 // intent.chainId, intent.tokenAddress, intent.receiverAddress — where to pay
-// intent.expiresAt           — ISO timestamp, the price is locked for 10 minutes
+// intent.expiresAt           — ISO timestamp when the price lock ends (10 minutes by default)
 
 // Use the chain that Auto Drive names. Do not pick one yourself.
 const chain = [mainnet, sepolia].find((c) => c.id === intent.chainId)
@@ -511,6 +514,7 @@ if (allowance < amount) {
 }
 
 // Step 3 — pay the intent. No value: the receiver pulls the approved USDC.
+// Wait for the receipt before step 5, so block time does not use up the 410 grace.
 const txHash = await walletClient.writeContract({
   address: receiver,
   abi: usdcReceiverAbi,
@@ -533,11 +537,21 @@ const result = await api.waitForPaymentCompletion(intent.intentId, {
   settleGraceMs: intent.settleGraceMs,
 })
 // result: 'COMPLETED' | 'EXPIRED' | 'FAILED' | 'OVER_CAP'
+// 'EXPIRED' here means the SDK stopped waiting. Check your credits before you
+// report the payment as lost (see below).
 ```
 
 #### Why `settleGraceMs` matters
 
-`GET /intents/:id` answers HTTP 410 as soon as the 10-minute price lock lapses. A payment sent near the end of the lock can still be credited after that. With `settleGraceMs` set, `waitForPaymentCompletion` keeps polling through 410 for that long and only then returns `'EXPIRED'`. Without it, a 410 throws a `PaymentApiError`, as in earlier versions. Auto Drive serves the value in the payment target, and `createUsdcPaymentIntent` copies it onto the intent.
+`GET /intents/:id` answers HTTP 410 once the price lock has lapsed on an intent that has no recorded transaction hash. This happens, for example, when `watchPaymentTransaction` itself got a 410. (With a recorded hash, the 410 starts only when Auto Drive stops accepting payments for the intent, currently 20 minutes after `expiresAt`.) A payment sent near the end of the lock can still be credited after the first 410.
+
+With `settleGraceMs` set, `waitForPaymentCompletion` keeps polling through 410 for that long and only then returns `'EXPIRED'`. A successful read in between resets the clock. Without `settleGraceMs`, a 410 throws a `PaymentApiError`, as in earlier versions. Auto Drive serves the value in the payment target, and `createUsdcPaymentIntent` copies it onto the intent.
+
+Keep these points in mind:
+
+- `'EXPIRED'` from this path means that the SDK stopped waiting. It does not prove that the payment is lost, because Auto Drive can still credit it for a while. Check your credits before you tell a user that the payment failed.
+- The grace is measured from the first 410 that the SDK sees. Wait for the payment receipt before you call `waitForPaymentCompletion`.
+- Keep `timeoutMs` (default 5 minutes) larger than the time left on the lock plus `settleGraceMs`. Otherwise the call can throw a timeout error before it returns `'EXPIRED'`.
 
 #### Handling errors
 
@@ -551,6 +565,12 @@ When Auto Drive refuses a payment request, the SDK throws a `PaymentApiError`. I
 | `USDC_PAYMENTS_DISABLED`    | 403    | USDC is not available to you. Pay with AI3           |
 | `CREDIT_CAP_EXCEEDED`       | 403    | The purchase would exceed your credit cap. Buy less  |
 | `GOOGLE_ACCOUNT_REQUIRED`   | 403    | Use an API key from a Google-registered account      |
+
+Some failures have no `code`. Check `status` for these:
+
+- **400:** the request is invalid, for example `requestedBytes` is larger than the whole credit cap.
+- **404 on `/intents`:** the account cannot buy credits. Auto Drive usually sends this, not `GOOGLE_ACCOUNT_REQUIRED`, to accounts that are not Google-registered.
+- **410:** the price lock has lapsed. See [Why `settleGraceMs` matters](#why-settlegracems-matters).
 
 ```typescript
 try {

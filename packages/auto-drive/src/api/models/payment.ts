@@ -62,15 +62,32 @@ export type PollOptions = {
   /**
    * How long to keep polling through HTTP 410 before returning `'EXPIRED'`.
    *
-   * Auto Drive answers `GET /intents/:id` with 410 as soon as the 10-minute
-   * price lock lapses, but a payment sent near the end of the lock can still
-   * settle and be credited after that. When this option is set, a 410 does not
-   * end the wait: polling continues until the 410 has persisted for this many
-   * milliseconds, and only then resolves to `'EXPIRED'`. A successful read in
-   * between resets the clock.
+   * Auto Drive answers `GET /intents/:id` with 410 once the price lock has
+   * lapsed on an intent that has no recorded transaction hash, for example
+   * when `watchPaymentTransaction` itself got a 410. (With a recorded hash,
+   * the 410 starts only when Auto Drive stops accepting payments for the
+   * intent, currently 20 minutes after `expiresAt`.) A payment sent near the
+   * end of the lock can still be credited after the first 410.
+   *
+   * When this option is set, a 410 does not end the wait: polling continues
+   * until the 410 has persisted for this many milliseconds, and only then
+   * resolves to `'EXPIRED'`. A successful read in between resets the clock.
+   * With `0`, the first 410 resolves to `'EXPIRED'`.
+   *
+   * `'EXPIRED'` from this path means that the SDK stopped waiting. It does not
+   * prove that the payment is lost: Auto Drive can still credit a payment until
+   * it stops accepting payments for the intent. Check the account's credits
+   * before you tell a user that the payment failed.
+   *
+   * The grace is measured from the first 410 that the SDK sees. Wait for the
+   * payment transaction to be mined before you call `waitForPaymentCompletion`,
+   * so that block time does not use up the grace. Keep `timeoutMs` larger than
+   * the time left on the lock plus this grace, or the call can throw a timeout
+   * error before it returns `'EXPIRED'`.
    *
    * For USDC, pass `UsdcPaymentIntent.settleGraceMs` (served by the backend).
    * When omitted, a 410 throws a {@link PaymentApiError}, as in earlier versions.
+   * Must be a non-negative finite number.
    */
   settleGraceMs?: number
 }
@@ -82,7 +99,8 @@ export type CreatePaymentIntentOptions = {
    * purchase against the per-user credit cap before anything is paid. Over-cap
    * purchases are then rejected with a {@link PaymentApiError} whose `code` is
    * `'CREDIT_CAP_EXCEEDED'`, instead of being paid on-chain and ending as
-   * `OVER_CAP`. Default: `false`.
+   * `OVER_CAP`. A single purchase larger than the whole cap is rejected with
+   * HTTP 400 and no `code`. Default: `false`.
    */
   checkCreditCap?: boolean
 }
@@ -113,7 +131,7 @@ export type UsdcPaymentTarget = {
 /**
  * A price-locked USDC payment intent returned by `createUsdcPaymentIntent`.
  *
- * The quote is valid until `expiresAt` (10 minutes). Approve `usdcAmount` to
+ * The quote is valid until `expiresAt` (10 minutes by default). Approve `usdcAmount` to
  * `receiverAddress` on `tokenAddress`, then call
  * `payIntentWithToken(intentId, usdcAmount)` on `receiverAddress`, on `chainId`.
  */
@@ -152,11 +170,18 @@ export type UsdcPaymentIntent = {
  * Machine-readable error codes that Auto Drive returns for payment requests.
  *
  * - `GOOGLE_ACCOUNT_REQUIRED` (403): buying credits needs a Google-verified account.
+ *   Usually such accounts get a 404 with no code instead, because Auto Drive
+ *   hides the `/intents` routes from accounts that cannot buy credits.
  * - `CREDIT_CAP_EXCEEDED` (403): the purchase would exceed the per-user credit cap. Try a smaller size.
  * - `USDC_PAYMENTS_DISABLED` (403): USDC is not available to this account or deployment. Pay with AI3.
- * - `USDC_PAYMENTS_UNAVAILABLE` (503): USDC is closed for now. Pay with AI3, or try again later.
+ * - `USDC_PAYMENTS_UNAVAILABLE` (503): USDC is closed for now (admin switch, treasury cap,
+ *   unknown treasury balance or price oracle). Pay with AI3, or try again later.
  * - `PRICE_ORACLE_UNAVAILABLE` (503): no trusted AI3/USD rate. Retry unchanged.
  * - `PRICE_UNSTABLE` (503): the market moved too fast to quote. Retry unchanged.
+ *
+ * Other failures have no code. Examples: 400 when `requestedBytes` is invalid or
+ * larger than the whole credit cap, 404 when the account cannot buy credits,
+ * 410 when the price lock has lapsed.
  */
 export type PaymentErrorCode =
   | 'GOOGLE_ACCOUNT_REQUIRED'

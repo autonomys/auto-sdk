@@ -210,10 +210,12 @@ export interface AutoDriveApi extends AutoDriveApiHandler {
    *   `ai3AmountWei = shannonsPerByte × sizeBytes`. Sent to the server as
    *   `requestedBytes` only when `options.checkCreditCap` is true.
    * @param options - Pass `{ checkCreditCap: true }` to have Auto Drive reject an
-   *   over-cap purchase before anything is paid.
+   *   over-cap purchase before anything is paid. A purchase larger than the whole
+   *   cap is rejected with HTTP 400 and no `code`.
    * @returns {Promise<PaymentIntent>} Intent details including amount, contract address, and expiry.
    * @throws {PaymentApiError} If Auto Drive refuses the intent. Check `code`, for
-   *   example `'CREDIT_CAP_EXCEEDED'` or `'GOOGLE_ACCOUNT_REQUIRED'`.
+   *   example `'CREDIT_CAP_EXCEEDED'`. A 404 with no `code` means that the account
+   *   cannot buy credits.
    */
   createPaymentIntent: (
     sizeBytes: number,
@@ -240,12 +242,14 @@ export interface AutoDriveApi extends AutoDriveApiHandler {
   /**
    * Creates a price-locked USDC payment intent for a given purchase size.
    *
-   * The intent locks the USDC amount for 10 minutes. The SDK does not sign
-   * anything; your wallet library does. On `intent.chainId`:
+   * The intent locks the USDC amount until `intent.expiresAt` (10 minutes by
+   * default). The SDK does not sign anything; your wallet library does. On
+   * `intent.chainId`:
    * 1. Call `approve(intent.receiverAddress, intent.usdcAmount)` on `intent.tokenAddress`
    *    (ABI: `erc20ApprovalAbi`).
    * 2. Call `payIntentWithToken(intent.intentId, intent.usdcAmount)` on
-   *    `intent.receiverAddress` (ABI: `usdcReceiverAbi`). No `value`.
+   *    `intent.receiverAddress` (ABI: `usdcReceiverAbi`). No `value`. Wait for
+   *    the transaction to be mined.
    * 3. Call `watchPaymentTransaction(intent.intentId, txHash)` with the hash of step 2.
    * 4. Call `waitForPaymentCompletion(intent.intentId, { settleGraceMs: intent.settleGraceMs })`.
    *
@@ -256,6 +260,7 @@ export interface AutoDriveApi extends AutoDriveApiHandler {
    *   `CREDIT_CAP_EXCEEDED`, `GOOGLE_ACCOUNT_REQUIRED`, `USDC_PAYMENTS_DISABLED`
    *   (403: give up or pay with AI3), `USDC_PAYMENTS_UNAVAILABLE` (503: pay with
    *   AI3 or retry later), `PRICE_ORACLE_UNAVAILABLE` or `PRICE_UNSTABLE` (503: retry).
+   *   A 404 with no `code` means that the account cannot buy credits.
    * @throws {TypeError} If `sizeBytes` is not a positive whole number.
    */
   createUsdcPaymentIntent: (sizeBytes: number | bigint) => Promise<UsdcPaymentIntent>
@@ -296,7 +301,10 @@ export interface AutoDriveApi extends AutoDriveApiHandler {
    * Set `options.settleGraceMs` to keep polling through HTTP 410 (price lock
    * lapsed) for that long before returning `'EXPIRED'`. For USDC, always pass
    * `intent.settleGraceMs`: a payment sent near the end of the lock can still be
-   * credited after the 410 starts. Without it, a 410 throws a `PaymentApiError`.
+   * credited after the 410 starts. `'EXPIRED'` from this path means the SDK
+   * stopped waiting, not that the payment is lost, so check the account's credits
+   * before you report a failure. Without `settleGraceMs`, a 410 throws a
+   * `PaymentApiError`.
    *
    * @param intentId - The intent ID from `createPaymentIntent` or `createUsdcPaymentIntent`.
    * @param options  - Optional poll interval, timeout and 410 grace (defaults: 3 s / 5 min / none).
