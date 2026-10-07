@@ -18,6 +18,8 @@ export {
   getStoragePrice,
   getPaymentContractInfo,
   createPaymentIntent,
+  getUsdcPaymentTarget,
+  createUsdcPaymentIntent,
   watchPaymentTransaction,
   getPaymentIntentStatus,
   waitForPaymentCompletion,

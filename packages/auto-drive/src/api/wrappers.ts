@@ -10,7 +10,7 @@ import mime from 'mime-types'
 import { progressToPercentage } from '../utils/misc'
 import { publicDownloadUrl } from './calls/download'
 import { apiCalls } from './calls/index'
-import { PollOptions } from './models/payment'
+import { CreatePaymentIntentOptions, PollOptions } from './models/payment'
 import { ObjectSummary, Scope } from './models'
 import { DownloadStatus } from './models/asyncDownloads'
 import { PaginatedResult } from './models/common'
@@ -322,7 +322,13 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
 
   const getPaymentContractInfo = () => apiCalls.getPaymentContractInfo(api)
 
-  const createPaymentIntent = (sizeBytes: number) => apiCalls.createPaymentIntent(api, sizeBytes)
+  const createPaymentIntent = (sizeBytes: number, options?: CreatePaymentIntentOptions) =>
+    apiCalls.createPaymentIntent(api, sizeBytes, options)
+
+  const getUsdcPaymentTarget = () => apiCalls.getUsdcPaymentTarget(api)
+
+  const createUsdcPaymentIntent = (sizeBytes: number | bigint) =>
+    apiCalls.createUsdcPaymentIntent(api, sizeBytes)
 
   const watchPaymentTransaction = (intentId: string, txHash: string) =>
     apiCalls.watchPaymentTransaction(api, intentId, txHash)
@@ -388,6 +394,8 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
     getStoragePrice,
     getPaymentContractInfo,
     createPaymentIntent,
+    getUsdcPaymentTarget,
+    createUsdcPaymentIntent,
     watchPaymentTransaction,
     getPaymentIntentStatus,
     waitForPaymentCompletion,

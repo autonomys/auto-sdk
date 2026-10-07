@@ -1,11 +1,15 @@
-import { shannonsToAi3 } from '@autonomys/auto-utils'
+import { formatUnits, shannonsToAi3 } from '@autonomys/auto-utils'
 import {
+  CreatePaymentIntentOptions,
+  PaymentApiError,
   PaymentContractInfo,
   PaymentIntent,
   PaymentIntentStatus,
   PaymentIntentTerminalStatus,
   PollOptions,
   StoragePrice,
+  UsdcPaymentIntent,
+  UsdcPaymentTarget,
 } from '../models/payment'
 import { AutoDriveApiHandler } from '../types'
 
@@ -15,6 +19,58 @@ const TERMINAL_STATUSES: PaymentIntentTerminalStatus[] = [
   'FAILED',
   'OVER_CAP',
 ]
+
+/**
+ * Builds a {@link PaymentApiError} from a non-OK response. Auto Drive sends
+ * `{ error: <CODE>, message }` for coded errors and `{ error: <message> }` for
+ * uncoded ones; anything else (including non-JSON) is used as-is.
+ */
+const toPaymentApiError = async (response: Response, context: string) => {
+  const body = await response.text()
+  let code: string | undefined
+  let message = body
+  try {
+    const parsed: unknown = JSON.parse(body)
+    if (parsed && typeof parsed === 'object') {
+      const { error, message: parsedMessage } = parsed as { error?: unknown; message?: unknown }
+      if (typeof parsedMessage === 'string') {
+        code = typeof error === 'string' ? error : undefined
+        message = parsedMessage
+      } else if (typeof error === 'string') {
+        message = error
+      }
+    }
+  } catch {
+    // Not JSON: keep the raw body
+  }
+  return new PaymentApiError(`${context}: ${response.status} ${message}`, response.status, code)
+}
+
+/**
+ * Returns `sizeBytes` as the decimal string the `/intents` endpoint expects.
+ * Throws a TypeError unless it is a positive whole number of bytes.
+ */
+const toRequestedBytes = (sizeBytes: number | bigint): string => {
+  const valid =
+    typeof sizeBytes === 'bigint'
+      ? sizeBytes > BigInt(0)
+      : Number.isSafeInteger(sizeBytes) && sizeBytes > 0
+  if (!valid) {
+    throw new TypeError(
+      `sizeBytes must be a positive whole number of bytes, received: ${sizeBytes}`,
+    )
+  }
+  return sizeBytes.toString()
+}
+
+const createIntent = (api: AutoDriveApiHandler, body?: Record<string, string>) =>
+  api.sendAPIRequest(
+    '/intents',
+    body
+      ? { method: 'POST', headers: new Headers({ 'Content-Type': 'application/json' }) }
+      : { method: 'POST' },
+    body ? JSON.stringify(body) : undefined,
+  )
 
 /**
  * Returns the current live storage price without creating a price-locked intent.
@@ -63,10 +119,12 @@ export const getPaymentContractInfo = async (
  * The returned `ai3AmountWei` is the exact value to pass as `msg.value`
  * when calling `payIntent(intentId)` on the Credits Receiver contract.
  *
- * Note: `sizeBytes` is **not** sent to the Auto Drive API. The POST `/intents`
- * endpoint accepts no request body — it returns the current `shannonsPerByte`
- * rate. The SDK multiplies that rate by `sizeBytes` to produce `ai3AmountWei`,
- * saving the caller from doing the BigInt arithmetic themselves.
+ * The SDK multiplies the returned `shannonsPerByte` rate by `sizeBytes` to
+ * produce `ai3AmountWei`, saving the caller from doing the BigInt arithmetic.
+ * By default `sizeBytes` is not sent to Auto Drive. Pass
+ * `{ checkCreditCap: true }` to send it as `requestedBytes`: the server then
+ * rejects a purchase that would exceed the per-user credit cap before anything
+ * is paid, with a {@link PaymentApiError} whose `code` is `'CREDIT_CAP_EXCEEDED'`.
  *
  * Flow:
  * 1. Call `createPaymentIntent(api, sizeBytes)` — locks the price
@@ -77,15 +135,17 @@ export const getPaymentContractInfo = async (
 export const createPaymentIntent = async (
   api: AutoDriveApiHandler,
   sizeBytes: number,
+  { checkCreditCap = false }: CreatePaymentIntentOptions = {},
 ): Promise<PaymentIntent> => {
+  const body = checkCreditCap ? { requestedBytes: toRequestedBytes(sizeBytes) } : undefined
+
   const [contractInfo, intentRes] = await Promise.all([
     getPaymentContractInfo(api),
-    api.sendAPIRequest('/intents', { method: 'POST' }),
+    createIntent(api, body),
   ])
 
   if (!intentRes.ok) {
-    const body = await intentRes.text()
-    throw new Error(`Failed to create payment intent: ${intentRes.status} ${body}`)
+    throw await toPaymentApiError(intentRes, 'Failed to create payment intent')
   }
 
   const intent = await intentRes.json()
@@ -103,10 +163,100 @@ export const createPaymentIntent = async (
 }
 
 /**
+ * Returns where a USDC payment must be sent: chain ID, receiver contract, token
+ * address and decimals, plus the backend's confirmation count and 410 grace.
+ *
+ * Requires an API key. Throws a {@link PaymentApiError} with code
+ * `'USDC_PAYMENTS_DISABLED'` when this deployment does not accept USDC.
+ */
+export const getUsdcPaymentTarget = async (
+  api: AutoDriveApiHandler,
+): Promise<UsdcPaymentTarget> => {
+  const response = await api.sendAPIRequest('/payments/usdc/target', { method: 'GET' })
+
+  if (!response.ok) {
+    throw await toPaymentApiError(response, 'Failed to fetch USDC payment target')
+  }
+
+  const target = await response.json()
+  return {
+    chainId: target.chainId,
+    receiverAddress: target.receiverAddress,
+    tokenAddress: target.tokenAddress,
+    tokenDecimals: target.tokenDecimals,
+    confirmations: target.confirmations,
+    settleGraceMs: target.settleGraceMs,
+  }
+}
+
+/**
+ * Creates a price-locked USDC payment intent for a given purchase size in bytes.
+ *
+ * The intent locks a USDC amount for 10 minutes. `usdcAmount` is the exact
+ * amount to approve and pay, in token base units.
+ *
+ * Flow:
+ * 1. Call `createUsdcPaymentIntent(api, sizeBytes)`: locks the price
+ * 2. On `intent.chainId`, call `approve(intent.receiverAddress, intent.usdcAmount)` on `intent.tokenAddress`
+ * 3. Call `payIntentWithToken(intent.intentId, intent.usdcAmount)` on `intent.receiverAddress`
+ * 4. Call `watchPaymentTransaction(api, intent.intentId, txHash)` with the hash of step 3, not step 2
+ * 5. Call `waitForPaymentCompletion(api, intent.intentId, { settleGraceMs: intent.settleGraceMs })`
+ *
+ * @param sizeBytes - Purchase size in bytes: a positive safe integer or a bigint.
+ *   Sent as `requestedBytes`; the USDC amount is quoted for this size.
+ * @throws {PaymentApiError} With `code` set to `CREDIT_CAP_EXCEEDED`,
+ *   `GOOGLE_ACCOUNT_REQUIRED`, `USDC_PAYMENTS_DISABLED`, `USDC_PAYMENTS_UNAVAILABLE`,
+ *   `PRICE_ORACLE_UNAVAILABLE` or `PRICE_UNSTABLE` when Auto Drive refuses the quote.
+ * @throws {TypeError} If `sizeBytes` is not a positive whole number.
+ */
+export const createUsdcPaymentIntent = async (
+  api: AutoDriveApiHandler,
+  sizeBytes: number | bigint,
+): Promise<UsdcPaymentIntent> => {
+  const requestedBytes = toRequestedBytes(sizeBytes)
+
+  const [target, intentRes] = await Promise.all([
+    getUsdcPaymentTarget(api),
+    createIntent(api, { paymentMethod: 'usdc_eth', requestedBytes }),
+  ])
+
+  if (!intentRes.ok) {
+    throw await toPaymentApiError(intentRes, 'Failed to create USDC payment intent')
+  }
+
+  const intent = await intentRes.json()
+  if (typeof intent.quotedTokenAmount !== 'string') {
+    throw new Error(`Auto Drive returned no USDC quote for intent "${intent.id}"`)
+  }
+
+  return {
+    intentId: intent.id,
+    paymentMethod: 'usdc_eth',
+    usdcAmount: intent.quotedTokenAmount,
+    usdcAmountFormatted: formatUnits(intent.quotedTokenAmount, target.tokenDecimals),
+    receiverAddress: target.receiverAddress,
+    tokenAddress: target.tokenAddress,
+    chainId: target.chainId,
+    tokenDecimals: target.tokenDecimals,
+    confirmations: target.confirmations,
+    settleGraceMs: target.settleGraceMs,
+    expiresAt: intent.expiresAt,
+    shannonsPerByte: intent.shannonsPerByte,
+    quotedAi3Shannons: intent.quotedAi3Shannons,
+    usdRateAtCreation: intent.usdRateAtCreation,
+  }
+}
+
+/**
  * Notifies Auto Drive that an on-chain transaction has been submitted for a payment intent.
  *
  * Auto Drive will watch the transaction on-chain and automatically apply storage
  * credits to your account once the transaction is confirmed.
+ *
+ * Use the same call for AI3 and USDC. For USDC, pass the hash of the
+ * `payIntentWithToken` transaction, not the `approve` transaction. A 410 here
+ * means the price lock has lapsed; a USDC payment can still settle, so continue
+ * with `waitForPaymentCompletion` and `settleGraceMs`.
  */
 export const watchPaymentTransaction = async (
   api: AutoDriveApiHandler,
@@ -123,8 +273,7 @@ export const watchPaymentTransaction = async (
   )
 
   if (!response.ok) {
-    const body = await response.text()
-    throw new Error(`Failed to watch payment transaction: ${response.status} ${body}`)
+    throw await toPaymentApiError(response, 'Failed to watch payment transaction')
   }
 }
 
@@ -140,8 +289,7 @@ export const getPaymentIntentStatus = async (
   const response = await api.sendAPIRequest(`/intents/${intentId}`, { method: 'GET' })
 
   if (!response.ok) {
-    const body = await response.text()
-    throw new Error(`Failed to get payment intent status: ${response.status} ${body}`)
+    throw await toPaymentApiError(response, 'Failed to get payment intent status')
   }
 
   const data = await response.json()
@@ -154,19 +302,42 @@ export const getPaymentIntentStatus = async (
  * Returns the terminal status: COMPLETED | EXPIRED | FAILED | OVER_CAP.
  * Throws if the timeout is exceeded before a terminal state is reached.
  *
+ * With `settleGraceMs` set, an HTTP 410 (price lock lapsed) does not end the
+ * wait. Polling continues, because a payment sent near the end of the lock can
+ * still be credited. Once the 410 has persisted for `settleGraceMs`, this
+ * resolves to `'EXPIRED'`. Without it, a 410 throws a {@link PaymentApiError}.
+ *
  * @param api     - An authenticated AutoDriveApiHandler
- * @param intentId - The intent ID returned by `createPaymentIntent`
- * @param options - Optional poll interval and timeout (defaults: 3 s / 5 min)
+ * @param intentId - The intent ID returned by `createPaymentIntent` or `createUsdcPaymentIntent`
+ * @param options - Optional poll interval, timeout and 410 grace (defaults: 3 s / 5 min / none)
  */
 export const waitForPaymentCompletion = async (
   api: AutoDriveApiHandler,
   intentId: string,
-  { pollIntervalMs = 3_000, timeoutMs = 300_000 }: PollOptions = {},
+  { pollIntervalMs = 3_000, timeoutMs = 300_000, settleGraceMs }: PollOptions = {},
 ): Promise<PaymentIntentTerminalStatus> => {
   const deadline = Date.now() + timeoutMs
+  // When the current run of 410 responses started; null while the intent reads OK.
+  let lapsedSince: number | null = null
 
   while (Date.now() < deadline) {
-    const { status } = await getPaymentIntentStatus(api, intentId)
+    let status: PaymentIntentStatus
+    try {
+      status = (await getPaymentIntentStatus(api, intentId)).status
+    } catch (error) {
+      const lockLapsed =
+        settleGraceMs !== undefined && error instanceof PaymentApiError && error.status === 410
+      if (!lockLapsed) {
+        throw error
+      }
+      lapsedSince = lapsedSince ?? Date.now()
+      if (Date.now() - lapsedSince >= settleGraceMs) {
+        return 'EXPIRED'
+      }
+      await new Promise((resolve) => setTimeout(resolve, pollIntervalMs))
+      continue
+    }
+    lapsedSince = null
 
     if ((TERMINAL_STATUSES as string[]).includes(status)) {
       return status as PaymentIntentTerminalStatus
