@@ -92,19 +92,6 @@ export type PollOptions = {
   settleGraceMs?: number
 }
 
-/** Options for `createPaymentIntent` */
-export type CreatePaymentIntentOptions = {
-  /**
-   * Send `sizeBytes` to Auto Drive as `requestedBytes`, so the server checks the
-   * purchase against the per-user credit cap before anything is paid. Over-cap
-   * purchases are then rejected with a {@link PaymentApiError} whose `code` is
-   * `'CREDIT_CAP_EXCEEDED'`, instead of being paid on-chain and ending as
-   * `OVER_CAP`. A single purchase larger than the whole cap is rejected with
-   * HTTP 400 and no `code`. Default: `false`.
-   */
-  checkCreditCap?: boolean
-}
-
 /** The asset an intent is paid in, as Auto Drive names it on the wire. */
 export type PaymentMethod = 'ai3_native' | 'usdc_eth'
 
@@ -208,6 +195,23 @@ export class PaymentApiError extends Error {
     this.name = 'PaymentApiError'
     this.status = status
     this.code = code
+  }
+}
+
+/**
+ * Thrown when Auto Drive refuses an intent because the requested size would
+ * exceed the user's per-user credit cap (HTTP 403, code `CREDIT_CAP_EXCEEDED`).
+ * Nothing has been paid at this point. Retry with a smaller size.
+ *
+ * A {@link PaymentApiError}, so `status` and `code` are set as for any other
+ * payment error.
+ */
+export class CreditCapExceededError extends PaymentApiError {
+  declare readonly code: 'CREDIT_CAP_EXCEEDED'
+
+  constructor(message: string, status = 403) {
+    super(message, status, 'CREDIT_CAP_EXCEEDED')
+    this.name = 'CreditCapExceededError'
   }
 }
 

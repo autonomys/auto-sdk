@@ -3,7 +3,6 @@ import { AsyncDownload } from './models/asyncDownloads'
 import { PaginatedResult } from './models/common'
 import { GenericFile, GenericFileWithinFolder } from './models/file'
 import {
-  CreatePaymentIntentOptions,
   PaymentContractInfo,
   PaymentIntent,
   PaymentIntentStatus,
@@ -206,21 +205,18 @@ export interface AutoDriveApi extends AutoDriveApiHandler {
    * `intent.ai3AmountWei` to the Credits Receiver contract via `payIntent(intent.intentId)`,
    * then call `watchPaymentTransaction` to notify Auto Drive.
    *
-   * @param sizeBytes - Upload size in bytes. Used by the SDK to compute
-   *   `ai3AmountWei = shannonsPerByte × sizeBytes`. Sent to the server as
-   *   `requestedBytes` only when `options.checkCreditCap` is true.
-   * @param options - Pass `{ checkCreditCap: true }` to have Auto Drive reject an
-   *   over-cap purchase before anything is paid. A purchase larger than the whole
-   *   cap is rejected with HTTP 400 and no `code`.
+   * @param sizeBytes - Upload size in bytes, as a positive safe integer. Sent to the
+   *   server as `requestedBytes` for the credit-cap check, and used by the SDK to
+   *   compute `ai3AmountWei = shannonsPerByte × sizeBytes`.
    * @returns {Promise<PaymentIntent>} Intent details including amount, contract address, and expiry.
-   * @throws {PaymentApiError} If Auto Drive refuses the intent. Check `code`, for
-   *   example `'CREDIT_CAP_EXCEEDED'`. A 404 with no `code` means that the account
-   *   cannot buy credits.
+   * @throws {CreditCapExceededError} If the purchase would exceed the per-user credit cap.
+   *   Thrown before any payment is made. It is a `PaymentApiError`.
+   * @throws {PaymentApiError} If Auto Drive refuses the intent for another reason.
+   *   A 400 with no `code` means that a single purchase is larger than the whole
+   *   cap. A 404 with no `code` means that the account cannot buy credits.
+   * @throws {TypeError} If `sizeBytes` is not a positive safe integer.
    */
-  createPaymentIntent: (
-    sizeBytes: number,
-    options?: CreatePaymentIntentOptions,
-  ) => Promise<PaymentIntent>
+  createPaymentIntent: (sizeBytes: number) => Promise<PaymentIntent>
 
   // ---------------------------------------------------------------------------
   // Pay with USDC — credit purchase with USDC on Ethereum

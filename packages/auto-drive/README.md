@@ -320,7 +320,7 @@ Storage on the Autonomys Network is paid for with AI3 tokens via an on-chain pay
 
 ```
 0. getStoragePrice(api)                  → optional: show live price estimate before payment
-1. createPaymentIntent(api, sizeBytes)   → locks price, returns amount + contract details
+1. createPaymentIntent(api, sizeBytes)   → checks credit cap, locks price, returns amount + contract details
 2. send ai3AmountWei to contractAddress  → payIntent(intentId) on-chain (your wallet code)
 3. watchPaymentTransaction(api, id, tx)  → notifies Auto Drive of your tx hash
 4. waitForPaymentCompletion(api, id)     → polls until COMPLETED (credits applied)
@@ -353,7 +353,9 @@ const api = createAutoDriveApi({
   network: NetworkId.MAINNET,
 })
 
-// Step 1 — create a price-locked intent for the content you want to store
+// Step 1 — create a price-locked intent for the content you want to store.
+// Throws CreditCapExceededError (before anything is paid) if the purchase
+// would exceed your per-user credit cap.
 const intent = await api.createPaymentIntent(contentSizeBytes)
 // intent.ai3AmountWei  — exact amount to send (as a BigInt-safe string)
 // intent.ai3Amount     — human-readable amount, e.g. "0.00123"
@@ -417,19 +419,19 @@ const { id, status } = await api.getPaymentIntentStatus(intent.intentId)
 // status: 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'EXPIRED' | 'FAILED' | 'OVER_CAP'
 ```
 
-#### Checking the credit cap before payment
+#### Credit cap rejections
 
-By default `createPaymentIntent` does not send the purchase size to Auto Drive. Pass `{ checkCreditCap: true }` to send it. Auto Drive then rejects a purchase that would exceed your per-user credit cap before anything is paid. A purchase that does not fit in your remaining headroom fails with code `CREDIT_CAP_EXCEEDED` (HTTP 403). A single purchase larger than the whole cap fails with HTTP 400 and no code:
+`createPaymentIntent` sends the purchase size to Auto Drive as `requestedBytes`. Auto Drive then rejects a purchase that would exceed your per-user credit cap before anything is paid. A purchase that does not fit in your remaining headroom throws a `CreditCapExceededError` (HTTP 403, code `CREDIT_CAP_EXCEEDED`). A single purchase larger than the whole cap throws a `PaymentApiError` with HTTP 400 and no code:
 
 ```typescript
-import { PaymentApiError } from '@autonomys/auto-drive'
+import { CreditCapExceededError, PaymentApiError } from '@autonomys/auto-drive'
 
 try {
-  const intent = await api.createPaymentIntent(contentSizeBytes, { checkCreditCap: true })
+  const intent = await api.createPaymentIntent(contentSizeBytes)
 } catch (error) {
   if (
-    error instanceof PaymentApiError &&
-    (error.code === 'CREDIT_CAP_EXCEEDED' || error.status === 400)
+    error instanceof CreditCapExceededError ||
+    (error instanceof PaymentApiError && error.status === 400)
   ) {
     // Nothing was paid. Try a smaller size.
   } else {
@@ -567,7 +569,7 @@ When Auto Drive refuses a payment request, the SDK throws a `PaymentApiError`. I
 | `PRICE_UNSTABLE`            | 503    | Retry the same request later                         |
 | `USDC_PAYMENTS_UNAVAILABLE` | 503    | USDC is closed for now. Pay with AI3, or retry later |
 | `USDC_PAYMENTS_DISABLED`    | 403    | USDC is not available to you. Pay with AI3           |
-| `CREDIT_CAP_EXCEEDED`       | 403    | The purchase would exceed your credit cap. Buy less  |
+| `CREDIT_CAP_EXCEEDED`       | 403    | Thrown as `CreditCapExceededError`. Buy less         |
 | `GOOGLE_ACCOUNT_REQUIRED`   | 403    | Use an API key from a Google-registered account      |
 
 Some failures have no `code`. Check `status` for these:

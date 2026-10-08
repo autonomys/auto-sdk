@@ -10,7 +10,7 @@ import mime from 'mime-types'
 import { progressToPercentage } from '../utils/misc'
 import { publicDownloadUrl } from './calls/download'
 import { apiCalls } from './calls/index'
-import { CreatePaymentIntentOptions, PollOptions } from './models/payment'
+import { PollOptions } from './models/payment'
 import { ObjectSummary, Scope } from './models'
 import { DownloadStatus } from './models/asyncDownloads'
 import { PaginatedResult } from './models/common'
@@ -322,8 +322,7 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
 
   const getPaymentContractInfo = () => apiCalls.getPaymentContractInfo(api)
 
-  const createPaymentIntent = (sizeBytes: number, options?: CreatePaymentIntentOptions) =>
-    apiCalls.createPaymentIntent(api, sizeBytes, options)
+  const createPaymentIntent = (sizeBytes: number) => apiCalls.createPaymentIntent(api, sizeBytes)
 
   const getUsdcPaymentTarget = () => apiCalls.getUsdcPaymentTarget(api)
 

@@ -6,7 +6,12 @@ import {
   waitForPaymentCompletion,
   watchPaymentTransaction,
 } from '../src/api/calls/payment'
-import { PaymentApiError, usdcReceiverAbi, erc20ApprovalAbi } from '../src/api/models/payment'
+import {
+  CreditCapExceededError,
+  PaymentApiError,
+  usdcReceiverAbi,
+  erc20ApprovalAbi,
+} from '../src/api/models/payment'
 import { AutoDriveApiHandler } from '../src/api/types'
 import { createApiInterface } from '../src/api/wrappers'
 
@@ -158,7 +163,7 @@ describe('createUsdcPaymentIntent', () => {
     const error = await createUsdcPaymentIntent(api, 1024).catch((e) => e)
     expect(error).toBeInstanceOf(PaymentApiError)
     expect(error).toMatchObject({
-      name: 'PaymentApiError',
+      name: code === 'CREDIT_CAP_EXCEEDED' ? 'CreditCapExceededError' : 'PaymentApiError',
       status,
       code,
       message: `Failed to create USDC payment intent: ${status} Refused: ${code}`,
@@ -215,27 +220,58 @@ describe('createPaymentIntent (AI3)', () => {
   })
   const AI3_INTENT = { id: INTENT_ID, shannonsPerByte: '1000', expiresAt: 'x' }
 
-  it('sends no body by default', async () => {
+  it('sends requestedBytes as a decimal string', async () => {
     const { api, sendAPIRequest } = createMockApi(ai3Routes(() => json(200, AI3_INTENT)))
 
     const intent = await createPaymentIntent(api, 1024)
 
-    expect(sendAPIRequest).toHaveBeenCalledWith('/intents', { method: 'POST' }, undefined)
+    const [, init, body] = sendAPIRequest.mock.calls.find(([url]) => url === '/intents')!
+    expect(init).toMatchObject({ method: 'POST' })
+    expect((init as RequestInit).headers).toEqual(
+      new Headers({ 'Content-Type': 'application/json' }),
+    )
+    expect(JSON.parse(body as string)).toEqual({ requestedBytes: '1024' })
     expect(intent.ai3AmountWei).toBe('1024000')
   })
 
-  it('sends requestedBytes when checkCreditCap is set and surfaces CREDIT_CAP_EXCEEDED', async () => {
-    const { api, sendAPIRequest } = createMockApi(
+  it('throws CreditCapExceededError, a PaymentApiError, on CREDIT_CAP_EXCEEDED', async () => {
+    const { api } = createMockApi(
       ai3Routes(() => json(403, { error: 'CREDIT_CAP_EXCEEDED', message: 'Over the cap' })),
     )
 
-    const error = await createPaymentIntent(api, 1024, { checkCreditCap: true }).catch((e) => e)
+    const error = await createPaymentIntent(api, 1024).catch((e) => e)
 
-    const [, , body] = sendAPIRequest.mock.calls.find(([url]) => url === '/intents')!
-    expect(JSON.parse(body as string)).toEqual({ requestedBytes: '1024' })
+    expect(error).toBeInstanceOf(CreditCapExceededError)
     expect(error).toBeInstanceOf(PaymentApiError)
-    expect(error).toMatchObject({ status: 403, code: 'CREDIT_CAP_EXCEEDED' })
+    expect(error).toMatchObject({
+      name: 'CreditCapExceededError',
+      status: 403,
+      code: 'CREDIT_CAP_EXCEEDED',
+      message: 'Failed to create payment intent: 403 Over the cap',
+    })
   })
+
+  it('throws a plain PaymentApiError for an uncoded 400', async () => {
+    const { api } = createMockApi(
+      ai3Routes(() => json(400, { error: 'requestedBytes exceeds the credit cap' })),
+    )
+
+    const error = await createPaymentIntent(api, 1024).catch((e) => e)
+
+    expect(error).toBeInstanceOf(PaymentApiError)
+    expect(error).not.toBeInstanceOf(CreditCapExceededError)
+    expect(error).toMatchObject({ status: 400, code: undefined })
+  })
+
+  it.each([0, -1, 1.5, NaN, Infinity, Number.MAX_SAFE_INTEGER + 1])(
+    'rejects invalid size %p without calling the API',
+    async (size) => {
+      const { api, sendAPIRequest } = createMockApi(ai3Routes(() => json(200, AI3_INTENT)))
+
+      await expect(createPaymentIntent(api, size)).rejects.toThrow(TypeError)
+      expect(sendAPIRequest).not.toHaveBeenCalled()
+    },
+  )
 })
 
 describe('watchPaymentTransaction / getPaymentIntentStatus', () => {

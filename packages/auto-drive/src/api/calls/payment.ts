@@ -1,6 +1,6 @@
 import { formatUnits, shannonsToAi3 } from '@autonomys/auto-utils'
 import {
-  CreatePaymentIntentOptions,
+  CreditCapExceededError,
   PaymentApiError,
   PaymentContractInfo,
   PaymentIntent,
@@ -43,7 +43,11 @@ const toPaymentApiError = async (response: Response, context: string) => {
   } catch {
     // Not JSON: keep the raw body
   }
-  return new PaymentApiError(`${context}: ${response.status} ${message}`, response.status, code)
+  const fullMessage = `${context}: ${response.status} ${message}`
+  if (code === 'CREDIT_CAP_EXCEEDED') {
+    return new CreditCapExceededError(fullMessage, response.status)
+  }
+  return new PaymentApiError(fullMessage, response.status, code)
 }
 
 /**
@@ -63,13 +67,11 @@ const toRequestedBytes = (sizeBytes: number | bigint): string => {
   return sizeBytes.toString()
 }
 
-const createIntent = (api: AutoDriveApiHandler, body?: Record<string, string>) =>
+const createIntent = (api: AutoDriveApiHandler, body: Record<string, string>) =>
   api.sendAPIRequest(
     '/intents',
-    body
-      ? { method: 'POST', headers: new Headers({ 'Content-Type': 'application/json' }) }
-      : { method: 'POST' },
-    body ? JSON.stringify(body) : undefined,
+    { method: 'POST', headers: new Headers({ 'Content-Type': 'application/json' }) },
+    JSON.stringify(body),
   )
 
 /**
@@ -119,13 +121,13 @@ export const getPaymentContractInfo = async (
  * The returned `ai3AmountWei` is the exact value to pass as `msg.value`
  * when calling `payIntent(intentId)` on the Credits Receiver contract.
  *
- * The SDK multiplies the returned `shannonsPerByte` rate by `sizeBytes` to
- * produce `ai3AmountWei`, saving the caller from doing the BigInt arithmetic.
- * By default `sizeBytes` is not sent to Auto Drive. Pass
- * `{ checkCreditCap: true }` to send it as `requestedBytes`: the server then
- * rejects a purchase that would exceed the per-user credit cap before anything
- * is paid, with a {@link PaymentApiError} whose `code` is `'CREDIT_CAP_EXCEEDED'`.
- * A single purchase larger than the whole cap is rejected with HTTP 400 and no `code`.
+ * `sizeBytes` is sent to Auto Drive as `requestedBytes`, so the server can
+ * check it against the user's credit cap before any payment is made. If the
+ * purchase would exceed the cap, this throws a {@link CreditCapExceededError}
+ * and nothing should be paid. A single purchase larger than the whole cap is
+ * rejected with a {@link PaymentApiError} with HTTP 400 and no `code`. The SDK
+ * multiplies the returned `shannonsPerByte` rate by `sizeBytes` to produce
+ * `ai3AmountWei`.
  *
  * Flow:
  * 1. Call `createPaymentIntent(api, sizeBytes)` — locks the price
@@ -136,9 +138,8 @@ export const getPaymentContractInfo = async (
 export const createPaymentIntent = async (
   api: AutoDriveApiHandler,
   sizeBytes: number,
-  { checkCreditCap = false }: CreatePaymentIntentOptions = {},
 ): Promise<PaymentIntent> => {
-  const body = checkCreditCap ? { requestedBytes: toRequestedBytes(sizeBytes) } : undefined
+  const body = { requestedBytes: toRequestedBytes(sizeBytes) }
 
   const [contractInfo, intentRes] = await Promise.all([
     getPaymentContractInfo(api),
