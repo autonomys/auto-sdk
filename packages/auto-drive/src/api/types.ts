@@ -9,6 +9,8 @@ import {
   PaymentIntentTerminalStatus,
   PollOptions,
   StoragePrice,
+  UsdcPaymentIntent,
+  UsdcPaymentTarget,
 } from './models/payment'
 import { SubscriptionInfo, UserInfo } from './models/user'
 import { AutoDriveNetwork } from './networks'
@@ -208,10 +210,56 @@ export interface AutoDriveApi extends AutoDriveApiHandler {
    *   compute `ai3AmountWei = shannonsPerByte × sizeBytes`.
    * @returns {Promise<PaymentIntent>} Intent details including amount, contract address, and expiry.
    * @throws {CreditCapExceededError} If the purchase would exceed the per-user credit cap.
-   *   Thrown before any payment is made.
+   *   Thrown before any payment is made. It is a `PaymentApiError`.
+   * @throws {PaymentApiError} If Auto Drive refuses the intent for another reason.
+   *   A 400 with no `code` means that a single purchase is larger than the whole
+   *   cap. A 404 with no `code` means that the account cannot buy credits.
    * @throws {TypeError} If `sizeBytes` is not a positive safe integer.
    */
   createPaymentIntent: (sizeBytes: number) => Promise<PaymentIntent>
+
+  // ---------------------------------------------------------------------------
+  // Pay with USDC — credit purchase with USDC on Ethereum
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Fetches where a USDC payment must be sent: chain ID, `AutoDriveUSDCReceiver`
+   * address, token address and decimals, the backend's confirmation count and
+   * its 410 grace (`settleGraceMs`).
+   *
+   * Requires an API key. Always use the returned values; do not hardcode them.
+   *
+   * @returns {Promise<UsdcPaymentTarget>} The payment target for this deployment.
+   * @throws {PaymentApiError} With code `'USDC_PAYMENTS_DISABLED'` if this
+   *   deployment does not accept USDC.
+   */
+  getUsdcPaymentTarget: () => Promise<UsdcPaymentTarget>
+
+  /**
+   * Creates a price-locked USDC payment intent for a given purchase size.
+   *
+   * The intent locks the USDC amount until `intent.expiresAt` (10 minutes by
+   * default). The SDK does not sign anything; your wallet library does. On
+   * `intent.chainId`:
+   * 1. Call `approve(intent.receiverAddress, intent.usdcAmount)` on `intent.tokenAddress`
+   *    (ABI: `erc20ApprovalAbi`).
+   * 2. Call `payIntentWithToken(intent.intentId, intent.usdcAmount)` on
+   *    `intent.receiverAddress` (ABI: `usdcReceiverAbi`). No `value`.
+   * 3. Call `watchPaymentTransaction(intent.intentId, txHash)` with the hash of step 2
+   *    as soon as you have it, then wait for the transaction to be mined.
+   * 4. Call `waitForPaymentCompletion(intent.intentId, { settleGraceMs: intent.settleGraceMs })`.
+   *
+   * @param sizeBytes - Purchase size in bytes, as a positive safe integer or a bigint.
+   *   Sent as `requestedBytes`; the USDC amount is quoted for this size.
+   * @returns {Promise<UsdcPaymentIntent>} The quote, with the target details copied in.
+   * @throws {PaymentApiError} If Auto Drive refuses the quote. `code` is one of
+   *   `CREDIT_CAP_EXCEEDED`, `GOOGLE_ACCOUNT_REQUIRED`, `USDC_PAYMENTS_DISABLED`
+   *   (403: give up or pay with AI3), `USDC_PAYMENTS_UNAVAILABLE` (503: pay with
+   *   AI3 or retry later), `PRICE_ORACLE_UNAVAILABLE` or `PRICE_UNSTABLE` (503: retry).
+   *   A 404 with no `code` means that the account cannot buy credits.
+   * @throws {TypeError} If `sizeBytes` is not a positive whole number.
+   */
+  createUsdcPaymentIntent: (sizeBytes: number | bigint) => Promise<UsdcPaymentIntent>
 
   /**
    * Notifies Auto Drive that an on-chain transaction has been submitted for a payment intent.
@@ -219,7 +267,11 @@ export interface AutoDriveApi extends AutoDriveApiHandler {
    * Auto Drive will watch the transaction and automatically apply storage credits
    * to your account once confirmed on-chain.
    *
-   * @param intentId - The intent ID from `createPaymentIntent`.
+   * Used for both AI3 and USDC. For USDC, pass the `payIntentWithToken` hash, not
+   * the `approve` hash. A 410 (`PaymentApiError.status`) means the price lock has
+   * lapsed; a USDC payment may still settle, so continue to `waitForPaymentCompletion`.
+   *
+   * @param intentId - The intent ID from `createPaymentIntent` or `createUsdcPaymentIntent`.
    * @param txHash   - The on-chain transaction hash.
    */
   watchPaymentTransaction: (intentId: string, txHash: string) => Promise<void>
@@ -229,7 +281,10 @@ export interface AutoDriveApi extends AutoDriveApiHandler {
    *
    * Possible statuses: PENDING | CONFIRMED | COMPLETED | EXPIRED | FAILED | OVER_CAP
    *
-   * @param intentId - The intent ID from `createPaymentIntent`.
+   * Throws a `PaymentApiError` on a non-OK response. A 410 (`status === 410`)
+   * means the price lock has lapsed.
+   *
+   * @param intentId - The intent ID from `createPaymentIntent` or `createUsdcPaymentIntent`.
    */
   getPaymentIntentStatus: (intentId: string) => Promise<{ id: string; status: PaymentIntentStatus }>
 
@@ -239,8 +294,16 @@ export interface AutoDriveApi extends AutoDriveApiHandler {
    * Returns the terminal status: COMPLETED | EXPIRED | FAILED | OVER_CAP.
    * Throws if the timeout is exceeded before a terminal state is reached.
    *
-   * @param intentId - The intent ID from `createPaymentIntent`.
-   * @param options  - Optional poll interval and timeout (defaults: 3 s / 5 min).
+   * Set `options.settleGraceMs` to keep polling through HTTP 410 (price lock
+   * lapsed) for that long before returning `'EXPIRED'`. For USDC, always pass
+   * `intent.settleGraceMs`: a payment sent near the end of the lock can still be
+   * credited after the 410 starts. `'EXPIRED'` from this path means the SDK
+   * stopped waiting, not that the payment is lost, so check the account's credits
+   * before you report a failure. Without `settleGraceMs`, a 410 throws a
+   * `PaymentApiError`.
+   *
+   * @param intentId - The intent ID from `createPaymentIntent` or `createUsdcPaymentIntent`.
+   * @param options  - Optional poll interval, timeout and 410 grace (defaults: 3 s / 5 min / none).
    */
   waitForPaymentCompletion: (
     intentId: string,

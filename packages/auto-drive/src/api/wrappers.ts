@@ -324,6 +324,11 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
 
   const createPaymentIntent = (sizeBytes: number) => apiCalls.createPaymentIntent(api, sizeBytes)
 
+  const getUsdcPaymentTarget = () => apiCalls.getUsdcPaymentTarget(api)
+
+  const createUsdcPaymentIntent = (sizeBytes: number | bigint) =>
+    apiCalls.createUsdcPaymentIntent(api, sizeBytes)
+
   const watchPaymentTransaction = (intentId: string, txHash: string) =>
     apiCalls.watchPaymentTransaction(api, intentId, txHash)
 
@@ -388,6 +393,8 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
     getStoragePrice,
     getPaymentContractInfo,
     createPaymentIntent,
+    getUsdcPaymentTarget,
+    createUsdcPaymentIntent,
     watchPaymentTransaction,
     getPaymentIntentStatus,
     waitForPaymentCompletion,
