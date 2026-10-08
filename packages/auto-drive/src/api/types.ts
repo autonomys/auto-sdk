@@ -248,9 +248,9 @@ export interface AutoDriveApi extends AutoDriveApiHandler {
    * 1. Call `approve(intent.receiverAddress, intent.usdcAmount)` on `intent.tokenAddress`
    *    (ABI: `erc20ApprovalAbi`).
    * 2. Call `payIntentWithToken(intent.intentId, intent.usdcAmount)` on
-   *    `intent.receiverAddress` (ABI: `usdcReceiverAbi`). No `value`. Wait for
-   *    the transaction to be mined.
-   * 3. Call `watchPaymentTransaction(intent.intentId, txHash)` with the hash of step 2.
+   *    `intent.receiverAddress` (ABI: `usdcReceiverAbi`). No `value`.
+   * 3. Call `watchPaymentTransaction(intent.intentId, txHash)` with the hash of step 2
+   *    as soon as you have it, then wait for the transaction to be mined.
    * 4. Call `waitForPaymentCompletion(intent.intentId, { settleGraceMs: intent.settleGraceMs })`.
    *
    * @param sizeBytes - Purchase size in bytes, as a positive safe integer or a bigint.

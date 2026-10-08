@@ -432,6 +432,8 @@ try {
     (error.code === 'CREDIT_CAP_EXCEEDED' || error.status === 400)
   ) {
     // Nothing was paid. Try a smaller size.
+  } else {
+    throw error
   }
 }
 ```
@@ -446,7 +448,7 @@ You can also buy storage credits with USDC on Ethereum. As with AI3, the SDK mak
 1. createUsdcPaymentIntent(api, sizeBytes)        → locks a USDC price, returns amount + chain, token and receiver
 2. approve(receiverAddress, usdcAmount)           → on tokenAddress, on chainId (your wallet code)
 3. payIntentWithToken(intentId, usdcAmount)       → on receiverAddress, no value (your wallet code)
-4. watchPaymentTransaction(api, id, tx)           → the hash from step 3, not step 2
+4. watchPaymentTransaction(api, id, tx)           → the hash from step 3, not step 2, as soon as you have it
 5. waitForPaymentCompletion(api, id, { settleGraceMs })  → polls until COMPLETED
 ```
 
@@ -514,23 +516,25 @@ if (allowance < amount) {
 }
 
 // Step 3 — pay the intent. No value: the receiver pulls the approved USDC.
-// Wait for the receipt before step 5, so block time does not use up the 410 grace.
 const txHash = await walletClient.writeContract({
   address: receiver,
   abi: usdcReceiverAbi,
   functionName: 'payIntentWithToken',
   args: [intent.intentId as Hex, amount],
 })
-const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash })
-if (receipt.status !== 'success') throw new Error(`USDC payment reverted: ${txHash}`)
 
-// Step 4 — tell Auto Drive about the payment transaction (not the approval)
+// Step 4 — tell Auto Drive about the payment transaction (not the approval).
+// Do this as soon as you have the hash, while the price lock is still open.
 try {
   await api.watchPaymentTransaction(intent.intentId, txHash)
 } catch (error) {
   // 410: the price lock has lapsed. The payment can still settle, so continue.
   if (!(error instanceof PaymentApiError && error.status === 410)) throw error
 }
+
+// Wait for the receipt before step 5, so block time does not use up the 410 grace.
+const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash })
+if (receipt.status !== 'success') throw new Error(`USDC payment reverted: ${txHash}`)
 
 // Step 5 — wait for credits. Pass settleGraceMs so a 410 does not end the wait too early.
 const result = await api.waitForPaymentCompletion(intent.intentId, {
@@ -543,7 +547,7 @@ const result = await api.waitForPaymentCompletion(intent.intentId, {
 
 #### Why `settleGraceMs` matters
 
-`GET /intents/:id` answers HTTP 410 once the price lock has lapsed on an intent that has no recorded transaction hash. This happens, for example, when `watchPaymentTransaction` itself got a 410. (With a recorded hash, the 410 starts only when Auto Drive stops accepting payments for the intent, currently 20 minutes after `expiresAt`.) A payment sent near the end of the lock can still be credited after the first 410.
+`GET /intents/:id` answers HTTP 410 once the price lock has lapsed on an intent that has no recorded transaction hash. This happens, for example, when `watchPaymentTransaction` itself got a 410. (With a recorded hash, the 410 starts only when Auto Drive stops accepting payments for the intent, currently 20 minutes after `expiresAt`.) This is why the example calls `watchPaymentTransaction` as soon as the wallet returns the hash, before it waits for the receipt: a hash recorded while the lock is open keeps the status endpoint from answering 410. A payment sent near the end of the lock can still be credited after the first 410.
 
 With `settleGraceMs` set, `waitForPaymentCompletion` keeps polling through 410 for that long and only then returns `'EXPIRED'`. A successful read in between resets the clock. Without `settleGraceMs`, a 410 throws a `PaymentApiError`, as in earlier versions. Auto Drive serves the value in the payment target, and `createUsdcPaymentIntent` copies it onto the intent.
 

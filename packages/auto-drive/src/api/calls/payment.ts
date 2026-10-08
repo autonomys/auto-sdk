@@ -200,8 +200,8 @@ export const getUsdcPaymentTarget = async (
  * 1. Call `createUsdcPaymentIntent(api, sizeBytes)`: locks the price
  * 2. On `intent.chainId`, call `approve(intent.receiverAddress, intent.usdcAmount)` on `intent.tokenAddress`
  * 3. Call `payIntentWithToken(intent.intentId, intent.usdcAmount)` on `intent.receiverAddress`
- *    and wait for the transaction to be mined
- * 4. Call `watchPaymentTransaction(api, intent.intentId, txHash)` with the hash of step 3, not step 2
+ * 4. Call `watchPaymentTransaction(api, intent.intentId, txHash)` with the hash of step 3, not step 2,
+ *    as soon as you have it, then wait for the transaction to be mined
  * 5. Call `waitForPaymentCompletion(api, intent.intentId, { settleGraceMs: intent.settleGraceMs })`
  *
  * @param sizeBytes - Purchase size in bytes: a positive safe integer or a bigint.
