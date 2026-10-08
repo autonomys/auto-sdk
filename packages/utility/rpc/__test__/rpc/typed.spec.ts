@@ -29,6 +29,10 @@ describe('rpc/definition', () => {
         params: defineUnvalidatedType<void>(),
         returns: defineUnvalidatedType<void>(),
       },
+      invalid_return: {
+        params: z.void(),
+        returns: z.object({ name: z.string() }),
+      },
     },
     notifications: {
       test: {
@@ -63,6 +67,9 @@ describe('rpc/definition', () => {
         },
         test_notification_client: (_, { notificationClient }) => {
           notificationClient.test(connection, { name: 'test' })
+        },
+        invalid_return: () => {
+          return { name: 123 as unknown as string }
         },
       },
       {
@@ -190,5 +197,17 @@ describe('rpc/definition', () => {
     const client = createHttpClient(`http://localhost:${TEST_PORT}/ws`)
     const result = await client.test({ name: 'test' })
     expect(result).toEqual({ name: 'test' })
+  })
+
+  it('should handle invalid returns in ws client', async () => {
+    try {
+      await client.api.invalid_return()
+      expect(true).toBe(false)
+    } catch (error) {
+      expect(error).toBeInstanceOf(RpcError)
+      if (error instanceof RpcError) {
+        expect(error.code).toEqual(RpcError.Code.InvalidParams)
+      }
+    }
   })
 })
