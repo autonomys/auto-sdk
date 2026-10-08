@@ -1,5 +1,6 @@
 import { shannonsToAi3 } from '@autonomys/auto-utils'
 import {
+  CreditCapExceededError,
   PaymentContractInfo,
   PaymentIntent,
   PaymentIntentStatus,
@@ -15,6 +16,29 @@ const TERMINAL_STATUSES: PaymentIntentTerminalStatus[] = [
   'FAILED',
   'OVER_CAP',
 ]
+
+/**
+ * Extracts a readable message from an Auto Drive error body. The API sends
+ * `{ error: <code>, message }` for coded errors and `{ error: <message> }` for
+ * uncoded ones; anything else (including non-JSON) is returned as-is.
+ */
+const parseErrorBody = (body: string): { code?: string; message: string } => {
+  try {
+    const parsed: unknown = JSON.parse(body)
+    if (parsed && typeof parsed === 'object') {
+      const { error, message } = parsed as { error?: unknown; message?: unknown }
+      if (typeof message === 'string') {
+        return { code: typeof error === 'string' ? error : undefined, message }
+      }
+      if (typeof error === 'string') {
+        return { message: error }
+      }
+    }
+  } catch {
+    // Not JSON — fall through to the raw body
+  }
+  return { message: body }
+}
 
 /**
  * Returns the current live storage price without creating a price-locked intent.
@@ -63,10 +87,11 @@ export const getPaymentContractInfo = async (
  * The returned `ai3AmountWei` is the exact value to pass as `msg.value`
  * when calling `payIntent(intentId)` on the Credits Receiver contract.
  *
- * Note: `sizeBytes` is **not** sent to the Auto Drive API. The POST `/intents`
- * endpoint accepts no request body — it returns the current `shannonsPerByte`
- * rate. The SDK multiplies that rate by `sizeBytes` to produce `ai3AmountWei`,
- * saving the caller from doing the BigInt arithmetic themselves.
+ * `sizeBytes` must be a positive safe integer. It is sent to Auto Drive as
+ * `requestedBytes`, so the server can check it against the user's credit cap
+ * before any payment is made. If the purchase would exceed the cap, this throws
+ * a {@link CreditCapExceededError} and nothing should be paid. The SDK multiplies
+ * the returned `shannonsPerByte` rate by `sizeBytes` to produce `ai3AmountWei`.
  *
  * Flow:
  * 1. Call `createPaymentIntent(api, sizeBytes)` — locks the price
@@ -78,14 +103,30 @@ export const createPaymentIntent = async (
   api: AutoDriveApiHandler,
   sizeBytes: number,
 ): Promise<PaymentIntent> => {
+  if (!Number.isSafeInteger(sizeBytes) || sizeBytes <= 0) {
+    throw new TypeError(`sizeBytes must be a positive safe integer, received: ${sizeBytes}`)
+  }
+
   const [contractInfo, intentRes] = await Promise.all([
     getPaymentContractInfo(api),
-    api.sendAPIRequest('/intents', { method: 'POST' }),
+    api.sendAPIRequest(
+      '/intents',
+      {
+        method: 'POST',
+        headers: new Headers({ 'Content-Type': 'application/json' }),
+      },
+      // Decimal string: the endpoint treats the string form as canonical.
+      JSON.stringify({ requestedBytes: sizeBytes.toString() }),
+    ),
   ])
 
   if (!intentRes.ok) {
     const body = await intentRes.text()
-    throw new Error(`Failed to create payment intent: ${intentRes.status} ${body}`)
+    const { code, message } = parseErrorBody(body)
+    if (code === 'CREDIT_CAP_EXCEEDED') {
+      throw new CreditCapExceededError(message)
+    }
+    throw new Error(`Failed to create payment intent: ${intentRes.status} ${message}`)
   }
 
   const intent = await intentRes.json()
