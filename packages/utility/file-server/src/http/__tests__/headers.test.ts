@@ -1,7 +1,7 @@
 import { jest } from '@jest/globals'
 import type { Request, Response } from 'express'
 import { DownloadMetadata, DownloadOptions } from '../../models.js'
-import { handleDownloadResponseHeaders } from '../headers.js'
+import { getByteRange, handleDownloadResponseHeaders } from '../headers.js'
 
 // Mock Express types
 const createMockReq = (
@@ -483,6 +483,43 @@ describe('handleDownloadResponseHeaders', () => {
       expect(res._getHeaders()['content-length']).toBeUndefined()
       expect(res.set).toHaveBeenCalledWith('Accept-Ranges', 'none')
     })
+
+    it('should clamp upper bound when range end exceeds file size', () => {
+      const req = createMockReq()
+      const res = createMockRes()
+      const options = { byteRange: [0, 200] as [number, number] }
+
+      callHandler(req, res, defaultMetadata, options)
+
+      expect(res.status).toHaveBeenCalledWith(206)
+      expect(res.set).toHaveBeenCalledWith('Content-Range', 'bytes 0-99/100')
+      expect(res.set).toHaveBeenCalledWith('Content-Length', '100')
+    })
+
+    it('should return 416 when range start is greater than or equal to file size', () => {
+      const req = createMockReq()
+      const res = createMockRes()
+      const options = { byteRange: [100, 150] as [number, number] }
+
+      const result = callHandler(req, res, defaultMetadata, options)
+
+      expect(res.status).toHaveBeenCalledWith(416)
+      expect(res.set).toHaveBeenCalledWith('Content-Range', 'bytes */100')
+      expect(res.status).not.toHaveBeenCalledWith(206)
+      expect(result.shouldDecompressBody).toBe(false)
+    })
+
+    it('should return 416 when byteRange has start greater than end', () => {
+      const req = createMockReq()
+      const res = createMockRes()
+      const options = { byteRange: [50, 40] as [number, number] }
+
+      callHandler(req, res, defaultMetadata, options)
+
+      expect(res.status).toHaveBeenCalledWith(416)
+      expect(res.set).toHaveBeenCalledWith('Content-Range', 'bytes */100')
+      expect(res.status).not.toHaveBeenCalledWith(206)
+    })
   })
 
   describe('Accept-Ranges', () => {
@@ -734,5 +771,79 @@ describe('handleDownloadResponseHeaders', () => {
 
       expect(res.set).toHaveBeenCalledWith('Content-Disposition', expect.stringMatching(/^inline;/))
     })
+  })
+})
+
+describe('getByteRange', () => {
+  it('should return undefined when range header is missing', () => {
+    const req = { headers: {} } as unknown as Request
+    expect(getByteRange(req)).toBeUndefined()
+  })
+
+  it('should parse standard byte range', () => {
+    const req = { headers: { range: 'bytes=0-499' } } as unknown as Request
+    expect(getByteRange(req)).toEqual([0, 499])
+  })
+
+  it('should parse open-ended byte range without fileSize', () => {
+    const req = { headers: { range: 'bytes=500-' } } as unknown as Request
+    expect(getByteRange(req)).toEqual([500, undefined])
+  })
+
+  it('should resolve open-ended byte range when fileSize is provided', () => {
+    const req = { headers: { range: 'bytes=500-' } } as unknown as Request
+    expect(getByteRange(req, 1000)).toEqual([500, 999])
+  })
+
+  it('should clamp upper bound when range end exceeds fileSize', () => {
+    const req = { headers: { range: 'bytes=0-2000' } } as unknown as Request
+    expect(getByteRange(req, 1000)).toEqual([0, 999])
+  })
+
+  it('should resolve suffix byte range when fileSize is provided', () => {
+    const req = { headers: { range: 'bytes=-500' } } as unknown as Request
+    expect(getByteRange(req, 1000)).toEqual([500, 999])
+  })
+
+  it('should cap suffix byte range start at 0 when suffix length exceeds fileSize', () => {
+    const req = { headers: { range: 'bytes=-1500' } } as unknown as Request
+    expect(getByteRange(req, 1000)).toEqual([0, 999])
+  })
+
+  it('should accept BigInt fileSize', () => {
+    const req = { headers: { range: 'bytes=-200' } } as unknown as Request
+    expect(getByteRange(req, BigInt(1000))).toEqual([800, 999])
+  })
+
+  it('should return undefined for suffix byte range when fileSize is not provided', () => {
+    const req = { headers: { range: 'bytes=-500' } } as unknown as Request
+    expect(getByteRange(req)).toBeUndefined()
+  })
+
+  it('should return undefined when range start exceeds or equals fileSize', () => {
+    const req = { headers: { range: 'bytes=1000-' } } as unknown as Request
+    expect(getByteRange(req, 1000)).toBeUndefined()
+
+    const req2 = { headers: { range: 'bytes=1200-1500' } } as unknown as Request
+    expect(getByteRange(req2, 1000)).toBeUndefined()
+  })
+
+  it('should accept permissive space separator', () => {
+    const req = { headers: { range: 'bytes 100-200' } } as unknown as Request
+    expect(getByteRange(req)).toEqual([100, 200])
+  })
+
+  it('should return undefined for invalid ranges', () => {
+    expect(
+      getByteRange({ headers: { range: 'bytes=500-200' } } as unknown as Request),
+    ).toBeUndefined()
+    expect(
+      getByteRange({ headers: { range: 'bytes=-0' } } as unknown as Request, 1000),
+    ).toBeUndefined()
+    expect(getByteRange({ headers: { range: 'bytes=-' } } as unknown as Request)).toBeUndefined()
+    expect(
+      getByteRange({ headers: { range: 'bytes=abc-def' } } as unknown as Request),
+    ).toBeUndefined()
+    expect(getByteRange({ headers: { range: 'items=0-10' } } as unknown as Request)).toBeUndefined()
   })
 })

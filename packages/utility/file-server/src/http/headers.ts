@@ -156,9 +156,16 @@ export const handleDownloadResponseHeaders = (
       // In both cases, omit Content-Length and rely on chunked transfer encoding so the
       // advertised length can never disagree with the bytes actually placed on the wire.
     } else if (byteRange && metadata.size != null) {
+      const fileSize = Number(metadata.size)
+      if (byteRange[0] >= fileSize || (byteRange[1] !== undefined && byteRange[0] > byteRange[1])) {
+        res.status(416)
+        res.set('Content-Range', `bytes */${metadata.size}`)
+        return { shouldDecompressBody: false }
+      }
+
       // For range requests on non-compressed content
       res.status(206)
-      const upperBound = byteRange[1] ?? Number(metadata.size) - 1
+      const upperBound = Math.min(byteRange[1] ?? fileSize - 1, fileSize - 1)
       res.set('Content-Range', `bytes ${byteRange[0]}-${upperBound}/${metadata.size}`)
       res.set('Content-Length', (upperBound - byteRange[0] + 1).toString())
     } else if (metadata.size != null) {
@@ -188,19 +195,58 @@ export const handleS3DownloadResponseHeaders = (
   }
 }
 
-export const getByteRange = (req: Request): ByteRange | undefined => {
+export const getByteRange = (req: Request, fileSize?: number | bigint): ByteRange | undefined => {
   const byteRange = req.headers['range']
   if (byteRange == null) {
     return undefined
   }
-  const header = 'bytes '
 
-  const [start, end] = byteRange.slice(header.length).split('-')
-  const startNumber = Number(start)
-  const endNumber = end && !['*', ''].includes(end) ? Number(end) : undefined
-
-  if (startNumber < 0 || (endNumber && endNumber < 0) || (endNumber && startNumber > endNumber)) {
+  // RFC 9110 §14.1.2: Range: bytes=<range-spec>
+  const match = byteRange.match(/^bytes\s*(?:=|\s)\s*([0-9]*)-([0-9]*)$/i)
+  if (!match) {
     return undefined
+  }
+
+  const [, startStr, endStr] = match
+  if (!startStr && !endStr) {
+    return undefined
+  }
+
+  const size = fileSize != null ? Number(fileSize) : undefined
+
+  // Suffix byte range: "-<suffix-length>" (e.g. "-500")
+  if (!startStr && endStr) {
+    const suffixLength = Number(endStr)
+    if (suffixLength <= 0 || !Number.isInteger(suffixLength)) {
+      return undefined
+    }
+    if (size == null || size <= 0) {
+      return undefined
+    }
+    const startNumber = Math.max(0, size - suffixLength)
+    const endNumber = size - 1
+    return [startNumber, endNumber]
+  }
+
+  const startNumber = Number(startStr)
+  if (!Number.isInteger(startNumber) || startNumber < 0) {
+    return undefined
+  }
+
+  let endNumber = endStr && endStr !== '*' ? Number(endStr) : undefined
+  if (endNumber !== undefined) {
+    if (!Number.isInteger(endNumber) || endNumber < 0 || startNumber > endNumber) {
+      return undefined
+    }
+  }
+
+  if (size != null) {
+    if (startNumber >= size) {
+      return undefined
+    }
+    if (endNumber === undefined || endNumber >= size) {
+      endNumber = size - 1
+    }
   }
 
   return [startNumber, endNumber]
