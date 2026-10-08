@@ -74,7 +74,7 @@ export const createApiDefinition = <S extends ApiDefinition>(serverDefinition: S
 
   const createServer = <Handlers extends ApiServerHandlers<S>>(
     handlers: Handlers,
-    serverParams: Parameters<typeof createRpcServer>[0],
+    serverParams?: Parameters<typeof createRpcServer>[0],
   ): TypedRpcServerClient<S> => {
     const server = createRpcServer(serverParams)
 

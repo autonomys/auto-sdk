@@ -46,4 +46,3 @@ export {
   isPrecompileDeployed,
   transferToConsensus,
 } from './transporter'
-

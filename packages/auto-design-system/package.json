@@ -1,7 +1,7 @@
 {
   "name": "@autonomys/auto-design-system",
   "packageManager": "yarn@4.17.0",
-  "version": "1.6.14",
+  "version": "1.6.15",
   "license": "MIT",
   "description": "Autonomys Design System",
   "type": "module",
@@ -34,7 +34,7 @@
     "shadcn": "npx shadcn-ui@latest add"
   },
   "dependencies": {
-    "@autonomys/design-tokens": "^1.6.14",
+    "@autonomys/design-tokens": "^1.6.15",
     "@floating-ui/react": "^0.27.19",
     "@headlessui/react": "^2.2.10",
     "@heroicons/react": "^2.2.0",

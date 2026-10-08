@@ -11,4 +11,4 @@
   },
   "include": ["src/tokens/**/*.ts"],
   "exclude": ["node_modules", "dist"]
-} 
+}

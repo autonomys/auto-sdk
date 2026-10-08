@@ -1,1 +1,1 @@
-export { useWallet } from './use-wallet';
+export { useWallet } from './use-wallet'

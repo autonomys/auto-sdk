@@ -7,6 +7,7 @@ import {
 import { ethers } from 'ethers'
 import * as fs from 'fs'
 import { createCidManager } from '../cidManager'
+import type { EvmOptions } from '../types'
 import * as utils from '../utils'
 
 // Mock dependencies
@@ -31,16 +32,22 @@ const mockAutoDagData = {
   cidFromBlakeHash,
 } as jest.Mocked<typeof import('@autonomys/auto-dag-data')>
 
+type Cid = ReturnType<typeof mockAutoDagData.cidFromBlakeHash>
+// The auto-dag-data mock passes plain strings around in place of CID objects
+const asCid = (value: string) => value as unknown as Cid
+
 describe('createCidManager', () => {
   // --- Constants ---
   const agentPath = '/fake/agent/path'
   const memoriesDir = `${agentPath}/memories`
   const localHashLocation = `${memoriesDir}/last-memory-hash.json`
   const walletOptions = {
-    rpcUrl: 'http://localhost:8545',
     privateKey: '0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
-    contractAddress: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
-  }
+    contractInfo: {
+      rpcUrl: 'http://localhost:8545',
+      contractAddress: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
+    },
+  } satisfies EvmOptions
   const testCid = 'bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi' // Example CID
   const testHash = '0x6d6f636b426c616b653348617368000000000000000000000000000000000000' // hex of mockBlake3Hash
   const mockWalletAddress = '0x1234567890abcdef1234567890abcdef12345678'
@@ -85,7 +92,8 @@ describe('createCidManager', () => {
     mockEthers.Contract.mockReturnValue(mockContract)
 
     mockEthers.hexlify.mockImplementation((data: ethers.BytesLike) => {
-      if (Buffer.from(data as any).toString() === 'mockBlake3Hash') {
+      const text = typeof data === 'string' ? data : Buffer.from(data).toString()
+      if (text === 'mockBlake3Hash') {
         return testHash
       }
       return '0x'
@@ -101,9 +109,9 @@ describe('createCidManager', () => {
 
   const setupMockAutoDagData = () => {
     mockAutoDagData.blake3HashFromCid.mockReturnValue(Buffer.from('mockBlake3Hash'))
-    mockAutoDagData.stringToCid.mockReturnValue(testCid as any)
-    mockAutoDagData.cidFromBlakeHash.mockReturnValue('mockCidFromHash' as any)
-    mockAutoDagData.cidToString.mockImplementation((cid: any): string => String(cid)) // More robust mock
+    mockAutoDagData.stringToCid.mockReturnValue(asCid(testCid))
+    mockAutoDagData.cidFromBlakeHash.mockReturnValue(asCid('mockCidFromHash'))
+    mockAutoDagData.cidToString.mockImplementation((cid) => String(cid)) // More robust mock
   }
 
   // --- Test Setup ---
@@ -139,9 +147,11 @@ describe('createCidManager', () => {
     )
 
     // Assert
-    expect(mockEthers.JsonRpcProvider).toHaveBeenCalledWith(walletOptions.rpcUrl)
+    expect(mockEthers.JsonRpcProvider).toHaveBeenCalledWith(walletOptions.contractInfo.rpcUrl)
     expect(currentMockProvider.getNetwork).toHaveBeenCalled()
-    expect(cidManager.localHashStatus.message).toBe('Using local storage only')
+    expect(cidManager.localHashStatus.message).toBe(
+      'Using local storage only - Provider connection failed',
+    )
     expect(mockFs.existsSync).toHaveBeenCalledWith(memoriesDir) // Should still check/create dir
     expect(mockFs.mkdirSync).not.toHaveBeenCalled() // Assumes existsSync returned true
 
@@ -174,6 +184,36 @@ describe('createCidManager', () => {
     // Ensure no contract interaction happened
     expect(mockEthers.Wallet).not.toHaveBeenCalled()
     expect(mockEthers.Contract).not.toHaveBeenCalled()
+  })
+
+  it('should initialize in offline mode without connecting if no contract info is provided', async () => {
+    // Act
+    const cidManager = await createCidManager(
+      { agentPath: agentPath, agentName: 'TestAgent' },
+      { privateKey: walletOptions.privateKey },
+    )
+
+    // Assert
+    expect(cidManager.localHashStatus.message).toBe(
+      'Using local storage only - No contract info provided',
+    )
+    expect(mockFs.existsSync).toHaveBeenCalledWith(memoriesDir)
+
+    // Offline methods use the local file only
+    await expect(cidManager.getLastMemoryCid()).resolves.toBe('mockCidFromHash')
+    expect(mockFs.readFileSync).toHaveBeenCalledWith(localHashLocation, 'utf-8')
+
+    await expect(cidManager.saveLastMemoryCid(testCid)).resolves.toBeUndefined()
+    expect(mockFs.writeFileSync).toHaveBeenCalledWith(
+      localHashLocation,
+      expect.stringContaining(`"hash": "${testHash}"`),
+    )
+
+    // Ensure no blockchain interaction happened
+    expect(mockEthers.JsonRpcProvider).not.toHaveBeenCalled()
+    expect(mockEthers.Wallet).not.toHaveBeenCalled()
+    expect(mockEthers.Contract).not.toHaveBeenCalled()
+    expect(mockUtils.retryWithBackoff).not.toHaveBeenCalled()
   })
 
   it('should initialize online and update local hash if blockchain event is newer', async () => {
@@ -218,10 +258,11 @@ describe('createCidManager', () => {
     // Verify local file was updated with the new hash from the event
     expect(mockFs.writeFileSync).toHaveBeenCalledWith(
       localHashLocation,
-      // Check that the content includes the new hash and a timestamp
-      expect.stringContaining(`"hash": "${newEventHash}"`) &&
-        expect.stringContaining('"timestamp":') && // Check timestamp field exists
-        expect.any(String), // The actual value is written by writeFileSync
+      expect.stringContaining(`"hash": "${newEventHash}"`),
+    )
+    expect(mockFs.writeFileSync).toHaveBeenCalledWith(
+      localHashLocation,
+      expect.stringContaining('"timestamp":'),
     )
 
     // Verify the status message
@@ -401,7 +442,7 @@ describe('createCidManager', () => {
 
     // 3. Ensure other mocks are ready
     mockFs.writeFileSync.mockReturnValue(undefined) // Ready to be called
-    mockAutoDagData.cidFromBlakeHash.mockReturnValue('mockCidFromHash' as any)
+    mockAutoDagData.cidFromBlakeHash.mockReturnValue(asCid('mockCidFromHash'))
 
     // Act
     const resultCid = await cidManager.getLastMemoryCid()
@@ -415,7 +456,7 @@ describe('createCidManager', () => {
     // Check that it saved the fetched hash locally
     expect(mockFs.writeFileSync).toHaveBeenCalledWith(
       localHashLocation,
-      expect.stringContaining(`"hash": "${testHash}"`) && expect.any(String),
+      expect.stringContaining(`"hash": "${testHash}"`),
     )
 
     // Check CID conversion steps
@@ -508,12 +549,12 @@ describe('createCidManager', () => {
     const mockTxResponse = {
       wait: jest.fn().mockResolvedValue({ status: 1, transactionHash: '0xmocktxhash' }),
     }
-    currentMockContract.setLastMemoryHash.mockResolvedValue(mockTxResponse as any)
+    currentMockContract.setLastMemoryHash.mockResolvedValue(mockTxResponse)
     mockFs.writeFileSync.mockReturnValue(undefined)
     mockUtils.retryWithBackoff.mockImplementation(async (fn) => fn()) // Ensure retry mock is fresh
     mockEthers.hexlify.mockReturnValue(testHash) // Ensure hexlify mock is fresh
     mockAutoDagData.blake3HashFromCid.mockReturnValue(Buffer.from('mockBlake3Hash'))
-    mockAutoDagData.stringToCid.mockReturnValue(testCid as any)
+    mockAutoDagData.stringToCid.mockReturnValue(asCid(testCid))
 
     // Act
     const receipt = await cidManager.saveLastMemoryCid(testCid)
@@ -522,7 +563,7 @@ describe('createCidManager', () => {
     // 1. Verify local save occurred first
     expect(mockFs.writeFileSync).toHaveBeenCalledWith(
       localHashLocation,
-      expect.stringContaining(`"hash": "${testHash}"`) && expect.any(String),
+      expect.stringContaining(`"hash": "${testHash}"`),
     )
     // Check order if necessary, though tricky with async
 
@@ -559,7 +600,7 @@ describe('createCidManager', () => {
     mockFs.writeFileSync.mockReturnValue(undefined)
     mockEthers.hexlify.mockReturnValue(testHash)
     mockAutoDagData.blake3HashFromCid.mockReturnValue(Buffer.from('mockBlake3Hash'))
-    mockAutoDagData.stringToCid.mockReturnValue(testCid as any)
+    mockAutoDagData.stringToCid.mockReturnValue(asCid(testCid))
 
     // Act
     const receipt = await cidManager.saveLastMemoryCid(testCid)
@@ -568,7 +609,7 @@ describe('createCidManager', () => {
     // 1. Verify local save still occurred
     expect(mockFs.writeFileSync).toHaveBeenCalledWith(
       localHashLocation,
-      expect.stringContaining(`"hash": "${testHash}"`) && expect.any(String),
+      expect.stringContaining(`"hash": "${testHash}"`),
     )
 
     // 2. Verify contract call was attempted via retry

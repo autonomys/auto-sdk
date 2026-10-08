@@ -1,4 +1,4 @@
-import DOMPurify from 'dompurify';
+import DOMPurify from 'dompurify'
 
 export const sanitizeHTML = (html: string) => {
   return DOMPurify.sanitize(html, {
@@ -19,5 +19,5 @@ export const sanitizeHTML = (html: string) => {
     ],
     ALLOWED_ATTR: ['href', 'src', 'alt', 'title'],
     ALLOWED_URI_REGEXP: /^(?:https?:|mailto:|data:image\/)/,
-  });
-};
+  })
+}

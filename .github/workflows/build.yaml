@@ -23,11 +23,14 @@ jobs:
       - name: Enable Corepack
         run: corepack enable
 
-      - name: Set Yarn version to Berry
-        run: corepack prepare yarn@4.7.0 --activate
-
       - name: Install dependencies
         run: yarn install
+
+      - name: Lint 🔍
+        run: yarn lint
+
+      - name: Check formatting 💅
+        run: yarn format:check
 
       - name: Build all packages 🔧
         run: yarn build

@@ -1,6 +1,5 @@
 import { MemoryBlockstore } from 'blockstore-core'
 import {
-  createChunkedFileIpldNode,
   createSingleFileIpldNode,
   decodeIPLDNodeData,
   decodeNode,

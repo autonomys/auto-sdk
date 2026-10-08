@@ -31,7 +31,7 @@ export const parseBalance = (data: RawBalanceData): BalanceData => {
     }
   } catch (error) {
     console.error('Error parsing balance:', error)
-    throw new Error('Failed to parse balance')
+    throw new Error('Failed to parse balance', { cause: error })
   }
 }
 

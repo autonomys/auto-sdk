@@ -13,12 +13,12 @@ import { expectSuccessfulTxEvent } from './events'
 
 /**
  * Executes a transaction with sudo (superuser) privileges.
- * 
+ *
  * This function wraps a transaction with sudo privileges, allowing it to be executed
  * with administrative permissions. This is typically used for privileged operations
  * like network upgrades, parameter changes, or emergency actions that require
  * elevated permissions.
- * 
+ *
  * @param api - The connected API promise instance
  * @param sender - The account with sudo privileges (typically Alice in test networks)
  * @param tx - The transaction to execute with sudo privileges
@@ -27,23 +27,23 @@ import { expectSuccessfulTxEvent } from './events'
  * @param log - Whether to log transaction details (default: true)
  * @returns Promise that resolves to transaction result details
  * @throws Error if the sender doesn't have sudo privileges or transaction fails
- * 
+ *
  * @example
  * ```typescript
  * import { sudo } from '@autonomys/auto-consensus'
  * import { activate, activateWallet } from '@autonomys/auto-utils'
- * 
+ *
  * const api = await activate({ networkId: 'localhost' })
- * const { accounts } = await activateWallet({ 
- *   networkId: 'localhost', 
- *   uri: '//Alice' 
+ * const { accounts } = await activateWallet({
+ *   networkId: 'localhost',
+ *   uri: '//Alice'
  * })
  * const alice = accounts[0]
- * 
+ *
  * // Execute a privileged transaction
  * const privilegedTx = api.tx.system.setCode(newRuntimeWasm)
  * const result = await sudo(api, alice, privilegedTx)
- * 
+ *
  * console.log(`Sudo transaction executed: ${result.txHash}`)
  * ```
  */

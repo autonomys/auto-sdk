@@ -1,5 +1,4 @@
-import type { NetworkParams } from '@autonomys/auto-utils'
-import { networks } from '@autonomys/auto-utils'
+import { type NetworkParams, networks } from '@autonomys/auto-utils'
 
 export const setup = () => {
   const isLocalhost = process.env.LOCALHOST === 'true'
