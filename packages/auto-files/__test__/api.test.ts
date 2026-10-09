@@ -10,12 +10,15 @@ const chunkResponse = (index: number) =>
 
 const serverError = () => new Response('boom', { status: 500, statusText: 'Internal Server Error' })
 
-const mockGateway = (getChunk: (index: number) => Response) => {
+const mockGateway = (
+  getChunk: (index: number) => Response,
+  metadata: object = { size: String(CHUNKS.join('').length) },
+) => {
   const requestedChunks: number[] = []
   jest.spyOn(global, 'fetch').mockImplementation(async (input) => {
     const url = new URL(String(input))
     if (url.pathname === `/files/${CID}/metadata`) {
-      return new Response(JSON.stringify({ size: String(CHUNKS.join('').length) }))
+      return new Response(JSON.stringify(metadata))
     }
     if (url.pathname === `/files/${CID}/partial`) {
       const index = Number(url.searchParams.get('chunk'))
@@ -76,5 +79,37 @@ describe('getChunkedFile', () => {
 
     await expect(api.getChunkedFile(CID, { retriesPerFetch: 1 })).rejects.toThrow('fetch failed')
     expect(fetchMock).toHaveBeenCalledTimes(2)
+  })
+
+  it('reports progress against the file size', async () => {
+    mockGateway(chunkResponse)
+    const onProgress = jest.fn()
+
+    const file = await api.getChunkedFile(CID, { onProgress })
+    await readAll(file.data)
+
+    expect(onProgress.mock.calls.map(([progress]) => progress)).toEqual([
+      0.1666, 0.3333, 0.5, 0.6666, 0.8333, 1, 1,
+    ])
+  })
+
+  it('downloads an empty file while reporting progress', async () => {
+    mockGateway(() => new Response(null, { status: 204 }), { size: '0' })
+    const onProgress = jest.fn()
+
+    const file = await api.getChunkedFile(CID, { onProgress })
+
+    await expect(readAll(file.data)).resolves.toBe('')
+    expect(onProgress.mock.calls).toEqual([[1]])
+  })
+
+  it('downloads a file whose metadata has no size while reporting progress', async () => {
+    mockGateway(chunkResponse, {})
+    const onProgress = jest.fn()
+
+    const file = await api.getChunkedFile(CID, { onProgress })
+
+    await expect(readAll(file.data)).resolves.toBe(CHUNKS.join(''))
+    expect(onProgress.mock.calls).toEqual([[1]])
   })
 })

@@ -115,7 +115,12 @@ export const createAutoFilesApi = (baseUrl: string, apiSecret: string) => {
             })
             this.push(chunk ? Buffer.from(chunk) : null)
             totalDownloaded += BigInt(chunk?.byteLength ?? 0)
-            onProgress?.(Number((BigInt(precision) * totalDownloaded) / length) / precision)
+            // A zero length (empty file or missing size) gives nothing to measure against
+            if (length > BigInt(0)) {
+              onProgress?.(Number((BigInt(precision) * totalDownloaded) / length) / precision)
+            } else if (!chunk) {
+              onProgress?.(1)
+            }
           } catch (error) {
             this.destroy(error instanceof Error ? error : new Error(String(error)))
           }
