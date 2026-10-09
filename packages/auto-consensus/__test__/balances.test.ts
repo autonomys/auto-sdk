@@ -1,6 +1,14 @@
 import { balance, totalIssuance } from '@autonomys/auto-consensus'
-import type { ActivateWalletParams, ApiPromise, WalletActivated } from '@autonomys/auto-utils'
-import { activate, activateWallet, address, disconnect, mockWallets } from '@autonomys/auto-utils'
+import {
+  type ActivateWalletParams,
+  type ApiPromise,
+  type WalletActivated,
+  activate,
+  activateWallet,
+  address,
+  disconnect,
+  mockWallets,
+} from '@autonomys/auto-utils'
 import { setup } from './helpers'
 
 describe('Verify balances functions', () => {

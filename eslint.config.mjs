@@ -2,7 +2,6 @@ import { FlatCompat } from '@eslint/eslintrc'
 import js from '@eslint/js'
 import typescriptEslint from '@typescript-eslint/eslint-plugin'
 import tsParser from '@typescript-eslint/parser'
-import prettier from 'eslint-plugin-prettier'
 import { defineConfig, globalIgnores } from 'eslint/config'
 import globals from 'globals'
 import path from 'node:path'
@@ -37,7 +36,6 @@ export default defineConfig([
 
     plugins: {
       '@typescript-eslint': typescriptEslint,
-      prettier,
     },
 
     languageOptions: {
@@ -56,7 +54,6 @@ export default defineConfig([
     },
 
     rules: {
-      '@typescript-eslint/no-explicit-any': 'warn',
       camelcase: 'warn',
       'spaced-comment': 'error',
       quotes: ['error', 'single', { avoidEscape: true }],

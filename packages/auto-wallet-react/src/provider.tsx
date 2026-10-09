@@ -1,15 +1,13 @@
-import React, { createContext, useContext, useRef } from 'react';
-import { createWalletStore, type WalletConfig, type WalletState } from '@autonomys/auto-wallet';
-import type { StoreApi } from 'zustand';
-import { useStore } from 'zustand';
+import React, { createContext, useContext, useRef } from 'react'
+import { createWalletStore, type WalletConfig } from '@autonomys/auto-wallet'
 
-type WalletStore = ReturnType<typeof createWalletStore>;
+type WalletStore = ReturnType<typeof createWalletStore>
 
-const WalletStoreContext = createContext<WalletStore | null>(null);
+const WalletStoreContext = createContext<WalletStore | null>(null)
 
 export interface WalletProviderProps {
-  config?: Partial<WalletConfig>;
-  children: React.ReactNode;
+  config?: Partial<WalletConfig>
+  children: React.ReactNode
 }
 
 /**
@@ -18,16 +16,14 @@ export interface WalletProviderProps {
  */
 export function WalletProvider({ config, children }: WalletProviderProps) {
   // Create the store once — config changes after mount are intentionally ignored
-  const storeRef = useRef<WalletStore | null>(null);
+  const storeRef = useRef<WalletStore | null>(null)
   if (storeRef.current === null) {
-    storeRef.current = createWalletStore(config);
+    storeRef.current = createWalletStore(config)
   }
 
   return (
-    <WalletStoreContext.Provider value={storeRef.current}>
-      {children}
-    </WalletStoreContext.Provider>
-  );
+    <WalletStoreContext.Provider value={storeRef.current}>{children}</WalletStoreContext.Provider>
+  )
 }
 
 /**
@@ -35,9 +31,9 @@ export function WalletProvider({ config, children }: WalletProviderProps) {
  * Throws if used outside of WalletProvider.
  */
 export function useWalletStore(): WalletStore {
-  const store = useContext(WalletStoreContext);
+  const store = useContext(WalletStoreContext)
   if (!store) {
-    throw new Error('useWalletStore must be used within a <WalletProvider>');
+    throw new Error('useWalletStore must be used within a <WalletProvider>')
   }
-  return store;
+  return store
 }

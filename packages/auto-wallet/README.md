@@ -77,10 +77,10 @@ import { createWalletStore } from '@autonomys/auto-wallet'
 
 const useWalletStore = createWalletStore({
   dappName: 'My Autonomys dApp',
-  ss58Prefix: 42,                    // Use testnet prefix
-  storageKey: 'my-dapp-wallet',      // Custom localStorage key
-  connectionTimeout: 15000,          // 15 second timeout
-  supportedWallets: ['talisman'],    // Only support Talisman
+  ss58Prefix: 42, // Use testnet prefix
+  storageKey: 'my-dapp-wallet', // Custom localStorage key
+  connectionTimeout: 15000, // 15 second timeout
+  supportedWallets: ['talisman'], // Only support Talisman
 })
 ```
 
@@ -112,8 +112,8 @@ disconnectWallet()
 import { shortenAddress } from '@autonomys/auto-wallet'
 
 const address = '5GmS1wtCfR4tK5SSgnZbVT4kYw5W8NmxmijcsxCQE6oLW6A8'
-console.log(shortenAddress(address))     // "5GmS…W6A8"
-console.log(shortenAddress(address, 6))  // "5GmS1w…oLW6A8"
+console.log(shortenAddress(address)) // "5GmS…W6A8"
+console.log(shortenAddress(address, 6)) // "5GmS1w…oLW6A8"
 ```
 
 ## API Reference
@@ -134,14 +134,14 @@ Creates a new Zustand wallet store with the given configuration merged with defa
 
 All fields are optional with sensible defaults:
 
-| Field | Type | Default | Description |
-|---|---|---|---|
-| `dappName` | `string` | `'Autonomys'` | Name shown when requesting wallet connection |
-| `storageKey` | `string` | `'autonomys-wallet-preferences'` | localStorage key for persisting preferences |
-| `ss58Prefix` | `number` | `6094` | SS58 address prefix (6094 = Autonomys mainnet) |
-| `supportedWallets` | `string[]` | `['talisman', 'subwallet-js', 'polkadot-js']` | Wallet extension names to detect |
-| `connectionTimeout` | `number` | `30000` | Connection timeout in milliseconds |
-| `installUrls` | `Record<string, string>` | Chrome Web Store links | Map of wallet name to install URL |
+| Field               | Type                     | Default                                       | Description                                    |
+| ------------------- | ------------------------ | --------------------------------------------- | ---------------------------------------------- |
+| `dappName`          | `string`                 | `'Autonomys'`                                 | Name shown when requesting wallet connection   |
+| `storageKey`        | `string`                 | `'autonomys-wallet-preferences'`              | localStorage key for persisting preferences    |
+| `ss58Prefix`        | `number`                 | `6094`                                        | SS58 address prefix (6094 = Autonomys mainnet) |
+| `supportedWallets`  | `string[]`               | `['talisman', 'subwallet-js', 'polkadot-js']` | Wallet extension names to detect               |
+| `connectionTimeout` | `number`                 | `30000`                                       | Connection timeout in milliseconds             |
+| `installUrls`       | `Record<string, string>` | Chrome Web Store links                        | Map of wallet name to install URL              |
 
 ### Store State
 
@@ -200,8 +200,8 @@ The default configuration object used when no overrides are provided:
 ```typescript
 import { DEFAULT_WALLET_CONFIG } from '@autonomys/auto-wallet'
 
-console.log(DEFAULT_WALLET_CONFIG.dappName)       // 'Autonomys'
-console.log(DEFAULT_WALLET_CONFIG.ss58Prefix)     // 6094
+console.log(DEFAULT_WALLET_CONFIG.dappName) // 'Autonomys'
+console.log(DEFAULT_WALLET_CONFIG.ss58Prefix) // 6094
 console.log(DEFAULT_WALLET_CONFIG.supportedWallets) // ['talisman', 'subwallet-js', 'polkadot-js']
 ```
 

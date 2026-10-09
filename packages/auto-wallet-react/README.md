@@ -55,10 +55,12 @@ import { WalletProvider } from '@autonomys/auto-wallet-react'
 
 function App() {
   return (
-    <WalletProvider config={{
-      dappName: 'My dApp',
-      ss58Prefix: 6094,
-    }}>
+    <WalletProvider
+      config={{
+        dappName: 'My dApp',
+        ss58Prefix: 6094,
+      }}
+    >
       <YourApp />
     </WalletProvider>
   )
@@ -109,8 +111,8 @@ The wallet components use Tailwind CSS utility classes that reference CSS custom
 // tailwind.config.js
 export default {
   content: [
-    "./src/**/*.{js,ts,jsx,tsx}",
-    "./node_modules/@autonomys/auto-wallet-react/dist/**/*.{js,mjs}",
+    './src/**/*.{js,ts,jsx,tsx}',
+    './node_modules/@autonomys/auto-wallet-react/dist/**/*.{js,mjs}',
   ],
   // ...
 }
@@ -161,13 +163,15 @@ import { WalletProvider } from '@autonomys/auto-wallet-react'
 
 function App() {
   return (
-    <WalletProvider config={{
-      dappName: 'Autonomys Staking Portal',
-      ss58Prefix: 6094,
-      storageKey: 'staking-portal-wallet',
-      supportedWallets: ['talisman', 'subwallet-js'],
-      connectionTimeout: 15000,
-    }}>
+    <WalletProvider
+      config={{
+        dappName: 'Autonomys Staking Portal',
+        ss58Prefix: 6094,
+        storageKey: 'staking-portal-wallet',
+        supportedWallets: ['talisman', 'subwallet-js'],
+        connectionTimeout: 15000,
+      }}
+    >
       <YourApp />
     </WalletProvider>
   )
@@ -252,9 +256,7 @@ function SubmitTransaction() {
 Wraps your application and provides wallet state via React context.
 
 ```tsx
-<WalletProvider config={{ dappName: 'My dApp' }}>
-  {children}
-</WalletProvider>
+<WalletProvider config={{ dappName: 'My dApp' }}>{children}</WalletProvider>
 ```
 
 - **Props:**
@@ -304,27 +306,27 @@ Auto-detects installed wallet extensions on mount.
 
 **Returns:**
 
-| Property | Type | Description |
-|---|---|---|
-| `isConnected` | `boolean` | Whether a wallet is connected |
-| `isLoading` | `boolean` | Whether a connection is in progress |
-| `loadingType` | `LoadingType` | `'connecting'`, `'initializing'`, or `null` |
-| `connectionError` | `string \| null` | Error message from last failed connection |
-| `selectedWallet` | `string \| null` | Name of connected wallet extension |
-| `selectedAccount` | `WalletAccount \| null` | Active account |
-| `accounts` | `WalletAccount[]` | All accounts from connected wallet |
-| `availableWallets` | `Wallet[]` | Detected wallet extensions |
-| `injector` | `InjectedExtension \| null` | Wallet injector for signing transactions |
-| `config` | `Required<WalletConfig>` | Resolved configuration |
-| `connectWallet` | `(name: string) => Promise<void>` | Connect to a wallet |
-| `disconnectWallet` | `() => void` | Disconnect current wallet |
-| `selectAccount` | `(address: string) => void` | Switch active account |
-| `clearError` | `() => void` | Clear connection error |
-| `hasWallets` | `boolean` | Whether any wallet extensions are installed |
-| `selectedAddress` | `string \| null` | Shortcut to selected account address |
-| `isConnecting` | `boolean` | Whether currently connecting (not initializing) |
-| `isInitializing` | `boolean` | Whether currently auto-reconnecting |
-| `canConnect` | `boolean` | Whether a new connection can be initiated |
+| Property           | Type                              | Description                                     |
+| ------------------ | --------------------------------- | ----------------------------------------------- |
+| `isConnected`      | `boolean`                         | Whether a wallet is connected                   |
+| `isLoading`        | `boolean`                         | Whether a connection is in progress             |
+| `loadingType`      | `LoadingType`                     | `'connecting'`, `'initializing'`, or `null`     |
+| `connectionError`  | `string \| null`                  | Error message from last failed connection       |
+| `selectedWallet`   | `string \| null`                  | Name of connected wallet extension              |
+| `selectedAccount`  | `WalletAccount \| null`           | Active account                                  |
+| `accounts`         | `WalletAccount[]`                 | All accounts from connected wallet              |
+| `availableWallets` | `Wallet[]`                        | Detected wallet extensions                      |
+| `injector`         | `InjectedExtension \| null`       | Wallet injector for signing transactions        |
+| `config`           | `Required<WalletConfig>`          | Resolved configuration                          |
+| `connectWallet`    | `(name: string) => Promise<void>` | Connect to a wallet                             |
+| `disconnectWallet` | `() => void`                      | Disconnect current wallet                       |
+| `selectAccount`    | `(address: string) => void`       | Switch active account                           |
+| `clearError`       | `() => void`                      | Clear connection error                          |
+| `hasWallets`       | `boolean`                         | Whether any wallet extensions are installed     |
+| `selectedAddress`  | `string \| null`                  | Shortcut to selected account address            |
+| `isConnecting`     | `boolean`                         | Whether currently connecting (not initializing) |
+| `isInitializing`   | `boolean`                         | Whether currently auto-reconnecting             |
+| `canConnect`       | `boolean`                         | Whether a new connection can be initiated       |
 
 **Performance note:** `useWallet()` subscribes to the entire store, so any state change will re-render all consumers. For most wallet UIs this is perfectly fine. If you need fine-grained subscriptions (e.g., in a performance-critical component that only reads `selectedAccount`), you can access the underlying Zustand store directly via `useWalletStore()` with a selector:
 

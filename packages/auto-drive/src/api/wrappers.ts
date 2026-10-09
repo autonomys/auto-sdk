@@ -54,9 +54,8 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
   ): Promise<string> => {
     const { password = undefined, compression = true } = options
     return new Promise(async (resolve) => {
-      const { compressFile, CompressionAlgorithm, encryptFile, EncryptionAlgorithm } = await import(
-        '@autonomys/auto-dag-data'
-      )
+      const { compressFile, CompressionAlgorithm, encryptFile, EncryptionAlgorithm } =
+        await import('@autonomys/auto-dag-data')
       let asyncIterable: AsyncIterable<Buffer> = fileToIterable(file)
 
       if (compression) {
@@ -108,9 +107,8 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
   ): Promise<string> => {
     const { password = undefined, compression = true } = options
 
-    const { compressFile, CompressionAlgorithm, encryptFile, EncryptionAlgorithm } = await import(
-      '@autonomys/auto-dag-data'
-    )
+    const { compressFile, CompressionAlgorithm, encryptFile, EncryptionAlgorithm } =
+      await import('@autonomys/auto-dag-data')
     let asyncIterable: AsyncIterable<Buffer> = file.read()
 
     if (compression) {
@@ -282,9 +280,8 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
   }
 
   const downloadFile = async (cid: string, password?: string): Promise<AsyncIterable<Buffer>> => {
-    const { decompressFile, CompressionAlgorithm, EncryptionAlgorithm, decryptFile } = await import(
-      '@autonomys/auto-dag-data'
-    )
+    const { decompressFile, CompressionAlgorithm, EncryptionAlgorithm, decryptFile } =
+      await import('@autonomys/auto-dag-data')
 
     const metadata = await apiCalls.getObjectMetadata(api, { cid })
 
@@ -325,8 +322,12 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
 
   const getPaymentContractInfo = () => apiCalls.getPaymentContractInfo(api)
 
-  const createPaymentIntent = (sizeBytes: number) =>
-    apiCalls.createPaymentIntent(api, sizeBytes)
+  const createPaymentIntent = (sizeBytes: number) => apiCalls.createPaymentIntent(api, sizeBytes)
+
+  const getUsdcPaymentTarget = () => apiCalls.getUsdcPaymentTarget(api)
+
+  const createUsdcPaymentIntent = (sizeBytes: number | bigint) =>
+    apiCalls.createUsdcPaymentIntent(api, sizeBytes)
 
   const watchPaymentTransaction = (intentId: string, txHash: string) =>
     apiCalls.watchPaymentTransaction(api, intentId, txHash)
@@ -392,6 +393,8 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
     getStoragePrice,
     getPaymentContractInfo,
     createPaymentIntent,
+    getUsdcPaymentTarget,
+    createUsdcPaymentIntent,
     watchPaymentTransaction,
     getPaymentIntentStatus,
     waitForPaymentCompletion,

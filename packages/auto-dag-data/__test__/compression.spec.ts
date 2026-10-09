@@ -2,6 +2,7 @@ import { AwaitIterable } from 'interface-store'
 import { compressFile, COMPRESSION_CHUNK_SIZE, CompressionAlgorithm, decompressFile } from '../src'
 
 const awaitIterable = async (it: AwaitIterable<Buffer>) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- only drains the iterable
   for await (const _ of it);
 }
 
@@ -83,7 +84,12 @@ describe('compression', () => {
 
   it('throws an error if the compression algorithm is not supported', async () => {
     await expect(
-      awaitIterable(compressFile([Buffer.from('hello')], { algorithm: 'efwhhgfew' as any })),
+      awaitIterable(
+        compressFile([Buffer.from('hello')], {
+          // @ts-expect-error - deliberately invalid compression algorithm
+          algorithm: 'efwhhgfew',
+        }),
+      ),
     ).rejects.toThrow('Unsupported compression algorithm')
   })
 
@@ -92,7 +98,8 @@ describe('compression', () => {
       awaitIterable(
         compressFile([Buffer.from('hello')], {
           algorithm: CompressionAlgorithm.ZLIB,
-          level: -1 as any,
+          // @ts-expect-error - deliberately invalid compression level
+          level: -1,
         }),
       ),
     ).rejects.toThrow('Invalid compression level')
@@ -111,7 +118,12 @@ describe('compression', () => {
 
   it('throws an error if the decompression algorithm is not supported', async () => {
     await expect(
-      awaitIterable(decompressFile([Buffer.from('hello')], { algorithm: 'efwhhgfew' as any })),
+      awaitIterable(
+        decompressFile([Buffer.from('hello')], {
+          // @ts-expect-error - deliberately invalid decompression algorithm
+          algorithm: 'efwhhgfew',
+        }),
+      ),
     ).rejects.toThrow('Unsupported compression algorithm')
   })
 
@@ -130,7 +142,8 @@ describe('compression', () => {
     await expect(
       awaitIterable(
         decompressFile([Buffer.from('hello')], {
-          level: -1 as any,
+          // @ts-expect-error - deliberately invalid compression level
+          level: -1,
           algorithm: CompressionAlgorithm.ZLIB,
         }),
       ),

@@ -9,8 +9,7 @@
  * @param deletedAt - The deletion timestamp.
  * @returns Formatted delete marker versionId string: `dm-`.
  */
-export const deleteMarkerVersionId = (deletedAt: Date): string =>
-  `dm-${deletedAt.getTime()}`
+export const deleteMarkerVersionId = (deletedAt: Date): string => `dm-${deletedAt.getTime()}`
 
 /**
  * DeleteObject result: whether this call created a delete marker (soft-deleted

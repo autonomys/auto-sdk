@@ -26,7 +26,7 @@ To interact with the Auto-Drive API, you'll need to create an API key. Follow th
 - Once you're logged in, click on the developers section in the left sidebar menu.
 - In the developers section, click on 'Create API Key'
 - Read the modal message and click on generate
-Add
+
 ### How to upload a file from Buffer?
 
 Here is an example of how to use the `uploadFileFromBuffer` method to upload a Buffer with optional encryption and compression:
@@ -320,7 +320,7 @@ Storage on the Autonomys Network is paid for with AI3 tokens via an on-chain pay
 
 ```
 0. getStoragePrice(api)                  → optional: show live price estimate before payment
-1. createPaymentIntent(api, sizeBytes)   → locks price, returns amount + contract details
+1. createPaymentIntent(api, sizeBytes)   → checks credit cap, locks price, returns amount + contract details
 2. send ai3AmountWei to contractAddress  → payIntent(intentId) on-chain (your wallet code)
 3. watchPaymentTransaction(api, id, tx)  → notifies Auto Drive of your tx hash
 4. waitForPaymentCompletion(api, id)     → polls until COMPLETED (credits applied)
@@ -348,9 +348,14 @@ import { createAutoDriveApi } from '@autonomys/auto-drive'
 import { NetworkId } from '@autonomys/auto-utils'
 
 // Run on your server — never expose your API key to the browser
-const api = createAutoDriveApi({ apiKey: process.env.AUTO_DRIVE_API_KEY!, network: NetworkId.MAINNET })
+const api = createAutoDriveApi({
+  apiKey: process.env.AUTO_DRIVE_API_KEY!,
+  network: NetworkId.MAINNET,
+})
 
-// Step 1 — create a price-locked intent for the content you want to store
+// Step 1 — create a price-locked intent for the content you want to store.
+// Throws CreditCapExceededError (before anything is paid) if the purchase
+// would exceed your per-user credit cap.
 const intent = await api.createPaymentIntent(contentSizeBytes)
 // intent.ai3AmountWei  — exact amount to send (as a BigInt-safe string)
 // intent.ai3Amount     — human-readable amount, e.g. "0.00123"
@@ -402,8 +407,8 @@ const txHash = await walletClient.writeContract({
 
 ```typescript
 const result = await api.waitForPaymentCompletion(intent.intentId, {
-  pollIntervalMs: 5_000,  // check every 5 seconds (default: 3 000)
-  timeoutMs: 120_000,     // give up after 2 minutes (default: 300 000)
+  pollIntervalMs: 5_000, // check every 5 seconds (default: 3 000)
+  timeoutMs: 120_000, // give up after 2 minutes (default: 300 000)
 })
 ```
 
@@ -412,6 +417,185 @@ const result = await api.waitForPaymentCompletion(intent.intentId, {
 ```typescript
 const { id, status } = await api.getPaymentIntentStatus(intent.intentId)
 // status: 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'EXPIRED' | 'FAILED' | 'OVER_CAP'
+```
+
+#### Credit cap rejections
+
+`createPaymentIntent` sends the purchase size to Auto Drive as `requestedBytes`. Auto Drive then rejects a purchase that would exceed your per-user credit cap before anything is paid. A purchase that does not fit in your remaining headroom throws a `CreditCapExceededError` (HTTP 403, code `CREDIT_CAP_EXCEEDED`). A single purchase larger than the whole cap throws a `PaymentApiError` with HTTP 400 and no code:
+
+```typescript
+import { CreditCapExceededError, PaymentApiError } from '@autonomys/auto-drive'
+
+try {
+  const intent = await api.createPaymentIntent(contentSizeBytes)
+} catch (error) {
+  if (
+    error instanceof CreditCapExceededError ||
+    (error instanceof PaymentApiError && error.status === 400)
+  ) {
+    // Nothing was paid. Try a smaller size.
+  } else {
+    throw error
+  }
+}
+```
+
+### Pay with USDC — purchasing storage credits with USDC on Ethereum
+
+You can also buy storage credits with USDC on Ethereum. As with AI3, the SDK makes the Auto Drive API calls and your wallet library signs the transactions. The SDK does not sign anything and has no dependency on viem or ethers.
+
+#### The flow
+
+```
+1. createUsdcPaymentIntent(api, sizeBytes)        → locks a USDC price, returns amount + chain, token and receiver
+2. approve(receiverAddress, usdcAmount)           → on tokenAddress, on chainId (your wallet code)
+3. payIntentWithToken(intentId, usdcAmount)       → on receiverAddress, no value (your wallet code)
+4. watchPaymentTransaction(api, id, tx)           → the hash from step 3, not step 2, as soon as you have it
+5. waitForPaymentCompletion(api, id, { settleGraceMs })  → polls until COMPLETED
+```
+
+All of these calls need an API key, so make them from your server. `createUsdcPaymentIntent` gets the chain ID, receiver address and token address from Auto Drive (`getUsdcPaymentTarget`). Always use those values. Do not hardcode them.
+
+The SDK exports two minimal ABIs for the wallet calls:
+
+- `erc20ApprovalAbi`: `approve`, `allowance` and `balanceOf`. It does not include `transfer` or `transferFrom`, because the receiver contract pulls the tokens itself.
+- `usdcReceiverAbi`: `payIntentWithToken(bytes32 intentId, uint256 amount)`.
+
+#### Example (Node, using viem)
+
+```typescript
+import {
+  createAutoDriveApi,
+  erc20ApprovalAbi,
+  PaymentApiError,
+  usdcReceiverAbi,
+} from '@autonomys/auto-drive'
+import { NetworkId } from '@autonomys/auto-utils'
+import { createPublicClient, createWalletClient, http, type Hex } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+import { mainnet, sepolia } from 'viem/chains'
+
+const api = createAutoDriveApi({
+  apiKey: process.env.AUTO_DRIVE_API_KEY!,
+  network: NetworkId.MAINNET,
+})
+
+// Step 1 — lock a USDC price for 1 GiB. Accepts a number or a bigint.
+const intent = await api.createUsdcPaymentIntent(BigInt(1024) ** BigInt(3))
+// intent.usdcAmount          — exact amount in base units (6 decimals), as a BigInt-safe string
+// intent.usdcAmountFormatted — human-readable amount, e.g. "2.500001"
+// intent.chainId, intent.tokenAddress, intent.receiverAddress — where to pay
+// intent.expiresAt           — ISO timestamp when the price lock ends (10 minutes by default)
+
+// Use the chain that Auto Drive names. Do not pick one yourself.
+const chain = [mainnet, sepolia].find((c) => c.id === intent.chainId)
+if (!chain) throw new Error(`Unsupported USDC chain ${intent.chainId}`)
+
+const account = privateKeyToAccount(process.env.PAYER_PRIVATE_KEY as Hex)
+const transport = http(process.env.ETH_RPC_URL)
+const publicClient = createPublicClient({ chain, transport })
+const walletClient = createWalletClient({ account, chain, transport })
+
+const amount = BigInt(intent.usdcAmount)
+const token = intent.tokenAddress as Hex
+const receiver = intent.receiverAddress as Hex
+
+// Step 2 — approve the receiver to pull the USDC (skip if the allowance is enough)
+const allowance = await publicClient.readContract({
+  address: token,
+  abi: erc20ApprovalAbi,
+  functionName: 'allowance',
+  args: [account.address, receiver],
+})
+if (allowance < amount) {
+  const approveHash = await walletClient.writeContract({
+    address: token,
+    abi: erc20ApprovalAbi,
+    functionName: 'approve',
+    args: [receiver, amount],
+  })
+  await publicClient.waitForTransactionReceipt({ hash: approveHash })
+}
+
+// Step 3 — pay the intent. No value: the receiver pulls the approved USDC.
+const txHash = await walletClient.writeContract({
+  address: receiver,
+  abi: usdcReceiverAbi,
+  functionName: 'payIntentWithToken',
+  args: [intent.intentId as Hex, amount],
+})
+
+// Step 4 — tell Auto Drive about the payment transaction (not the approval).
+// Do this as soon as you have the hash, while the price lock is still open.
+try {
+  await api.watchPaymentTransaction(intent.intentId, txHash)
+} catch (error) {
+  // 410: the price lock has lapsed. The payment can still settle, so continue.
+  if (!(error instanceof PaymentApiError && error.status === 410)) throw error
+}
+
+// Wait for the receipt before step 5, so block time does not use up the 410 grace.
+const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash })
+if (receipt.status !== 'success') throw new Error(`USDC payment reverted: ${txHash}`)
+
+// Step 5 — wait for credits. Pass settleGraceMs so a 410 does not end the wait too early.
+const result = await api.waitForPaymentCompletion(intent.intentId, {
+  settleGraceMs: intent.settleGraceMs,
+})
+// result: 'COMPLETED' | 'EXPIRED' | 'FAILED' | 'OVER_CAP'
+// 'EXPIRED' here means the SDK stopped waiting. Check your credits before you
+// report the payment as lost (see below).
+```
+
+#### Why `settleGraceMs` matters
+
+`GET /intents/:id` answers HTTP 410 once the price lock has lapsed on an intent that has no recorded transaction hash. This happens, for example, when `watchPaymentTransaction` itself got a 410. (With a recorded hash, the 410 starts only when Auto Drive stops accepting payments for the intent, currently 20 minutes after `expiresAt`.) This is why the example calls `watchPaymentTransaction` as soon as the wallet returns the hash, before it waits for the receipt: a hash recorded while the lock is open keeps the status endpoint from answering 410. A payment sent near the end of the lock can still be credited after the first 410.
+
+With `settleGraceMs` set, `waitForPaymentCompletion` keeps polling through 410 for that long and only then returns `'EXPIRED'`. A successful read in between resets the clock. Without `settleGraceMs`, a 410 throws a `PaymentApiError`, as in earlier versions. Auto Drive serves the value in the payment target, and `createUsdcPaymentIntent` copies it onto the intent.
+
+Keep these points in mind:
+
+- `'EXPIRED'` from this path means that the SDK stopped waiting. It does not prove that the payment is lost, because Auto Drive can still credit it for a while. Check your credits before you tell a user that the payment failed.
+- The grace is measured from the first 410 that the SDK sees. Wait for the payment receipt before you call `waitForPaymentCompletion`.
+- Keep `timeoutMs` (default 5 minutes) larger than the time left on the lock plus `settleGraceMs`. Otherwise the call can throw a timeout error before it returns `'EXPIRED'`.
+
+#### Handling errors
+
+When Auto Drive refuses a payment request, the SDK throws a `PaymentApiError`. It has the HTTP `status` and, for coded errors, a machine-readable `code`:
+
+| `code`                      | Status | What to do                                           |
+| --------------------------- | ------ | ---------------------------------------------------- |
+| `PRICE_ORACLE_UNAVAILABLE`  | 503    | Retry the same request later                         |
+| `PRICE_UNSTABLE`            | 503    | Retry the same request later                         |
+| `USDC_PAYMENTS_UNAVAILABLE` | 503    | USDC is closed for now. Pay with AI3, or retry later |
+| `USDC_PAYMENTS_DISABLED`    | 403    | USDC is not available to you. Pay with AI3           |
+| `CREDIT_CAP_EXCEEDED`       | 403    | Thrown as `CreditCapExceededError`. Buy less         |
+| `GOOGLE_ACCOUNT_REQUIRED`   | 403    | Use an API key from a Google-registered account      |
+
+Some failures have no `code`. Check `status` for these:
+
+- **400:** the request is invalid, for example `requestedBytes` is larger than the whole credit cap.
+- **404 on `/intents`:** the account cannot buy credits. Auto Drive usually sends this, not `GOOGLE_ACCOUNT_REQUIRED`, to accounts that are not Google-registered.
+- **410:** the price lock has lapsed. See [Why `settleGraceMs` matters](#why-settlegracems-matters).
+
+```typescript
+try {
+  const intent = await api.createUsdcPaymentIntent(sizeBytes)
+} catch (error) {
+  if (!(error instanceof PaymentApiError)) throw error
+  switch (error.code) {
+    case 'PRICE_ORACLE_UNAVAILABLE':
+    case 'PRICE_UNSTABLE':
+      // retry later
+      break
+    case 'USDC_PAYMENTS_DISABLED':
+    case 'USDC_PAYMENTS_UNAVAILABLE':
+      // fall back to api.createPaymentIntent (AI3)
+      break
+    default:
+      throw error
+  }
+}
 ```
 
 ## License

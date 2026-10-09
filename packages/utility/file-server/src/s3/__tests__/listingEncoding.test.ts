@@ -1,9 +1,4 @@
-import {
-  encodeS3Key,
-  hasXmlIllegalChars,
-  planListingEncoding,
-  XML_ILLEGAL_CHARS,
-} from '../listingEncoding.js'
+import { encodeS3Key, hasXmlIllegalChars, planListingEncoding } from '../listingEncoding.js'
 
 describe('listingEncoding', () => {
   describe('XML_ILLEGAL_CHARS & hasXmlIllegalChars', () => {
@@ -42,7 +37,9 @@ describe('listingEncoding', () => {
 
     it('returns "reject" when encodingType is not "url" and illegal chars are present', () => {
       expect(planListingEncoding(['bad\x07char.txt'], null)).toBe('reject')
-      expect(planListingEncoding(['ok.txt', 'bad\x01.txt'], undefined as unknown as string | null)).toBe('reject')
+      expect(
+        planListingEncoding(['ok.txt', 'bad\x01.txt'], undefined as unknown as string | null),
+      ).toBe('reject')
     })
 
     it('returns "plain" when encodingType is not "url" and all chars are valid', () => {
