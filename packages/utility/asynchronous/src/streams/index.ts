@@ -12,9 +12,13 @@ export async function forkStream(stream: Readable): Promise<[Readable, Readable]
 }
 
 export const streamToBuffer = async (stream: Readable): Promise<Buffer> => {
+  if (stream.destroyed) {
+    throw stream.errored ?? new Error('Stream already destroyed')
+  }
+
   return new Promise((resolve, reject) => {
     const chunks: Buffer[] = []
-    stream.on('data', (chunk) => chunks.push(chunk))
+    stream.on('data', (chunk) => chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)))
     stream.on('end', () => resolve(Buffer.concat(chunks)))
     stream.on('error', (error) => reject(error))
   })
@@ -24,12 +28,20 @@ export const httpBodyToStream = (body: ReadableStream): Readable => {
   const reader = body.getReader()
   return new Readable({
     async read() {
-      const { done, value } = await reader.read()
-      if (done) {
-        this.push(null)
-      } else {
-        this.push(value)
+      try {
+        const { done, value } = await reader.read()
+        if (done) {
+          this.push(null)
+        } else {
+          this.push(value)
+        }
+      } catch (error) {
+        this.destroy(error instanceof Error ? error : new Error(String(error)))
       }
+    },
+    destroy(err, callback) {
+      reader.cancel(err).catch(() => {})
+      callback(err)
     },
   })
 }
