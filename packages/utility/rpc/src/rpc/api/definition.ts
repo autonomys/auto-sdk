@@ -11,6 +11,7 @@ import {
   TypedRpcNotificationHandler,
 } from '../types'
 import { RpcError } from '../utils'
+import { StandardSchemaV1, StandardSchemaV1Issue } from './standardSchema'
 import {
   ApiDefinition,
   ApiDefinitionClient,
@@ -20,10 +21,31 @@ import {
   DefinitionTypeOutput,
   HttpClientOptions,
   HttpClientType,
-  isZodType,
+  isStandardSchema,
   TypedRpcServerClient,
   WsClientType,
 } from './typing'
+
+// Builds one message from every issue, e.g. "name: Expected string; Expected an object"
+const formatIssues = (issues: ReadonlyArray<StandardSchemaV1Issue>) =>
+  issues
+    .map((issue) => {
+      const path = issue.path
+        ?.map((segment) => String(typeof segment === 'object' ? segment.key : segment))
+        .join('.')
+      return path ? `${path}: ${issue.message}` : issue.message
+    })
+    .join('; ')
+
+// validate() may return a Promise (allowed by the spec), so it's always awaited
+const validateSchema = async (schema: StandardSchemaV1, value: unknown) => {
+  const result = await schema['~standard'].validate(value)
+  if (result.issues) {
+    throw new RpcError(formatIssues(result.issues), RpcError.Code.InvalidParams)
+  }
+
+  return result.value
+}
 
 export const createApiDefinition = <S extends ApiDefinition>(serverDefinition: S) => {
   const createClient = <Client extends WsClientType<S>>(clientParams: {
@@ -106,11 +128,8 @@ export const createApiDefinition = <S extends ApiDefinition>(serverDefinition: S
           throw new RpcError('Message ID is required', RpcError.Code.InvalidRequest)
         }
 
-        if (isZodType(serverDefinition.methods[method].params)) {
-          const result = serverDefinition.methods[method].params.safeParse(params)
-          if (!result.success) {
-            throw new RpcError(result.error.message, RpcError.Code.InvalidParams)
-          }
+        if (isStandardSchema(serverDefinition.methods[method].params)) {
+          await validateSchema(serverDefinition.methods[method].params, params)
         }
 
         // Inject the notification client into the handler
@@ -176,13 +195,8 @@ export const createApiDefinition = <S extends ApiDefinition>(serverDefinition: S
             throw new RpcError(body.error.message, body.error.code)
           }
 
-          if (isZodType(serverDefinition.methods[method].returns)) {
-            const result = serverDefinition.methods[method].returns.safeParse(body.result)
-            if (!result.success) {
-              throw new RpcError(result.error.message, RpcError.Code.InvalidParams)
-            }
-
-            return result.data
+          if (isStandardSchema(serverDefinition.methods[method].returns)) {
+            return validateSchema(serverDefinition.methods[method].returns, body.result)
           } else {
             return body.result
           }
