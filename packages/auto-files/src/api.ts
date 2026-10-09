@@ -108,12 +108,17 @@ export const createAutoFilesApi = (baseUrl: string, apiSecret: string) => {
     return {
       data: new Readable({
         async read() {
-          const chunk = await withRetries(() => getChunk(cid, i++), {
-            retries: retriesPerFetch,
-          })
-          this.push(chunk ? Buffer.from(chunk) : null)
-          totalDownloaded += BigInt(chunk?.byteLength ?? 0)
-          onProgress?.(Number((BigInt(precision) * totalDownloaded) / length) / precision)
+          try {
+            const index = i++
+            const chunk = await withRetries(() => getChunk(cid, index), {
+              retries: retriesPerFetch,
+            })
+            this.push(chunk ? Buffer.from(chunk) : null)
+            totalDownloaded += BigInt(chunk?.byteLength ?? 0)
+            onProgress?.(Number((BigInt(precision) * totalDownloaded) / length) / precision)
+          } catch (error) {
+            this.destroy(error instanceof Error ? error : new Error(String(error)))
+          }
         },
       }),
       length,
