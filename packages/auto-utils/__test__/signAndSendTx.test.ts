@@ -17,6 +17,7 @@ function mockResult(overrides: {
     isFinalityTimeout: false,
     isDropped: false,
     isInvalid: false,
+    isUsurped: false,
   }
   for (const [key, val] of Object.entries(overrides.status)) {
     status[key] = val
@@ -158,6 +159,21 @@ describe('signAndSendTx', () => {
     await flush()
 
     mock.fire(mockResult({ status: { isDropped: true } }))
+
+    await expect(promise).rejects.toThrow('Transaction failed')
+    expect(unsub).toHaveBeenCalledTimes(1)
+  })
+
+  test('transaction failure (isUsurped) rejects and unsubs', async () => {
+    const mock = createMockTx()
+    const unsub = jest.fn()
+
+    const promise = signAndSendTx(sender, mock.tx, {}, [])
+
+    mock.resolveOuter(unsub)
+    await flush()
+
+    mock.fire(mockResult({ status: { isUsurped: true } }))
 
     await expect(promise).rejects.toThrow('Transaction failed')
     expect(unsub).toHaveBeenCalledTimes(1)
