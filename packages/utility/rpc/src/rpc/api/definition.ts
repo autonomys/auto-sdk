@@ -71,7 +71,11 @@ export const createApiDefinition = <S extends ApiDefinition>(serverDefinition: S
             throw new RpcError(result.error.message, result.error.code)
           }
 
-          return result.result
+          if (isStandardSchema(serverDefinition.methods[method].returns)) {
+            return validateSchema(serverDefinition.methods[method].returns, result.result)
+          } else {
+            return result.result
+          }
         },
       ]
     })
@@ -250,7 +254,11 @@ export const createApiDefinition = <S extends ApiDefinition>(serverDefinition: S
           // Inject the notification client into the handler
           const result = await internalHandler(params, { notificationClient, send })
 
-          return result
+          if (isStandardSchema(serverDefinition.methods[method].returns)) {
+            return validateSchema(serverDefinition.methods[method].returns, result)
+          } else {
+            return result
+          }
         },
       ]
     })
