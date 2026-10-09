@@ -47,6 +47,12 @@ export const autoEvmChronos: EvmChain = {
       webSocket: ['wss://auto-evm.chronos.autonomys.xyz/ws'],
     },
   },
+  blockExplorers: {
+    default: {
+      name: 'Blockscout',
+      url: 'https://blockscout.chronos.autonomys.xyz',
+    },
+  },
   testnet: true,
 }
 

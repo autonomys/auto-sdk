@@ -34,9 +34,12 @@ describe('Verify Auto EVM constants and chain configurations', () => {
     expect(autoEvmMainnet.testnet).toBeUndefined()
   })
 
-  test('autoEvmChronos is configured as testnet', () => {
+  test('autoEvmChronos is configured as testnet with blockscout explorer', () => {
     expect(autoEvmChronos.id).toBe(8700)
     expect(autoEvmChronos.nativeCurrency.symbol).toBe('tAI3')
+    expect(autoEvmChronos.blockExplorers?.default.url).toBe(
+      'https://blockscout.chronos.autonomys.xyz',
+    )
     expect(autoEvmChronos.testnet).toBe(true)
   })
 
