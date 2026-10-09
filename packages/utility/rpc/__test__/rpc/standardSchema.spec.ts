@@ -5,6 +5,7 @@ import { z as zod4 } from 'zod/v4'
 import { z as otherZod } from 'zod-3.25.55'
 import { createWsServer, defineUnvalidatedType } from '../../src'
 import { createApiDefinition } from '../../src/rpc/api/definition'
+import { StandardSchemaV1 } from '../../src/rpc/api/standardSchema'
 import { isStandardSchema } from '../../src/rpc/api/typing'
 import { RpcError } from '../../src/rpc/utils'
 
@@ -34,7 +35,7 @@ const customNameSchema: {
 }
 
 // Always fails, with one issue on a field and one on the whole value
-const alwaysInvalidSchema = {
+const alwaysInvalidSchema: StandardSchemaV1<Name> = {
   '~standard': {
     version: 1 as const,
     vendor: 'test',
