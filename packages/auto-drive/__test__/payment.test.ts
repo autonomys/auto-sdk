@@ -18,13 +18,13 @@ describe('createPaymentIntent', () => {
     const api = {} as AutoDriveApiHandler
 
     await expect(createPaymentIntent(api, -1)).rejects.toThrow(
-      'sizeBytes must be a positive safe integer, received: -1'
+      'sizeBytes must be a positive safe integer, received: -1',
     )
     await expect(createPaymentIntent(api, 0)).rejects.toThrow(
-      'sizeBytes must be a positive safe integer, received: 0'
+      'sizeBytes must be a positive safe integer, received: 0',
     )
     await expect(createPaymentIntent(api, 1.5)).rejects.toThrow(
-      'sizeBytes must be a positive safe integer, received: 1.5'
+      'sizeBytes must be a positive safe integer, received: 1.5',
     )
   })
 
@@ -53,7 +53,7 @@ describe('createPaymentIntent', () => {
       expect.objectContaining({
         method: 'POST',
       }),
-      JSON.stringify({ requestedBytes: '1024' })
+      JSON.stringify({ requestedBytes: '1024' }),
     )
 
     expect(result.intentId).toBe('test-intent-id')
@@ -61,7 +61,11 @@ describe('createPaymentIntent', () => {
     expect(result.contractAddress).toBe(mockContract.contractAddress)
   })
 
-  it('extracts parsed error message when API responds with error JSON', async () => {
+  it('propagates status and response body when API responds with error', async () => {
+    const errorBody = JSON.stringify({
+      error: 'CREDIT_CAP_EXCEEDED',
+      message: 'Purchase of 1024 bytes would exceed the per-user credit cap',
+    })
     const sendAPIRequest = jest.fn().mockImplementation((path: string) => {
       if (path === '/intents/contract') {
         return Promise.resolve({
@@ -73,13 +77,7 @@ describe('createPaymentIntent', () => {
         return Promise.resolve({
           ok: false,
           status: 403,
-          text: () =>
-            Promise.resolve(
-              JSON.stringify({
-                error: 'CREDIT_CAP_EXCEEDED',
-                message: 'Purchase of 1024 bytes would exceed the per-user credit cap',
-              })
-            ),
+          text: () => Promise.resolve(errorBody),
         })
       }
       throw new Error(`Unexpected path: ${path}`)
@@ -87,10 +85,7 @@ describe('createPaymentIntent', () => {
 
     const api = { sendAPIRequest } as unknown as AutoDriveApiHandler
     await expect(createPaymentIntent(api, 1024)).rejects.toThrow(
-      'Failed to create payment intent: 430 Purchase of 1024 bytes would exceed the per-user credit cap'.replace(
-        '430',
-        '403'
-      )
+      `Failed to create payment intent: 403 ${errorBody}`,
     )
   })
 })

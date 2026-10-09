@@ -90,17 +90,8 @@ export const createPaymentIntent = async (
   ])
 
   if (!intentRes.ok) {
-    const rawBody = await intentRes.text()
-    let errorMessage = rawBody
-    try {
-      const parsed = JSON.parse(rawBody)
-      if (parsed && typeof parsed.message === 'string') {
-        errorMessage = parsed.message
-      }
-    } catch {
-      // Keep rawBody if not JSON with a message
-    }
-    throw new Error(`Failed to create payment intent: ${intentRes.status} ${errorMessage}`)
+    const body = await intentRes.text()
+    throw new Error(`Failed to create payment intent: ${intentRes.status} ${body}`)
   }
 
   const intent = await intentRes.json()
