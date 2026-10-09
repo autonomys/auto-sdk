@@ -51,7 +51,7 @@ describe('rpc/definition with Standard Schema', () => {
   let httpServer: http.Server
   const received: unknown[] = []
 
-  const { createServer, createHttpClient } = createApiDefinition({
+  const definition = createApiDefinition({
     methods: {
       zod3: {
         params: z.object({ name: z.string() }),
@@ -84,8 +84,11 @@ describe('rpc/definition with Standard Schema', () => {
     },
     notifications: {},
   })
+  const { createServer, createHttpClient, createClient, createMockServerClient } = definition
   let server: ReturnType<typeof createServer>
   let client: ReturnType<typeof createHttpClient>
+  let wsClient: ReturnType<typeof createClient>
+  let mockClient: ReturnType<typeof createMockServerClient>
 
   // Echoes the name back, or returns a result that doesn't match the schema
   const handler = (params: Name) => {
@@ -96,30 +99,31 @@ describe('rpc/definition with Standard Schema', () => {
     return { name: params.name }
   }
 
+  const handlers = {
+    zod3: handler,
+    zod4: handler,
+    otherZod3: handler,
+    custom: handler,
+    alwaysInvalid: handler,
+    transformedResult: handler,
+    unvalidated: handler,
+  }
+
   beforeAll(async () => {
     // Free port, so connections left open by other suites on TEST_PORT can't interfere
     httpServer = http.createServer()
     httpServer.listen(0)
     await new Promise((resolve) => httpServer.once('listening', resolve))
-    server = createServer(
-      {
-        zod3: handler,
-        zod4: handler,
-        otherZod3: handler,
-        custom: handler,
-        alwaysInvalid: handler,
-        transformedResult: handler,
-        unvalidated: handler,
-      },
-      {
-        server: createWsServer({
-          httpServer,
-          callbacks: {},
-        }),
-      },
-    )
+    server = createServer(handlers, {
+      server: createWsServer({
+        httpServer,
+        callbacks: {},
+      }),
+    })
     const { port } = httpServer.address() as AddressInfo
     client = createHttpClient(`http://localhost:${port}/ws`)
+    wsClient = createClient({ endpoint: `ws://localhost:${port}/ws`, callbacks: {} })
+    mockClient = createMockServerClient({ handlers, callbacks: {} })
   })
 
   beforeEach(() => {
@@ -127,6 +131,8 @@ describe('rpc/definition with Standard Schema', () => {
   })
 
   afterAll(() => {
+    wsClient.close()
+    mockClient.close()
     server.close()
     httpServer.close()
   })
@@ -149,6 +155,18 @@ describe('rpc/definition with Standard Schema', () => {
         code: RpcError.Code.InvalidParams,
       })
     })
+
+    it('should reject an invalid result in the ws client', async () => {
+      await expect(wsClient.api[method]({ name: INVALID_RESULT_NAME })).rejects.toMatchObject({
+        code: RpcError.Code.InvalidParams,
+      })
+    })
+
+    it('should reject an invalid result in the mock client', async () => {
+      await expect(mockClient.api[method]({ name: INVALID_RESULT_NAME })).rejects.toMatchObject({
+        code: RpcError.Code.InvalidParams,
+      })
+    })
   })
 
   it('should build the error message from the schema issues', async () => {
@@ -167,6 +185,18 @@ describe('rpc/definition with Standard Schema', () => {
 
   it('should return the parsed result in the http client', async () => {
     await expect(client.transformedResult({ name: 'test' })).resolves.toEqual({ name: 'TEST' })
+  })
+
+  it('should return the parsed result in the ws client', async () => {
+    await expect(wsClient.api.transformedResult({ name: 'test' })).resolves.toEqual({
+      name: 'TEST',
+    })
+  })
+
+  it('should return the parsed result in the mock client', async () => {
+    await expect(mockClient.api.transformedResult({ name: 'test' })).resolves.toEqual({
+      name: 'TEST',
+    })
   })
 
   it('should not validate unvalidated types', async () => {
