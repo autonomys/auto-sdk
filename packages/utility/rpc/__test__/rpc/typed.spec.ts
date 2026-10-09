@@ -29,6 +29,10 @@ describe('rpc/definition', () => {
         params: defineUnvalidatedType<void>(),
         returns: defineUnvalidatedType<void>(),
       },
+      invalid_returns: {
+        params: z.void(),
+        returns: z.object({ count: z.number() }),
+      },
     },
     notifications: {
       test: {
@@ -63,6 +67,11 @@ describe('rpc/definition', () => {
         },
         test_notification_client: (_, { notificationClient }) => {
           notificationClient.test(connection, { name: 'test' })
+        },
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
+        invalid_returns: () => {
+          return { count: 'not a number' }
         },
       },
       {
@@ -190,5 +199,17 @@ describe('rpc/definition', () => {
     const client = createHttpClient(`http://localhost:${TEST_PORT}/ws`)
     const result = await client.test({ name: 'test' })
     expect(result).toEqual({ name: 'test' })
+  })
+
+  it('should validate ws client returns and reject invalid schemas', async () => {
+    try {
+      await client.api.invalid_returns()
+      throw new Error('Should have failed')
+    } catch (error) {
+      expect(error).toBeInstanceOf(RpcError)
+      if (error instanceof RpcError) {
+        expect(error.code).toEqual(RpcError.Code.InvalidParams)
+      }
+    }
   })
 })

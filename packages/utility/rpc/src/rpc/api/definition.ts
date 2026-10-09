@@ -34,7 +34,6 @@ export const createApiDefinition = <S extends ApiDefinition>(serverDefinition: S
   }): ApiDefinitionClient<S> => {
     const client = createRpcClient(clientParams)
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const apiMethods = Object.entries(serverDefinition.methods).map(([method, handler]) => {
       return [
         method,
@@ -49,6 +48,15 @@ export const createApiDefinition = <S extends ApiDefinition>(serverDefinition: S
             throw new RpcError(result.error.message, result.error.code)
           }
 
+          if (isZodType(handler.returns)) {
+            const parsed = handler.returns.safeParse(result.result)
+            if (!parsed.success) {
+              throw new RpcError(parsed.error.message, RpcError.Code.InvalidParams)
+            }
+
+            return parsed.data
+          }
+
           return result.result
         },
       ]
@@ -60,7 +68,15 @@ export const createApiDefinition = <S extends ApiDefinition>(serverDefinition: S
     ) => {
       client.on((message: Message) => {
         if (message.method === notificationName) {
-          handler(message.params)
+          const notificationDef = serverDefinition.notifications[notificationName]
+          if (notificationDef && isZodType(notificationDef.content)) {
+            const parsed = notificationDef.content.safeParse(message.params)
+            if (parsed.success) {
+              handler(parsed.data)
+            }
+          } else {
+            handler(message.params)
+          }
         }
       })
     }
@@ -235,6 +251,14 @@ export const createApiDefinition = <S extends ApiDefinition>(serverDefinition: S
 
           // Inject the notification client into the handler
           const result = await internalHandler(params, { notificationClient, send })
+
+          if (isZodType(serverDefinition.methods[method].returns)) {
+            const parsed = serverDefinition.methods[method].returns.safeParse(result)
+            if (!parsed.success) {
+              throw new RpcError(parsed.error.message, RpcError.Code.InvalidParams)
+            }
+            return parsed.data
+          }
 
           return result
         },
