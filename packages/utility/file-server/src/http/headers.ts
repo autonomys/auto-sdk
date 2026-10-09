@@ -180,7 +180,9 @@ const resolveRangeSpec = (spec: RangeSpec | undefined, size: number): ResolvedBy
   return { kind: 'partial', byteRange: [spec.start, Math.min(spec.end ?? lastByte, lastByte)] }
 }
 
-const isByteOffset = (n: number) => Number.isSafeInteger(n) && n >= 0
+// Any whole number, however large (Infinity included): an offset past the end of
+// the file still has to clamp or answer 416, not be mistaken for an invalid range.
+const isByteOffset = (n: number) => n >= 0 && Math.floor(n) === n
 
 // The start is checked before the end because callers may clamp the end to the
 // last byte first, which inverts a range that starts past the end of the file:
@@ -342,12 +344,16 @@ export const handleS3DownloadResponseHeaders = (
  * ignored here, along with malformed, inverted and multi-range headers. The
  * returned end is not clamped and the start may lie past the end of the file:
  * {@link handleDownloadResponseHeaders} handles both, but the body must be
- * fetched with the same range.
+ * fetched with the same range. An end too large to be represented exactly is
+ * returned as `undefined` (to the end of the file), which means the same thing
+ * and is accepted by data sources such as `fs.createReadStream`.
  *
  * @deprecated Use {@link resolveByteRange}, which serves suffix ranges, clamps
  * the end and reports unsatisfiable ranges before the body is fetched.
  */
 export const getByteRange = (req: Request): ByteRange | undefined => {
   const spec = parseRangeHeader(req.headers['range'])
-  return spec?.kind === 'offset' ? [spec.start, spec.end] : undefined
+  if (spec?.kind !== 'offset') return undefined
+  const end = spec.end !== undefined && Number.isSafeInteger(spec.end) ? spec.end : undefined
+  return [spec.start, end]
 }

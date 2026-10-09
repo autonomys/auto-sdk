@@ -37,6 +37,9 @@ const createMockRes = () => {
 const requestWithRange = (range?: string) =>
   createMockReq(range === undefined ? {} : { range }) as unknown as Request
 
+// More digits than a double holds exactly
+const HUGE = '9'.repeat(30)
+
 // The handler only touches req.headers/query and res.set/status, which the mocks provide
 const callHandler = (
   req: ReturnType<typeof createMockReq>,
@@ -509,6 +512,19 @@ describe('handleDownloadResponseHeaders', () => {
       expect(res._getHeaders()['content-length']).toBe('100')
     })
 
+    it.each<[string, [number, number]]>([
+      ['not a safe integer', [10, 1e20]],
+      ['Infinity', [10, Infinity]],
+    ])('should clamp an end that is %s', (_, byteRange) => {
+      const res = createMockRes()
+
+      callHandler(createMockReq(), res, defaultMetadata, { byteRange })
+
+      expect(res.status).toHaveBeenCalledWith(206)
+      expect(res._getHeaders()['content-range']).toBe('bytes 10-99/100')
+      expect(res._getHeaders()['content-length']).toBe('90')
+    })
+
     it('should serve a single byte for [0, 0]', () => {
       const res = createMockRes()
 
@@ -525,6 +541,8 @@ describe('handleDownloadResponseHeaders', () => {
       // A caller that clamps the end to the last byte before calling inverts these
       ['at the end of the file, end clamped', [100, 99]],
       ['past the end of the file, end clamped', [150, 99]],
+      ['that is not a safe integer', [1e20, undefined]],
+      ['of Infinity', [Infinity, undefined]],
     ])('should answer 416 for a start %s', (_, byteRange) => {
       const res = createMockRes()
 
@@ -598,6 +616,16 @@ describe('handleDownloadResponseHeaders', () => {
         ['bytes=-10', { contentLength: '100', rangeNotSatisfiable: false }],
         ['bytes=5-0', { contentLength: '100', rangeNotSatisfiable: false }],
         ['bytes=0-9, 20-29', { contentLength: '100', rangeNotSatisfiable: false }],
+        [
+          `bytes=10-${HUGE}`,
+          {
+            status: 206,
+            contentRange: 'bytes 10-99/100',
+            contentLength: '90',
+            rangeNotSatisfiable: false,
+          },
+        ],
+        [`bytes=${HUGE}-`, { status: 416, contentRange: 'bytes */100', rangeNotSatisfiable: true }],
       ])('via getByteRange: %s', (range, expected) => {
         expect(respond(range, getByteRange(requestWithRange(range)))).toEqual(expected)
       })
@@ -892,8 +920,6 @@ describe('handleDownloadResponseHeaders', () => {
 })
 
 describe('resolveByteRange', () => {
-  const HUGE = '9'.repeat(30)
-
   it.each<[string | undefined, ReturnType<typeof resolveByteRange>]>([
     [undefined, { kind: 'none' }],
     ['bytes=0-49', { kind: 'partial', byteRange: [0, 49] }],
@@ -968,6 +994,9 @@ describe('getByteRange', () => {
     ['bytes=5-0', undefined],
     ['bytes=0-9, 20-29', undefined],
     ['bytes=abc', undefined],
+    // An end too large to be exact means "to the end", and fs.createReadStream rejects it
+    [`bytes=10-${HUGE}`, [10, undefined]],
+    [`bytes=${HUGE}-`, [Number(HUGE), undefined]],
   ])('%s', (range, expected) => {
     expect(getByteRange(requestWithRange(range))).toEqual(expected)
   })
