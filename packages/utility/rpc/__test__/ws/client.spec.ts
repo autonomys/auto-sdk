@@ -115,32 +115,39 @@ describe('Client', () => {
       },
     })
 
+    const receivedMessages: unknown[] = []
     ws.on((message) => {
-      expect(message).toEqual(mockMessage)
+      receivedMessages.push(message)
     })
 
     await new Promise((resolve) => setTimeout(resolve, 100))
     ws.close()
+
+    expect(receivedMessages).toEqual([mockMessage])
   })
 
   it('should handle errors gracefully', async () => {
+    // Replace the test server's auto-accept so the client's handshake fails
+    server.wsServer.removeAllListeners('request')
+    server.wsServer.on('request', (request) => {
+      request.reject()
+    })
+
+    const errors: unknown[] = []
     const ws = createWsClient({
       endpoint: server.url,
       callbacks: {
         onError: (error) => {
-          expect(error).toBeInstanceOf(Error)
-          expect(error.message).toBe('Test error')
+          errors.push(error)
         },
       },
-    })
-
-    // Simulate an error
-    server.wsServer.connections.forEach((connection) => {
-      connection.emit('error', new Error('Test error'))
+      reconnectInterval: null,
     })
 
     await new Promise((resolve) => setTimeout(resolve, 100))
     ws.close()
+
+    expect(errors).toHaveLength(1)
   })
 
   it('should be able to close connection', async () => {
