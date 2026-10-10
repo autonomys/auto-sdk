@@ -2,6 +2,7 @@
 import { ZodType } from 'zod'
 import { PromiseOr } from '../../utils/types'
 import { RpcServer, TypedRpcCallback, TypedRpcNotificationHandler } from '../types'
+import { StandardSchemaV1, StandardSchemaV1Output } from './standardSchema'
 
 export interface UnvalidatedType<T> {
   _type?: T
@@ -22,10 +23,10 @@ export type MessageDefinition = {
   content: DefinitionType
 }
 
-export type DefinitionType = ZodType | UnvalidatedType<any>
+export type DefinitionType = StandardSchemaV1 | UnvalidatedType<any>
 
-export type DefinitionTypeOutput<T extends DefinitionType> = T extends { _output: infer O }
-  ? O
+export type DefinitionTypeOutput<T extends DefinitionType> = T extends StandardSchemaV1
+  ? StandardSchemaV1Output<T>
   : T extends UnvalidatedType<infer U>
     ? U
     : never
@@ -66,6 +67,20 @@ export type ApiServerNotificationHandlers<S extends ApiDefinition> = {
   >
 }
 
+/**
+ * Detects schemas that implement Standard Schema (https://standardschema.dev), like zod >= 3.24
+ * and zod 4. It checks the shape instead of using instanceof, so schemas from any copy or version
+ * of the validation library are detected. Some libraries (e.g. ArkType) use functions as schemas.
+ */
+export const isStandardSchema = (type: unknown): type is StandardSchemaV1 => {
+  return (
+    (typeof type === 'object' || typeof type === 'function') && type !== null && '~standard' in type
+  )
+}
+
+/**
+ * @deprecated Use isStandardSchema instead. This function will be removed in a future major release.
+ */
 export const isZodType = <T extends DefinitionType>(type: T): type is T & ZodType => {
   return type instanceof ZodType
 }
