@@ -141,6 +141,11 @@ export function createWalletStore(userConfig?: Partial<WalletConfig>) {
           })
 
           try {
+            // Ensure installed wallets are detected if availableWallets is empty
+            if (get().availableWallets.length === 0) {
+              get().detectWallets()
+            }
+
             // Use the wallet from our filtered availableWallets list to avoid ambiguity
             // when multiple wallet classes share the same extensionName
             const { availableWallets } = get()
