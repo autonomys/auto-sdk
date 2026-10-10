@@ -2,6 +2,7 @@
 
 import type { Network } from '../types/network'
 import { DomainRuntime, domains } from './domain'
+import { AutoEvmChainId } from './evm'
 import { DEFAULT_TOKEN, TESTNET_TOKEN } from './token'
 
 export enum NetworkId {
@@ -42,6 +43,7 @@ export const networks: Network[] = [
       {
         domainId: '0',
         ...domains[DomainRuntime.AUTO_EVM],
+        chainId: AutoEvmChainId.MAINNET,
         rpcUrls: ['wss://auto-evm.mainnet.autonomys.xyz/ws'],
       },
     ],
@@ -61,6 +63,7 @@ export const networks: Network[] = [
       {
         domainId: '0',
         ...domains[DomainRuntime.AUTO_EVM],
+        chainId: AutoEvmChainId.CHRONOS,
         rpcUrls: ['wss://auto-evm.chronos.autonomys.xyz/ws'],
       },
     ],
@@ -76,6 +79,7 @@ export const networks: Network[] = [
       {
         domainId: '0',
         ...domains[DomainRuntime.AUTO_EVM],
+        chainId: AutoEvmChainId.TAURUS,
         rpcUrls: ['wss://auto-evm.taurus.autonomys.xyz/ws'],
       },
     ],
@@ -92,6 +96,7 @@ export const networks: Network[] = [
       {
         domainId: '0',
         ...domains[DomainRuntime.AUTO_EVM],
+        chainId: AutoEvmChainId.DEVNET,
         rpcUrls: ['wss://auto-evm.devnet.autonomys.xyz/ws'],
       },
       {
@@ -113,6 +118,7 @@ export const networks: Network[] = [
       {
         domainId: '0',
         ...domains[DomainRuntime.AUTO_EVM],
+        chainId: AutoEvmChainId.LOCAL,
         rpcUrls: ['ws://127.0.0.1:9945'],
       },
       {
