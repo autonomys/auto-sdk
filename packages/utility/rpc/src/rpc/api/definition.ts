@@ -128,12 +128,16 @@ export const createApiDefinition = <S extends ApiDefinition>(serverDefinition: S
           throw new RpcError('Message ID is required', RpcError.Code.InvalidRequest)
         }
 
+        let parsedParams = params
         if (isStandardSchema(serverDefinition.methods[method].params)) {
-          await validateSchema(serverDefinition.methods[method].params, params)
+          parsedParams = (await validateSchema(
+            serverDefinition.methods[method].params,
+            params,
+          )) as typeof params
         }
 
         // Inject the notification client into the handler
-        const result = await internalHandler(params, { ...rpcParams, notificationClient })
+        const result = await internalHandler(parsedParams, { ...rpcParams, notificationClient })
 
         return {
           jsonrpc: '2.0',
@@ -247,8 +251,13 @@ export const createApiDefinition = <S extends ApiDefinition>(serverDefinition: S
             throw new Error('RPC handler send method not supported in mock server')
           }
 
+          let parsedParams = params
+          if (isStandardSchema(serverDefinition.methods[method].params)) {
+            parsedParams = await validateSchema(serverDefinition.methods[method].params, params)
+          }
+
           // Inject the notification client into the handler
-          const result = await internalHandler(params, { notificationClient, send })
+          const result = await internalHandler(parsedParams, { notificationClient, send })
 
           return result
         },
