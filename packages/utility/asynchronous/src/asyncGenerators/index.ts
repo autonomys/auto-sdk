@@ -61,6 +61,9 @@ export const asyncByChunk = async function* (
   chunkSize: number,
   ignoreLastChunk: boolean = false,
 ): AsyncIterable<Buffer> {
+  if (chunkSize <= 0) {
+    throw new RangeError('chunkSize must be greater than 0')
+  }
   let accumulated = Buffer.alloc(0)
   for await (const chunk of iterable) {
     accumulated = Buffer.concat([accumulated, chunk])
@@ -95,10 +98,14 @@ export const asyncFromStream = async function* (
   stream: ReadableStream<Uint8Array>,
 ): AsyncIterable<Buffer> {
   const reader = stream.getReader()
-  let result = await reader.read()
-  while (!result.done) {
-    yield Buffer.from(result.value)
-    result = await reader.read()
+  try {
+    let result = await reader.read()
+    while (!result.done) {
+      yield Buffer.from(result.value)
+      result = await reader.read()
+    }
+  } finally {
+    reader.releaseLock()
   }
 }
 
@@ -110,6 +117,9 @@ export const fileToIterable = async function* (
   file: File | Blob,
   chunkSize: number = 1024 * 1024,
 ): AsyncIterable<Buffer> {
+  if (chunkSize <= 0) {
+    throw new RangeError('chunkSize must be greater than 0')
+  }
   for (let i = 0; i < file.size; i += chunkSize) {
     yield Buffer.from(await file.slice(i, i + chunkSize).arrayBuffer())
   }
