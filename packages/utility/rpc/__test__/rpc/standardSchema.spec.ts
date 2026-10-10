@@ -175,6 +175,114 @@ describe('rpc/definition with Standard Schema', () => {
   })
 })
 
+// Returns a new value, like a zod transform, so the handler can tell parsed from raw params
+const upperCaseNameSchema: StandardSchemaV1<Name> = {
+  '~standard': {
+    version: 1 as const,
+    vendor: 'test',
+    validate: (value) =>
+      typeof value === 'object' &&
+      value !== null &&
+      typeof (value as { name?: unknown }).name === 'string'
+        ? { value: { name: (value as Name).name.toUpperCase() } }
+        : { issues: [{ message: 'Expected a name', path: ['name'] }] },
+  },
+}
+
+describe('rpc/definition parsed params', () => {
+  let httpServer: http.Server
+  const received: unknown[] = []
+
+  const definition = createApiDefinition({
+    methods: {
+      zod3: {
+        params: z.object({ name: z.string().transform((name) => name.toUpperCase()) }),
+        returns: defineUnvalidatedType<Name>(),
+      },
+      zod4: {
+        params: zod4.object({ name: zod4.string().transform((name) => name.toUpperCase()) }),
+        returns: defineUnvalidatedType<Name>(),
+      },
+      otherZod3: {
+        params: otherZod.object({
+          name: otherZod.string().transform((name) => name.toUpperCase()),
+        }),
+        returns: defineUnvalidatedType<Name>(),
+      },
+      custom: {
+        params: upperCaseNameSchema,
+        returns: defineUnvalidatedType<Name>(),
+      },
+    },
+    notifications: {},
+  })
+  const { createServer, createHttpClient, createMockServerClient } = definition
+  let server: ReturnType<typeof createServer>
+  let client: ReturnType<typeof createHttpClient>
+  let mockClient: ReturnType<typeof createMockServerClient>
+
+  // Echoes back the params it receives
+  const handler = (params: Name) => {
+    received.push(params)
+    return params
+  }
+  const handlers = { zod3: handler, zod4: handler, otherZod3: handler, custom: handler }
+
+  beforeAll(async () => {
+    // Free port, so connections left open by other suites on TEST_PORT can't interfere
+    httpServer = http.createServer()
+    httpServer.listen(0)
+    await new Promise((resolve) => httpServer.once('listening', resolve))
+    server = createServer(handlers, {
+      server: createWsServer({
+        httpServer,
+        callbacks: {},
+      }),
+    })
+    const { port } = httpServer.address() as AddressInfo
+    client = createHttpClient(`http://localhost:${port}/ws`)
+    mockClient = createMockServerClient({ handlers, callbacks: {} })
+  })
+
+  beforeEach(() => {
+    received.length = 0
+  })
+
+  afterAll(() => {
+    mockClient.close()
+    server.close()
+    httpServer.close()
+  })
+
+  describe.each(['zod3', 'zod4', 'otherZod3', 'custom'] as const)('%s schema', (method) => {
+    it('should pass the parsed params to the server handler', async () => {
+      await expect(client[method]({ name: 'test' })).resolves.toEqual({ name: 'TEST' })
+      expect(received).toEqual([{ name: 'TEST' }])
+    })
+
+    it('should pass the parsed params to the mock handler', async () => {
+      await expect(mockClient.api[method]({ name: 'test' })).resolves.toEqual({ name: 'TEST' })
+      expect(received).toEqual([{ name: 'TEST' }])
+    })
+
+    it('should reject invalid params in the mock client before calling the handler', async () => {
+      await expect(mockClient.api[method]({ name: 1 } as unknown as Name)).rejects.toMatchObject({
+        code: RpcError.Code.InvalidParams,
+      })
+      expect(received).toEqual([])
+    })
+  })
+
+  // zod strips keys that aren't in the schema, so handlers no longer receive them
+  it('should not pass keys missing from the schema to the handler', async () => {
+    const params = { name: 'test', extra: 1 } as unknown as Name
+
+    await client.zod3(params)
+    await mockClient.api.zod3(params)
+    expect(received).toEqual([{ name: 'TEST' }, { name: 'TEST' }])
+  })
+})
+
 describe('isStandardSchema', () => {
   it('should detect object and function schemas by their ~standard property', () => {
     // Some libraries (e.g. ArkType) use callable functions as schemas
