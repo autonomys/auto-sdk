@@ -3,14 +3,14 @@
 import type { EvmChain } from '../types/evm'
 import type { NetworkId } from './network'
 
-// Testnets (Chronos, Taurus, Devnet) intentionally share testnet chain ID 490000
+// Testnets (Taurus, Devnet) intentionally share testnet chain ID 490000
 /* eslint-disable @typescript-eslint/no-duplicate-enum-values */
 export enum AutoEvmChainId {
   MAINNET = 870,
-  CHRONOS = 490000,
+  CHRONOS = 8700,
   TAURUS = 490000,
   DEVNET = 490000,
-  LOCAL = 8700,
+  LOCAL = 31337,
 }
 /* eslint-enable @typescript-eslint/no-duplicate-enum-values */
 
@@ -35,6 +35,10 @@ export const autoEvmMainnet: EvmChain = {
   },
   blockExplorers: {
     default: {
+      name: 'Blockscout',
+      url: 'https://explorer.auto-evm.mainnet.autonomys.xyz/',
+    },
+    subscan: {
       name: 'Subscan',
       url: 'https://autonomys.subscan.io/',
     },
@@ -65,6 +69,10 @@ export const autoEvmChronos: EvmChain = {
   },
   blockExplorers: {
     default: {
+      name: 'Blockscout',
+      url: 'https://explorer.auto-evm.chronos.autonomys.xyz/',
+    },
+    subscan: {
       name: 'Subscan',
       url: 'https://autonomys-chronos.subscan.io/',
     },

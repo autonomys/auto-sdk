@@ -16,10 +16,10 @@ describe('Auto EVM Constants & Helpers', () => {
   describe('AutoEvmChainId', () => {
     it('defines expected chain IDs for all networks', () => {
       expect(AutoEvmChainId.MAINNET).toBe(870)
-      expect(AutoEvmChainId.CHRONOS).toBe(490000)
+      expect(AutoEvmChainId.CHRONOS).toBe(8700)
       expect(AutoEvmChainId.TAURUS).toBe(490000)
       expect(AutoEvmChainId.DEVNET).toBe(490000)
-      expect(AutoEvmChainId.LOCAL).toBe(8700)
+      expect(AutoEvmChainId.LOCAL).toBe(31337)
     })
   })
 
@@ -39,6 +39,10 @@ describe('Auto EVM Constants & Helpers', () => {
       expect(autoEvmMainnet.rpcUrls.default.webSocket).toContain(
         'wss://auto-evm.mainnet.autonomys.xyz/ws',
       )
+      expect(autoEvmMainnet.blockExplorers?.default.name).toBe('Blockscout')
+      expect(autoEvmMainnet.blockExplorers?.default.url).toBe(
+        'https://explorer.auto-evm.mainnet.autonomys.xyz/',
+      )
       expect(autoEvmMainnet.testnet).toBe(false)
     })
 
@@ -49,11 +53,15 @@ describe('Auto EVM Constants & Helpers', () => {
 
   describe('Testnet and local EVM chain constants', () => {
     it('exposes correct chronos chain configuration', () => {
-      expect(autoEvmChronos.id).toBe(490000)
+      expect(autoEvmChronos.id).toBe(8700)
       expect(autoEvmChronos.name).toBe('Autonomys Chronos Auto EVM')
       expect(autoEvmChronos.nativeCurrency.symbol).toBe('tAI3')
       expect(autoEvmChronos.rpcUrls.default.http).toContain(
         'https://auto-evm.chronos.autonomys.xyz/ws',
+      )
+      expect(autoEvmChronos.blockExplorers?.default.name).toBe('Blockscout')
+      expect(autoEvmChronos.blockExplorers?.default.url).toBe(
+        'https://explorer.auto-evm.chronos.autonomys.xyz/',
       )
       expect(autoEvmChronos.testnet).toBe(true)
     })
@@ -76,7 +84,7 @@ describe('Auto EVM Constants & Helpers', () => {
     })
 
     it('exposes correct localhost chain configuration', () => {
-      expect(autoEvmLocalhost.id).toBe(8700)
+      expect(autoEvmLocalhost.id).toBe(31337)
       expect(autoEvmLocalhost.name).toBe('Autonomys Local Auto EVM')
       expect(autoEvmLocalhost.rpcUrls.default.http).toContain('http://127.0.0.1:9945')
       expect(autoEvmLocalhost.testnet).toBe(true)
@@ -117,7 +125,10 @@ describe('Auto EVM Constants & Helpers', () => {
       expect(mainnetDomain.chainId).toBe(870)
 
       const chronosDomain = getNetworkDomainDetails({ networkId: NetworkId.CHRONOS, domainId: '0' })
-      expect(chronosDomain.chainId).toBe(490000)
+      expect(chronosDomain.chainId).toBe(8700)
+
+      const taurusDomain = getNetworkDomainDetails({ networkId: NetworkId.TAURUS, domainId: '0' })
+      expect(taurusDomain.chainId).toBe(490000)
     })
   })
 })
