@@ -4,8 +4,9 @@ import { version as otherZodVersion } from 'zod-3.25.55/package.json'
 import { version as zodVersion } from 'zod/package.json'
 
 // ts-jest doesn't type-check this package (isolatedModules), so the types are checked
-// with the TypeScript compiler against the package tsconfig.
-const typeCheck = (file: string) => {
+// with the TypeScript compiler against the package tsconfig. Only the errors in the checked
+// file are returned, as a consumer would see them (src is type-checked by the build).
+const typeCheck = (file: string, extraOptions: ts.CompilerOptions = {}) => {
   const configPath = path.join(__dirname, '../../tsconfig.json')
   const { config } = ts.readConfigFile(configPath, ts.sys.readFile)
   const { options } = ts.parseJsonConfigFileContent(config, ts.sys, path.dirname(configPath))
@@ -14,10 +15,11 @@ const typeCheck = (file: string) => {
     noEmit: true,
     incremental: false,
     rootDir: undefined,
+    ...extraOptions,
   })
 
   return ts
-    .getPreEmitDiagnostics(program)
+    .getPreEmitDiagnostics(program, program.getSourceFile(file))
     .map((diagnostic) => ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n'))
 }
 
@@ -30,5 +32,13 @@ describe('rpc/definition types', () => {
 
   it('should type-check definitions built with zod 3, zod 4, another zod copy and custom schemas', () => {
     expect(typeCheck(path.join(__dirname, 'fixtures/standardSchemaTypes.ts'))).toEqual([])
+  }, 60000)
+
+  it('should type-check the same definitions for consumers with exactOptionalPropertyTypes', () => {
+    expect(
+      typeCheck(path.join(__dirname, 'fixtures/standardSchemaTypes.ts'), {
+        exactOptionalPropertyTypes: true,
+      }),
+    ).toEqual([])
   }, 60000)
 })

@@ -23,7 +23,9 @@ export type MessageDefinition = {
   content: DefinitionType
 }
 
-export type DefinitionType = StandardSchemaV1 | UnvalidatedType<any>
+// zod < 3.24 schemas have no '~standard' but match UnvalidatedType through `_type`, so zod-shaped
+// objects are kept out of that branch. Otherwise they would compile and skip validation silently.
+export type DefinitionType = StandardSchemaV1 | (UnvalidatedType<any> & { _def?: never })
 
 export type DefinitionTypeOutput<T extends DefinitionType> = T extends StandardSchemaV1
   ? StandardSchemaV1Output<T>

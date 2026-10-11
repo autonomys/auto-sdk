@@ -3,7 +3,7 @@
 
 export type StandardSchemaV1Issue = {
   readonly message: string
-  readonly path?: ReadonlyArray<PropertyKey | { readonly key: PropertyKey }>
+  readonly path?: ReadonlyArray<PropertyKey | { readonly key: PropertyKey }> | undefined
 }
 
 export type StandardSchemaV1Result<Output> =
@@ -17,7 +17,7 @@ export type StandardSchemaV1<Input = unknown, Output = Input> = {
     readonly validate: (
       value: unknown,
     ) => StandardSchemaV1Result<Output> | Promise<StandardSchemaV1Result<Output>>
-    readonly types?: { readonly input: Input; readonly output: Output }
+    readonly types?: { readonly input: Input; readonly output: Output } | undefined
   }
 }
 

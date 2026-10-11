@@ -3,7 +3,7 @@
 import { z } from 'zod'
 import { z as zod4 } from 'zod/v4'
 import { z as otherZod } from 'zod-3.25.55'
-import { createApiDefinition, defineUnvalidatedType } from '../../../src'
+import { createApiDefinition, defineUnvalidatedType, StandardSchemaV1 } from '../../../src'
 
 type Name = { name: string }
 
@@ -21,6 +21,13 @@ const customNameSchema: {
     validate: (value) => ({ value: value as Name }),
   },
 }
+
+// Hand-written schemas can be typed with the exported Standard Schema types
+export const typedNameSchema: StandardSchemaV1<Name> = customNameSchema
+
+// zod < 3.24 has no '~standard', so its schemas can't be validated and must not compile
+const zodName = z.object({ name: z.string() })
+const oldZodName = zodName as Omit<typeof zodName, '~standard'>
 
 const definition = createApiDefinition({
   methods: {
@@ -50,6 +57,17 @@ const definition = createApiDefinition({
       content: otherZod.object({ name: otherZod.string() }),
     },
   },
+})
+
+createApiDefinition({
+  methods: {
+    oldZod: {
+      // @ts-expect-error - zod < 3.24 schemas are not Standard Schemas
+      params: oldZodName,
+      returns: defineUnvalidatedType<Name>(),
+    },
+  },
+  notifications: {},
 })
 
 export const createTypedServer = () =>
