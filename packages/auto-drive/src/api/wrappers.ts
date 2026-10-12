@@ -171,21 +171,27 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
     options: UploadFileOptions = {},
     uploadChunkSize?: number,
   ): Promise<string> => {
+    let json: Buffer
     try {
-      const json = Buffer.from(JSON.stringify(object))
-      return uploadFile(
-        {
-          read: () => bufferToIterable(json),
-          name: name || 'object.json',
-          mimeType: 'application/json',
-          size: json.length,
-        },
-        options,
-        uploadChunkSize,
+      json = Buffer.from(
+        JSON.stringify(object, (_, value) =>
+          typeof value === 'bigint' ? value.toString() : value,
+        ),
       )
     } catch {
       throw new Error('Failed to serialize object to JSON')
     }
+
+    return uploadFile(
+      {
+        read: () => bufferToIterable(json),
+        name: name || 'object.json',
+        mimeType: 'application/json',
+        size: json.length,
+      },
+      options,
+      uploadChunkSize,
+    )
   }
 
   const uploadFolderFromInput = async (
@@ -285,12 +291,13 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
 
     const metadata = await apiCalls.getObjectMetadata(api, { cid })
 
+    if (metadata.uploadOptions?.encryption && !password) {
+      throw new Error('Password is required to decrypt the file')
+    }
+
     let iterable = asyncFromStream(await apiCalls.downloadObject(api, { cid }))
     if (metadata.uploadOptions?.encryption) {
-      if (!password) {
-        throw new Error('Password is required to decrypt the file')
-      }
-      iterable = decryptFile(iterable, password, {
+      iterable = decryptFile(iterable, password as string, {
         algorithm: EncryptionAlgorithm.AES_256_GCM,
       })
     }

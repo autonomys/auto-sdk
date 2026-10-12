@@ -5,20 +5,26 @@ import { AuthProvider, AutoDriveApiHandler, ConnectionOptions } from './types'
 const createSendRequest =
   (baseUrl: string, provider: AuthProvider | null, apiKey: string | null) =>
   async (relativeUrl: string, request: Partial<Request>, body?: BodyInit) => {
-    const headers = new Headers({
-      ...Object.fromEntries(request.headers?.entries() || []),
-      ...(provider ? { 'x-auth-provider': provider } : {}),
-      ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
-      'x-auto-sdk-version': version,
-      'User-Agent': `AutoDrive/${version}`,
-    })
+    const headers = new Headers(request.headers as HeadersInit | undefined)
+    if (provider) {
+      headers.set('x-auth-provider', provider)
+    }
+    if (apiKey) {
+      headers.set('Authorization', `Bearer ${apiKey}`)
+    }
+    headers.set('x-auto-sdk-version', version)
+    headers.set('User-Agent', `AutoDrive/${version}`)
+
     const fullRequest = {
       ...request,
-      headers: new Headers(headers),
+      headers,
       body,
     }
 
-    return fetch(`${baseUrl}${relativeUrl}`, fullRequest)
+    const cleanBaseUrl = baseUrl.replace(/\/+$/, '')
+    const normalizedUrl = relativeUrl.startsWith('/') ? relativeUrl : `/${relativeUrl}`
+
+    return fetch(`${cleanBaseUrl}${normalizedUrl}`, fullRequest)
   }
 
 export const createApiRequestHandler = ({

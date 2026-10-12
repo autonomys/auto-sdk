@@ -2,6 +2,9 @@ import { ArgsWithoutPagination } from '../../utils/types'
 import { AsyncDownload, DownloadStatus } from '../models/asyncDownloads'
 import { AutoDriveApiHandler } from '../types'
 
+const formatErrorMessage = (action: string, response: Response): string =>
+  `${action}: ${response.status}${response.statusText ? ` ${response.statusText}` : ''}`
+
 export const downloadObject = async (
   api: AutoDriveApiHandler,
   query: ArgsWithoutPagination<{ cid: string; ignoreBackendEncoding?: boolean }>,
@@ -16,7 +19,7 @@ export const downloadObject = async (
   )
 
   if (!response.ok) {
-    throw new Error(`Failed to download file: ${response.statusText}`)
+    throw new Error(formatErrorMessage('Failed to download file', response))
   }
 
   if (!response.body) {
@@ -35,7 +38,7 @@ export const createAsyncDownload = async (
   })
 
   if (!response.ok) {
-    throw new Error(`Failed to create async download: ${response.statusText}`)
+    throw new Error(formatErrorMessage('Failed to create async download', response))
   }
 
   return response.json() as Promise<AsyncDownload>
@@ -50,7 +53,7 @@ export const getAsyncDownload = async (
   })
 
   if (!response.ok) {
-    throw new Error(`Failed to get async download: ${response.statusText}`)
+    throw new Error(formatErrorMessage('Failed to get async download', response))
   }
 
   return response.json() as Promise<AsyncDownload>
@@ -62,7 +65,7 @@ export const getAsyncDownloads = async (api: AutoDriveApiHandler): Promise<Async
   })
 
   if (!response.ok) {
-    throw new Error(`Failed to get async downloads: ${response.statusText}`)
+    throw new Error(formatErrorMessage('Failed to get async downloads', response))
   }
 
   return response.json() as Promise<AsyncDownload[]>
@@ -77,7 +80,7 @@ export const dismissAsyncDownload = async (
   })
 
   if (!response.ok) {
-    throw new Error(`Failed to dismiss async download: ${response.statusText}`)
+    throw new Error(formatErrorMessage('Failed to dismiss async download', response))
   }
 }
 export const publicDownloadUrl = (api: AutoDriveApiHandler, cid: string): string => {
@@ -93,7 +96,7 @@ export const downloadStatus = async (
   })
 
   if (!response.ok) {
-    throw new Error(`Failed to get download status: ${response.statusText}`)
+    throw new Error(formatErrorMessage('Failed to get download status', response))
   }
 
   return response.json() as Promise<{ status: DownloadStatus }>

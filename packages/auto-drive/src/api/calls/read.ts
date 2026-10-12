@@ -4,6 +4,9 @@ import { ObjectInformation, ObjectSearchResult, ObjectSummary, Scope } from '../
 import { UserInfo } from '../models/user'
 import { AutoDriveApiHandler } from '../types'
 
+const formatErrorMessage = (action: string, response: Response): string =>
+  `${action}: ${response.status}${response.statusText ? ` ${response.statusText}` : ''}`
+
 /**
  * Retrieves the root objects based on the specified scope.
  *
@@ -24,7 +27,7 @@ export const getRoots = async (
   )
 
   if (!response.ok) {
-    throw new Error(`Failed to get roots: ${response.statusText}`)
+    throw new Error(formatErrorMessage('Failed to get roots', response))
   }
 
   return response.json()
@@ -53,7 +56,7 @@ export const getSharedWithMe = async (
   )
 
   if (!response.ok) {
-    throw new Error(`Failed to get shared with me: ${response.statusText}`)
+    throw new Error(formatErrorMessage('Failed to get shared with me', response))
   }
 
   return response.json()
@@ -71,7 +74,7 @@ export const searchByNameOrCID = async (
   )
 
   if (!response.ok) {
-    throw new Error(`Failed to search by name or CID: ${response.statusText}`)
+    throw new Error(formatErrorMessage('Failed to search by name or CID', response))
   }
 
   return response.json()
@@ -100,7 +103,7 @@ export const getDeleted = async (
   )
 
   if (!response.ok) {
-    throw new Error(`Failed to get deleted: ${response.statusText}`)
+    throw new Error(formatErrorMessage('Failed to get deleted', response))
   }
 
   return response.json()
@@ -126,7 +129,7 @@ export const getObject = async (
   })
 
   if (!response.ok) {
-    throw new Error(`Failed to get object: ${response.statusText}`)
+    throw new Error(formatErrorMessage('Failed to get object', response))
   }
 
   return response.json()
@@ -151,7 +154,7 @@ export const getObjectSummary = async (
   })
 
   if (!response.ok) {
-    throw new Error(`Failed to get object summary: ${response.statusText}`)
+    throw new Error(formatErrorMessage('Failed to get object summary', response))
   }
 
   return response.json()
@@ -178,7 +181,7 @@ export const getObjectUploadStatus = async (
   })
 
   if (!response.ok) {
-    throw new Error(`Failed to get object: ${response.statusText}`)
+    throw new Error(formatErrorMessage('Failed to get object', response))
   }
 
   return response.json()
@@ -205,7 +208,7 @@ export const getObjectOwners = async (
   })
 
   if (!response.ok) {
-    throw new Error(`Failed to get object: ${response.statusText}`)
+    throw new Error(formatErrorMessage('Failed to get object', response))
   }
 
   return response.json()
@@ -232,7 +235,7 @@ export const getObjectMetadata = async (
   })
 
   if (!response.ok) {
-    throw new Error(`Failed to get object: ${response.statusText}`)
+    throw new Error(formatErrorMessage('Failed to get object', response))
   }
 
   return response.json()
@@ -246,11 +249,11 @@ export const getObjectMetadata = async (
  * @throws {Error} - Throws an error if the request fails.
  */
 export const getMe = async (api: AutoDriveApiHandler): Promise<UserInfo> => {
-  const response = await api.sendAPIRequest('@me', {
+  const response = await api.sendAPIRequest('/@me', {
     method: 'GET',
   })
   if (!response.ok) {
-    throw new Error(`Failed to get limits: ${response.statusText}`)
+    throw new Error(formatErrorMessage('Failed to get limits', response))
   }
 
   return response.json()
@@ -279,7 +282,7 @@ export const getToBeReviewedList = async (
   )
 
   if (!response.ok) {
-    throw new Error(`Failed to get to be reviewed list: ${response.statusText}`)
+    throw new Error(formatErrorMessage('Failed to get to be reviewed list', response))
   }
 
   return response.json()

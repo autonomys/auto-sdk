@@ -8,6 +8,9 @@ import {
 } from '../models/uploads'
 import { AutoDriveApiHandler } from '../types'
 
+const formatErrorMessage = (action: string, response: Response): string =>
+  `${action}: ${response.status}${response.statusText ? ` ${response.statusText}` : ''}`
+
 /**
  * Initiates a file upload to the server.
  *
@@ -43,7 +46,7 @@ export const createFileUpload = async (
   )
 
   if (!response.ok) {
-    throw new Error(`Failed to create file upload: ${response.statusText}`)
+    throw new Error(formatErrorMessage('Failed to create file upload', response))
   }
 
   return response.json()
@@ -78,7 +81,7 @@ export const createFolderUpload = async (
   )
 
   if (!response.ok) {
-    throw new Error(`Failed to create folder upload: ${response.statusText}`)
+    throw new Error(formatErrorMessage('Failed to create folder upload', response))
   }
 
   return response.json()
@@ -125,7 +128,9 @@ export const createFileUploadWithinFolderUpload = async (
   )
 
   if (!response.ok) {
-    throw new Error(`Failed to create file upload within folder upload: ${response.statusText}`)
+    throw new Error(
+      formatErrorMessage('Failed to create file upload within folder upload', response),
+    )
   }
 
   return response.json()
@@ -168,7 +173,7 @@ export const uploadFileChunk = async (
   )
 
   if (!response.ok) {
-    throw new Error(`Failed to upload file chunk: ${response.statusText}`)
+    throw new Error(formatErrorMessage('Failed to upload file chunk', response))
   }
 }
 
@@ -195,7 +200,7 @@ export const completeUpload = async (
   })
 
   if (!response.ok) {
-    throw new Error(`Failed to complete upload: ${response.statusText}`)
+    throw new Error(formatErrorMessage('Failed to complete upload', response))
   }
 
   return response.json() as Promise<CompleteUploadResponse>

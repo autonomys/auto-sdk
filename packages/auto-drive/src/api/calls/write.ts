@@ -1,6 +1,9 @@
 import { ArgsWithoutPagination } from '../../utils/types'
 import { AutoDriveApiHandler } from '../types'
 
+const formatErrorMessage = (action: string, response: Response): string =>
+  `${action}: ${response.status}${response.statusText ? ` ${response.statusText}` : ''}`
+
 /**
  * Shares an object with a specified public ID.
  *
@@ -29,7 +32,7 @@ export const shareObject = async (
   )
 
   if (!response.ok) {
-    throw new Error(`Failed to share object: ${response.statusText}`)
+    throw new Error(formatErrorMessage('Failed to share object', response))
   }
 
   return response.json()
@@ -56,7 +59,7 @@ export const markObjectAsDeleted = async (
   })
 
   if (!response.ok) {
-    throw new Error(`Failed to mark object as deleted: ${response.statusText}`)
+    throw new Error(formatErrorMessage('Failed to mark object as deleted', response))
   }
 }
 
@@ -81,7 +84,7 @@ export const restoreObject = async (
   })
 
   if (!response.ok) {
-    throw new Error(`Failed to restore object: ${response.statusText}`)
+    throw new Error(formatErrorMessage('Failed to restore object', response))
   }
 
   return response.json()
@@ -108,7 +111,7 @@ export const publishObject = async (
   })
 
   if (!response.ok) {
-    throw new Error(`Failed to publish object: ${response.statusText}`)
+    throw new Error(formatErrorMessage('Failed to publish object', response))
   }
 
   return response.json()
@@ -134,7 +137,7 @@ export const reportObject = async (
   })
 
   if (!response.ok) {
-    throw new Error(`Failed to report object: ${response.statusText}`)
+    throw new Error(formatErrorMessage('Failed to report object', response))
   }
 }
 
@@ -158,7 +161,7 @@ export const banObject = async (
   })
 
   if (!response.ok) {
-    throw new Error(`Failed to ban object: ${response.statusText}`)
+    throw new Error(formatErrorMessage('Failed to ban object', response))
   }
 }
 
@@ -182,6 +185,6 @@ export const dismissReport = async (
   })
 
   if (!response.ok) {
-    throw new Error(`Failed to dismiss report: ${response.statusText}`)
+    throw new Error(formatErrorMessage('Failed to dismiss report', response))
   }
 }
