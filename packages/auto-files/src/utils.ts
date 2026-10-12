@@ -1,4 +1,4 @@
-export const withRetries = <T>(
+export const withRetries = async <T>(
   fn: () => Promise<T>,
   {
     retries = 3,
@@ -9,22 +9,16 @@ export const withRetries = <T>(
     delay?: number
     onRetry?: (error: Error, pendingRetries: number) => void
   } = {},
-) => {
-  return new Promise<T>((resolve, reject) => {
-    const attempt = async () => {
-      try {
-        const result = await fn()
-        resolve(result)
-      } catch (error) {
-        if (retries > 0) {
-          onRetry?.(error as Error, retries)
-          await new Promise((resolve) => setTimeout(resolve, delay))
-          attempt()
-        } else {
-          reject(error)
-        }
+): Promise<T> => {
+  for (let pendingRetries = retries; ; pendingRetries--) {
+    try {
+      return await fn()
+    } catch (error) {
+      if (pendingRetries <= 0) {
+        throw error
       }
+      onRetry?.(error as Error, pendingRetries)
+      await new Promise((resolve) => setTimeout(resolve, delay))
     }
-    attempt()
-  })
+  }
 }
