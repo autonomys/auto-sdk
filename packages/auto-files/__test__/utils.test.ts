@@ -39,4 +39,23 @@ describe('withRetries', () => {
       [new Error('attempt 2 failed'), 1],
     ])
   })
+
+  it('sanitizes negative retries to zero attempts of retry (1 execution total)', async () => {
+    const fn = alwaysFailing()
+
+    await expect(withRetries(fn, { retries: -5, delay: 1 })).rejects.toThrow('attempt 1 failed')
+    expect(fn).toHaveBeenCalledTimes(1)
+  })
+
+  it('safely wraps non-Error thrown values into Error instances for onRetry', async () => {
+    const onRetry = jest.fn()
+    const fn = jest
+      .fn()
+      .mockRejectedValueOnce('raw string error')
+      .mockResolvedValue('recovered')
+
+    const res = await withRetries(fn, { retries: 1, delay: 1, onRetry })
+    expect(res).toBe('recovered')
+    expect(onRetry).toHaveBeenCalledWith(new Error('raw string error'), 1)
+  })
 })

@@ -10,15 +10,19 @@ export const withRetries = async <T>(
     onRetry?: (error: Error, pendingRetries: number) => void
   } = {},
 ): Promise<T> => {
-  for (let pendingRetries = retries; ; pendingRetries--) {
+  const maxRetries = Number.isFinite(retries) ? Math.max(0, Math.floor(retries)) : 0
+  const retryDelay = Number.isFinite(delay) ? Math.max(0, delay) : 0
+
+  for (let pendingRetries = maxRetries; ; pendingRetries--) {
     try {
       return await fn()
     } catch (error) {
       if (pendingRetries <= 0) {
         throw error
       }
-      onRetry?.(error as Error, pendingRetries)
-      await new Promise((resolve) => setTimeout(resolve, delay))
+      const err = error instanceof Error ? error : new Error(String(error))
+      onRetry?.(err, pendingRetries)
+      await new Promise((resolve) => setTimeout(resolve, retryDelay))
     }
   }
 }
