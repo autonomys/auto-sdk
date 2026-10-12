@@ -194,26 +194,33 @@ const resolveByteRangeTuple = ([start, end]: ByteRange, size: number): ResolvedB
   return resolveRangeSpec({ kind: 'offset', start, end: end ?? undefined }, size)
 }
 
+// handleDownloadResponseHeaders only serves ranges over a file's stored bytes: a
+// compressed file is inflated server-side or sent with Content-Encoding instead.
+const servesByteRanges = (
+  metadata: DownloadMetadata,
+): metadata is DownloadMetadata & { size: bigint } =>
+  metadata.type === 'file' &&
+  metadata.size != null &&
+  !(metadata.isCompressed && !metadata.isEncrypted)
+
 /**
- * Resolve the request's Range header (RFC 9110 section 14) against a
- * representation of `size` bytes.
+ * Resolve the request's Range header (RFC 9110 section 14) for the file
+ * described by `metadata`.
  *
  * Supports a single `bytes=start-`, `bytes=start-end` or `bytes=-suffixLength`
  * range. An end past the last byte is clamped to it, and a suffix longer than the
- * representation selects all of it. Malformed, inverted and multi-range headers
- * are ignored, so they resolve to `none` (serve 200), as does any range when the
- * size is unknown.
+ * file selects all of it. Malformed, inverted and multi-range headers are
+ * ignored, so they resolve to `none` (serve 200). So does any range on a file
+ * {@link handleDownloadResponseHeaders} serves whole: a folder, a compressed
+ * file, or one of unknown size.
  *
  * Resolve before fetching the body: pass `byteRange` both to the data source and
  * to {@link handleDownloadResponseHeaders}, and answer `unsatisfiable` with
  * {@link sendRangeNotSatisfiable}.
  */
-export const resolveByteRange = (
-  req: Request,
-  size: bigint | number | undefined,
-): ResolvedByteRange => {
-  if (size == null) return { kind: 'none' }
-  return resolveRangeSpec(parseRangeHeader(req.headers['range']), Number(size))
+export const resolveByteRange = (req: Request, metadata: DownloadMetadata): ResolvedByteRange => {
+  if (!servesByteRanges(metadata)) return { kind: 'none' }
+  return resolveRangeSpec(parseRangeHeader(req.headers['range']), Number(metadata.size))
 }
 
 const setRangeNotSatisfiable = (res: Response, size: bigint | number) => {
@@ -232,10 +239,11 @@ export const sendRangeNotSatisfiable = (res: Response, size: bigint | number) =>
 
 /**
  * `byteRange` is inclusive and must be the range the body was fetched with. An
- * end past the last byte is clamped, a start at or past it answers 416 (see
- * {@link DownloadHeaderResult.rangeNotSatisfiable}), and an invalid range
- * (negative, inverted or not an integer) is ignored and the full file is
- * described instead.
+ * end past the last byte is clamped, and a start at or past it answers 416 (see
+ * {@link DownloadHeaderResult.rangeNotSatisfiable}), even when the end is before
+ * the start, as it is once a caller has clamped the end. Any other invalid range
+ * (negative, inverted or not a whole number) is ignored and the full file is
+ * described, so the body must then be the full file.
  */
 export const handleDownloadResponseHeaders = (
   req: Request,
@@ -344,9 +352,10 @@ export const handleS3DownloadResponseHeaders = (
  * ignored here, along with malformed, inverted and multi-range headers. The
  * returned end is not clamped and the start may lie past the end of the file:
  * {@link handleDownloadResponseHeaders} handles both, but the body must be
- * fetched with the same range. An end too large to be represented exactly is
- * returned as `undefined` (to the end of the file), which means the same thing
- * and is accepted by data sources such as `fs.createReadStream`.
+ * fetched with the same range. Offsets too large to be represented exactly are
+ * replaced with values that mean the same thing for any real file and that data
+ * sources such as `fs.createReadStream` accept: such an end becomes `undefined`
+ * (to the end of the file) and such a start `Number.MAX_SAFE_INTEGER`.
  *
  * @deprecated Use {@link resolveByteRange}, which serves suffix ranges, clamps
  * the end and reports unsatisfiable ranges before the body is fetched.
@@ -354,6 +363,7 @@ export const handleS3DownloadResponseHeaders = (
 export const getByteRange = (req: Request): ByteRange | undefined => {
   const spec = parseRangeHeader(req.headers['range'])
   if (spec?.kind !== 'offset') return undefined
+  const start = Number.isSafeInteger(spec.start) ? spec.start : Number.MAX_SAFE_INTEGER
   const end = spec.end !== undefined && Number.isSafeInteger(spec.end) ? spec.end : undefined
-  return [spec.start, end]
+  return [start, end]
 }

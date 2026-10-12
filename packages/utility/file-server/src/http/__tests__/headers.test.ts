@@ -40,6 +40,19 @@ const requestWithRange = (range?: string) =>
 // More digits than a double holds exactly
 const HUGE = '9'.repeat(30)
 
+const fileOfSize = (
+  size: bigint | undefined,
+  overrides: Partial<DownloadMetadata> = {},
+): DownloadMetadata => ({
+  name: 'file.bin',
+  type: 'file',
+  mimeType: 'application/octet-stream',
+  size,
+  isEncrypted: false,
+  isCompressed: false,
+  ...overrides,
+})
+
 // The handler only touches req.headers/query and res.set/status, which the mocks provide
 const callHandler = (
   req: ReturnType<typeof createMockReq>,
@@ -659,7 +672,7 @@ describe('handleDownloadResponseHeaders', () => {
           },
         ],
       ])('via resolveByteRange: %s', (range, expected) => {
-        const resolved = resolveByteRange(requestWithRange(range), defaultMetadata.size)
+        const resolved = resolveByteRange(requestWithRange(range), defaultMetadata)
         const byteRange = resolved.kind === 'partial' ? resolved.byteRange : undefined
 
         expect(respond(range, byteRange)).toEqual(expected)
@@ -955,7 +968,7 @@ describe('resolveByteRange', () => {
     ['items=0-9', { kind: 'none' }],
     ['0-9', { kind: 'none' }],
   ])('%s on a 100-byte file', (range, expected) => {
-    expect(resolveByteRange(requestWithRange(range), BigInt(100))).toEqual(expected)
+    expect(resolveByteRange(requestWithRange(range), fileOfSize(BigInt(100)))).toEqual(expected)
   })
 
   it.each<[string, ReturnType<typeof resolveByteRange>]>([
@@ -965,18 +978,66 @@ describe('resolveByteRange', () => {
     // RFC 9110 calls this satisfiable, but no Content-Range can describe zero bytes
     ['bytes=-10', { kind: 'none' }],
   ])('%s on an empty file', (range, expected) => {
-    expect(resolveByteRange(requestWithRange(range), BigInt(0))).toEqual(expected)
+    expect(resolveByteRange(requestWithRange(range), fileOfSize(BigInt(0)))).toEqual(expected)
   })
 
-  it('accepts the size as a number', () => {
-    expect(resolveByteRange(requestWithRange('bytes=-10'), 100)).toEqual({
+  it.each<[string, Partial<DownloadMetadata>]>([
+    ['the size is unknown', { size: undefined }],
+    ['the file is compressed', { isCompressed: true }],
+    ['it is a folder', { type: 'folder' }],
+  ])('ignores the range when %s', (_, overrides) => {
+    const metadata = fileOfSize(BigInt(100), overrides)
+
+    expect(resolveByteRange(requestWithRange('bytes=0-9'), metadata)).toEqual({ kind: 'none' })
+  })
+
+  it('resolves the range on a compressed file that is also encrypted', () => {
+    const metadata = fileOfSize(BigInt(100), { isCompressed: true, isEncrypted: true })
+
+    expect(resolveByteRange(requestWithRange('bytes=0-9'), metadata)).toEqual({
       kind: 'partial',
-      byteRange: [90, 99],
+      byteRange: [0, 9],
     })
   })
 
-  it('ignores the range when the size is unknown', () => {
-    expect(resolveByteRange(requestWithRange('bytes=0-9'), undefined)).toEqual({ kind: 'none' })
+  describe('agrees with handleDownloadResponseHeaders on which files get ranges', () => {
+    const files: [string, Partial<DownloadMetadata>][] = [
+      ['a plain file', {}],
+      ['a compressed file', { isCompressed: true }],
+      ['an encrypted file', { isEncrypted: true }],
+      ['a compressed and encrypted file', { isCompressed: true, isEncrypted: true }],
+      ['a file of unknown size', { size: undefined }],
+      ['a folder', { type: 'folder' }],
+    ]
+    const requests: [string, Record<string, string>, Record<string, string>, DownloadOptions][] = [
+      ['a fetch', {}, {}, {}],
+      ['a navigation', { 'sec-fetch-dest': 'document', 'sec-fetch-mode': 'navigate' }, {}, {}],
+      ['an <img> load', { 'sec-fetch-dest': 'image' }, {}, {}],
+      ['raw mode', {}, {}, { rawMode: true }],
+      ['ignoreEncoding=true', {}, { ignoreEncoding: 'true' }, {}],
+    ]
+    const cases = files.flatMap(([file, overrides]) =>
+      requests.map(([request, headers, query, options]) => ({
+        file,
+        request,
+        overrides,
+        headers,
+        query,
+        options,
+      })),
+    )
+
+    it.each(cases)('$file, $request', ({ overrides, headers, query, options }) => {
+      const metadata = fileOfSize(BigInt(100), overrides)
+      const req = createMockReq({ ...headers, range: 'bytes=0-9' }, query)
+      const res = createMockRes()
+
+      const resolved = resolveByteRange(req as unknown as Request, metadata)
+      const byteRange = resolved.kind === 'partial' ? resolved.byteRange : undefined
+      callHandler(req, res, metadata, { ...options, byteRange })
+
+      expect(resolved.kind !== 'none').toBe(res._getHeaders()['accept-ranges'] === 'bytes')
+    })
   })
 })
 
@@ -994,9 +1055,9 @@ describe('getByteRange', () => {
     ['bytes=5-0', undefined],
     ['bytes=0-9, 20-29', undefined],
     ['bytes=abc', undefined],
-    // An end too large to be exact means "to the end", and fs.createReadStream rejects it
+    // Offsets too large to be exact, which fs.createReadStream rejects, are made safe
     [`bytes=10-${HUGE}`, [10, undefined]],
-    [`bytes=${HUGE}-`, [Number(HUGE), undefined]],
+    [`bytes=${HUGE}-`, [Number.MAX_SAFE_INTEGER, undefined]],
   ])('%s', (range, expected) => {
     expect(getByteRange(requestWithRange(range))).toEqual(expected)
   })
