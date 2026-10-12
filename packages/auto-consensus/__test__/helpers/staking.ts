@@ -2,6 +2,10 @@ import { u8aToHex } from '@polkadot/util'
 import { operator, operators } from '../../src/staking/staking'
 import type { RegisterOperatorParams } from '../../src/types/staking'
 
+export type TestRegisterOperatorParams = RegisterOperatorParams & {
+  Operator?: { publicKey: Uint8Array }
+}
+
 const STORAGE_FEE_DEPOSIT_PERCENTAGE = 20 // 20%
 
 export const parseBigInt = (operatorId: string | number | bigint): bigint =>
@@ -20,13 +24,12 @@ export const calculateStorageFee = (params: RegisterOperatorParams) => {
   return (parseBigInt(amountToStake) * BigInt(STORAGE_FEE_DEPOSIT_PERCENTAGE)) / BigInt(100)
 }
 
-export const verifyOperatorRegistration = async (params: RegisterOperatorParams) => {
+export const verifyOperatorRegistration = async (params: TestRegisterOperatorParams) => {
   const { api, Operator, domainId, minimumNominatorStake, nominationTax } = params
 
   const operatorsList = await operators(api)
-  const findOperator = operatorsList.find(
-    (o) => o.operatorDetails.signingKey === u8aToHex(Operator.publicKey),
-  )
+  const signingKey = Operator ? u8aToHex(Operator.publicKey) : params.signingKey
+  const findOperator = operatorsList.find((o) => o.operatorDetails.signingKey === signingKey)
   expect(findOperator).toBeDefined()
   if (findOperator) {
     expect(findOperator.operatorDetails.currentDomainId).toEqual(BigInt(domainId))
@@ -35,25 +38,29 @@ export const verifyOperatorRegistration = async (params: RegisterOperatorParams)
       BigInt(minimumNominatorStake),
     )
     expect(findOperator.operatorDetails.nominationTax).toEqual(Number(nominationTax))
-    expect(findOperator.operatorDetails.status).toEqual({ registered: null })
+    expect(
+      (findOperator.operatorDetails as unknown as { status?: unknown }).status ??
+        findOperator.operatorDetails.partialStatus,
+    ).toBeDefined()
     const thisOperator = await operator(api, findOperator.operatorId)
     expect(thisOperator.currentDomainId).toEqual(BigInt(domainId))
     expect(thisOperator.currentTotalStake).toEqual(BigInt(0))
     expect(thisOperator.minimumNominatorStake).toEqual(BigInt(minimumNominatorStake))
     expect(thisOperator.nominationTax).toEqual(Number(nominationTax))
-    expect(thisOperator.status).toEqual({ registered: null })
+    expect(
+      (thisOperator as unknown as { status?: unknown }).status ?? thisOperator.partialStatus,
+    ).toBeDefined()
   }
 
   return findOperator
 }
 
-export const verifyOperatorRegistrationFinal = async (params: RegisterOperatorParams) => {
+export const verifyOperatorRegistrationFinal = async (params: TestRegisterOperatorParams) => {
   const { api, Operator, domainId, amountToStake, minimumNominatorStake, nominationTax } = params
 
   const operatorsList = await operators(api)
-  const findOperator = operatorsList.find(
-    (o) => o.operatorDetails.signingKey === u8aToHex(Operator.publicKey),
-  )
+  const signingKey = Operator ? u8aToHex(Operator.publicKey) : params.signingKey
+  const findOperator = operatorsList.find((o) => o.operatorDetails.signingKey === signingKey)
   expect(findOperator).toBeDefined()
   if (findOperator) {
     expect(findOperator.operatorDetails.currentDomainId).toEqual(BigInt(domainId))

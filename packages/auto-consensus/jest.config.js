@@ -2,5 +2,4 @@
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
-  testRegex: '.*(unit\\.test|withdrawal\\.helpers\\.test)\\.ts$',
 }

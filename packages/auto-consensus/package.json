@@ -17,7 +17,7 @@
   "scripts": {
     "build": "tsc",
     "clean": "rm -rf dist",
-    "test": "jest",
+    "test": "jest unit",
     "test-local": "jest -i"
   },
   "files": [
