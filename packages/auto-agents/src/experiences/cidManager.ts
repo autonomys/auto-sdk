@@ -16,7 +16,10 @@ import { retryWithBackoff } from './utils.js'
  * @param hash The bytes32 hex string hash (e.g., "0x...").
  * @returns The corresponding CID string.
  */
-const hashToCid = (hash: string): string => {
+const hashToCid = (hash: string): string | undefined => {
+  if (!hash || hash === ethers.ZeroHash) {
+    return undefined
+  }
   const hashBuffer = Buffer.from(hash.slice(2), 'hex')
   const cid = cidFromBlakeHash(hashBuffer)
   return cidToString(cid)
@@ -86,9 +89,13 @@ const getLastMemoryHashSetTimestamp = async (
     const lastEvent = events[events.length - 1]
     const block = await lastEvent.getBlock()
 
+    const eventLog = 'args' in lastEvent ? (lastEvent as ethers.EventLog) : null
+    const hash = eventLog?.args?.hash ?? ''
+    const timestamp = block?.timestamp ?? 0
+
     return {
-      timestamp: block.timestamp,
-      hash: (lastEvent as ethers.EventLog).args.hash,
+      timestamp,
+      hash,
     }
   } catch (error) {
     throw new Error(`Failed to get last memory hash:${error}`, { cause: error })
@@ -124,7 +131,7 @@ const validateLocalHash = async (
     const localTimestamp =
       new Date(JSON.parse(readFileSync(location, 'utf-8')).timestamp).getTime() / 1000
 
-    if (eventTimestamp > localTimestamp) {
+    if (eventTimestamp > localTimestamp && eventHash && eventHash !== ethers.ZeroHash) {
       saveHashLocally(eventHash, location)
       return { message: 'Local hash has been updated from blockchain' }
     }
@@ -168,7 +175,7 @@ export const createCidManager = async (
       localHashStatus: { message },
       getLastMemoryCid: async () => {
         const localHash = getLocalHash(localHashLocation)
-        return localHash ? hashToCid(localHash) : undefined
+        return localHash && localHash !== ethers.ZeroHash ? hashToCid(localHash) : undefined
       },
       saveLastMemoryCid: async (cid: string) => {
         const blake3hash = blake3HashFromCid(stringToCid(cid))
@@ -209,16 +216,17 @@ export const createCidManager = async (
 
   const getLastMemoryCid = async (): Promise<string | undefined> => {
     const localHash = getLocalHash(localHashLocation)
-    if (localHash) {
+    if (localHash && localHash !== ethers.ZeroHash) {
       return hashToCid(localHash)
     }
 
     try {
       const blockchainHash = await contract.getLastMemoryHash(wallet.address)
-      if (blockchainHash) {
+      if (blockchainHash && blockchainHash !== ethers.ZeroHash) {
         saveHashLocally(blockchainHash, localHashLocation)
         return hashToCid(blockchainHash)
       }
+      return undefined
     } catch {
       return undefined
     }
@@ -242,8 +250,8 @@ export const createCidManager = async (
         { timeout: 60000 },
       )
       // Wait for the transaction to be mined
-      const receipt = (await tx.wait()) as ethers.TransactionReceipt
-      return receipt
+      const receipt = await tx.wait()
+      return receipt ?? undefined
     } catch {
       return undefined
     }

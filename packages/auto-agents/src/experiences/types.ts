@@ -68,7 +68,7 @@ export type AutoDriveApiOptions = {
  */
 export type ExperienceUploadOptions = {
   /** Whether to compress the experience data before uploading. */
-  compression: boolean
+  compression?: boolean
   /** Optional password for encrypting the experience data during upload. */
   password?: string
 }

@@ -7,11 +7,15 @@ export const uploadExperience = async (
   wallet: ethers.Wallet,
   header: ExperienceHeader,
   data: unknown,
-  { compression, password }: ExperienceUploadOptions,
+  { compression, password }: ExperienceUploadOptions = {},
 ) => {
   const fileName = `${header.agentName}-agent-${header.agentVersion}-memory-${header.timestamp}.json`
 
-  const signature = await wallet.signMessage(JSON.stringify({ header, data }))
+  const payload = { header, data }
+  const jsonString = JSON.stringify(payload, (_, value) =>
+    typeof value === 'bigint' ? value.toString() : value,
+  )
+  const signature = await wallet.signMessage(jsonString)
   const cid = await autoDriveApi.uploadObjectAsJSON({ header, data, signature }, fileName, {
     compression,
     password,

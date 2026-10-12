@@ -6,6 +6,7 @@ import {
 } from '@autonomys/auto-dag-data'
 import { ethers } from 'ethers'
 import * as fs from 'fs'
+import { join } from 'path'
 import { createCidManager } from '../cidManager'
 import type { EvmOptions } from '../types'
 import * as utils from '../utils'
@@ -38,9 +39,9 @@ const asCid = (value: string) => value as unknown as Cid
 
 describe('createCidManager', () => {
   // --- Constants ---
-  const agentPath = '/fake/agent/path'
-  const memoriesDir = `${agentPath}/memories`
-  const localHashLocation = `${memoriesDir}/last-memory-hash.json`
+  const agentPath = join('/fake', 'agent', 'path')
+  const memoriesDir = join(agentPath, 'memories')
+  const localHashLocation = join(memoriesDir, 'last-memory-hash.json')
   const walletOptions = {
     privateKey: '0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
     contractInfo: {
@@ -66,6 +67,7 @@ describe('createCidManager', () => {
   }
 
   const setupMockEthers = () => {
+    mockEthers.ZeroHash = '0x0000000000000000000000000000000000000000000000000000000000000000'
     const mockProvider = {
       getNetwork: jest.fn().mockResolvedValue({ chainId: BigInt(1) }),
       getBlockNumber: jest.fn().mockResolvedValue(1000),
@@ -624,5 +626,72 @@ describe('createCidManager', () => {
     expect(mockAutoDagData.stringToCid).toHaveBeenCalledWith(testCid)
     expect(mockAutoDagData.blake3HashFromCid).toHaveBeenCalledWith(testCid)
     expect(mockEthers.hexlify).toHaveBeenCalledWith(Buffer.from('mockBlake3Hash'))
+  })
+
+  it('getLastMemoryCid (online) should return undefined and not save locally if blockchain returns ZeroHash', async () => {
+    const cidManager = await createCidManager(
+      { agentPath: agentPath, agentName: 'TestAgent' },
+      walletOptions,
+    )
+    jest.clearAllMocks()
+
+    mockFs.existsSync.mockImplementation((path) => {
+      if (path === localHashLocation) return false
+      return true
+    })
+    currentMockContract.getLastMemoryHash.mockResolvedValue(
+      '0x0000000000000000000000000000000000000000000000000000000000000000',
+    )
+
+    const resultCid = await cidManager.getLastMemoryCid()
+
+    expect(resultCid).toBeUndefined()
+    expect(mockFs.writeFileSync).not.toHaveBeenCalled()
+  })
+
+  it('getLastMemoryCid (offline) should return undefined if local hash is ZeroHash', async () => {
+    const cidManager = await createCidManager(
+      { agentPath: agentPath, agentName: 'TestAgent' },
+      { privateKey: walletOptions.privateKey },
+    )
+    mockFs.existsSync.mockReturnValueOnce(true)
+    mockFs.readFileSync.mockReturnValueOnce(
+      JSON.stringify({
+        hash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+        timestamp: new Date().toISOString(),
+      }),
+    )
+
+    const resultCid = await cidManager.getLastMemoryCid()
+    expect(resultCid).toBeUndefined()
+  })
+
+  it('should ignore event if eventHash is ZeroHash during validation', async () => {
+    const oldTimestamp = new Date(Date.now() - 2 * 60 * 60 * 1000)
+    const newTimestamp = new Date(Date.now() - 1 * 60 * 60 * 1000)
+
+    mockFs.readFileSync.mockImplementation((path) => {
+      if (path === localHashLocation) {
+        return JSON.stringify({ hash: testHash, timestamp: oldTimestamp.toISOString() })
+      }
+      throw new Error(`ENOENT: no such file or directory, open '${path}'`)
+    })
+
+    const mockEvent = {
+      blockNumber: 100,
+      args: { hash: '0x0000000000000000000000000000000000000000000000000000000000000000' },
+      getBlock: jest
+        .fn()
+        .mockResolvedValue({ timestamp: Math.floor(newTimestamp.getTime() / 1000) }),
+    } as unknown as ethers.EventLog
+    currentMockContract.queryFilter.mockResolvedValue([mockEvent])
+
+    const cidManager = await createCidManager(
+      { agentPath: agentPath, agentName: 'TestAgent' },
+      walletOptions,
+    )
+
+    expect(mockFs.writeFileSync).not.toHaveBeenCalled()
+    expect(cidManager.localHashStatus.message).toBe('Local hash is up to date')
   })
 })
