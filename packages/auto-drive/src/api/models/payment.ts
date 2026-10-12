@@ -154,6 +154,72 @@ export type UsdcPaymentIntent = {
 }
 
 /**
+ * The account's purchased storage credits, returned by `getCreditSummary`.
+ *
+ * Covers only credits bought with a payment intent. The free allocation is
+ * reported separately by `getPendingCredits`. Byte amounts are decimal strings
+ * (safe for BigInt conversion), as Auto Drive sends them.
+ */
+export type CreditSummary = {
+  /** Upload bytes left across all active (non-expired) purchases */
+  uploadBytesRemaining: string
+  /** Upload bytes originally bought across all active (non-expired) purchases */
+  totalPurchasedBytesOriginal: string
+  /** Download bytes left across all active (non-expired) purchases */
+  downloadBytesRemaining: string
+  /** ISO 8601 timestamp of the soonest expiry among active purchases, or `null` when there are none */
+  nextExpiryDate: string | null
+  /** Number of active (non-expired) purchases */
+  batchCount: number
+  /** Whether the account can buy more credits without exceeding the per-user credit cap */
+  canPurchase: boolean
+  /** Largest `sizeBytes` a new intent can request right now without a `CREDIT_CAP_EXCEEDED` error, as a decimal string */
+  maxPurchasableBytes: string
+  /** Whether the account is registered with Google, which Auto Drive requires to buy credits */
+  googleVerified: boolean
+  /** Number of days after purchase that credits expire */
+  expiryDays: number
+}
+
+/**
+ * One credit purchase, returned by `getCreditBatches` and `getExpiringCreditBatches`.
+ *
+ * Each completed payment intent creates one batch. Uploads use the credits of
+ * the batch that expires soonest first. Byte amounts are decimal strings
+ * (safe for BigInt conversion) and timestamps are ISO 8601 strings.
+ */
+export type CreditBatch = {
+  /** Unique batch identifier */
+  id: string
+  /** Auto Drive account the credits belong to */
+  accountId: string
+  /** Payment intent that bought this batch */
+  intentId: string
+  /** Upload bytes bought */
+  uploadBytesOriginal: string
+  /** Upload bytes not used yet */
+  uploadBytesRemaining: string
+  /** Download bytes bought */
+  downloadBytesOriginal: string
+  /** Download bytes not used yet */
+  downloadBytesRemaining: string
+  /** ISO 8601 timestamp of the purchase */
+  purchasedAt: string
+  /** ISO 8601 timestamp when the remaining credits expire */
+  expiresAt: string
+  /** Whether Auto Drive has marked the batch as expired with credits left unused */
+  expired: boolean
+  /** ISO 8601 timestamp of the refund, or `null` if the batch was not refunded. A refund sets the remaining bytes to zero. */
+  refundedAt: string | null
+  /** Hash of the AI3 refund transaction, or `null` if not refunded (or refunded before Auto Drive recorded it) */
+  refundTxHash: string | null
+  /** ISO 8601 timestamp when the batch was created */
+  createdAt: string
+  /** ISO 8601 timestamp of the last change to the batch */
+  updatedAt: string
+}
+
+/**
  * Machine-readable error codes that Auto Drive returns for payment requests.
  *
  * - `GOOGLE_ACCOUNT_REQUIRED` (403): buying credits needs a Google-verified account.
