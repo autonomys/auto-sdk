@@ -141,6 +141,11 @@ export function createWalletStore(userConfig?: Partial<WalletConfig>) {
           })
 
           try {
+            // Ensure availableWallets is populated if empty
+            if (get().availableWallets.length === 0) {
+              get().detectWallets()
+            }
+
             // Use the wallet from our filtered availableWallets list to avoid ambiguity
             // when multiple wallet classes share the same extensionName
             const { availableWallets } = get()
@@ -256,11 +261,12 @@ export function createWalletStore(userConfig?: Partial<WalletConfig>) {
         onRehydrateStorage: () => (state) => {
           if (state?.selectedWallet && state?.selectedAccount) {
             // Auto-initialize connection after rehydration
-            setTimeout(() => {
+            const timer = setTimeout(() => {
               state.initializeConnection().catch((error: unknown) => {
                 console.error('Failed to initialize connection:', error)
               })
             }, 500)
+            timer.unref?.()
           }
         },
       },

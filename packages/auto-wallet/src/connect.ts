@@ -22,44 +22,45 @@ export const connectToWallet = async (
     timeoutId = setTimeout(() => reject(new Error('Connection timeout')), config.connectionTimeout)
   })
 
-  const wallet = resolvedWallet ?? getWalletBySource(extensionName)
-  if (!wallet) {
-    clearTimeout(timeoutId)
-    throw new Error(`Wallet not found: ${extensionName}`)
-  }
-
-  if (!wallet.installed) {
-    clearTimeout(timeoutId)
-    throw new Error(`${wallet.title} is not installed. Please install the extension first.`)
-  }
-
-  // Enable wallet with timeout
   try {
-    await Promise.race([wallet.enable(config.dappName), timeoutPromise])
+    const connectInternal = async () => {
+      const wallet = resolvedWallet ?? getWalletBySource(extensionName)
+      if (!wallet) {
+        throw new Error(`Wallet not found: ${extensionName}`)
+      }
+
+      if (!wallet.installed) {
+        throw new Error(`${wallet.title} is not installed. Please install the extension first.`)
+      }
+
+      await wallet.enable(config.dappName)
+
+      if (!wallet.extension) {
+        throw new Error(`Extension not available for ${extensionName}`)
+      }
+
+      const rawAccounts = await wallet.getAccounts()
+      if (!rawAccounts || rawAccounts.length === 0) {
+        throw new Error(
+          `No accounts found in ${wallet.title}. Please create or connect an account first.`,
+        )
+      }
+
+      // Convert all account addresses to the configured SS58 format
+      const accounts = rawAccounts.map((account) => ({
+        ...account,
+        address: address(account.address, config.ss58Prefix),
+      }))
+
+      return {
+        accounts,
+        injector: wallet.extension,
+        wallet,
+      }
+    }
+
+    return await Promise.race([connectInternal(), timeoutPromise])
   } finally {
     clearTimeout(timeoutId)
-  }
-
-  if (!wallet.extension) {
-    throw new Error(`Extension not available for ${extensionName}`)
-  }
-
-  const rawAccounts = await wallet.getAccounts()
-  if (!rawAccounts || rawAccounts.length === 0) {
-    throw new Error(
-      `No accounts found in ${wallet.title}. Please create or connect an account first.`,
-    )
-  }
-
-  // Convert all account addresses to the configured SS58 format
-  const accounts = rawAccounts.map((account) => ({
-    ...account,
-    address: address(account.address, config.ss58Prefix),
-  }))
-
-  return {
-    accounts,
-    injector: wallet.extension,
-    wallet,
   }
 }
