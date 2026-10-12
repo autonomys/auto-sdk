@@ -28,7 +28,13 @@
  * ```
  */
 export const shareToStake = (shares: bigint, price: bigint): bigint => {
-  return (shares * price) / BigInt(10 ** 18)
+  if (shares < BigInt(0)) {
+    throw new Error('Shares cannot be negative for share to stake conversion')
+  }
+  if (price < BigInt(0)) {
+    throw new Error('Price cannot be negative for share to stake conversion')
+  }
+  return (shares * price) / BigInt('1000000000000000000')
 }
 
 /**
@@ -62,8 +68,11 @@ export const shareToStake = (shares: bigint, price: bigint): bigint => {
  * ```
  */
 export const stakeToShare = (stake: bigint, price: bigint): bigint => {
-  if (price === BigInt(0)) {
-    throw new Error('Price cannot be zero for stake to share conversion')
+  if (stake < BigInt(0)) {
+    throw new Error('Stake cannot be negative for stake to share conversion')
   }
-  return (stake * BigInt(10 ** 18)) / price
+  if (price <= BigInt(0)) {
+    throw new Error('Price must be greater than zero for stake to share conversion')
+  }
+  return (stake * BigInt('1000000000000000000')) / price
 }

@@ -50,22 +50,22 @@ export const convertRuntimePosition = (
   runtimePosition: RuntimeNominatorPosition,
 ): NominatorPosition => {
   return {
-    currentStakedValue: BigInt(runtimePosition.currentStakedValue.toString()),
-    totalShares: BigInt(runtimePosition.totalShares.toString()),
+    currentStakedValue: BigInt(runtimePosition.currentStakedValue?.toString() ?? '0'),
+    totalShares: BigInt(runtimePosition.totalShares?.toString() ?? '0'),
     storageFeeDeposit: {
-      totalDeposited: BigInt(runtimePosition.storageFeeDeposit.totalDeposited.toString()),
-      currentValue: BigInt(runtimePosition.storageFeeDeposit.currentValue.toString()),
+      totalDeposited: BigInt(runtimePosition.storageFeeDeposit?.totalDeposited?.toString() ?? '0'),
+      currentValue: BigInt(runtimePosition.storageFeeDeposit?.currentValue?.toString() ?? '0'),
     },
-    pendingDeposit: runtimePosition.pendingDeposit.isSome
+    pendingDeposit: runtimePosition.pendingDeposit?.isSome
       ? {
           amount: BigInt(runtimePosition.pendingDeposit.unwrap().amount.toString()),
           effectiveEpoch: runtimePosition.pendingDeposit.unwrap().effectiveEpoch.toNumber(),
         }
       : null,
-    pendingWithdrawals: runtimePosition.pendingWithdrawals.map((withdrawal) => ({
-      stakeWithdrawalAmount: BigInt(withdrawal.stakeWithdrawalAmount.toString()),
-      storageFeeRefund: BigInt(withdrawal.storageFeeRefund.toString()),
-      unlockAtBlock: withdrawal.unlockAtBlock.toNumber(),
+    pendingWithdrawals: (runtimePosition.pendingWithdrawals ?? []).map((withdrawal) => ({
+      stakeWithdrawalAmount: BigInt(withdrawal.stakeWithdrawalAmount?.toString() ?? '0'),
+      storageFeeRefund: BigInt(withdrawal.storageFeeRefund?.toString() ?? '0'),
+      unlockAtBlock: withdrawal.unlockAtBlock?.toNumber() ?? 0,
     })),
   }
 }

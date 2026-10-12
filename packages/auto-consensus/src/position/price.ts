@@ -51,16 +51,11 @@ export const operatorEpochSharePrice = async (
       domainEpoch,
     )
 
-    if (sharePrice === undefined) {
+    if (sharePrice === undefined || sharePrice <= BigInt(0)) {
       return undefined
     }
 
     const perquintillValue = sharePrice
-
-    if (perquintillValue === BigInt(0)) {
-      return undefined
-    }
-
     const one = BigInt('1000000000000000000')
     return (one * one) / perquintillValue
   } catch (error) {
@@ -100,7 +95,7 @@ export const operatorEpochSharePrice = async (
  *
  * // Use for real-time stake/share conversions
  * const stakeAmount = BigInt('1000000000000000000') // 1 AI3
- * const sharesEquivalent = (stakeAmount * BigInt(10 ** 18)) / currentPrice
+ * const sharesEquivalent = (stakeAmount * BigInt('1000000000000000000')) / currentPrice
  * console.log(`${stakeAmount} stake = ${sharesEquivalent} shares`)
  * ```
  */
@@ -125,17 +120,20 @@ export const instantSharePrice = async (
     const currentEpochReward = domainSummary.currentEpochRewards[parseString(operatorId)]
     const rewardBigInt = currentEpochReward ? BigInt(currentEpochReward) : BigInt(0)
 
+    // Clamp nominationTax to valid percentage range [0, 100]
+    const clampedTax = Math.min(Math.max(nominationTax ?? 0, 0), 100)
+
     // Calculate effective stake: currentTotalStake + currentEpochReward * (1 - nominationTax)
-    const rewardAfterTax = (rewardBigInt * BigInt(100 - nominationTax)) / BigInt(100)
+    const rewardAfterTax = (rewardBigInt * BigInt(100 - clampedTax)) / BigInt(100)
     const effectiveStake = currentTotalStake + rewardAfterTax
 
     // Avoid division by zero
-    if (currentTotalShares === BigInt(0)) {
-      return BigInt(10 ** 18) // Return 1.0 in Perquintill format
+    if (currentTotalShares <= BigInt(0)) {
+      return BigInt('1000000000000000000') // Return 1.0 in Perquintill format
     }
 
     // Return price in 18-decimal Perquintill format
-    return (effectiveStake * BigInt(10 ** 18)) / currentTotalShares
+    return (effectiveStake * BigInt('1000000000000000000')) / currentTotalShares
   } catch (error) {
     console.error('Error computing instant share price:', error)
     throw new Error(`Error computing instant share price for operator ${operatorId}: ${error}`, {

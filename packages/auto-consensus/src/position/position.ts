@@ -52,13 +52,19 @@ export const nominatorPosition = async (
   nominatorAccountId: string,
 ): Promise<NominatorPosition> => {
   try {
+    if (!api.call?.domainsApi?.nominatorPosition) {
+      throw new Error(
+        'Runtime API domainsApi.nominatorPosition is not available on this connection',
+      )
+    }
+
     // Call the runtime API to get the nominator position
     const position = (await api.call.domainsApi.nominatorPosition(
       parseString(operatorId),
       nominatorAccountId,
     )) as RuntimeNominatorPositionResponse
 
-    if (position.isNone) {
+    if (!position || position.isNone) {
       // No position exists for this nominator with this operator
       return createEmptyPosition()
     }

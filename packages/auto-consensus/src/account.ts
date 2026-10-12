@@ -41,7 +41,8 @@ export const account = async (api: Api, address: string): Promise<AccountData> =
       data: parseBalance(data),
     }
   } catch (error) {
-    console.log('error', error)
-    throw new Error('Error getting account' + error, { cause: error })
+    console.error('Error fetching account:', error)
+    const errorMsg = error instanceof Error ? error.message : String(error)
+    throw new Error(`Error getting account: ${errorMsg}`, { cause: error })
   }
 }

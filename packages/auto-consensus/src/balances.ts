@@ -1,4 +1,4 @@
-import { activate, activateDomain, Api, type DomainParams } from '@autonomys/auto-utils'
+import { activate, activateDomain, Api, disconnect, type DomainParams } from '@autonomys/auto-utils'
 import { account } from './account'
 import type { BalanceData } from './types/balance'
 
@@ -8,35 +8,51 @@ import type { BalanceData } from './types/balance'
  * This function queries the blockchain to get the total amount of tokens that have been issued
  * across the entire network. This includes all tokens in circulation, staked, reserved, and frozen.
  *
- * @param networkId - Either a networkId string for consensus, or { networkId, domainId } to query a domain
+ * @param apiOrNetworkId - Either an active Api instance, a networkId string for consensus, or { networkId, domainId } to query a domain
  * @returns Promise that resolves to a Codec containing the total issuance value as a hex string
  * @throws Error if the network connection fails or the query is unsuccessful
  *
  * @example
  * ```typescript
  * import { totalIssuance } from '@autonomys/auto-consensus'
+ * import { activate } from '@autonomys/auto-utils'
  *
- * // Query total issuance for default network
- * const issuance = await totalIssuance()
- * const totalTokens = BigInt(issuance.toString())
- * console.log(`Total tokens issued: ${totalTokens}`)
+ * // Query using an existing connection
+ * const api = await activate({ networkId: 'mainnet' })
+ * const issuance = await totalIssuance(api)
  *
- * // Query for specific network (consensus)
+ * // Or query by networkId (automatically manages connection and disconnects)
  * const chronosIssuance = await totalIssuance('chronos')
- *
- * // Query Auto-EVM domain on Chronos
- * const evmIssuance = await totalIssuance({ networkId: 'chronos', domainId: '0' })
  * ```
  */
-export const totalIssuance = async (networkId?: string | DomainParams) => {
-  // Determine whether to connect to consensus or a domain
-  const isDomain = typeof networkId === 'object' && networkId !== null && 'domainId' in networkId
-  const api = await (isDomain
-    ? activateDomain(networkId)
-    : activate(networkId ? { networkId } : undefined))
+export const totalIssuance = async (apiOrNetworkId?: Api | string | DomainParams) => {
+  // If an active Api instance is provided, use it directly without creating or closing connection
+  if (
+    apiOrNetworkId &&
+    typeof apiOrNetworkId === 'object' &&
+    'query' in apiOrNetworkId &&
+    typeof (apiOrNetworkId as Api).query?.balances?.totalIssuance === 'function'
+  ) {
+    return (apiOrNetworkId as Api).query.balances.totalIssuance()
+  }
 
-  const totalIssuance = await api.query.balances.totalIssuance()
-  return totalIssuance
+  // Determine whether to connect to consensus or a domain
+  const isDomain =
+    typeof apiOrNetworkId === 'object' && apiOrNetworkId !== null && 'domainId' in apiOrNetworkId
+  const api = await (isDomain
+    ? activateDomain(apiOrNetworkId as DomainParams)
+    : activate(typeof apiOrNetworkId === 'string' ? { networkId: apiOrNetworkId } : undefined))
+
+  try {
+    const totalIssuance = await api.query.balances.totalIssuance()
+    return totalIssuance
+  } finally {
+    try {
+      await disconnect(api)
+    } catch {
+      // ignore disconnect errors
+    }
+  }
 }
 
 /**
@@ -75,7 +91,8 @@ export const balance = async (api: Api, address: string): Promise<BalanceData> =
 
     return data
   } catch (error) {
-    console.log('error', error)
-    throw new Error('Error getting balance' + error, { cause: error })
+    console.error('Error fetching balance:', error)
+    const errorMsg = error instanceof Error ? error.message : String(error)
+    throw new Error(`Error getting balance: ${errorMsg}`, { cause: error })
   }
 }
