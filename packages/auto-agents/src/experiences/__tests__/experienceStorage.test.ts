@@ -48,7 +48,11 @@ describe('experienceStorage', () => {
       expect(mockAutoDriveApi.uploadObjectAsJSON).toHaveBeenCalledWith(
         {
           header: sampleHeader,
-          data: sampleData,
+          data: {
+            state: 'active',
+            balance: '5000000000000000000',
+            memoryKeys: ['task1', 'task2'],
+          },
           signature: '0xvalidsignature',
         },
         expectedFileName,

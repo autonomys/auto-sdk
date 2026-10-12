@@ -16,10 +16,15 @@ export const uploadExperience = async (
     typeof value === 'bigint' ? value.toString() : value,
   )
   const signature = await wallet.signMessage(jsonString)
-  const cid = await autoDriveApi.uploadObjectAsJSON({ header, data, signature }, fileName, {
-    compression,
-    password,
-  })
+  const serializablePayload = JSON.parse(jsonString) as { header: ExperienceHeader; data: unknown }
+  const cid = await autoDriveApi.uploadObjectAsJSON(
+    { header: serializablePayload.header, data: serializablePayload.data, signature },
+    fileName,
+    {
+      compression,
+      password,
+    },
+  )
   return cid
 }
 
