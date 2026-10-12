@@ -170,4 +170,29 @@ describe('connectToWallet', () => {
     expect(clearTimeoutSpy).toHaveBeenCalled()
     clearTimeoutSpy.mockRestore()
   })
+
+  it('should not surface unhandled rejection if wallet handshake rejects after timeout', async () => {
+    let rejectLateHandshake!: (err: Error) => void
+    const mockWallet = createMockWallet({
+      enable: jest.fn().mockImplementation(
+        () =>
+          new Promise((_, reject) => {
+            rejectLateHandshake = reject
+          }),
+      ),
+    })
+    ;(getWalletBySource as jest.Mock).mockReturnValue(mockWallet)
+
+    const shortConfig = {
+      ...DEFAULT_WALLET_CONFIG,
+      connectionTimeout: 50,
+    }
+
+    await expect(connectToWallet('talisman', shortConfig)).rejects.toThrow('Connection timeout')
+
+    // Handshake rejects in the background after timeout has won
+    expect(() => {
+      rejectLateHandshake(new Error('Late rejection after timeout'))
+    }).not.toThrow()
+  })
 })

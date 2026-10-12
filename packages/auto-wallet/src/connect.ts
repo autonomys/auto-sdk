@@ -59,7 +59,11 @@ export const connectToWallet = async (
       }
     }
 
-    return await Promise.race([connectInternal(), timeoutPromise])
+    const connectPromise = connectInternal()
+    // Suppress unhandled rejections if the handshake rejects after timeout has already triggered
+    connectPromise.catch(() => {})
+
+    return await Promise.race([connectPromise, timeoutPromise])
   } finally {
     clearTimeout(timeoutId)
   }
