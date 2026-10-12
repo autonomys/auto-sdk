@@ -34,8 +34,11 @@ export const chainToChainIdCodec = (api: ApiPromise, chain: Chain): Codec => {
 export const codecToChannel = (codec: unknown): Channel | null => {
   if (!codec || typeof codec !== 'object') return null
 
-  // Check if it's an empty Codec
+  // Check if it's an empty Codec or Option None
   if ('isEmpty' in codec && (codec as { isEmpty: boolean }).isEmpty) {
+    return null
+  }
+  if ('isNone' in codec && (codec as { isNone: boolean }).isNone) {
     return null
   }
 
@@ -49,8 +52,8 @@ export const codecToChannel = (codec: unknown): Channel | null => {
 
   const channel = json as Record<string, unknown>
 
-  // Convert field names from Rust snake_case to camelCase
-  const state = channel.state as string
+  // Convert field names from Rust snake_case / camelCase to Channel type
+  const state = (channel.state ?? channel.status) as string
   const stateMap: Record<string, ChannelState> = {
     Initiated: 'Initiated',
     Open: 'Open',
@@ -58,21 +61,26 @@ export const codecToChannel = (codec: unknown): Channel | null => {
   }
 
   return {
-    channelId: String(channel.channel_id ?? '0'),
+    channelId: String(channel.channel_id ?? channel.channelId ?? '0'),
     state: stateMap[state] ?? 'Initiated',
-    nextInboxNonce: String(channel.next_inbox_nonce ?? '0'),
-    nextOutboxNonce: String(channel.next_outbox_nonce ?? '0'),
+    nextInboxNonce: String(channel.next_inbox_nonce ?? channel.nextInboxNonce ?? '0'),
+    nextOutboxNonce: String(channel.next_outbox_nonce ?? channel.nextOutboxNonce ?? '0'),
     latestResponseReceivedMessageNonce:
       channel.latest_response_received_message_nonce !== null &&
       channel.latest_response_received_message_nonce !== undefined
         ? String(channel.latest_response_received_message_nonce)
-        : null,
-    maxOutgoingMessages: Number(channel.max_outgoing_messages ?? 0),
+        : channel.latestResponseReceivedMessageNonce !== null &&
+            channel.latestResponseReceivedMessageNonce !== undefined
+          ? String(channel.latestResponseReceivedMessageNonce)
+          : null,
+    maxOutgoingMessages: Number(channel.max_outgoing_messages ?? channel.maxOutgoingMessages ?? 0),
     maybeOwner:
       channel.maybe_owner !== null && channel.maybe_owner !== undefined
         ? String(channel.maybe_owner)
-        : null,
-    channelReserveFee: String(channel.channel_reserve_fee ?? '0'),
+        : channel.maybeOwner !== null && channel.maybeOwner !== undefined
+          ? String(channel.maybeOwner)
+          : null,
+    channelReserveFee: String(channel.channel_reserve_fee ?? channel.channelReserveFee ?? '0'),
   }
 }
 
@@ -83,19 +91,66 @@ export const codecToChannel = (codec: unknown): Channel | null => {
  * @internal
  */
 export const codecToBalance = (codec: unknown): bigint => {
-  if (!codec || typeof codec !== 'object') return BigInt(0)
+  if (codec === null || codec === undefined) return BigInt(0)
 
-  // Handle toString method (common for Polkadot Codecs)
-  if ('toString' in codec && typeof (codec as { toString: () => string }).toString === 'function') {
-    return BigInt((codec as { toString: () => string }).toString())
+  if (typeof codec === 'bigint') return codec
+  if (typeof codec === 'number') {
+    if (!Number.isFinite(codec)) return BigInt(0)
+    return BigInt(Math.trunc(codec))
   }
 
-  // Handle Codec with toJSON method
-  if ('toJSON' in codec && typeof (codec as { toJSON: () => unknown }).toJSON === 'function') {
-    const json = (codec as { toJSON: () => unknown }).toJSON()
-    return BigInt(String(json ?? 0))
+  if (typeof codec === 'string') {
+    const trimmed = codec.trim()
+    if (!trimmed) return BigInt(0)
+    try {
+      return BigInt(trimmed)
+    } catch {
+      return BigInt(0)
+    }
   }
 
-  // At this point, codec is guaranteed to be truthy (due to early return above)
-  return BigInt(String(codec))
+  if (typeof codec === 'object') {
+    // Polkadot Codec with native .toBigInt()
+    if (
+      'toBigInt' in codec &&
+      typeof (codec as { toBigInt: () => bigint }).toBigInt === 'function'
+    ) {
+      try {
+        return (codec as { toBigInt: () => bigint }).toBigInt()
+      } catch {
+        // fallback
+      }
+    }
+
+    // Codec with toJSON method
+    if ('toJSON' in codec && typeof (codec as { toJSON: () => unknown }).toJSON === 'function') {
+      try {
+        const json = (codec as { toJSON: () => unknown }).toJSON()
+        if (
+          json !== codec &&
+          (typeof json === 'string' || typeof json === 'number' || typeof json === 'bigint')
+        ) {
+          return codecToBalance(json)
+        }
+      } catch {
+        // fallback
+      }
+    }
+
+    // Custom toString method (not Object.prototype.toString)
+    if (
+      'toString' in codec &&
+      typeof (codec as { toString: () => string }).toString === 'function' &&
+      (codec as { toString: () => string }).toString !== Object.prototype.toString
+    ) {
+      try {
+        const str = (codec as { toString: () => string }).toString().trim()
+        return BigInt(str)
+      } catch {
+        return BigInt(0)
+      }
+    }
+  }
+
+  return BigInt(0)
 }

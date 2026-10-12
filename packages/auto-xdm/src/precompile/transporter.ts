@@ -77,6 +77,10 @@ const encodeMinimumTransferAmount = (): string => {
  * @returns The encoded calldata
  */
 const encodeTransferToConsensusV1 = (accountId32: string, amount: bigint): string => {
+  if (amount < 0n) {
+    throw new RangeError('Amount must be non-negative')
+  }
+
   // Function selector for transfer_to_consensus_v1(bytes32,uint256)
   // keccak256("transfer_to_consensus_v1(bytes32,uint256)") = 0xedcd6515
   const selector = '0xedcd6515'
