@@ -113,3 +113,17 @@ describe('getChunkedFile', () => {
     expect(onProgress.mock.calls).toEqual([[1]])
   })
 })
+
+describe('getNode', () => {
+  const api = createAutoFilesApi(BASE_URL, 'test-secret')
+
+  afterEach(() => {
+    jest.restoreAllMocks()
+  })
+
+  it('throws an error with the node prefix when fetch fails', async () => {
+    jest.spyOn(global, 'fetch').mockResolvedValue(serverError())
+
+    await expect(api.getNode(CID)).rejects.toThrow('Error fetching node: 500 Internal Server Error')
+  })
+})
