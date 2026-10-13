@@ -119,4 +119,48 @@ describe('sliceReadable', () => {
 
     await expect(collect(slice)).rejects.toThrow('chunk fetch failed')
   })
+
+  it('destroys the slice with an error when the source closes before the range is read', async () => {
+    const source = new Readable({ read() {} })
+    const slice = await sliceReadable(source, 0, 2)
+
+    source.push(Buffer.from([1]))
+    setImmediate(() => source.destroy())
+
+    await expect(collect(slice)).rejects.toThrow('Source closed before the byte range was read')
+  })
+
+  describe('when destroying the source fails', () => {
+    const failingDestroy = () =>
+      new Readable({
+        read() {
+          this.push(Buffer.alloc(100, 1))
+        },
+        destroy(_, callback) {
+          callback(new Error('destroy failed'))
+        },
+      })
+
+    it('completes the slice without an unhandled error', async () => {
+      const source = failingDestroy()
+
+      const slice = await sliceReadable(source, 0, 10)
+
+      expect(await collect(slice)).toEqual(Buffer.alloc(10, 1))
+      await new Promise((resolve) => setImmediate(resolve))
+      expect(source.destroyed).toBe(true)
+    })
+
+    it('closes the slice early without an unhandled error', async () => {
+      const source = failingDestroy()
+
+      const slice = await sliceReadable(source, 0, 1e9)
+      for await (const data of slice) {
+        expect(data.length).toBeGreaterThan(0)
+        break
+      }
+      await new Promise((resolve) => setImmediate(resolve))
+      expect(source.destroyed).toBe(true)
+    })
+  })
 })

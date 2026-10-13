@@ -32,7 +32,7 @@ export const sliceReadable = async (
       cleanedUp = true
       readable.removeListener('data', onData)
       readable.removeListener('end', onEnd)
-      readable.removeListener('error', onError)
+      readable.removeListener('close', onClose)
     }
 
     function onData(chunk: Buffer) {
@@ -81,6 +81,10 @@ export const sliceReadable = async (
     }
 
     function onError(err: Error) {
+      // The error listener stays attached for good: destroying the source once
+      // the slice is complete or abandoned can still emit an error, which then
+      // affects nothing but would crash the process without a listener.
+      if (cleanedUp) return
       cleanup()
       if (returned) {
         pass.destroy(err)
@@ -92,9 +96,14 @@ export const sliceReadable = async (
       }
     }
 
+    function onClose() {
+      onError(new Error('Source closed before the byte range was read'))
+    }
+
     readable.on('data', onData)
     readable.once('end', onEnd)
-    readable.once('error', onError)
+    readable.on('error', onError)
+    readable.once('close', onClose)
 
     pass.on('close', () => {
       if (!cleanedUp) {
