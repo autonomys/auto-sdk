@@ -25,7 +25,7 @@ const apiDefinition = createApiDefinition({
 
 The object from above defines a RPC server with the single `test` method that receives as params `{ name: string }` and returns the same.
 
-Usually, we'd want to validate that the input and the output are correctly being constructed respecting the defined types. For this reason type definition has been implemented with `ZodTypes`. However, if for some reason you don't want to implement validators you can use the method `defineUnvalidatedType<T>()`:
+Usually, we'd want to validate that the input and the output are correctly being constructed respecting the defined types. For this reason type definitions accept any [Standard Schema](https://standardschema.dev) (e.g. zod, Valibot or ArkType). Validation with zod needs zod >= 3.24: older versions don't implement Standard Schema, so their schemas fail to type-check. However, if for some reason you don't want to implement validators you can use the method `defineUnvalidatedType<T>()`:
 
 ```ts
 type TypeWithNoValidation = string // Any type could be used here
