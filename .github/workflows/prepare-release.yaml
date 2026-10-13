@@ -49,7 +49,7 @@ jobs:
         run: |
           VERSION=$(node -p "require('./lerna.json').version")
           if ! git rev-parse --verify --quiet "refs/tags/v$VERSION" > /dev/null; then
-            echo "::error::v$VERSION is on main but not tagged, so its release has not finished. Finish it from the Release workflow before preparing another."
+            echo "::error::v$VERSION is on main but not tagged, so its release has not finished. Finish it by re-running the failed jobs of its Release run before preparing another."
             exit 1
           fi
 

@@ -1,18 +1,12 @@
 name: Release
 
-# Publishes the version in lerna.json once a release PR from Prepare release merges into main.
-# Pushes that leave the version unchanged find it already tagged and stop at the plan job.
+# Publishes the version in lerna.json when the push that sets it, the merge of a release PR from
+# Prepare release, lands on main. Other pushes stop at the plan job. Running it by hand is a dry run.
 on:
   push:
     branches:
       - main
   workflow_dispatch:
-    inputs:
-      dryRun:
-        description: 'Dry run (build and verify npm trusted publishing, publish nothing)'
-        required: false
-        default: false
-        type: boolean
 
 concurrency:
   group: release
@@ -43,20 +37,38 @@ jobs:
 
       - name: Find the version to release
         id: plan
+        env:
+          BEFORE: ${{ github.event.before }}
         run: |
           VERSION=$(node -p "require('./lerna.json').version")
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+          if [ "$GITHUB_EVENT_NAME" = workflow_dispatch ]; then
+            echo "Started by hand, so this is a dry run of v$VERSION."
+            echo "release=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
           if git ls-remote --exit-code --tags origin "refs/tags/v$VERSION" > /dev/null; then
             echo "v$VERSION is already released."
             echo "release=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Only the run for the push that set the version publishes it, so a partial release is
+          # finished from the same commit and packages, never from a later merge.
+          git fetch --quiet --depth=1 origin "$BEFORE"
+          PREVIOUS=$(git show "$BEFORE:lerna.json" | node -p "JSON.parse(require('fs').readFileSync(0, 'utf8')).version")
+          if [ "$PREVIOUS" = "$VERSION" ]; then
+            echo "::warning::v$VERSION is not tagged, but this push did not set it, so it is not published from here. Finish the release by re-running the failed jobs of the Release run for the push that set it."
+            echo "release=false" >> "$GITHUB_OUTPUT"
           else
-            echo "v$VERSION is not tagged yet, so it will be published."
+            echo "This push sets v$VERSION, so it will be published."
             echo "release=true" >> "$GITHUB_OUTPUT"
           fi
 
   build:
     needs: plan
-    if: needs.plan.outputs.release == 'true' || inputs.dryRun
+    if: needs.plan.outputs.release == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 60
     permissions:
@@ -97,7 +109,7 @@ jobs:
 
   publish:
     needs: [plan, build]
-    if: needs.plan.outputs.release == 'true' || inputs.dryRun
+    if: needs.plan.outputs.release == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     environment: npm-publish
@@ -130,11 +142,11 @@ jobs:
       - name: Publish to npm
         run: node scripts/publish-packages.js tarballs/manifest.json
         env:
-          DRY_RUN: ${{ inputs.dryRun || false }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' }}
 
   github-release:
     needs: [plan, publish]
-    if: needs.plan.outputs.release == 'true' && !inputs.dryRun
+    if: needs.plan.outputs.release == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:

@@ -137,12 +137,12 @@ Prepare release will:
 
 Release will:
 
-- Stop straight away unless the version in `lerna.json` has no tag yet, so merges that don't change the version publish nothing
+- Publish only for the merge that changes the version in `lerna.json`, so other merges publish nothing
 - Build and test what was merged, then pack every package
 - Check each package's name, version and `publishConfig`, and that npm trusted publishing is set up for it, then publish them to npm with provenance, skipping any version already on npm
 - Tag the release and create a GitHub release with the changelog
 
-To check the npm setup without publishing, run the "Release" workflow on `main` with "Dry run" ticked. It builds and packs the packages, runs the trusted publishing check, and lists what it would publish.
+To check the npm setup without publishing, run the "Release" workflow on `main`. Running it by hand is always a dry run: it builds and packs the packages, runs the checks, and lists what it would publish.
 
 Pre-releases (beta versions) are not currently supported.
 
@@ -170,7 +170,7 @@ After a release is made:
 If you encounter issues during the release process:
 
 1. Check the GitHub Actions logs for any errors
-2. If publishing fails partway, fix the cause and click "Re-run failed jobs" on the Release run. Versions already on npm are skipped, and the tag and GitHub release are only created once every package is published. Don't run Prepare release again: that would bump the version a second time
+2. If publishing fails partway, fix the cause and click "Re-run failed jobs" on that Release run. It reuses the run's commit and packages, skips versions already on npm, and only creates the tag and GitHub release once every package is published. Later merges and manual runs won't finish it, and don't run Prepare release again: that would bump the version a second time. If re-running can't finish it, for example because of a bug in the release scripts, a maintainer has to publish the remaining packages by hand from that run's `packages` artifact, then tag the release
 3. If Prepare release says the current version is not tagged, the previous release didn't finish. Re-run the failed jobs of its Release run first
 4. If either workflow refuses to run, check that it was started on `main`
 5. If the "Verify npm trusted publishing" step fails, its output lists each package npm rejected and the settings that package's trusted publisher needs on npmjs.com
