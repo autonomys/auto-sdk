@@ -99,6 +99,17 @@ describe('sliceReadable', () => {
     expect(await collect(slice)).toHaveLength(0)
   })
 
+  it('rejects, without an unhandled error, when the source fails before the slice is returned', async () => {
+    const source = new Readable({
+      read() {
+        process.nextTick(() => this.destroy(new Error('chunk fetch failed')))
+      },
+    })
+
+    await expect(sliceReadable(source, 0, 10)).rejects.toThrow('chunk fetch failed')
+    await new Promise((resolve) => setImmediate(resolve))
+  })
+
   it('destroys the slice with an error from the source', async () => {
     const source = new Readable({ read() {} })
     const slice = await sliceReadable(source, 0, 10)

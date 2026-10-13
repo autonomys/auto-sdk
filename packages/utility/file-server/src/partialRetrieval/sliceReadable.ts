@@ -19,7 +19,13 @@ export const sliceReadable = async (
     let bytesRead = 0
     let bytesPushed = 0
     let cleanedUp = false
+    let returned = false
     const pass = new PassThrough()
+
+    function returnPass() {
+      returned = true
+      resolve(pass)
+    }
 
     function cleanup() {
       if (cleanedUp) return
@@ -76,8 +82,14 @@ export const sliceReadable = async (
 
     function onError(err: Error) {
       cleanup()
-      pass.destroy(err)
-      reject(err)
+      if (returned) {
+        pass.destroy(err)
+      } else {
+        // The caller never receives `pass`, so nothing would handle an error
+        // event on it: report the error through the rejection alone.
+        reject(err)
+        pass.destroy()
+      }
     }
 
     readable.on('data', onData)
@@ -89,8 +101,8 @@ export const sliceReadable = async (
         cleanup()
         readable.destroy()
       }
-      resolve(pass)
+      returnPass()
     })
-    setImmediate(() => resolve(pass))
+    setImmediate(returnPass)
   })
 }
