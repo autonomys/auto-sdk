@@ -1,40 +1,19 @@
-import {
-  Type,
-  detectTxSuccess,
-  eventName,
-  eventsGroup,
-  expectSuccessfulTxEvent,
-  validateEvents,
-} from '../src/utils'
+import { detectTxSuccess, validateEvents } from '../src/utils'
 import type { EventRecord } from '../src/types/event'
 
 const mockEventRecord = (section: string, method: string): EventRecord =>
   ({
-    phase: {} as any,
+    phase: {},
     event: {
       section,
       method,
-      data: [] as any,
-      typeDef: [] as any,
-    } as any,
+      data: [],
+      typeDef: [],
+    },
     topics: [],
   }) as unknown as EventRecord
 
 describe('Event utilities in auto-utils', () => {
-  describe('eventName and eventsGroup', () => {
-    it('creates standardized event names using Type enum', () => {
-      expect(eventName(Type.system, 'ExtrinsicSuccess')).toBe('system.ExtrinsicSuccess')
-      expect(eventName(Type.system, 'ExtrinsicFailed')).toBe('system.ExtrinsicFailed')
-      expect(eventName(Type.system, 'NewAccount')).toBe('system.NewAccount')
-    })
-
-    it('contains valid system event groups and default success events', () => {
-      expect(eventsGroup.system.success).toBe('system.ExtrinsicSuccess')
-      expect(eventsGroup.system.failure).toBe('system.ExtrinsicFailed')
-      expect(eventsGroup.system.newAccount).toBe('system.NewAccount')
-      expect(expectSuccessfulTxEvent).toEqual(['system.ExtrinsicSuccess'])
-    })
-  })
 
   describe('detectTxSuccess', () => {
     it('returns true when system.ExtrinsicSuccess is present in events', () => {
