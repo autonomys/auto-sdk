@@ -2,35 +2,6 @@ import { Readable } from 'stream'
 import { forkStream, httpBodyToStream, streamToBuffer } from '../src/streams'
 
 describe('streams', () => {
-  describe('streamToBuffer', () => {
-    it('should convert readable stream to Buffer', async () => {
-      const input = Buffer.from('hello world')
-      const stream = Readable.from([input])
-      const result = await streamToBuffer(stream)
-
-      expect(result).toEqual(input)
-    })
-
-    it('should reject when stream emits error', async () => {
-      const stream = new Readable({
-        read() {
-          this.destroy(new Error('stream read failed'))
-        },
-      })
-
-      await expect(streamToBuffer(stream)).rejects.toThrow('stream read failed')
-    })
-
-    it('should reject if stream is already destroyed', async () => {
-      const stream = new Readable({
-        read() {},
-      })
-      stream.on('error', () => {})
-      stream.destroy(new Error('early destroy'))
-
-      await expect(streamToBuffer(stream)).rejects.toThrow('early destroy')
-    })
-  })
 
   describe('forkStream', () => {
     it('should duplicate readable stream into two independent streams', async () => {

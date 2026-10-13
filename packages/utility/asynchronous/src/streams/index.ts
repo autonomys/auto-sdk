@@ -12,13 +12,9 @@ export async function forkStream(stream: Readable): Promise<[Readable, Readable]
 }
 
 export const streamToBuffer = async (stream: Readable): Promise<Buffer> => {
-  if (stream.destroyed) {
-    throw stream.errored ?? new Error('Stream already destroyed')
-  }
-
   return new Promise((resolve, reject) => {
     const chunks: Buffer[] = []
-    stream.on('data', (chunk) => chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)))
+    stream.on('data', (chunk) => chunks.push(chunk))
     stream.on('end', () => resolve(Buffer.concat(chunks)))
     stream.on('error', (error) => reject(error))
   })
