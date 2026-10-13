@@ -25,4 +25,5 @@ import { DownloadHeaderResult } from './headers.js'
  */
 export const createResponseBodyTransform = ({
   shouldDecompressBody,
-}: DownloadHeaderResult): Transform => (shouldDecompressBody ? createInflate() : new PassThrough())
+}: Pick<DownloadHeaderResult, 'shouldDecompressBody'>): Transform =>
+  shouldDecompressBody ? createInflate() : new PassThrough()

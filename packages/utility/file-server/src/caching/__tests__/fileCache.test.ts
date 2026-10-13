@@ -1,9 +1,11 @@
 import { stringify } from '@autonomys/auto-utils'
+import type { Request } from 'express'
 import fs from 'fs'
 import Keyv from 'keyv'
 import os from 'os'
 import path from 'path'
 import { Readable } from 'stream'
+import { getByteRange } from '../../http/headers.js'
 import { FileResponse } from '../../models.js'
 import { createFileCache } from '../fileCache.js'
 
@@ -131,5 +133,18 @@ describe('createFileCache', () => {
       'Invalid file cache key',
     )
     expect(fs.readFileSync(insideFile, 'utf8')).toBe('db')
+  })
+
+  it('reads ranges from getByteRange whose offsets are too large to be exact', async () => {
+    const key = `file:${CID}`
+    const huge = '9'.repeat(30)
+    const byteRange = (range: string) => getByteRange({ headers: { range } } as unknown as Request)
+    await cache.set(key, fileResponse('hello'))
+
+    const toEnd = await cache.get(key, { byteRange: byteRange(`bytes=1-${huge}`) })
+    expect((await collect(toEnd!.data)).toString('utf8')).toBe('ello')
+
+    const pastEnd = await cache.get(key, { byteRange: byteRange(`bytes=${huge}-`) })
+    expect(await collect(pastEnd!.data)).toHaveLength(0)
   })
 })
