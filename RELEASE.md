@@ -139,7 +139,7 @@ Release will:
 
 - Stop straight away unless the version in `lerna.json` has no tag yet, so merges that don't change the version publish nothing
 - Build and test what was merged, then pack every package
-- Check that npm trusted publishing is set up for every package, then publish them to npm with provenance, skipping any version already on npm
+- Check each package's name, version and `publishConfig`, and that npm trusted publishing is set up for it, then publish them to npm with provenance, skipping any version already on npm
 - Tag the release and create a GitHub release with the changelog
 
 To check the npm setup without publishing, run the "Release" workflow on `main` with "Dry run" ticked. It builds and packs the packages, runs the trusted publishing check, and lists what it would publish.
@@ -174,8 +174,9 @@ If you encounter issues during the release process:
 3. If Prepare release says the current version is not tagged, the previous release didn't finish. Re-run the failed jobs of its Release run first
 4. If either workflow refuses to run, check that it was started on `main`
 5. If the "Verify npm trusted publishing" step fails, its output lists each package npm rejected and the settings that package's trusted publisher needs on npmjs.com
-6. If publishing fails with an authorization error after that step passed, check that the package's trusted publisher allows publishing directly. The step can't check this, and npm defaults new trusted publishers to staged publishing only
-7. Verify your Git configuration is correct
-8. For changelog generation issues, ensure your GITHUB_TOKEN has adequate permissions
+6. If publishing stops before anything is published because a package's name, version or `publishConfig` is unexpected, check that package's `package.json`. `publishConfig` may only set `access: "public"`, because npm applies anything else in it as npm config while publishing, including where to send the publish credentials
+7. If publishing fails with an authorization error after the "Verify npm trusted publishing" step passed, check that the package's trusted publisher allows publishing directly. The step can't check this, and npm defaults new trusted publishers to staged publishing only
+8. Verify your Git configuration is correct
+9. For changelog generation issues, ensure your GITHUB_TOKEN has adequate permissions
 
 For more assistance, contact the core development team.
