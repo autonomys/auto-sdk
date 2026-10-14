@@ -255,7 +255,9 @@ export const createApiDefinition = <S extends ApiDefinition>(serverDefinition: S
           const result = await internalHandler(params, { notificationClient, send })
 
           if (isStandardSchema(serverDefinition.methods[method].returns)) {
-            return validateSchema(serverDefinition.methods[method].returns, result)
+            // Validate the result as the real server would send it, after a JSON round-trip
+            const sentResult = JSON.parse(JSON.stringify({ result })).result
+            return validateSchema(serverDefinition.methods[method].returns, sentResult)
           } else {
             return result
           }

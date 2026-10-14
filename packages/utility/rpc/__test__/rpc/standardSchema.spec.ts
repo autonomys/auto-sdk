@@ -46,6 +46,7 @@ const alwaysInvalidSchema: StandardSchemaV1<Name> = {
 }
 
 const INVALID_RESULT_NAME = 'return an invalid result'
+const DATE = new Date('2026-10-14T00:00:00.000Z')
 
 describe('rpc/definition with Standard Schema', () => {
   let httpServer: http.Server
@@ -81,6 +82,10 @@ describe('rpc/definition with Standard Schema', () => {
         params: defineUnvalidatedType<Name>(),
         returns: defineUnvalidatedType<Name>(),
       },
+      dateResult: {
+        params: z.object({ name: z.string() }),
+        returns: z.object({ at: z.string().transform((at) => new Date(at)) }),
+      },
     },
     notifications: {},
   })
@@ -107,6 +112,8 @@ describe('rpc/definition with Standard Schema', () => {
     alwaysInvalid: handler,
     transformedResult: handler,
     unvalidated: handler,
+    // Returns a Date, which is sent as a string and turned back into a Date by the schema
+    dateResult: () => ({ at: DATE }),
   }
 
   beforeAll(async () => {
@@ -197,6 +204,14 @@ describe('rpc/definition with Standard Schema', () => {
     await expect(mockClient.api.transformedResult({ name: 'test' })).resolves.toEqual({
       name: 'TEST',
     })
+  })
+
+  it('should validate the result after a JSON round-trip in the ws client', async () => {
+    await expect(wsClient.api.dateResult({ name: 'test' })).resolves.toEqual({ at: DATE })
+  })
+
+  it('should validate the result after a JSON round-trip in the mock client', async () => {
+    await expect(mockClient.api.dateResult({ name: 'test' })).resolves.toEqual({ at: DATE })
   })
 
   it('should not validate unvalidated types', async () => {
