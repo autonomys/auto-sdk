@@ -213,6 +213,14 @@ describe('rpc/definition parsed params', () => {
         params: upperCaseNameSchema,
         returns: defineUnvalidatedType<Name>(),
       },
+      dateTransform: {
+        params: z.object({ at: z.string().transform((at) => new Date(at)) }),
+        returns: defineUnvalidatedType<null>(),
+      },
+      plainDate: {
+        params: z.object({ at: z.date() }),
+        returns: defineUnvalidatedType<null>(),
+      },
     },
     notifications: {},
   })
@@ -226,7 +234,18 @@ describe('rpc/definition parsed params', () => {
     received.push(params)
     return params
   }
-  const handlers = { zod3: handler, zod4: handler, otherZod3: handler, custom: handler }
+  const dateHandler = (params: { at: Date }) => {
+    received.push(params)
+    return null
+  }
+  const handlers = {
+    zod3: handler,
+    zod4: handler,
+    otherZod3: handler,
+    custom: handler,
+    dateTransform: dateHandler,
+    plainDate: dateHandler,
+  }
 
   beforeAll(async () => {
     // Free port, so connections left open by other suites on TEST_PORT can't interfere
@@ -280,6 +299,27 @@ describe('rpc/definition parsed params', () => {
     await client.zod3(params)
     await mockClient.api.zod3(params)
     expect(received).toEqual([{ name: 'TEST' }, { name: 'TEST' }])
+  })
+
+  // A Date is sent as a string, so the mock must validate the params after a JSON round-trip
+  it('should pass the same Date to the server and mock handlers', async () => {
+    const at = new Date('2026-10-14T00:00:00.000Z')
+
+    await client.dateTransform({ at })
+    await mockClient.api.dateTransform({ at })
+    expect(received).toEqual([{ at }, { at }])
+  })
+
+  it('should reject a Date param in the server and mock clients when it arrives as a string', async () => {
+    const at = new Date('2026-10-14T00:00:00.000Z')
+
+    await expect(client.plainDate({ at })).rejects.toMatchObject({
+      code: RpcError.Code.InvalidParams,
+    })
+    await expect(mockClient.api.plainDate({ at })).rejects.toMatchObject({
+      code: RpcError.Code.InvalidParams,
+    })
+    expect(received).toEqual([])
   })
 })
 

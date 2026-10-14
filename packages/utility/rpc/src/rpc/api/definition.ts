@@ -253,7 +253,9 @@ export const createApiDefinition = <S extends ApiDefinition>(serverDefinition: S
 
           let parsedParams = params
           if (isStandardSchema(serverDefinition.methods[method].params)) {
-            parsedParams = await validateSchema(serverDefinition.methods[method].params, params)
+            // Validate the params as the real server would receive them, after a JSON round-trip
+            const sentParams = JSON.parse(JSON.stringify({ params })).params
+            parsedParams = await validateSchema(serverDefinition.methods[method].params, sentParams)
           }
 
           // Inject the notification client into the handler
