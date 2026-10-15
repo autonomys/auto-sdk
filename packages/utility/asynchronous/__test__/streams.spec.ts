@@ -2,7 +2,6 @@ import { Readable } from 'stream'
 import { forkStream, httpBodyToStream, streamToBuffer } from '../src/streams'
 
 describe('streams', () => {
-
   describe('forkStream', () => {
     it('should duplicate readable stream into two independent streams', async () => {
       const input = Buffer.from('parallel data stream')
