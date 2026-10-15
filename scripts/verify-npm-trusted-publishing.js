@@ -2,12 +2,12 @@
 
 /**
  * Preflight for npm trusted publishing (OIDC), run by the release workflow before anything is
- * versioned or pushed. For every package lerna would publish, it performs the same GitHub OIDC to
+ * published. For every package lerna would publish, it performs the same GitHub OIDC to
  * npm token exchange that `lerna publish` performs per package.
  *
  * npm does not validate trusted publisher settings when they are saved, and lerna treats a failed
  * exchange as "no OIDC" rather than an error, so without this check a misconfigured package only
- * fails mid-publish: after the release tag is pushed and the packages before it are already out.
+ * fails mid-publish, after the packages before it are already out.
  *
  * It cannot check a trusted publisher's allowed actions: npm issues the same token whether the
  * publisher may `npm publish` or only `npm stage publish`, and enforces that at publish time.

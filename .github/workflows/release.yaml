@@ -1,45 +1,81 @@
 name: Release
 
+# Publishes the version in lerna.json when the push that sets it, the merge of a release PR from
+# Prepare release, lands on main. Other pushes stop at the plan job. Running it by hand is a dry run.
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
-    inputs:
-      releaseType:
-        description: 'Release type (major, minor, patch)'
-        required: true
-        default: 'patch'
-        type: choice
-        options:
-          - patch
-          - minor
-          - major
-      dryRun:
-        description: 'Dry run (no publish)'
-        required: false
-        default: false
-        type: boolean
-      prerelease:
-        description: 'Pre-release'
-        required: false
-        default: false
-        type: boolean
+
+permissions: {}
 
 jobs:
+  plan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      version: ${{ steps.plan.outputs.version }}
+      release: ${{ steps.plan.outputs.release }}
+    steps:
+      - name: Check the branch
+        if: github.ref != 'refs/heads/main'
+        run: |
+          echo "::error::Releases publish from main, not ${GITHUB_REF#refs/heads/}."
+          exit 1
+
+      - name: Checkout 🛎️
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Find the version to release
+        id: plan
+        env:
+          BEFORE: ${{ github.event.before }}
+        run: |
+          VERSION=$(node -p "require('./lerna.json').version")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+          if [ "$GITHUB_EVENT_NAME" = workflow_dispatch ]; then
+            echo "Started by hand, so this is a dry run of v$VERSION."
+            echo "release=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if git ls-remote --exit-code --tags origin "refs/tags/v$VERSION" > /dev/null; then
+            echo "v$VERSION is already released."
+            echo "release=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Only the run for the push that set the version publishes it, so a partial release is
+          # finished from the same commit, never from a later merge.
+          git fetch --quiet --depth=1 origin "$BEFORE"
+          PREVIOUS=$(git show "$BEFORE:lerna.json" | node -p "JSON.parse(require('fs').readFileSync(0, 'utf8')).version")
+          if [ "$PREVIOUS" = "$VERSION" ]; then
+            echo "::warning::v$VERSION is not tagged, but this push did not set it, so it is not published from here. Finish the release by re-running the failed jobs of the Release run for the push that set it."
+            echo "release=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "This push sets v$VERSION, so it will be published."
+            echo "release=true" >> "$GITHUB_OUTPUT"
+          fi
+
   release:
+    needs: plan
+    if: needs.plan.outputs.release == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 60
     environment: npm-publish
     permissions:
-      contents: write
-      pull-requests: read
+      contents: read
       id-token: write
     steps:
       - name: Checkout 🛎️
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          fetch-depth: 0
-          ref: ${{ github.ref }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-          clean: true
+          persist-credentials: false
 
       - name: Setup Node.js
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
@@ -49,57 +85,54 @@ jobs:
       - name: Enable Corepack
         run: corepack enable
 
-      - name: Configure Git
-        run: |
-          git config --global user.name "GitHub Actions Bot"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-
       - name: Install dependencies
         run: yarn install
 
       - name: Verify npm trusted publishing
         run: node scripts/verify-npm-trusted-publishing.js
 
-      - name: Generate PR-based changelog
-        if: ${{ !inputs.prerelease && !inputs.dryRun }}
-        run: BUMP_TYPE=${{ inputs.releaseType }} yarn changelog
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build all packages 🔧
+        run: yarn build
 
-      - name: Version bump and publish
-        if: ${{ !inputs.dryRun }}
-        id: version_bump
+      - name: Run tests 🧪
+        run: yarn test:unit
+
+      - name: Publish to npm
+        if: needs.plan.outputs.release == 'true'
+        run: yarn lerna publish from-package --yes --ignore-scripts
+
+  github-release:
+    needs: [plan, release]
+    if: needs.plan.outputs.release == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Tag the release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.plan.outputs.version }}
         run: |
-          if [ "${{ inputs.prerelease }}" = "true" ]; then
-            BUMP_TYPE="prerelease"
-            PRERELEASE_FLAG="--preid beta"
-            PUBLISH_FLAGS="--yes --force-publish --dist-tag beta"
+          TAGGED=$(git ls-remote origin "refs/tags/v$VERSION^{}" | cut -f1)
+          if [ -z "$TAGGED" ]; then
+            git config user.name "GitHub Actions Bot"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git tag -a "v$VERSION" -m "v$VERSION"
+            git push origin "v$VERSION"
+          elif [ "$TAGGED" = "$GITHUB_SHA" ]; then
+            echo "v$VERSION already tags $GITHUB_SHA, from an earlier attempt of this run."
           else
-            BUMP_TYPE="${{ inputs.releaseType }}"
-            PRERELEASE_FLAG=""
-            PUBLISH_FLAGS="--yes --force-publish"
+            echo "::error::v$VERSION already tags $TAGGED, not $GITHUB_SHA."
+            exit 1
           fi
 
-          git add CHANGELOG.md
-          git commit -m "docs: update CHANGELOG.md for release" || echo "No changes to commit"
-
-          yarn lerna version $BUMP_TYPE --yes --no-push --force-publish $PRERELEASE_FLAG
-
-          # Get the new version after bumping
-          NEW_VERSION=$(node -p "require('./lerna.json').version")
-          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
-
-          git push --follow-tags --force-with-lease
-          yarn lerna publish from-package $PUBLISH_FLAGS
-
       - name: Create GitHub Release
-        if: ${{ !inputs.dryRun }}
         uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
         with:
           body_path: CHANGELOG.md
-          tag_name: v${{ steps.version_bump.outputs.version }}
-          prerelease: ${{ inputs.prerelease }}
+          tag_name: v${{ needs.plan.outputs.version }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
