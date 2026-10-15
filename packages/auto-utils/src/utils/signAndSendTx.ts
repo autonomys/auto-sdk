@@ -13,6 +13,7 @@ import type {
 } from '../types'
 import { detectTxSuccess } from './detectTxSuccess'
 import { expectSuccessfulTxEvent } from './events'
+import { formatDispatchError } from './formatDispatchError'
 import { validateEvents } from './validateEvents'
 
 /**
@@ -99,7 +100,7 @@ export const signAndSendTx = async <TError>(
   let success = false
   let txHashHex: string | undefined = undefined
   let blockHash: string | undefined = undefined
-  const eventsValidated: EventsValidated = { expected: [], found: [] }
+  let eventsValidated: EventsValidated = { expected: [], found: [] }
   let identifier: string | null = null
 
   const receipt: SubmittableResult = await new Promise((resolve, reject) => {
@@ -136,40 +137,56 @@ export const signAndSendTx = async <TError>(
         const { events = [], status, dispatchError } = result
 
         if (status.isInBlock || status.isFinalized) {
-          txHashHex = result.txHash.toHex()
-          blockHash = status.isInBlock ? status.asInBlock.toHex() : status.asFinalized.toHex()
-          if (log) console.log('Successful tx', txHashHex, 'in block', blockHash)
+          try {
+            txHashHex = result.txHash.toHex()
+            blockHash = status.isInBlock ? status.asInBlock.toHex() : status.asFinalized.toHex()
+            if (log) console.log('Successful tx', txHashHex, 'in block', blockHash)
 
-          success = detectTxSuccess(events)
+            success = detectTxSuccess(events)
 
-          if (eventsExpected.length > 0) {
-            const _events = validateEvents(events, eventsExpected, txHashHex, blockHash, log)
-            if (_events.expected.length === 0) safeResolve(result)
-            else safeReject(new Error('Events not found'))
-          } else {
-            try {
-              events.forEach(({ event: { section, method, data } }) => {
-                if (section === 'system' && method === 'ExtrinsicFailed') {
-                  const dispatchErrorJson = JSON.parse(dispatchError!.toString())
-                  const errorEnum = mapErrorCodeToEnum?.(dispatchErrorJson.module.error)
-                  safeReject(
-                    new Error(
-                      `Extrinsic failed: ${errorEnum} in block #${blockHash} with error: ${dispatchErrorJson}`,
-                    ),
-                  )
-                }
-                if (section === 'autoId' && method === 'NewAutoIdRegistered') {
-                  identifier = data[0].toString()
-                }
-              })
-              safeResolve(result)
-            } catch (err: unknown) {
+            // Extract identifier if autoId registered
+            events.forEach(({ event: { section, method, data } }) => {
+              if (section === 'autoId' && method === 'NewAutoIdRegistered') {
+                identifier = data[0].toString()
+              }
+            })
+
+            // Check for extrinsic failure
+            let hasExtrinsicFailed = false
+            events.forEach(({ event: { section, method } }) => {
+              if (section === 'system' && method === 'ExtrinsicFailed') {
+                hasExtrinsicFailed = true
+              }
+            })
+
+            if (hasExtrinsicFailed || dispatchError) {
+              const { errorEnum, formattedError } = formatDispatchError(
+                dispatchError,
+                mapErrorCodeToEnum,
+              )
+              const enumLabel = errorEnum !== undefined ? `: ${String(errorEnum)}` : ''
               safeReject(
                 new Error(
-                  `Failed to retrieve block information: ${err instanceof Error ? err.message : String(err)}`,
+                  `Extrinsic failed${enumLabel} in block #${blockHash} with error: ${formattedError}`,
                 ),
               )
+              return
             }
+
+            if (eventsExpected.length > 0) {
+              const _events = validateEvents(events, eventsExpected, txHashHex, blockHash, log)
+              eventsValidated = _events
+              if (_events.expected.length === 0) safeResolve(result)
+              else safeReject(new Error('Events not found'))
+            } else {
+              safeResolve(result)
+            }
+          } catch (err: unknown) {
+            safeReject(
+              new Error(
+                `Failed to retrieve block information: ${err instanceof Error ? err.message : String(err)}`,
+              ),
+            )
           }
         } else if (
           status.isRetracted ||
@@ -178,8 +195,9 @@ export const signAndSendTx = async <TError>(
           status.isInvalid ||
           status.isUsurped
         ) {
-          if (log) console.error('Transaction failed')
-          safeReject(new Error('Transaction failed'))
+          const reason = status.isUsurped ? 'Transaction usurped' : 'Transaction failed'
+          if (log) console.error(reason)
+          safeReject(new Error(reason))
         }
       })
 
