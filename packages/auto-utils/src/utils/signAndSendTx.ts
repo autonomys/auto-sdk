@@ -83,7 +83,7 @@ import { validateEvents } from './validateEvents'
  * }
  *
  * @throws {Error} When the transaction fails, times out, or expected events are not found.
- * @throws {Error} When the transaction is retracted, dropped, or invalid.
+ * @throws {Error} When the transaction is retracted, dropped, usurped, or invalid.
  * @throws {Error} When custom error mapping indicates a specific error condition.
  */
 export const signAndSendTx = async <TError>(
@@ -175,7 +175,8 @@ export const signAndSendTx = async <TError>(
           status.isRetracted ||
           status.isFinalityTimeout ||
           status.isDropped ||
-          status.isInvalid
+          status.isInvalid ||
+          status.isUsurped
         ) {
           if (log) console.error('Transaction failed')
           safeReject(new Error('Transaction failed'))
