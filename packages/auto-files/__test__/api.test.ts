@@ -113,3 +113,21 @@ describe('getChunkedFile', () => {
     expect(onProgress.mock.calls).toEqual([[1]])
   })
 })
+
+describe('getNode', () => {
+  const api = createAutoFilesApi(BASE_URL, 'test-secret')
+
+  afterEach(() => {
+    jest.restoreAllMocks()
+  })
+
+  it('throws an error with node endpoint context on failure', async () => {
+    jest
+      .spyOn(global, 'fetch')
+      .mockResolvedValueOnce(new Response('not found', { status: 404, statusText: 'Not Found' }))
+
+    await expect(api.getNode('bafkr6itestnode')).rejects.toThrow(
+      'Error fetching node: 404 Not Found',
+    )
+  })
+})

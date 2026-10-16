@@ -61,7 +61,7 @@ export const createAutoFilesApi = (baseUrl: string, apiSecret: string) => {
   const getNode = async (cid: string): Promise<ArrayBuffer> => {
     const response = await authFetch(`${baseUrl}/nodes/${cid}`)
     if (!response.ok) {
-      throw new Error(`Error fetching chunk: ${response.status} ${response.statusText}`)
+      throw new Error(`Error fetching node: ${response.status} ${response.statusText}`)
     }
 
     const buffer = await response.arrayBuffer()
