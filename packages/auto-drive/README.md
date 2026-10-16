@@ -555,7 +555,7 @@ With `settleGraceMs` set, `waitForPaymentCompletion` keeps polling through 410 f
 
 Keep these points in mind:
 
-- `'EXPIRED'` from this path means that the SDK stopped waiting. It does not prove that the payment is lost, because Auto Drive can still credit it for a while. Check your credits before you tell a user that the payment failed.
+- `'EXPIRED'` from this path means that the SDK stopped waiting. It does not prove that the payment is lost, because Auto Drive can still credit it for a while. Check your credits with `getCreditSummary` before you tell a user that the payment failed (see [Checking your purchased credits](#checking-your-purchased-credits)).
 - The grace is measured from the first 410 that the SDK sees. Wait for the payment receipt before you call `waitForPaymentCompletion`.
 - Keep `timeoutMs` (default 5 minutes) larger than the time left on the lock plus `settleGraceMs`. Otherwise the call can throw a timeout error before it returns `'EXPIRED'`.
 
@@ -575,7 +575,7 @@ When Auto Drive refuses a payment request, the SDK throws a `PaymentApiError`. I
 Some failures have no `code`. Check `status` for these:
 
 - **400:** the request is invalid, for example `requestedBytes` is larger than the whole credit cap.
-- **404 on `/intents`:** the account cannot buy credits. Auto Drive usually sends this, not `GOOGLE_ACCOUNT_REQUIRED`, to accounts that are not Google-registered.
+- **404 on `/intents` or `/credits`:** the account cannot buy credits. Auto Drive usually sends this, not `GOOGLE_ACCOUNT_REQUIRED`, to accounts that are not Google-registered.
 - **410:** the price lock has lapsed. See [Why `settleGraceMs` matters](#why-settlegracems-matters).
 
 ```typescript
@@ -597,6 +597,34 @@ try {
   }
 }
 ```
+
+### Checking your purchased credits
+
+Credits bought with AI3 or USDC are kept apart from the free allocation that `getPendingCredits` reports. Each completed payment adds a batch of credits that expires `expiryDays` days after the purchase. Uploads use the batch that expires soonest first. Byte amounts are decimal strings, so convert them with `BigInt` before you do arithmetic.
+
+```typescript
+const summary = await api.getCreditSummary()
+// summary.uploadBytesRemaining — upload bytes left across active purchases
+// summary.nextExpiryDate       — ISO 8601 date of the soonest expiry, or null
+// summary.maxPurchasableBytes  — the most a new intent can request without CREDIT_CAP_EXCEEDED
+
+// Check that a purchase fits under the per-user credit cap before you create an intent
+const sizeBytes = BigInt(1024 ** 3) // 1 GiB
+if (sizeBytes > BigInt(summary.maxPurchasableBytes)) {
+  // buy less, or wait until some credits are used or expire
+}
+
+// Warn about credits that expire within 30 days
+const expiring = await api.getExpiringCreditBatches()
+for (const batch of expiring) {
+  console.log(`${batch.uploadBytesRemaining} bytes expire on ${batch.expiresAt}`)
+}
+
+// Full purchase history, newest first (including expired and refunded batches)
+const batches = await api.getCreditBatches()
+```
+
+These calls need an API key from an account that can buy credits. Other accounts get a `PaymentApiError` with status 404 and no `code`.
 
 ## License
 

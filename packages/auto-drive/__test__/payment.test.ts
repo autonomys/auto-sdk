@@ -1,6 +1,9 @@
 import {
   createPaymentIntent,
   createUsdcPaymentIntent,
+  getCreditBatches,
+  getCreditSummary,
+  getExpiringCreditBatches,
   getPaymentIntentStatus,
   getUsdcPaymentTarget,
   waitForPaymentCompletion,
@@ -450,6 +453,130 @@ describe('waitForPaymentCompletion', () => {
   })
 })
 
+const CREDIT_SUMMARY = {
+  uploadBytesRemaining: '1073741824',
+  totalPurchasedBytesOriginal: '2147483648',
+  downloadBytesRemaining: '0',
+  nextExpiryDate: '2027-01-05T12:00:00.000Z',
+  batchCount: 2,
+  canPurchase: true,
+  maxPurchasableBytes: '9663676416',
+  googleVerified: true,
+  expiryDays: 90,
+}
+
+const CREDIT_BATCH = {
+  id: '6f1c2a9e-3b7d-4c55-9a1e-0d2f4b8c7e61',
+  accountId: 'account-1',
+  intentId: INTENT_ID,
+  uploadBytesOriginal: '1073741824',
+  uploadBytesRemaining: '536870912',
+  downloadBytesOriginal: '0',
+  downloadBytesRemaining: '0',
+  purchasedAt: '2026-10-07T12:00:00.000Z',
+  expiresAt: '2027-01-05T12:00:00.000Z',
+  expired: false,
+  refundedAt: null,
+  refundTxHash: null,
+  createdAt: '2026-10-07T12:00:00.000Z',
+  updatedAt: '2026-10-08T09:30:00.000Z',
+}
+
+const REFUNDED_BATCH = {
+  ...CREDIT_BATCH,
+  id: '0b9d4e27-8a61-4f3c-b2d5-7e1a9c6f4d30',
+  intentId: '0x' + 'cd'.repeat(32),
+  uploadBytesRemaining: '0',
+  expired: true,
+  refundedAt: '2026-10-10T08:00:00.000Z',
+  refundTxHash: '0x' + 'ef'.repeat(32),
+}
+
+describe('getCreditSummary', () => {
+  it('maps the summary response', async () => {
+    const { api, sendAPIRequest } = createMockApi({
+      'GET /credits/summary': () => json(200, { ...CREDIT_SUMMARY, unexpectedField: 'ignored' }),
+    })
+
+    await expect(getCreditSummary(api)).resolves.toEqual(CREDIT_SUMMARY)
+    expect(sendAPIRequest).toHaveBeenCalledWith('/credits/summary', { method: 'GET' })
+  })
+
+  it('keeps a null nextExpiryDate when there are no active purchases', async () => {
+    const empty = {
+      ...CREDIT_SUMMARY,
+      uploadBytesRemaining: '0',
+      totalPurchasedBytesOriginal: '0',
+      nextExpiryDate: null,
+      batchCount: 0,
+    }
+    const { api } = createMockApi({ 'GET /credits/summary': () => json(200, empty) })
+
+    await expect(getCreditSummary(api)).resolves.toEqual(empty)
+  })
+
+  it('throws an uncoded PaymentApiError with status 404 when the account cannot buy credits', async () => {
+    const { api } = createMockApi({
+      'GET /credits/summary': () => new Response('Not Found', { status: 404 }),
+    })
+
+    const error = await getCreditSummary(api).catch((e) => e)
+    expect(error).toBeInstanceOf(PaymentApiError)
+    expect(error.code).toBeUndefined()
+    expect(error).toMatchObject({
+      status: 404,
+      message: 'Failed to get credit summary: 404 Not Found',
+    })
+  })
+})
+
+describe('getCreditBatches / getExpiringCreditBatches', () => {
+  it('maps the purchase history in server order, refund fields included', async () => {
+    const { api, sendAPIRequest } = createMockApi({
+      'GET /credits/batches': () =>
+        json(200, [{ ...REFUNDED_BATCH, unexpectedField: 'ignored' }, CREDIT_BATCH]),
+    })
+
+    await expect(getCreditBatches(api)).resolves.toEqual([REFUNDED_BATCH, CREDIT_BATCH])
+    expect(sendAPIRequest).toHaveBeenCalledWith('/credits/batches', { method: 'GET' })
+  })
+
+  it('returns an empty list when nothing was bought', async () => {
+    const { api } = createMockApi({ 'GET /credits/batches': () => json(200, []) })
+
+    await expect(getCreditBatches(api)).resolves.toEqual([])
+  })
+
+  it('maps the expiring batches from their own endpoint', async () => {
+    const { api, sendAPIRequest } = createMockApi({
+      'GET /credits/batches/expiring': () =>
+        json(200, [{ ...CREDIT_BATCH, unexpectedField: 'ignored' }]),
+    })
+
+    await expect(getExpiringCreditBatches(api)).resolves.toEqual([CREDIT_BATCH])
+    expect(sendAPIRequest).toHaveBeenCalledWith('/credits/batches/expiring', { method: 'GET' })
+  })
+
+  it('throws a PaymentApiError with the parsed message on a non-OK response', async () => {
+    const { api } = createMockApi({
+      'GET /credits/batches': () => json(401, { error: 'Missing or invalid access token' }),
+      'GET /credits/batches/expiring': () =>
+        json(401, { error: 'Missing or invalid access token' }),
+    })
+
+    await expect(getCreditBatches(api)).rejects.toMatchObject({
+      name: 'PaymentApiError',
+      status: 401,
+      message: 'Failed to get credit batches: 401 Missing or invalid access token',
+    })
+    await expect(getExpiringCreditBatches(api)).rejects.toMatchObject({
+      name: 'PaymentApiError',
+      status: 401,
+      message: 'Failed to get expiring credit batches: 401 Missing or invalid access token',
+    })
+  })
+})
+
 describe('AutoDriveApi wiring and ABIs', () => {
   it('binds the USDC calls onto the API object', async () => {
     const { api } = createMockApi(usdcRoutes())
@@ -460,6 +587,19 @@ describe('AutoDriveApi wiring and ABIs', () => {
       intentId: INTENT_ID,
       usdcAmount: '2500001',
     })
+  })
+
+  it('binds the credit calls onto the API object', async () => {
+    const { api } = createMockApi({
+      'GET /credits/summary': () => json(200, CREDIT_SUMMARY),
+      'GET /credits/batches': () => json(200, [REFUNDED_BATCH, CREDIT_BATCH]),
+      'GET /credits/batches/expiring': () => json(200, [CREDIT_BATCH]),
+    })
+    const autoDrive = createApiInterface(api)
+
+    await expect(autoDrive.getCreditSummary()).resolves.toEqual(CREDIT_SUMMARY)
+    await expect(autoDrive.getCreditBatches()).resolves.toEqual([REFUNDED_BATCH, CREDIT_BATCH])
+    await expect(autoDrive.getExpiringCreditBatches()).resolves.toEqual([CREDIT_BATCH])
   })
 
   it('matches AutoDriveUSDCReceiver.payIntentWithToken(bytes32,uint256)', () => {
