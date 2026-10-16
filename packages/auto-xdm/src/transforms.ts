@@ -39,17 +39,20 @@ export const codecToChannel = (codec: unknown): Channel | null => {
     return null
   }
 
-  // Convert to JSON first to get the structure
-  const json =
-    'toJSON' in codec && typeof (codec as { toJSON: () => unknown }).toJSON === 'function'
-      ? (codec as { toJSON: () => unknown }).toJSON()
-      : codec
+  // Use toPrimitive() first to obtain decimal values and camelCase keys
+  const raw =
+    'toPrimitive' in codec &&
+    typeof (codec as { toPrimitive: () => unknown }).toPrimitive === 'function'
+      ? (codec as { toPrimitive: () => unknown }).toPrimitive()
+      : 'toJSON' in codec && typeof (codec as { toJSON: () => unknown }).toJSON === 'function'
+        ? (codec as { toJSON: () => unknown }).toJSON()
+        : codec
 
-  if (!json || typeof json !== 'object') return null
+  if (!raw || typeof raw !== 'object') return null
 
-  const channel = json as Record<string, unknown>
+  const channel = raw as Record<string, unknown>
 
-  // Convert field names from Rust snake_case to camelCase
+  // Convert field names to camelCase
   const state = channel.state as string
   const stateMap: Record<string, ChannelState> = {
     Initiated: 'Initiated',
@@ -57,22 +60,25 @@ export const codecToChannel = (codec: unknown): Channel | null => {
     Closed: 'Closed',
   }
 
+  const channelId = channel.channelId ?? channel.channel_id ?? '0'
+  const nextInboxNonce = channel.nextInboxNonce ?? channel.next_inbox_nonce ?? '0'
+  const nextOutboxNonce = channel.nextOutboxNonce ?? channel.next_outbox_nonce ?? '0'
+  const latestResponse =
+    channel.latestResponseReceivedMessageNonce ?? channel.latest_response_received_message_nonce
+  const maxOutgoing = channel.maxOutgoingMessages ?? channel.max_outgoing_messages ?? 0
+  const maybeOwner = channel.maybeOwner ?? channel.maybe_owner
+  const channelReserveFee = channel.channelReserveFee ?? channel.channel_reserve_fee ?? '0'
+
   return {
-    channelId: String(channel.channel_id ?? '0'),
+    channelId: String(channelId),
     state: stateMap[state] ?? 'Initiated',
-    nextInboxNonce: String(channel.next_inbox_nonce ?? '0'),
-    nextOutboxNonce: String(channel.next_outbox_nonce ?? '0'),
+    nextInboxNonce: String(nextInboxNonce),
+    nextOutboxNonce: String(nextOutboxNonce),
     latestResponseReceivedMessageNonce:
-      channel.latest_response_received_message_nonce !== null &&
-      channel.latest_response_received_message_nonce !== undefined
-        ? String(channel.latest_response_received_message_nonce)
-        : null,
-    maxOutgoingMessages: Number(channel.max_outgoing_messages ?? 0),
-    maybeOwner:
-      channel.maybe_owner !== null && channel.maybe_owner !== undefined
-        ? String(channel.maybe_owner)
-        : null,
-    channelReserveFee: String(channel.channel_reserve_fee ?? '0'),
+      latestResponse !== null && latestResponse !== undefined ? String(latestResponse) : null,
+    maxOutgoingMessages: Number(maxOutgoing),
+    maybeOwner: maybeOwner !== null && maybeOwner !== undefined ? String(maybeOwner) : null,
+    channelReserveFee: String(channelReserveFee),
   }
 }
 
