@@ -1,4 +1,4 @@
-import { activate, activateDomain, Api, type DomainParams } from '@autonomys/auto-utils'
+import { activate, activateDomain, Api, disconnect, type DomainParams } from '@autonomys/auto-utils'
 import { account } from './account'
 import type { BalanceData } from './types/balance'
 
@@ -35,8 +35,12 @@ export const totalIssuance = async (networkId?: string | DomainParams) => {
     ? activateDomain(networkId)
     : activate(networkId ? { networkId } : undefined))
 
-  const totalIssuance = await api.query.balances.totalIssuance()
-  return totalIssuance
+  try {
+    const totalIssuance = await api.query.balances.totalIssuance()
+    return totalIssuance
+  } finally {
+    await disconnect(api)
+  }
 }
 
 /**
