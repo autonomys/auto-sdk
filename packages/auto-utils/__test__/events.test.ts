@@ -14,7 +14,6 @@ const mockEventRecord = (section: string, method: string): EventRecord =>
   }) as unknown as EventRecord
 
 describe('Event utilities in auto-utils', () => {
-
   describe('detectTxSuccess', () => {
     it('returns true when system.ExtrinsicSuccess is present in events', () => {
       const events: EventRecord[] = [
