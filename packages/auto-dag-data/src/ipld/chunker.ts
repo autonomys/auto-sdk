@@ -24,7 +24,7 @@ const NODE_TYPE_SIZE = 1
 const NODE_LINK_DEPTH_SIZE = 4
 // u64 -> 8 bytes
 const NODE_SIZE_SIZE = 8
-// Limit at 255 bytes (POSIX / APFS / HFS+ 255-byte limit)
+// Limit at 255 bytes (derived from the 256 bytes reserved for the name in the node)
 export const MAX_NAME_SIZE = 255
 const END_OF_STRING_BYTE = 1
 const NODE_NAME_SIZE = MAX_NAME_SIZE + END_OF_STRING_BYTE
