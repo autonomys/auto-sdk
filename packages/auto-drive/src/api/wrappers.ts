@@ -285,11 +285,12 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
 
     const metadata = await apiCalls.getObjectMetadata(api, { cid })
 
+    if (metadata.uploadOptions?.encryption && !password) {
+      throw new Error('Password is required to decrypt the file')
+    }
+
     let iterable = asyncFromStream(await apiCalls.downloadObject(api, { cid }))
-    if (metadata.uploadOptions?.encryption) {
-      if (!password) {
-        throw new Error('Password is required to decrypt the file')
-      }
+    if (metadata.uploadOptions?.encryption && password) {
       iterable = decryptFile(iterable, password, {
         algorithm: EncryptionAlgorithm.AES_256_GCM,
       })
