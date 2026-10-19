@@ -39,20 +39,17 @@ export const codecToChannel = (codec: unknown): Channel | null => {
     return null
   }
 
-  // Use toPrimitive() first to obtain decimal values and camelCase keys
+  // Use toPrimitive() to obtain decimal values and camelCase keys
   const raw =
     'toPrimitive' in codec &&
     typeof (codec as { toPrimitive: () => unknown }).toPrimitive === 'function'
       ? (codec as { toPrimitive: () => unknown }).toPrimitive()
-      : 'toJSON' in codec && typeof (codec as { toJSON: () => unknown }).toJSON === 'function'
-        ? (codec as { toJSON: () => unknown }).toJSON()
-        : codec
+      : codec
 
   if (!raw || typeof raw !== 'object') return null
 
   const channel = raw as Record<string, unknown>
 
-  // Convert field names to camelCase
   const state = channel.state as string
   const stateMap: Record<string, ChannelState> = {
     Initiated: 'Initiated',
@@ -60,25 +57,22 @@ export const codecToChannel = (codec: unknown): Channel | null => {
     Closed: 'Closed',
   }
 
-  const channelId = channel.channelId ?? channel.channel_id ?? '0'
-  const nextInboxNonce = channel.nextInboxNonce ?? channel.next_inbox_nonce ?? '0'
-  const nextOutboxNonce = channel.nextOutboxNonce ?? channel.next_outbox_nonce ?? '0'
-  const latestResponse =
-    channel.latestResponseReceivedMessageNonce ?? channel.latest_response_received_message_nonce
-  const maxOutgoing = channel.maxOutgoingMessages ?? channel.max_outgoing_messages ?? 0
-  const maybeOwner = channel.maybeOwner ?? channel.maybe_owner
-  const channelReserveFee = channel.channelReserveFee ?? channel.channel_reserve_fee ?? '0'
-
   return {
-    channelId: String(channelId),
+    channelId: String(channel.channelId ?? '0'),
     state: stateMap[state] ?? 'Initiated',
-    nextInboxNonce: String(nextInboxNonce),
-    nextOutboxNonce: String(nextOutboxNonce),
+    nextInboxNonce: String(channel.nextInboxNonce ?? '0'),
+    nextOutboxNonce: String(channel.nextOutboxNonce ?? '0'),
     latestResponseReceivedMessageNonce:
-      latestResponse !== null && latestResponse !== undefined ? String(latestResponse) : null,
-    maxOutgoingMessages: Number(maxOutgoing),
-    maybeOwner: maybeOwner !== null && maybeOwner !== undefined ? String(maybeOwner) : null,
-    channelReserveFee: String(channelReserveFee),
+      channel.latestResponseReceivedMessageNonce !== null &&
+      channel.latestResponseReceivedMessageNonce !== undefined
+        ? String(channel.latestResponseReceivedMessageNonce)
+        : null,
+    maxOutgoingMessages: Number(channel.maxOutgoingMessages ?? 0),
+    maybeOwner:
+      channel.maybeOwner !== null && channel.maybeOwner !== undefined
+        ? String(channel.maybeOwner)
+        : null,
+    channelReserveFee: String(channel.channelReserveFee ?? '0'),
   }
 }
 
