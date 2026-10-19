@@ -46,12 +46,13 @@ const alwaysInvalidSchema: StandardSchemaV1<Name> = {
 }
 
 const INVALID_RESULT_NAME = 'return an invalid result'
+const DATE = new Date('2026-10-14T00:00:00.000Z')
 
 describe('rpc/definition with Standard Schema', () => {
   let httpServer: http.Server
   const received: unknown[] = []
 
-  const { createServer, createHttpClient } = createApiDefinition({
+  const definition = createApiDefinition({
     methods: {
       zod3: {
         params: z.object({ name: z.string() }),
@@ -81,11 +82,18 @@ describe('rpc/definition with Standard Schema', () => {
         params: defineUnvalidatedType<Name>(),
         returns: defineUnvalidatedType<Name>(),
       },
+      dateResult: {
+        params: z.object({ name: z.string() }),
+        returns: z.object({ at: z.string().transform((at) => new Date(at)) }),
+      },
     },
     notifications: {},
   })
+  const { createServer, createHttpClient, createClient, createMockServerClient } = definition
   let server: ReturnType<typeof createServer>
   let client: ReturnType<typeof createHttpClient>
+  let wsClient: ReturnType<typeof createClient>
+  let mockClient: ReturnType<typeof createMockServerClient>
 
   // Echoes the name back, or returns a result that doesn't match the schema
   const handler = (params: Name) => {
@@ -96,30 +104,33 @@ describe('rpc/definition with Standard Schema', () => {
     return { name: params.name }
   }
 
+  const handlers = {
+    zod3: handler,
+    zod4: handler,
+    otherZod3: handler,
+    custom: handler,
+    alwaysInvalid: handler,
+    transformedResult: handler,
+    unvalidated: handler,
+    // Returns a Date, which is sent as a string and turned back into a Date by the schema
+    dateResult: () => ({ at: DATE }),
+  }
+
   beforeAll(async () => {
     // Free port, so connections left open by other suites on TEST_PORT can't interfere
     httpServer = http.createServer()
     httpServer.listen(0)
     await new Promise((resolve) => httpServer.once('listening', resolve))
-    server = createServer(
-      {
-        zod3: handler,
-        zod4: handler,
-        otherZod3: handler,
-        custom: handler,
-        alwaysInvalid: handler,
-        transformedResult: handler,
-        unvalidated: handler,
-      },
-      {
-        server: createWsServer({
-          httpServer,
-          callbacks: {},
-        }),
-      },
-    )
+    server = createServer(handlers, {
+      server: createWsServer({
+        httpServer,
+        callbacks: {},
+      }),
+    })
     const { port } = httpServer.address() as AddressInfo
     client = createHttpClient(`http://localhost:${port}/ws`)
+    wsClient = createClient({ endpoint: `ws://localhost:${port}/ws`, callbacks: {} })
+    mockClient = createMockServerClient({ handlers, callbacks: {} })
   })
 
   beforeEach(() => {
@@ -127,6 +138,8 @@ describe('rpc/definition with Standard Schema', () => {
   })
 
   afterAll(() => {
+    wsClient.close()
+    mockClient.close()
     server.close()
     httpServer.close()
   })
@@ -146,6 +159,18 @@ describe('rpc/definition with Standard Schema', () => {
 
     it('should reject an invalid result in the http client', async () => {
       await expect(client[method]({ name: INVALID_RESULT_NAME })).rejects.toMatchObject({
+        code: RpcError.Code.InvalidParams,
+      })
+    })
+
+    it('should reject an invalid result in the ws client', async () => {
+      await expect(wsClient.api[method]({ name: INVALID_RESULT_NAME })).rejects.toMatchObject({
+        code: RpcError.Code.InvalidParams,
+      })
+    })
+
+    it('should reject an invalid result in the mock client', async () => {
+      await expect(mockClient.api[method]({ name: INVALID_RESULT_NAME })).rejects.toMatchObject({
         code: RpcError.Code.InvalidParams,
       })
     })
@@ -169,9 +194,177 @@ describe('rpc/definition with Standard Schema', () => {
     await expect(client.transformedResult({ name: 'test' })).resolves.toEqual({ name: 'TEST' })
   })
 
+  it('should return the parsed result in the ws client', async () => {
+    await expect(wsClient.api.transformedResult({ name: 'test' })).resolves.toEqual({
+      name: 'TEST',
+    })
+  })
+
+  it('should return the parsed result in the mock client', async () => {
+    await expect(mockClient.api.transformedResult({ name: 'test' })).resolves.toEqual({
+      name: 'TEST',
+    })
+  })
+
+  it('should validate the result after a JSON round-trip in the ws client', async () => {
+    await expect(wsClient.api.dateResult({ name: 'test' })).resolves.toEqual({ at: DATE })
+  })
+
+  it('should validate the result after a JSON round-trip in the mock client', async () => {
+    await expect(mockClient.api.dateResult({ name: 'test' })).resolves.toEqual({ at: DATE })
+  })
+
   it('should not validate unvalidated types', async () => {
     await expect(client.unvalidated({ name: 1 } as unknown as Name)).resolves.toEqual({ name: 1 })
     expect(received).toEqual([{ name: 1 }])
+  })
+})
+
+// Returns a new value, like a zod transform, so the handler can tell parsed from raw params
+const upperCaseNameSchema: StandardSchemaV1<Name> = {
+  '~standard': {
+    version: 1 as const,
+    vendor: 'test',
+    validate: (value) =>
+      typeof value === 'object' &&
+      value !== null &&
+      typeof (value as { name?: unknown }).name === 'string'
+        ? { value: { name: (value as Name).name.toUpperCase() } }
+        : { issues: [{ message: 'Expected a name', path: ['name'] }] },
+  },
+}
+
+describe('rpc/definition parsed params', () => {
+  let httpServer: http.Server
+  const received: unknown[] = []
+
+  const definition = createApiDefinition({
+    methods: {
+      zod3: {
+        params: z.object({ name: z.string().transform((name) => name.toUpperCase()) }),
+        returns: defineUnvalidatedType<Name>(),
+      },
+      zod4: {
+        params: zod4.object({ name: zod4.string().transform((name) => name.toUpperCase()) }),
+        returns: defineUnvalidatedType<Name>(),
+      },
+      otherZod3: {
+        params: otherZod.object({
+          name: otherZod.string().transform((name) => name.toUpperCase()),
+        }),
+        returns: defineUnvalidatedType<Name>(),
+      },
+      custom: {
+        params: upperCaseNameSchema,
+        returns: defineUnvalidatedType<Name>(),
+      },
+      dateTransform: {
+        params: z.object({ at: z.string().transform((at) => new Date(at)) }),
+        returns: defineUnvalidatedType<null>(),
+      },
+      plainDate: {
+        params: z.object({ at: z.date() }),
+        returns: defineUnvalidatedType<null>(),
+      },
+    },
+    notifications: {},
+  })
+  const { createServer, createHttpClient, createMockServerClient } = definition
+  let server: ReturnType<typeof createServer>
+  let client: ReturnType<typeof createHttpClient>
+  let mockClient: ReturnType<typeof createMockServerClient>
+
+  // Echoes back the params it receives
+  const handler = (params: Name) => {
+    received.push(params)
+    return params
+  }
+  const dateHandler = (params: { at: Date }) => {
+    received.push(params)
+    return null
+  }
+  const handlers = {
+    zod3: handler,
+    zod4: handler,
+    otherZod3: handler,
+    custom: handler,
+    dateTransform: dateHandler,
+    plainDate: dateHandler,
+  }
+
+  beforeAll(async () => {
+    // Free port, so connections left open by other suites on TEST_PORT can't interfere
+    httpServer = http.createServer()
+    httpServer.listen(0)
+    await new Promise((resolve) => httpServer.once('listening', resolve))
+    server = createServer(handlers, {
+      server: createWsServer({
+        httpServer,
+        callbacks: {},
+      }),
+    })
+    const { port } = httpServer.address() as AddressInfo
+    client = createHttpClient(`http://localhost:${port}/ws`)
+    mockClient = createMockServerClient({ handlers, callbacks: {} })
+  })
+
+  beforeEach(() => {
+    received.length = 0
+  })
+
+  afterAll(() => {
+    mockClient.close()
+    server.close()
+    httpServer.close()
+  })
+
+  describe.each(['zod3', 'zod4', 'otherZod3', 'custom'] as const)('%s schema', (method) => {
+    it('should pass the parsed params to the server handler', async () => {
+      await expect(client[method]({ name: 'test' })).resolves.toEqual({ name: 'TEST' })
+      expect(received).toEqual([{ name: 'TEST' }])
+    })
+
+    it('should pass the parsed params to the mock handler', async () => {
+      await expect(mockClient.api[method]({ name: 'test' })).resolves.toEqual({ name: 'TEST' })
+      expect(received).toEqual([{ name: 'TEST' }])
+    })
+
+    it('should reject invalid params in the mock client before calling the handler', async () => {
+      await expect(mockClient.api[method]({ name: 1 } as unknown as Name)).rejects.toMatchObject({
+        code: RpcError.Code.InvalidParams,
+      })
+      expect(received).toEqual([])
+    })
+  })
+
+  // zod strips keys that aren't in the schema, so handlers no longer receive them
+  it('should not pass keys missing from the schema to the handler', async () => {
+    const params = { name: 'test', extra: 1 } as unknown as Name
+
+    await client.zod3(params)
+    await mockClient.api.zod3(params)
+    expect(received).toEqual([{ name: 'TEST' }, { name: 'TEST' }])
+  })
+
+  // A Date is sent as a string, so the mock must validate the params after a JSON round-trip
+  it('should pass the same Date to the server and mock handlers', async () => {
+    const at = new Date('2026-10-14T00:00:00.000Z')
+
+    await client.dateTransform({ at })
+    await mockClient.api.dateTransform({ at })
+    expect(received).toEqual([{ at }, { at }])
+  })
+
+  it('should reject a Date param in the server and mock clients when it arrives as a string', async () => {
+    const at = new Date('2026-10-14T00:00:00.000Z')
+
+    await expect(client.plainDate({ at })).rejects.toMatchObject({
+      code: RpcError.Code.InvalidParams,
+    })
+    await expect(mockClient.api.plainDate({ at })).rejects.toMatchObject({
+      code: RpcError.Code.InvalidParams,
+    })
+    expect(received).toEqual([])
   })
 })
 
