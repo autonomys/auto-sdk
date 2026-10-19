@@ -15,16 +15,16 @@ import {
   UsdcPaymentIntent,
   UsdcPaymentTarget,
 } from './models/payment'
-import { SubscriptionInfo, UserInfo } from './models/user'
+import { AccountInfo, SubscriptionInfo } from './models/user'
 import { AutoDriveNetwork } from './networks'
 
 export interface AutoDriveApi extends AutoDriveApiHandler {
   /**
-   * Gets the user info for the current user.
+   * Gets the account info for the current user.
    *
-   * @returns {Promise<UserInfo>} A promise that resolves to the user info.
+   * @returns {Promise<AccountInfo>} A promise that resolves to the account info.
    */
-  me: () => Promise<UserInfo>
+  me: () => Promise<AccountInfo>
 
   /**
    * Checks if a file is cached.
