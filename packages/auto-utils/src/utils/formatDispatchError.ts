@@ -1,4 +1,4 @@
-﻿export const formatDispatchError = <TError>(
+export const formatDispatchError = <TError>(
   dispatchError: unknown,
   mapErrorCodeToEnum?: (errorCode: string) => TError | undefined,
 ): { errorEnum: TError | undefined; formattedError: string } => {
