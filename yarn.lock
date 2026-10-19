@@ -224,7 +224,7 @@ __metadata:
     "@autonomys/auto-agents": "npm:^1.6.16"
     "@autonomys/auto-drive": "npm:^1.6.16"
     "@modelcontextprotocol/sdk": "npm:^1.29.0"
-    "@types/node": "npm:22.20.1"
+    "@types/node": "npm:22.20.5"
     ts-node: "npm:^10.9.2"
     typescript: "npm:^5.9.3"
     zod: "npm:^3.25 || ^4.0"
@@ -10269,12 +10269,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:22.20.1":
-  version: 22.20.1
-  resolution: "@types/node@npm:22.20.1"
+"@types/node@npm:22.20.5":
+  version: 22.20.5
+  resolution: "@types/node@npm:22.20.5"
   dependencies:
     undici-types: "npm:~6.21.0"
-  checksum: 10c0/f2ba54d3d1fb92e1c57c78d32c3a17655b1e87363b707136f55c422b4838d4054901ce5d27f75bb0e5ecb7ebfee3804e0987822d22b473473008091857a09353
+  checksum: 10c0/0cf61a89c6a69917ab49f976a6bb11a29e3b348a6ae19f5827ceb91d3ade781faab58dcf3b8fa625f975f5d7536b9166ff94e8250c29272c667164f77c28fa88
   languageName: node
   linkType: hard
 
