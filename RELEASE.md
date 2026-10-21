@@ -120,6 +120,57 @@ Follow the instructions to create and set up a token with the `repo` scope.
 
 ### Automated Release
 
+#### Package assembly checks (shadow pipeline)
+
+`Release package checks` runs on PRs, pushes to `main`, and manual dispatches.
+It does not publish, tag, or change the release process described below.
+All three jobs have read-only repository access and no OIDC permission.
+
+1. **Build** installs with the lockfile, builds, and tests. Only compiled `dist/`
+   trees are uploaded, with paths relative to `packages/`.
+2. **Assemble** uses a fresh checkout of the same workflow commit, without
+   installing project dependencies. `scripts/release/package-layout.json` lists
+   every public package. Only regular files inside those packages' `dist/` trees
+   are accepted from the build artifact; links, special files, missing outputs,
+   and other paths are rejected. Artifacts are downloaded outside the checkout.
+   Tracked package files, manifests, and licenses come from the fresh checkout.
+   Existing npm `files`/ignore rules are preserved. The only supported source
+   `publishConfig` is `access: public`; it is removed from assembled manifests.
+   Future publication must explicitly set public access. `gitHead` is set to the
+   checkout commit. The pinned npm CLI packs with scripts disabled, and assembly
+   fails if a declared entry point or compiled file is omitted.
+3. **Smoke** installs those exact tarballs in a temporary consumer with scripts
+   disabled, verifies installed contents and executable entry points, and
+   exercises an SDK API. It uses `--legacy-peer-deps` because the repository has
+   existing conflicting React peer ranges; this checks packaging, not peer
+   compatibility. Package execution remains in a separate unprivileged job.
+
+The assembled artifact includes `manifest.json`, the source commit, tool versions,
+package identities, SHA-512 tarball integrity, and SHA-256 compiled-file hashes.
+Downloads select the preceding job's artifact ID, not a name from another run.
+These hashes establish artifact identity, not the safety of compiled code.
+The shadow artifacts expire after 14 days and are not a production release store.
+
+To run boundary tests locally (Node 24):
+
+```sh
+node --test scripts/release/assembly.test.js
+```
+
+After building, copy each declared package's `dist/` into an external input
+directory, retaining paths relative to `packages/`, then run:
+
+```sh
+node scripts/release/assemble.js /absolute/path/to/compiled-outputs /absolute/path/to/new-packages
+node scripts/release/smoke-test.js /absolute/path/to/new-packages
+```
+
+The output directory must not already exist. For authoritative checks, use the
+workflow's fresh checkout; local assembly reads tracked files from the working
+tree, including local edits, while recording `HEAD`.
+
+#### Publishing
+
 Releases run from a `chore-vX.Y.Z` branch, where `X.Y.Z` is the version being released. The workflow publishes to npm with [trusted publishing](https://docs.npmjs.com/trusted-publishers) (OIDC), so no npm token is involved. It runs in the `npm-publish` environment, which refuses runs from any other branch and needs a second person to approve each run.
 
 1. Create a `chore-vX.Y.Z` branch from an up-to-date `main` and push it
