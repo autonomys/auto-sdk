@@ -23,4 +23,7 @@ export {
   watchPaymentTransaction,
   getPaymentIntentStatus,
   waitForPaymentCompletion,
+  getCreditSummary,
+  getCreditBatches,
+  getExpiringCreditBatches,
 } from './payment'

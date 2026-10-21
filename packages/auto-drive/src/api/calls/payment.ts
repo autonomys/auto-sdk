@@ -1,6 +1,8 @@
 import { formatUnits, shannonsToAi3 } from '@autonomys/auto-utils'
 import {
+  CreditBatch,
   CreditCapExceededError,
+  CreditSummary,
   PaymentApiError,
   PaymentContractInfo,
   PaymentIntent,
@@ -361,4 +363,103 @@ export const waitForPaymentCompletion = async (
   throw new Error(
     `Timed out waiting for payment intent "${intentId}" to complete after ${timeoutMs}ms`,
   )
+}
+
+/**
+ * Maps one row of `/credits/batches` or `/credits/batches/expiring` to a
+ * {@link CreditBatch}, keeping only the documented fields.
+ */
+const toCreditBatch = (batch: CreditBatch): CreditBatch => ({
+  id: batch.id,
+  accountId: batch.accountId,
+  intentId: batch.intentId,
+  uploadBytesOriginal: batch.uploadBytesOriginal,
+  uploadBytesRemaining: batch.uploadBytesRemaining,
+  downloadBytesOriginal: batch.downloadBytesOriginal,
+  downloadBytesRemaining: batch.downloadBytesRemaining,
+  purchasedAt: batch.purchasedAt,
+  expiresAt: batch.expiresAt,
+  expired: batch.expired,
+  refundedAt: batch.refundedAt,
+  refundTxHash: batch.refundTxHash,
+  createdAt: batch.createdAt,
+  updatedAt: batch.updatedAt,
+})
+
+/**
+ * Returns the account's purchased storage credits: bytes left, the next expiry,
+ * and how much more it can buy before it reaches the per-user credit cap.
+ *
+ * Only credits bought with a payment intent are counted. `getPendingCredits`
+ * reports the free allocation, which this does not include. Use this call to
+ * check whether a payment was credited, for example after
+ * `waitForPaymentCompletion` returns `'EXPIRED'`, and use `maxPurchasableBytes`
+ * to size a purchase before you create an intent.
+ *
+ * Requires an API key. A 404 with no `code` means that the account cannot buy
+ * credits: Auto Drive hides the `/credits` routes from those accounts, as it
+ * does `/intents`.
+ *
+ * @throws {PaymentApiError} If Auto Drive answers with a non-OK status.
+ */
+export const getCreditSummary = async (api: AutoDriveApiHandler): Promise<CreditSummary> => {
+  const response = await api.sendAPIRequest('/credits/summary', { method: 'GET' })
+
+  if (!response.ok) {
+    throw await toPaymentApiError(response, 'Failed to get credit summary')
+  }
+
+  const summary = await response.json()
+  return {
+    uploadBytesRemaining: summary.uploadBytesRemaining,
+    totalPurchasedBytesOriginal: summary.totalPurchasedBytesOriginal,
+    downloadBytesRemaining: summary.downloadBytesRemaining,
+    nextExpiryDate: summary.nextExpiryDate,
+    batchCount: summary.batchCount,
+    canPurchase: summary.canPurchase,
+    maxPurchasableBytes: summary.maxPurchasableBytes,
+    googleVerified: summary.googleVerified,
+    expiryDays: summary.expiryDays,
+  }
+}
+
+/**
+ * Returns every credit purchase of the account, newest first, including
+ * purchases that have expired, been used up or been refunded.
+ *
+ * Requires an API key. A 404 with no `code` means that the account cannot buy credits.
+ *
+ * @throws {PaymentApiError} If Auto Drive answers with a non-OK status.
+ */
+export const getCreditBatches = async (api: AutoDriveApiHandler): Promise<CreditBatch[]> => {
+  const response = await api.sendAPIRequest('/credits/batches', { method: 'GET' })
+
+  if (!response.ok) {
+    throw await toPaymentApiError(response, 'Failed to get credit batches')
+  }
+
+  const batches: CreditBatch[] = await response.json()
+  return batches.map(toCreditBatch)
+}
+
+/**
+ * Returns the account's credit purchases that still have credits left and
+ * expire within the next 30 days, soonest expiry first. Use it to warn a user
+ * before unused credits are lost.
+ *
+ * Requires an API key. A 404 with no `code` means that the account cannot buy credits.
+ *
+ * @throws {PaymentApiError} If Auto Drive answers with a non-OK status.
+ */
+export const getExpiringCreditBatches = async (
+  api: AutoDriveApiHandler,
+): Promise<CreditBatch[]> => {
+  const response = await api.sendAPIRequest('/credits/batches/expiring', { method: 'GET' })
+
+  if (!response.ok) {
+    throw await toPaymentApiError(response, 'Failed to get expiring credit batches')
+  }
+
+  const batches: CreditBatch[] = await response.json()
+  return batches.map(toCreditBatch)
 }

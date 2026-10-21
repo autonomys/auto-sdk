@@ -338,6 +338,12 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
   const waitForPaymentCompletion = (intentId: string, options?: PollOptions) =>
     apiCalls.waitForPaymentCompletion(api, intentId, options)
 
+  const getCreditSummary = () => apiCalls.getCreditSummary(api)
+
+  const getCreditBatches = () => apiCalls.getCreditBatches(api)
+
+  const getExpiringCreditBatches = () => apiCalls.getExpiringCreditBatches(api)
+
   const publishObject = async (cid: string): Promise<string> => {
     const result = await apiCalls.publishObject(api, { cid })
 
@@ -398,6 +404,9 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
     watchPaymentTransaction,
     getPaymentIntentStatus,
     waitForPaymentCompletion,
+    getCreditSummary,
+    getCreditBatches,
+    getExpiringCreditBatches,
     publishObject,
     getMyFiles,
     searchByNameOrCIDInMyFiles,
