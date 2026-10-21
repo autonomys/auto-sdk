@@ -39,7 +39,7 @@ export const stringify = (value: any) =>
  *
  * @param value - The string to truncate.
  * @param initialLength - Number of characters to keep from the beginning. Defaults to 6.
- * @param endLength - Number of characters to keep from the end (negative number). Defaults to -4.
+ * @param endLength - Number of characters to keep from the end (negative number or positive count). Defaults to -4.
  * @returns The truncated string with ellipsis in the middle.
  *
  * @example
@@ -59,8 +59,12 @@ export const stringify = (value: any) =>
  * const shortHash = shortString(txHash, 10, -8)
  * console.log(shortHash) // Output: "0x12345678...90abcdef"
  */
-export const shortString = (value: string, initialLength = 6, endLength = -4): string =>
-  `${value.slice(0, initialLength)}...${value.slice(endLength)}`
+export const shortString = (value: string, initialLength = 6, endLength = -4): string => {
+  if (!value) return ''
+  const endChars = Math.abs(endLength)
+  if (value.length <= initialLength + endChars) return value
+  return `${value.slice(0, initialLength)}...${value.slice(-endChars)}`
+}
 
 /**
  * Capitalizes the first letter of a string.

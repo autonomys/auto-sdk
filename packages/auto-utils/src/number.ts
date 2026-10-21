@@ -42,7 +42,7 @@ export const parseTokenAmount = (
   amount: string | bigint,
   decimals: number = DEFAULT_TOKEN_DECIMALS,
 ) => {
-  if (typeof amount === 'bigint') return amount / BigInt(Math.pow(10, decimals))
+  if (typeof amount === 'bigint') return amount / 10n ** BigInt(decimals)
   return parseFloat(amount) / Math.pow(10, decimals)
 }
 
@@ -80,7 +80,7 @@ export const formatTokenAmount = (
   amount: number | bigint,
   decimals: number = DEFAULT_TOKEN_DECIMALS,
 ) => {
-  if (typeof amount === 'bigint') return amount * BigInt(Math.pow(10, decimals))
+  if (typeof amount === 'bigint') return amount * 10n ** BigInt(decimals)
   return amount * Math.pow(10, decimals)
 }
 
@@ -118,13 +118,16 @@ export const formatTokenAmount = (
  * console.log(formatSpacePledged(hugeSpace)) // Output: "1.00 EiB"
  */
 export const formatSpacePledged = (value: bigint, decimals = 2) => {
-  if (typeof value !== 'bigint' || value === BIGINT_ZERO) return '0 Bytes'
+  if (typeof value !== 'bigint' || value <= BIGINT_ZERO) return '0 Bytes'
 
   const k = 1024
   const dm = decimals < 0 ? 0 : decimals
   const sizes = ['Bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB']
 
-  const i = Math.floor(Math.log(Number(value)) / Math.log(k))
+  const i = Math.min(
+    sizes.length - 1,
+    Math.max(0, Math.floor(Math.log(Number(value)) / Math.log(k))),
+  )
 
   return (Number(value) / Math.pow(k, i)).toFixed(dm) + ' ' + sizes[i]
 }
