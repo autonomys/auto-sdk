@@ -6,6 +6,7 @@ import {
   activate,
   activateWallet,
   address,
+  getMockWallet,
   mockWallets,
   networks,
   setupWallet,
@@ -156,5 +157,33 @@ describe('Verify wallet functions', () => {
       expect(accounts.length).toBeGreaterThan(0)
       expect(accounts[0].address).toEqual(bobWallet.address)
     }, 15000)
+  })
+
+  describe('Test getMockWallet()', () => {
+    test('Check getMockWallet returns the correct wallet by name', () => {
+      const alice = getMockWallet('Alice', wallets)
+      expect(alice).toBeDefined()
+      expect(alice.accounts[0].address).toEqual(aliceWallet.address)
+
+      const bob = getMockWallet('Bob', wallets)
+      expect(bob).toBeDefined()
+      expect(bob.accounts[0].address).toEqual(bobWallet.address)
+    })
+
+    test('Check getMockWallet supports name with leading // prefix', () => {
+      const alice = getMockWallet('//Alice', wallets)
+      expect(alice.accounts[0].address).toEqual(aliceWallet.address)
+    })
+
+    test('Check getMockWallet throws an error when wallet name is not found', () => {
+      expect(() => getMockWallet('NonExistent', wallets)).toThrow(
+        "Mock wallet 'NonExistent' not found",
+      )
+      expect(() => getMockWallet('Unknown', wallets)).toThrow("Mock wallet 'Unknown' not found")
+    })
+
+    test('Check getMockWallet throws an error when wallets array does not contain the entry', () => {
+      expect(() => getMockWallet('Alice', [])).toThrow("Mock wallet 'Alice' not found")
+    })
   })
 })

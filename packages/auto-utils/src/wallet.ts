@@ -321,5 +321,11 @@ export const mockWallets = async (
  *
  * @throws {Error} When the specified name is not found in the available mock wallets.
  */
-export const getMockWallet = (name: string, wallets: WalletActivated[]): WalletActivated =>
-  wallets[Object.values(mockURIs).indexOf(`//${name}`)]
+export const getMockWallet = (name: string, wallets: WalletActivated[]): WalletActivated => {
+  const uri = name.startsWith('//') ? name : `//${name}`
+  const index = mockURIs.indexOf(uri)
+  if (index === -1 || !wallets[index]) {
+    throw new Error(`Mock wallet '${name}' not found`)
+  }
+  return wallets[index]
+}
