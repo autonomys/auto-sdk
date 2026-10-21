@@ -134,10 +134,12 @@ export const getPaymentContractInfo = async (
  * 2. Send `intent.ai3AmountWei` to `intent.contractAddress` via `payIntent(intent.intentId)`
  * 3. Call `watchPaymentTransaction(api, intent.intentId, txHash)` — submit the tx hash
  * 4. Call `waitForPaymentCompletion(api, intent.intentId)` — poll until COMPLETED
+ * @param api - AutoDriveApiHandler instance.
+ * @param sizeBytes - Purchase size in bytes: a positive safe integer or a bigint.
  */
 export const createPaymentIntent = async (
   api: AutoDriveApiHandler,
-  sizeBytes: number,
+  sizeBytes: number | bigint,
 ): Promise<PaymentIntent> => {
   const body = { requestedBytes: toRequestedBytes(sizeBytes) }
 
