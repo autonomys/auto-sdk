@@ -59,8 +59,13 @@ export const stringify = (value: any) =>
  * const shortHash = shortString(txHash, 10, -8)
  * console.log(shortHash) // Output: "0x12345678...90abcdef"
  */
-export const shortString = (value: string, initialLength = 6, endLength = -4): string =>
-  `${value.slice(0, initialLength)}...${value.slice(endLength)}`
+export const shortString = (value: string, initialLength = 6, endLength = -4): string => {
+  if (!value) return ''
+  const suffixLength = Math.abs(endLength)
+  if (value.length <= initialLength + suffixLength) return value
+  const suffix = suffixLength > 0 ? value.slice(-suffixLength) : ''
+  return `${value.slice(0, initialLength)}...${suffix}`
+}
 
 /**
  * Capitalizes the first letter of a string.
