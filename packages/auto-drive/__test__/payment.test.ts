@@ -70,6 +70,14 @@ const usdcRoutes = (intentRoute: Route = () => json(200, USDC_INTENT)) => ({
   'POST /intents': intentRoute,
 })
 
+const AI3_INTENT = { id: INTENT_ID, shannonsPerByte: '1000', expiresAt: 'x' }
+
+const ai3Routes = (intentRoute: Route = () => json(200, AI3_INTENT)) => ({
+  'GET /intents/contract': () =>
+    json(200, { chainId: 870, contractAddress: '0xcc', payIntentAbi: [] }),
+  'POST /intents': intentRoute,
+})
+
 describe('getUsdcPaymentTarget', () => {
   it('maps the target response', async () => {
     const { api, sendAPIRequest } = createMockApi({
@@ -213,13 +221,6 @@ describe('createUsdcPaymentIntent', () => {
 })
 
 describe('createPaymentIntent (AI3)', () => {
-  const ai3Routes = (intentRoute: Route) => ({
-    'GET /intents/contract': () =>
-      json(200, { chainId: 870, contractAddress: '0xcc', payIntentAbi: [] }),
-    'POST /intents': intentRoute,
-  })
-  const AI3_INTENT = { id: INTENT_ID, shannonsPerByte: '1000', expiresAt: 'x' }
-
   it('sends requestedBytes as a decimal string', async () => {
     const { api, sendAPIRequest } = createMockApi(ai3Routes(() => json(200, AI3_INTENT)))
 
@@ -232,6 +233,16 @@ describe('createPaymentIntent (AI3)', () => {
     )
     expect(JSON.parse(body as string)).toEqual({ requestedBytes: '1024' })
     expect(intent.ai3AmountWei).toBe('1024000')
+  })
+
+  it('sends a bigint size above 2^53 exactly', async () => {
+    const { api, sendAPIRequest } = createMockApi(ai3Routes(() => json(200, AI3_INTENT)))
+
+    const intent = await createPaymentIntent(api, BigInt('9007199254740993'))
+
+    const [, , body] = sendAPIRequest.mock.calls.find(([url]) => url === '/intents')!
+    expect(JSON.parse(body as string).requestedBytes).toBe('9007199254740993')
+    expect(intent.ai3AmountWei).toBe('9007199254740993000')
   })
 
   it('throws CreditCapExceededError, a PaymentApiError, on CREDIT_CAP_EXCEEDED', async () => {
@@ -263,7 +274,7 @@ describe('createPaymentIntent (AI3)', () => {
     expect(error).toMatchObject({ status: 400, code: undefined })
   })
 
-  it.each([0, -1, 1.5, NaN, Infinity, Number.MAX_SAFE_INTEGER + 1])(
+  it.each([0, -1, 1.5, NaN, Infinity, Number.MAX_SAFE_INTEGER + 1, BigInt(0), BigInt(-1)])(
     'rejects invalid size %p without calling the API',
     async (size) => {
       const { api, sendAPIRequest } = createMockApi(ai3Routes(() => json(200, AI3_INTENT)))
@@ -459,6 +470,16 @@ describe('AutoDriveApi wiring and ABIs', () => {
     await expect(autoDrive.createUsdcPaymentIntent(BigInt(1024))).resolves.toMatchObject({
       intentId: INTENT_ID,
       usdcAmount: '2500001',
+    })
+  })
+
+  it('binds createPaymentIntent with bigint support onto the API object', async () => {
+    const { api } = createMockApi(ai3Routes(() => json(200, AI3_INTENT)))
+    const autoDrive = createApiInterface(api)
+
+    await expect(autoDrive.createPaymentIntent(BigInt(1024))).resolves.toMatchObject({
+      intentId: INTENT_ID,
+      ai3AmountWei: '1024000',
     })
   })
 
