@@ -16,10 +16,17 @@ const write = (file, value) => {
 const json = (value, status = 200) => new Response(JSON.stringify(value), { status })
 const names = ['app', 'base', 'optional', 'peer']
 const order = ['base', 'optional', 'peer', 'app'].map((name) => `@autonomys/${name}`)
+const pack = (directory, entries = ['package/package.json']) =>
+  execFileSync(
+    'tar',
+    ['--create', '--gzip', '--format=ustar', '--file', '-', '-C', directory, ...entries],
+    {
+      env: { PATH: process.env.PATH, COPYFILE_DISABLE: '1' },
+    },
+  )
 
 // Registry and npm are fakes. No test can obtain a credential or publish a package.
-// The publisher deliberately treats authenticated tarballs as opaque bytes; real
-// assembly/npm packing is covered below and in assembly.test.js.
+// Archive fixtures are real tarballs; assembly/npm packing is also covered below.
 const fixture = (t, version = '1.2.3') => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'auto-sdk-publisher-test-'))
   t.after(() => fs.rmSync(root, { recursive: true, force: true }))
@@ -71,8 +78,11 @@ const fixture = (t, version = '1.2.3') => {
     npmVersion: 'fixture-npm',
     packages: source.map((pkg, i) => {
       const tarball = `autonomys-${names[i]}-${version}.tgz`
-      const bytes = `opaque tarball fixture: ${pkg.name}`
-      write(path.join(input, tarball), bytes)
+      const staging = path.join(root, 'packing', names[i])
+      write(path.join(staging, 'package/package.json'), pkg)
+      const bytes = pack(staging)
+      fs.mkdirSync(input, { recursive: true })
+      fs.writeFileSync(path.join(input, tarball), bytes)
       return {
         name: pkg.name,
         version,
@@ -209,6 +219,7 @@ test('publishes verified tarballs in runtime/optional/peer dependency order with
     if (args[0] === 'publish') {
       assert.deepEqual(args.slice(2), [
         '--registry=https://registry.npmjs.org/',
+        '--@autonomys:registry=https://registry.npmjs.org/',
         '--access=public',
         '--tag=latest',
         '--provenance',
@@ -428,6 +439,120 @@ test('beta publication uses beta explicitly and accepts an earlier numeric count
   await publishRelease(f.options, f.dependencies)
   assert.ok(publishCalls(f).every(({ args }) => args.includes('--tag=beta')))
 })
+
+for (const status of [401, 404, 403, 429, 500]) {
+  test(`dist-tags HTTP ${status} stops all uploads with package/channel context`, async (t) => {
+    const f = fixture(t)
+    const fetch = f.dependencies.fetch
+    f.dependencies.fetch = (url, init) =>
+      url.pathname.startsWith('/-/package/') ? Promise.resolve(json({}, status)) : fetch(url, init)
+    await assert.rejects(publishRelease(f.options, f.dependencies), (error) => {
+      assert.match(error.message, /@autonomys\/base:/)
+      if (status === 401 || status === 404)
+        assert.match(error.message, /initial manual publish and trusted-publisher setup/)
+      else {
+        assert.match(error.message, /cannot read latest dist-tag/)
+        assert.doesNotMatch(error.message, /initial manual publish/)
+      }
+      return true
+    })
+    assert.equal(publishCalls(f).length, 0)
+  })
+}
+
+for (const [version, current] of [
+  ['1.2.3', '1.2.2-hotfix.1'],
+  ['1.2.3-beta.2', '1.2.3-rc.1'],
+  ['1.2.3', null],
+]) {
+  test(`unsupported existing dist-tag has package/channel/value context: ${current}`, async (t) => {
+    const f = fixture(t, version)
+    f.tags.set('@autonomys/app', { [f.options.tag]: current })
+    await assert.rejects(publishRelease(f.options, f.dependencies), {
+      message: `@autonomys/app: unsupported existing ${f.options.tag} dist-tag ${JSON.stringify(current)}`,
+    })
+    assert.equal(publishCalls(f).length, 0)
+  })
+}
+
+for (const publishConfig of [
+  { '@autonomys:registry': 'http://127.0.0.1:9/' },
+  { 'https-proxy': 'http://127.0.0.1:9/', 'strict-ssl': false },
+  { access: 'public' },
+  {},
+  null,
+]) {
+  test(`authenticated tarballs cannot carry publishConfig: ${JSON.stringify(publishConfig)}`, async (t) => {
+    const f = fixture(t)
+    const staging = path.join(f.root, 'packing/app')
+    write(path.join(staging, 'package/package.json'), { ...f.source[0], publishConfig })
+    const bytes = pack(staging)
+    const pkg = f.record.packages[0] // invalid package is last in publication order
+    fs.writeFileSync(path.join(f.input, pkg.tarball), bytes)
+    pkg.integrity = `sha512-${digest(bytes, 'sha512', 'base64')}`
+    f.options.manifestSha256 = f.saveManifest() // authenticated assembly regression
+    for (const publish of [false, true]) {
+      await assert.rejects(
+        publishRelease({ ...f.options, publish }, f.dependencies),
+        /@autonomys\/app:.*publishConfig is forbidden/,
+      )
+    }
+    assert.equal(f.calls.length, 0)
+    assert.equal(f.reads.length, 0)
+  })
+}
+
+for (const kind of [
+  'wrong name',
+  'wrong version',
+  'malformed JSON',
+  'duplicate manifest',
+  'alias manifest',
+  'missing manifest',
+  'symlink manifest',
+  'hardlink manifest',
+  'invalid archive',
+]) {
+  test(`rejects authenticated ${kind} before npm or registry access`, async (t) => {
+    const f = fixture(t)
+    const staging = path.join(f.root, 'packing/app')
+    const manifest = path.join(staging, 'package/package.json')
+    let entries = ['package/package.json']
+    if (kind === 'wrong name') write(manifest, { ...f.source[0], name: '@attacker/app' })
+    if (kind === 'wrong version') write(manifest, { ...f.source[0], version: '9.9.9' })
+    if (kind === 'malformed JSON') write(manifest, '{invalid')
+    if (kind === 'duplicate manifest') entries.push('package/package.json')
+    if (kind === 'alias manifest') {
+      write(path.join(staging, 'other/package.json'), {
+        ...f.source[0],
+        publishConfig: { 'strict-ssl': false },
+      })
+      entries.push('other/package.json')
+    }
+    if (kind === 'missing manifest') {
+      write(path.join(staging, 'package/README'), 'fixture')
+      entries = ['package/README']
+    }
+    if (kind === 'symlink manifest' || kind === 'hardlink manifest') {
+      const target = path.join(staging, 'package/target.json')
+      fs.renameSync(manifest, target)
+      if (kind === 'symlink manifest') fs.symlinkSync('target.json', manifest)
+      else fs.linkSync(target, manifest)
+      entries.unshift('package/target.json')
+    }
+    const bytes = kind === 'invalid archive' ? Buffer.from('not a tarball') : pack(staging, entries)
+    const pkg = f.record.packages[0]
+    fs.writeFileSync(path.join(f.input, pkg.tarball), bytes)
+    pkg.integrity = `sha512-${digest(bytes, 'sha512', 'base64')}`
+    f.options.manifestSha256 = f.saveManifest()
+    await assert.rejects(
+      publishRelease(f.options, f.dependencies),
+      /@autonomys\/app: invalid packaged manifest/,
+    )
+    assert.equal(f.calls.length, 0)
+    assert.equal(f.reads.length, 0)
+  })
+}
 
 for (const [version, tag] of [
   ['1.2.3', 'beta'],

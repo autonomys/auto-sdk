@@ -22,6 +22,44 @@ const readFile = (file) => {
 }
 const git = (repo, args) => execFileSync('git', args, { cwd: repo, encoding: 'utf8' }).trim()
 
+// Use the runner's tar implementation, not a custom archive parser. Nothing is
+// extracted to disk or executed, and tar receives no credentials or TAR_OPTIONS.
+const verifyPackagedManifest = (file, source) => {
+  const tar = (args) =>
+    execFileSync('tar', ['--file', file, ...args], {
+      env: { PATH: process.env.PATH, LC_ALL: 'C' },
+      encoding: 'utf8',
+      maxBuffer: 4 * 1024 * 1024,
+      timeout: 30_000,
+      stdio: ['ignore', 'pipe', 'pipe'],
+    })
+  try {
+    const entries = tar(['--list', '--gzip']).replace(/\n$/, '').split('\n')
+    // npm strips the first path component. Require the assembler's canonical
+    // package/ paths so aliases or duplicate manifests cannot disagree with npm.
+    const paths = entries.map((entry) => entry.replace(/\/$/, ''))
+    if (
+      new Set(paths).size !== paths.length ||
+      !entries.includes('package/package.json') ||
+      paths.some(
+        (entry) =>
+          !entry.startsWith('package/') ||
+          /[\\\x00-\x1f\x7f]/.test(entry) ||
+          entry.split('/').some((part) => !part || part === '.' || part === '..') ||
+          (entry.toLowerCase() === 'package/package.json' && entry !== 'package/package.json'),
+      )
+    )
+      throw new Error('Noncanonical or duplicate archive paths, or missing package/package.json')
+    const manifest = JSON.parse(tar(['--extract', '--gzip', '--to-stdout', 'package/package.json']))
+    if (!manifest || manifest.name !== source.name || manifest.version !== source.version)
+      throw new Error('Packaged name/version does not match committed source')
+    if (Object.hasOwn(manifest, 'publishConfig'))
+      throw new Error('Packaged publishConfig is forbidden')
+  } catch (cause) {
+    throw new Error(`${source.name}: invalid packaged manifest: ${cause.message}`, { cause })
+  }
+}
+
 // Deliberately a narrow release policy, not a general SemVer implementation.
 // Supported channels are X.Y.Z -> latest and X.Y.Z-beta.N -> beta.
 const releaseVersion = (version) => {
@@ -127,6 +165,7 @@ const prepareRelease = ({ repo, input, sourceCommit, manifestSha256, tag }, temp
       throw new Error(`Tarball integrity mismatch: ${pkg.name}`)
     const file = path.join(temporary, tarball)
     fs.writeFileSync(file, payload, { flag: 'wx', mode: 0o400 })
+    verifyPackagedManifest(file, source)
     return {
       name: pkg.name,
       version,
@@ -186,6 +225,8 @@ const githubEnvironment = (env, sourceCommit) => {
   return Object.fromEntries(keys.map((key) => [key, env[key]]))
 }
 
+// Keep publisher isolation self-contained: assembly helpers can change without
+// silently changing the code that receives OIDC authority. Audit both explicitly.
 const npmEnvironment = (temporary, env) => ({
   PATH: env.PATH,
   HOME: temporary,
@@ -204,7 +245,9 @@ const registryJson = async (relative, fetch) => {
   })
   if (response.status === 404) return undefined
   if (response.status !== 200)
-    throw new Error(`Registry read failed (${response.status}): ${relative}`)
+    throw Object.assign(new Error(`Registry read failed (${response.status}): ${relative}`), {
+      status: response.status,
+    })
   const result = await response.json()
   if (!result || typeof result !== 'object' || Array.isArray(result))
     throw new Error(`Invalid registry JSON: ${relative}`)
@@ -227,12 +270,32 @@ const registryState = async (pkg, fetch) => {
 }
 
 const checkTag = async (pkg, tag, fetch) => {
-  const tags = await registryJson(`-/package/${encodeURIComponent(pkg.name)}/dist-tags`, fetch)
-  if (tags === undefined) return
-  if (
-    tags[tag] !== undefined &&
-    (typeof tags[tag] !== 'string' || newerThan(tags[tag], pkg.version))
-  ) {
+  const bootstrap =
+    'New packages need an initial manual publish and trusted-publisher setup before automated releases (see RELEASE.md)'
+  let tags
+  try {
+    tags = await registryJson(`-/package/${encodeURIComponent(pkg.name)}/dist-tags`, fetch)
+  } catch (cause) {
+    // npm can return 401 for a package that has never been published. Do not
+    // treat authorization failures as absence or attempt an authenticated retry.
+    throw new Error(
+      `${pkg.name}: cannot read ${tag} dist-tag: ${cause.message}${cause.status === 401 ? `. ${bootstrap}` : ''}`,
+      { cause },
+    )
+  }
+  if (tags === undefined) throw new Error(`${pkg.name}: no public dist-tags. ${bootstrap}`)
+  if (tags[tag] === undefined) return
+  let newer
+  try {
+    if (typeof tags[tag] !== 'string') throw new Error('Expected a version string')
+    newer = newerThan(tags[tag], pkg.version)
+  } catch (cause) {
+    throw new Error(
+      `${pkg.name}: unsupported existing ${tag} dist-tag ${JSON.stringify(tags[tag])}`,
+      { cause },
+    )
+  }
+  if (newer) {
     throw new Error(`Refusing to move ${pkg.name}'s ${tag} tag backwards from ${tags[tag]}`)
   }
 }
@@ -292,6 +355,7 @@ const publishRelease = async (options, dependencies = {}) => {
             'publish',
             pkg.file,
             `--registry=${REGISTRY}`,
+            `--@autonomys:registry=${REGISTRY}`,
             '--access=public',
             `--tag=${options.tag}`,
             '--provenance',
