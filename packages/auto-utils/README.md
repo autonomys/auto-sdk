@@ -210,17 +210,18 @@ console.log(byteArray) // Outputs Uint8Array representation of the string
 
 #### **Concatenate Uint8Arrays**
 
-Concatenate two `Uint8Array` instances:
+Concatenate two or more `Uint8Array` instances:
 
 ```typescript
 import { stringToUint8Array, concatenateUint8Arrays } from '@autonomys/auto-utils'
 
 const array1 = stringToUint8Array('First part ')
 const array2 = stringToUint8Array('Second part')
+const array3 = stringToUint8Array('!')
 
-const concatenated = concatenateUint8Arrays(array1, array2)
+const concatenated = concatenateUint8Arrays(array1, array2, array3)
 console.log(`Concatenated Result: ${new TextDecoder().decode(concatenated)}`)
-// Outputs: "First part Second part"
+// Outputs: "First part Second part!"
 ```
 
 ---
@@ -427,14 +428,13 @@ console.log(`Decoded Address:`, decodedAddress)
 
   - **Returns**: `Uint8Array` representation of the string.
 
-- **`concatenateUint8Arrays(array1: Uint8Array, array2: Uint8Array): Uint8Array`**: Concatenates two `Uint8Array` instances.
+- **`concatenateUint8Arrays(...arrays: Uint8Array[]): Uint8Array`**: Concatenates two or more `Uint8Array` instances.
 
   - **Parameters**:
 
-    - `array1` (`Uint8Array`)
-    - `array2` (`Uint8Array`)
+    - `arrays` (`Uint8Array[]`): Variable number of `Uint8Array` instances to concatenate.
 
-  - **Returns**: New `Uint8Array` resulting from concatenation.
+  - **Returns**: New `Uint8Array` containing all bytes from input arrays in order.
 
 ---
 

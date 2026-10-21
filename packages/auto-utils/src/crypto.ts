@@ -34,15 +34,14 @@ export function stringToUint8Array(text: string): Uint8Array {
 }
 
 /**
- * Concatenates two Uint8Array instances into a single Uint8Array.
+ * Concatenates two or more Uint8Array instances into a single Uint8Array.
  *
- * This function efficiently combines two byte arrays into a single array, preserving
+ * This function efficiently combines byte arrays into a single array, preserving
  * the order of the input arrays. It's commonly used for combining data before hashing,
  * creating composite data structures, or preparing data for cryptographic operations.
  *
- * @param array1 - The first Uint8Array to concatenate.
- * @param array2 - The second Uint8Array to concatenate.
- * @returns A new Uint8Array containing all bytes from array1 followed by all bytes from array2.
+ * @param arrays - The Uint8Array instances to concatenate.
+ * @returns A new Uint8Array containing all bytes from the input arrays in order.
  *
  * @example
  * import { stringToUint8Array, concatenateUint8Arrays } from '@autonomys/auto-utils'
@@ -57,6 +56,10 @@ export function stringToUint8Array(text: string): Uint8Array {
  * console.log(result) // Output: "Hello, Autonomys!"
  * console.log(combined.length) // Output: 16 (total length of both arrays)
  *
+ * // Concatenate three or more byte arrays
+ * const part3 = stringToUint8Array(' Welcome!')
+ * const multiCombined = concatenateUint8Arrays(part1, part2, part3)
+ *
  * // Concatenate with hash data
  * const data1 = stringToUint8Array('message1')
  * const data2 = stringToUint8Array('message2')
@@ -64,9 +67,13 @@ export function stringToUint8Array(text: string): Uint8Array {
  * const hash = blake2b_256(combinedData)
  * console.log(hash) // Output: hash of combined data
  */
-export function concatenateUint8Arrays(array1: Uint8Array, array2: Uint8Array): Uint8Array {
-  const combined = new Uint8Array(array1.length + array2.length)
-  combined.set(array1)
-  combined.set(array2, array1.length)
+export function concatenateUint8Arrays(...arrays: Uint8Array[]): Uint8Array {
+  const totalLength = arrays.reduce((acc, curr) => acc + curr.length, 0)
+  const combined = new Uint8Array(totalLength)
+  let offset = 0
+  for (const arr of arrays) {
+    combined.set(arr, offset)
+    offset += arr.length
+  }
   return combined
 }
