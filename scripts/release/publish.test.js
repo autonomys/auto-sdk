@@ -3,6 +3,7 @@ const fs = require('node:fs')
 const os = require('node:os')
 const path = require('node:path')
 const crypto = require('node:crypto')
+const { gzipSync, gunzipSync } = require('node:zlib')
 const { execFileSync } = require('node:child_process')
 const { test } = require('node:test')
 const { publishRelease } = require('./publish')
@@ -499,6 +500,83 @@ for (const publishConfig of [
     }
     assert.equal(f.calls.length, 0)
     assert.equal(f.reads.length, 0)
+  })
+}
+
+test('rejects a second manifest hidden after a zero block before npm or registry access', async (t) => {
+  const f = fixture(t)
+  const staging = path.join(f.root, 'packing/app')
+  const manifest = path.join(staging, 'package/package.json')
+  const clean = gunzipSync(pack(staging))
+  // This fixture has one ustar entry: a 512-byte header and padded JSON body.
+  const entryLength = 512 + Math.ceil(fs.statSync(manifest).size / 512) * 512
+  write(manifest, {
+    ...f.source[0],
+    publishConfig: { 'https-proxy': 'http://127.0.0.1:9/', 'strict-ssl': false },
+  })
+  const bytes = gzipSync(
+    Buffer.concat([clean.subarray(0, entryLength), Buffer.alloc(512), gunzipSync(pack(staging))]),
+  )
+  const pkg = f.record.packages[0]
+  fs.writeFileSync(path.join(f.input, pkg.tarball), bytes)
+  pkg.integrity = `sha512-${digest(bytes, 'sha512', 'base64')}`
+  f.options.manifestSha256 = f.saveManifest()
+  for (const publish of [false, true]) {
+    await assert.rejects(
+      publishRelease({ ...f.options, publish }, f.dependencies),
+      /@autonomys\/app: invalid packaged manifest:.*duplicate archive paths/,
+    )
+  }
+  assert.equal(f.calls.length, 0)
+  assert.equal(f.reads.length, 0)
+})
+
+for (const operation of ['--list', '--extract']) {
+  test(`rejects tar stderr despite exit zero during ${operation}`, (t) => {
+    const f = fixture(t)
+    const bin = path.join(f.root, 'bin')
+    const wrapper = path.join(bin, 'tar')
+    write(
+      wrapper,
+      `#!/usr/bin/env node
+const { execFileSync } = require('node:child_process')
+process.stdout.write(execFileSync('tar', process.argv.slice(2), {
+  env: { PATH: ${JSON.stringify(process.env.PATH)}, LC_ALL: 'C' },
+}))
+if (process.argv.includes(${JSON.stringify(operation)})) process.stderr.write('fixture tar warning\\n')
+`,
+    )
+    fs.chmodSync(wrapper, 0o755)
+    const script = path.join(f.repo, 'scripts/release/publish.js')
+    fs.copyFileSync(path.join(__dirname, 'publish.js'), script)
+    assert.throws(
+      () =>
+        execFileSync(
+          process.execPath,
+          [
+            script,
+            f.input,
+            '--source-commit',
+            f.options.sourceCommit,
+            '--manifest-sha256',
+            f.options.manifestSha256,
+            '--tag',
+            'latest',
+          ],
+          {
+            env: { PATH: `${bin}${path.delimiter}${process.env.PATH}` },
+            stdio: 'pipe',
+          },
+        ),
+      (error) => {
+        assert.equal(error.status, 1)
+        assert.match(
+          error.stderr.toString(),
+          /@autonomys\/app: invalid packaged manifest:.*fixture tar warning/,
+        )
+        return true
+      },
+    )
   })
 }
 

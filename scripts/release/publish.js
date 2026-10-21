@@ -7,7 +7,7 @@ const fs = require('node:fs')
 const os = require('node:os')
 const path = require('node:path')
 const crypto = require('node:crypto')
-const { execFileSync } = require('node:child_process')
+const { execFileSync, spawnSync } = require('node:child_process')
 const { parseArgs } = require('node:util')
 const { setTimeout: sleep } = require('node:timers/promises')
 
@@ -25,14 +25,21 @@ const git = (repo, args) => execFileSync('git', args, { cwd: repo, encoding: 'ut
 // Use the runner's tar implementation, not a custom archive parser. Nothing is
 // extracted to disk or executed, and tar receives no credentials or TAR_OPTIONS.
 const verifyPackagedManifest = (file, source) => {
-  const tar = (args) =>
-    execFileSync('tar', ['--file', file, ...args], {
+  const tar = (args) => {
+    // node-tar can read past a zero block. Inspect those entries too, and never
+    // accept a partial or ambiguous read just because system tar exits zero.
+    const result = spawnSync('tar', ['--ignore-zeros', '--file', file, ...args], {
       env: { PATH: process.env.PATH, LC_ALL: 'C' },
       encoding: 'utf8',
       maxBuffer: 4 * 1024 * 1024,
       timeout: 30_000,
       stdio: ['ignore', 'pipe', 'pipe'],
     })
+    if (result.error) throw result.error
+    if (result.status !== 0 || result.stderr)
+      throw new Error(`tar inspection failed (${result.signal || result.status}): ${result.stderr}`)
+    return result.stdout
+  }
   try {
     const entries = tar(['--list', '--gzip']).replace(/\n$/, '').split('\n')
     // npm strips the first path component. Require the assembler's canonical
