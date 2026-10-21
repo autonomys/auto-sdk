@@ -5,6 +5,7 @@ const path = require('node:path')
 const { execFileSync } = require('node:child_process')
 const { test } = require('node:test')
 const { assemble, inspectOutputs, safeRelativePath } = require('./assemble')
+const { verifyInstalledPackage } = require('./verify-installation')
 
 const write = (file, value) => {
   fs.mkdirSync(path.dirname(file), { recursive: true })
@@ -29,6 +30,7 @@ const fixture = (t) => {
       version: '1.2.3',
       main: 'dist/index.js',
       types: 'dist/index.d.ts',
+      style: 'dist/styles.css',
       ...(name === 'app'
         ? { bin: { 'fixture-app': 'dist/cli.js' }, dependencies: { '@autonomys/base': '1.2.3' } }
         : { files: ['dist', 'README.md'] }),
@@ -107,6 +109,7 @@ test('assembled packages install offline, preserve payloads, and never run lifec
   )
   for (const pkg of record.packages) {
     const installed = path.join(consumer, 'node_modules', pkg.name)
+    verifyInstalledPackage(installed, pkg, record.sourceCommit)
     const manifest = JSON.parse(fs.readFileSync(path.join(installed, 'package.json')))
     assert.equal(manifest.name, pkg.name)
     assert.equal(manifest.publishConfig, undefined)
@@ -124,9 +127,8 @@ test('assembled packages install offline, preserve payloads, and never run lifec
     assert.ok(pkg.integrity.startsWith('sha512-'))
     assert.equal(require(installed), pkg.name.split('/').pop())
   }
-  assert.ok(
-    fs.statSync(path.join(consumer, 'node_modules/@autonomys/app/dist/cli.js')).mode & 0o111,
-  )
+  const app = record.packages.find((pkg) => pkg.name === '@autonomys/app')
+  assert.equal(app.files.find((file) => file.path === 'dist/cli.js').mode & 0o777, 0o755)
   assert.equal(fs.existsSync(f.marker), false)
   // Existing npm "files" behavior is retained, including packages without it.
   assert.equal(fs.existsSync(path.join(consumer, 'node_modules/@autonomys/base/src')), false)
@@ -140,7 +142,7 @@ for (const entry of [
   'manifest.json',
   '.npmrc',
   'unknown/dist/index.js',
-  'base/dist/../escape',
+  'base/escape',
   'base/dist/..\\escape',
   'base/dist/a\n::warning::injection',
 ]) {
@@ -213,11 +215,75 @@ test('fails when npm would omit an entry point or compiled asset', (t) => {
   assert.equal(fs.existsSync(path.join(f.output, 'manifest.json')), false)
 })
 
-test('fails when a declared entry point is not built', (t) => {
+for (const entry of ['index.d.ts', 'styles.css']) {
+  test(`fails with package context when declared entry point ${entry} is not built`, (t) => {
+    const f = fixture(t)
+    fs.rmSync(path.join(f.input, 'base/dist', entry))
+    assert.throws(() => assemble(f), {
+      message: `Missing file: @autonomys/base: declared entry point dist/${entry}`,
+    })
+    assert.equal(fs.existsSync(path.join(f.output, 'manifest.json')), false)
+  })
+}
+
+test('rejects a packed CLI without executable permissions if staging chmod regresses', (t) => {
   const f = fixture(t)
-  fs.rmSync(path.join(f.input, 'base/dist/index.d.ts'))
-  assert.throws(() => assemble(f), /ENOENT/)
+  const chmod = fs.chmodSync
+  t.mock.method(fs, 'chmodSync', (file, mode) => {
+    if (file.endsWith('/dist/cli.js') && mode === 0o755) return
+    return chmod(file, mode)
+  })
+  assert.throws(() => assemble(f), /@autonomys\/app: packed bin is not executable: dist\/cli.js/)
   assert.equal(fs.existsSync(path.join(f.output, 'manifest.json')), false)
+})
+
+test('installation verification checks packed bin permissions even when the installed bin is executable', (t) => {
+  const f = fixture(t)
+  const installed = path.join(f.root, 'installed')
+  const pkg = {
+    name: '@autonomys/app',
+    version: '1.2.3',
+    files: [{ path: 'dist/cli.js', mode: 0o644 }],
+  }
+  write(path.join(installed, 'package.json'), {
+    name: pkg.name,
+    version: pkg.version,
+    gitHead: 'source',
+    bin: './dist/cli.js',
+  })
+  write(path.join(installed, 'dist/cli.js'), '#!/usr/bin/env node\n')
+  fs.chmodSync(path.join(installed, 'dist/cli.js'), 0o755)
+  assert.throws(
+    () => verifyInstalledPackage(installed, pkg, 'source'),
+    /@autonomys\/app: packed bin is not executable: dist\/cli.js/,
+  )
+})
+
+for (const field of ['main', 'style', 'bin', 'recorded file']) {
+  test(`installation verification names the package and missing ${field}`, (t) => {
+    const f = fixture(t)
+    const installed = path.join(f.root, 'installed')
+    const pkg = { name: '@autonomys/app', version: '1.2.3', files: [] }
+    const manifest = { name: pkg.name, version: pkg.version, gitHead: 'source' }
+    if (field === 'recorded file') pkg.files.push({ path: 'dist/missing' })
+    else manifest[field] = 'dist/missing'
+    write(path.join(installed, 'package.json'), manifest)
+    assert.throws(
+      () => verifyInstalledPackage(installed, pkg, 'source'),
+      /@autonomys\/app: missing dist\/missing/,
+    )
+  })
+}
+
+test('assembly supports a string bin target with a leading ./', (t) => {
+  const f = fixture(t)
+  const file = path.join(f.repo, 'packages/utility/app/package.json')
+  const manifest = JSON.parse(fs.readFileSync(file))
+  manifest.bin = './dist/cli.js'
+  write(file, manifest)
+  const record = assemble(f)
+  const app = record.packages.find((pkg) => pkg.name === '@autonomys/app')
+  assert.equal(app.files.find((file) => file.path === 'dist/cli.js').mode & 0o777, 0o755)
 })
 
 test('rejects source publish settings outside the public-access policy', (t) => {
@@ -230,7 +296,16 @@ test('rejects source publish settings outside the public-access policy', (t) => 
 })
 
 test('relative path validation rejects traversal, absolute paths, and control characters', () => {
-  for (const value of ['../x', '/tmp/x', 'a//b', './a', 'C:/x', 'a\\b', 'a\0b']) {
+  for (const value of [
+    '../x',
+    'base/dist/../escape',
+    '/tmp/x',
+    'a//b',
+    './a',
+    'C:/x',
+    'a\\b',
+    'a\0b',
+  ]) {
     assert.throws(() => safeRelativePath(value), /Unsafe relative path/)
   }
 })

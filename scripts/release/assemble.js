@@ -24,8 +24,9 @@ const safeRelativePath = (value) => {
   return value
 }
 
-const regularFile = (file) => {
-  const stat = fs.lstatSync(file)
+const regularFile = (file, description = file) => {
+  const stat = fs.lstatSync(file, { throwIfNoEntry: false })
+  if (!stat) throw new Error(`Missing file: ${description}`)
   if (!stat.isFile() || stat.nlink !== 1) {
     throw new Error(`Expected a regular, unlinked file: ${JSON.stringify(file)}`)
   }
@@ -135,19 +136,34 @@ const npmEnvironment = (temporary) => ({
   NPM_CONFIG_CACHE: path.join(temporary, 'cache'),
 })
 
+const isLicense = (name) => /^licen[cs]e(\.|$)/i.test(name)
+
+const entryPointPath = (target) => {
+  const relative = safeRelativePath(target.replace(/^\.\//, ''))
+  if (relative.includes('*')) throw new Error(`Wildcard entry point needs a check: ${relative}`)
+  return relative
+}
+
+const binTargets = (manifest) =>
+  (typeof manifest.bin === 'string' ? [manifest.bin] : Object.values(manifest.bin || {})).map(
+    entryPointPath,
+  )
+
 const entryPoints = (manifest) => {
-  const targets = [manifest.main, manifest.module, manifest.types, manifest.typings]
+  const targets = [
+    manifest.main,
+    manifest.module,
+    manifest.types,
+    manifest.typings,
+    manifest.style,
+    ...binTargets(manifest),
+  ]
   const walk = (value) => {
     if (typeof value === 'string') targets.push(value)
     else if (value && typeof value === 'object') Object.values(value).forEach(walk)
   }
   walk(manifest.exports)
-  walk(manifest.bin)
-  return [...new Set(targets.filter(Boolean))].map((target) => {
-    const relative = safeRelativePath(target.replace(/^\.\//, ''))
-    if (relative.includes('*')) throw new Error(`Wildcard entry point needs a check: ${relative}`)
-    return relative
-  })
+  return [...new Set(targets.filter(Boolean).map(entryPointPath))]
 }
 
 const assemble = ({ repo, input, output, directories }) => {
@@ -202,7 +218,7 @@ const assemble = ({ repo, input, output, directories }) => {
           mode === '100755' ? 0o755 : 0o644,
         )
       }
-      if (!fs.readdirSync(stage).some((name) => /^licen[cs]e(\.|$)/i.test(name))) {
+      if (!fs.readdirSync(stage).some(isLicense)) {
         copyFile(path.join(repo, 'LICENSE'), path.join(stage, 'LICENSE'))
       }
       const { publishConfig: _publishConfig, gitHead: _gitHead, ...publishedManifest } = manifest
@@ -214,9 +230,10 @@ const assemble = ({ repo, input, output, directories }) => {
       for (const file of payloadFiles.filter((file) => file.startsWith(`${directory}/dist/`))) {
         copyFile(path.join(input, file), path.join(stage, file.slice(directory.length + 1)))
       }
-      for (const target of entryPoints(manifest)) regularFile(path.join(stage, target))
-      const bins =
-        typeof manifest.bin === 'string' ? [manifest.bin] : Object.values(manifest.bin || {})
+      for (const target of entryPoints(manifest)) {
+        regularFile(path.join(stage, target), `${manifest.name}: declared entry point ${target}`)
+      }
+      const bins = binTargets(manifest)
       for (const bin of bins) fs.chmodSync(path.join(stage, bin), 0o755)
       const [packed] = JSON.parse(
         execFileSync(
@@ -236,10 +253,13 @@ const assemble = ({ repo, input, output, directories }) => {
       for (const target of entryPoints(manifest)) {
         if (!packedFiles.has(target)) throw new Error(`npm pack omitted entry point: ${target}`)
       }
-      if (
-        !packedFiles.has('LICENSE') &&
-        ![...packedFiles].some((file) => /^licen[cs]e(\.|$)/i.test(file))
-      ) {
+      for (const bin of bins) {
+        const file = packed.files.find((file) => file.path === bin)
+        if (!(file.mode & 0o111)) {
+          throw new Error(`${manifest.name}: packed bin is not executable: ${bin}`)
+        }
+      }
+      if (![...packedFiles].some(isLicense)) {
         throw new Error(`npm pack omitted the license: ${manifest.name}`)
       }
       for (const file of payloadFiles.filter((file) => file.startsWith(`${directory}/dist/`))) {
@@ -288,4 +308,4 @@ if (require.main === module) {
   }
 }
 
-module.exports = { assemble, entryPoints, inspectOutputs, safeRelativePath }
+module.exports = { assemble, binTargets, entryPoints, inspectOutputs, safeRelativePath }

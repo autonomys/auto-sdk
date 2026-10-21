@@ -88,7 +88,7 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
-  smoke:
+  verify-installation:
     needs: assemble
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -111,4 +111,4 @@ jobs:
           path: ${{ runner.temp }}/release-packages
 
       - name: Install and check the assembled packages in an isolated consumer
-        run: node scripts/release/smoke-test.js "$RUNNER_TEMP/release-packages"
+        run: node scripts/release/verify-installation.js "$RUNNER_TEMP/release-packages"

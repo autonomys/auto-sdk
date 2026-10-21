@@ -139,8 +139,8 @@ All three jobs have read-only repository access and no OIDC permission.
    Future publication must explicitly set public access. `gitHead` is set to the
    checkout commit. The pinned npm CLI packs with scripts disabled, and assembly
    fails if a declared entry point or compiled file is omitted.
-3. **Smoke** installs those exact tarballs in a temporary consumer with scripts
-   disabled, verifies installed contents and executable entry points, and
+3. **Verify installation** installs those exact tarballs in a temporary consumer with scripts
+   disabled, verifies installed contents and recorded tarball bin permissions, and
    exercises an SDK API. It uses `--legacy-peer-deps` because the repository has
    existing conflicting React peer ranges; this checks packaging, not peer
    compatibility. Package execution remains in a separate unprivileged job.
@@ -149,7 +149,8 @@ The assembled artifact includes `manifest.json`, the source commit, tool version
 package identities, SHA-512 tarball integrity, and SHA-256 compiled-file hashes.
 Downloads select the preceding job's artifact ID, not a name from another run.
 These hashes establish artifact identity, not the safety of compiled code.
-The shadow artifacts expire after 14 days and are not a production release store.
+Compiled-output artifacts expire after 7 days; assembled-package artifacts expire
+after 14 days. Neither is a production release store.
 
 To run boundary tests locally (Node 24):
 
@@ -162,7 +163,7 @@ directory, retaining paths relative to `packages/`, then run:
 
 ```sh
 node scripts/release/assemble.js /absolute/path/to/compiled-outputs /absolute/path/to/new-packages
-node scripts/release/smoke-test.js /absolute/path/to/new-packages
+node scripts/release/verify-installation.js /absolute/path/to/new-packages
 ```
 
 The output directory must not already exist. For authoritative checks, use the
