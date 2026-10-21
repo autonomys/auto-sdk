@@ -34,7 +34,6 @@ jobs:
         env:
           NX_DAEMON: 'false'
           NX_SKIP_NX_CACHE: 'true'
-      - run: yarn test:unit
 
       # The common ancestor is packages/. The artifact therefore contains
       # auto-utils/dist/..., utility/asynchronous/dist/..., etc.

@@ -126,7 +126,8 @@ Follow the instructions to create and set up a token with the `repo` scope.
 It does not publish, tag, or change the release process described below.
 All three jobs have read-only repository access and no OIDC permission.
 
-1. **Build** installs with the lockfile, builds, and tests. Only compiled `dist/`
+1. **Build** installs with the lockfile and builds. Unit tests run in the existing
+   `Build` workflow. Only compiled `dist/`
    trees are uploaded, with paths relative to `packages/`.
 2. **Assemble** uses a fresh checkout of the same workflow commit, without
    installing project dependencies. `scripts/release/package-layout.json` lists
