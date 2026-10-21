@@ -205,7 +205,7 @@ export interface AutoDriveApi extends AutoDriveApiHandler {
    * `intent.ai3AmountWei` to the Credits Receiver contract via `payIntent(intent.intentId)`,
    * then call `watchPaymentTransaction` to notify Auto Drive.
    *
-   * @param sizeBytes - Upload size in bytes, as a positive safe integer. Sent to the
+   * @param sizeBytes - Upload size in bytes, as a positive safe integer or a bigint. Sent to the
    *   server as `requestedBytes` for the credit-cap check, and used by the SDK to
    *   compute `ai3AmountWei = shannonsPerByte × sizeBytes`.
    * @returns {Promise<PaymentIntent>} Intent details including amount, contract address, and expiry.
@@ -214,9 +214,9 @@ export interface AutoDriveApi extends AutoDriveApiHandler {
    * @throws {PaymentApiError} If Auto Drive refuses the intent for another reason.
    *   A 400 with no `code` means that a single purchase is larger than the whole
    *   cap. A 404 with no `code` means that the account cannot buy credits.
-   * @throws {TypeError} If `sizeBytes` is not a positive safe integer.
+   * @throws {TypeError} If `sizeBytes` is not a positive whole number.
    */
-  createPaymentIntent: (sizeBytes: number) => Promise<PaymentIntent>
+  createPaymentIntent: (sizeBytes: number | bigint) => Promise<PaymentIntent>
 
   // ---------------------------------------------------------------------------
   // Pay with USDC — credit purchase with USDC on Ethereum
