@@ -156,7 +156,7 @@ after 14 days. Neither is a production release store.
 To run boundary tests locally (Node 24):
 
 ```sh
-node --test scripts/release/assembly.test.js
+node --test scripts/release/*.test.js
 ```
 
 After building, copy each declared package's `dist/` into an external input
@@ -170,6 +170,39 @@ node scripts/release/verify-installation.js /absolute/path/to/new-packages
 The output directory must not already exist. For authoritative checks, use the
 workflow's fresh checkout; local assembly reads tracked files from the working
 tree, including local edits, while recording `HEAD`.
+
+#### Artifact publisher (not connected to production yet)
+
+`scripts/release/publish.js` consumes the assembled tarballs without installing dependencies, building, repacking, or running package scripts. Its default mode is an offline dry run. The shadow workflow exercises that mode; it has no publishing permissions. The existing production workflow below remains unchanged.
+
+Assembly now emits `source-commit` and `manifest-sha256` as job outputs, alongside the uploaded artifact ID. The publisher requires those independently supplied values, checks its checkout against the source commit, authenticates the manifest, and verifies the complete package set and every tarball before contacting npm. Package identities, versions, and dependency ordering come from metadata in the committed source. Verified tarballs are copied into a private temporary directory so subsequent changes to the downloaded files cannot change the upload.
+
+Before invoking npm, the publisher uses the runner's system `tar` to read `package/package.json` from each verified snapshot without extracting files to disk. It requires canonical, unique archive paths, checks the packaged name/version against committed source, and rejects any `publishConfig` field, including empty or null values. This is a separate check on assembly's removal of publishing configuration: the manifest digest alone authenticates bytes, not npm's interpretation of them. Both archive reads continue past zero blocks and reject any stderr output, even when tar exits successfully, so a warning or early end marker cannot hide another manifest. Reads have bounded output and execution time and receive no credentials. Assembly remains trusted for the package payload; these checks do not make compromised build output safe to execute.
+
+```sh
+node scripts/release/publish.js /absolute/path/to/release-packages \
+  --source-commit "$SOURCE_COMMIT" \
+  --manifest-sha256 "$MANIFEST_SHA256" \
+  --tag latest
+```
+
+Use the commit and digest recorded by trusted assembly, not a digest supplied inside the downloaded artifact. Stable `X.Y.Z` versions require `latest`; `X.Y.Z-beta.N` versions require `beta`. Other version/channel formats fail explicitly. The dry run validates files and publication order without invoking npm, querying the registry, or requesting OIDC tokens. It does not verify registry availability or trusted publisher configuration.
+
+The future production job will add `--publish`. That mode:
+
+1. Requires a GitHub-hosted run of `.github/workflows/release.yaml` from the original `main` push, with the workflow SHA, event SHA, checkout SHA, and assembly SHA all matching. It also requires the same Node and npm versions used by assembly. These checks catch wiring errors; GitHub environment protection and npm's trusted publisher configuration enforce authorization.
+2. Checks every package/version on the fixed public npm registry before uploading any. Only HTTP 404 means absent. An existing version must have the exact expected SHA-512 integrity. Missing integrity, mismatched identity, malformed responses, redirects, and other HTTP/network failures stop the run.
+3. Publishes absent versions in internal dependency order, including optional and peer dependencies. It uses the standard npm CLI with explicit default and `@autonomys` scope registries, public access, channel, provenance, disabled lifecycle scripts, and disabled workspaces. npm receives empty user/global config, an isolated home/cache, and only the required GitHub OIDC/provenance context. Project npm configuration, tokens, environment proxy settings, and Node preload options are not inherited; tarball-supplied `publishConfig` is rejected separately before this step.
+4. Checks the registry immediately before each upload and verifies its integrity afterward. A failed npm command can represent a lost response after a successful upload, so the publisher checks the registry instead of blindly uploading again. Brief visibility delays get bounded read retries; a missing or conflicting version stops subsequent packages.
+5. Skips already published matching versions without changing their dist-tags. Before publishing a missing version, it refuses to move `latest` or `beta` backwards. Existing tag versions must also use the supported stable/beta formats. It does not automatically repair manually changed tags.
+
+New packages require a one-time manual first publish before joining automated releases, followed by [trusted-publisher configuration](https://docs.npmjs.com/trusted-publishers/) for `autonomys/auto-sdk`, `release.yaml`, and the `npm-publish` environment. Publish a reviewed, functional bootstrap version using a maintainer's normal npm login/2FA, then include the package in a subsequent release with a new version. Do not add a maintainer token or an automatic first-publish fallback to this workflow. npm can return HTTP 401 for an unpublished package's dist-tags even though its version endpoint returns 404; the publisher stops and provides a setup hint, rather than interpreting 401 as permission to upload. The hint is not proof the package is new: existing packages' authorization failures must also be resolved before retrying.
+
+The publisher intentionally keeps its environment isolation and small validation helpers independent of assembly and installation verification. Changes to build/assembly utilities must not silently change the code that receives publishing authority. Review equivalent policies in all release stages when updating them; this duplication keeps the privileged publisher's dependency surface small.
+
+After a partial failure, rerun the original publisher job using the **same artifact ID, manifest digest, and source commit**. Completed versions are verified and skipped; the remaining versions are published from the retained bytes. Never rebuild to resume a partially published version. If the original artifact or trusted identity record is unavailable, stop and resolve recovery explicitly. The publisher does not delete or overwrite published packages, create tags, or create GitHub releases.
+
+Before enabling this in production, the workflow follow-up must connect protected release preparation on `main`, successful assembly and installation verification, an isolated `npm-publish` environment job with OIDC permission, and a separate repository-writing finalizer. It must preserve the original artifact and trusted identity outputs across retries, serialize releases so tag checks cannot race another release, and provide sufficient artifact retention for recovery. The shadow pipeline's seven-day compiled-output retention and fourteen-day assembled-package retention are still only for checks. Keep environment review protection during rollout. Tests here use simulated registry/npm failures and real local npm packing; they do not exercise a live publish or OIDC exchange.
 
 #### Publishing
 

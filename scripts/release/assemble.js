@@ -304,7 +304,20 @@ if (require.main === module) {
     process.exitCode = 1
   } else {
     const record = assemble({ repo: path.resolve(__dirname, '../..'), input, output })
+    const manifestSha256 = crypto
+      .createHash('sha256')
+      .update(fs.readFileSync(path.join(output, 'manifest.json')))
+      .digest('hex')
     console.log(`Assembled ${record.packages.length} packages from ${record.sourceCommit}`)
+    console.log(`Assembly manifest SHA-256: ${manifestSha256}`)
+    // Keep the expected identity outside the artifact it authenticates. The
+    // release workflow must retain these job outputs together with the artifact ID.
+    if (process.env.GITHUB_OUTPUT) {
+      fs.appendFileSync(
+        process.env.GITHUB_OUTPUT,
+        `source-commit=${record.sourceCommit}\nmanifest-sha256=${manifestSha256}\n`,
+      )
+    }
   }
 }
 
