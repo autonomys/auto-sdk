@@ -78,8 +78,14 @@ function compareVersions(a, b) {
   const cleanA = a.replace(/^v/, '')
   const cleanB = b.replace(/^v/, '')
 
-  const partsA = cleanA.split('.').map((x) => parseInt(x, 10) || 0)
-  const partsB = cleanB.split('.').map((x) => parseInt(x, 10) || 0)
+  const partsA = cleanA
+    .split('-')[0]
+    .split('.')
+    .map((x) => parseInt(x, 10) || 0)
+  const partsB = cleanB
+    .split('-')[0]
+    .split('.')
+    .map((x) => parseInt(x, 10) || 0)
 
   // Ensure both arrays have the same length
   const maxLength = Math.max(partsA.length, partsB.length)
@@ -92,7 +98,11 @@ function compareVersions(a, b) {
     }
   }
 
-  return 0
+  const preA = cleanA.split('-')[1]
+  const preB = cleanB.split('-')[1]
+  if (preA === undefined) return preB === undefined ? 0 : 1
+  if (preB === undefined) return -1
+  return preA.localeCompare(preB, 'en', { numeric: true })
 }
 
 /**
@@ -131,7 +141,7 @@ async function getTags() {
 
     if (tags.length === 0) {
       console.warn('No tags found. Creating placeholder tag based on current version.')
-      const currentVersion = getCurrentVersion()
+      const currentVersion = process.env.PREVIOUS_VERSION || getCurrentVersion()
       return [
         {
           name: `v${currentVersion}`,
@@ -170,7 +180,7 @@ async function getTags() {
     console.error('Error getting tags:', error.message)
 
     // Return a dummy tag based on the current version as fallback
-    const currentVersion = getCurrentVersion()
+    const currentVersion = process.env.PREVIOUS_VERSION || getCurrentVersion()
     return [
       {
         name: `v${currentVersion}`,
@@ -410,11 +420,11 @@ async function updateChangelog() {
     // Get all tags
     console.log('Fetching tags...')
     const tags = await getTags()
-    const currentVersion = getCurrentVersion()
+    const currentVersion = process.env.PREVIOUS_VERSION || getCurrentVersion()
 
     // Calculate the next version (for upcoming release)
     const bumpType = process.env.BUMP_TYPE || 'patch'
-    const nextVersion = getNextVersion(currentVersion, bumpType)
+    const nextVersion = process.env.RELEASE_VERSION || getNextVersion(currentVersion, bumpType)
 
     console.log(`Current version: ${currentVersion}`)
     console.log(`Next version: ${nextVersion}`)
