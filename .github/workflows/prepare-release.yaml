@@ -1,0 +1,100 @@
+name: Prepare release
+
+on:
+  workflow_dispatch:
+    inputs:
+      releaseType:
+        description: 'Version bump (pre* creates beta; patch promotes an existing beta)'
+        required: true
+        default: patch
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+          - prepatch
+          - preminor
+          - premajor
+          - prerelease
+
+permissions: {}
+
+concurrency:
+  group: auto-sdk-release-preparation
+  cancel-in-progress: false
+  queue: max
+
+jobs:
+  prepare:
+    name: Prepare release metadata
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      artifact-id: ${{ steps.upload.outputs.artifact-id }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: '24.18.0'
+          package-manager-cache: false
+      - name: Require main and a completed previous release
+        run: node scripts/release/workflow.js prepare
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: corepack enable
+      - run: yarn install --immutable
+      - name: Prepare versions and changelog without committing or tagging
+        env:
+          RELEASE_TYPE: ${{ inputs.releaseType }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NX_DAEMON: 'false'
+          NX_SKIP_NX_CACHE: 'true'
+        run: |
+          PREVIOUS_VERSION=$(node -p 'require("./lerna.json").version')
+          RELEASE_VERSION=$(node scripts/release/workflow.js next-version)
+          yarn lerna version "$RELEASE_VERSION" --yes --force-publish --no-push --no-git-tag-version --ignore-scripts
+          PREVIOUS_VERSION="$PREVIOUS_VERSION" RELEASE_VERSION="$RELEASE_VERSION" yarn changelog
+      - name: Export only release proposal data
+        run: node scripts/release/proposal.js export "$RUNNER_TEMP/release-proposal"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        id: upload
+        with:
+          name: release-proposal-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/release-proposal/proposal.json
+          if-no-files-found: error
+          retention-days: 14
+
+  propose:
+    name: Push release proposal branch
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          # This job only writes a proposal branch. It never installs dependencies
+          # or executes downloaded package/changelog code.
+          persist-credentials: true
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: '24.18.0'
+          package-manager-cache: false
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          artifact-ids: ${{ needs.prepare.outputs.artifact-id }}
+          merge-multiple: true
+          path: ${{ runner.temp }}/release-proposal
+      - name: Validate metadata and push the branch for human review
+        run: node scripts/release/proposal.js push "$RUNNER_TEMP/release-proposal"
+        env:
+          RELEASE_TYPE: ${{ inputs.releaseType }}
