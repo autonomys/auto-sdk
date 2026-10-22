@@ -6,7 +6,7 @@ This document describes the release process for the Autonomys Auto SDK.
 
 The Autonomys Auto SDK follows a structured release process that includes version management, changelog generation, and package publishing. We use:
 
-- **Lerna**: For managing versioning and publishing in our monorepo
+- **Lerna**: For coordinating package versions in our monorepo
 - **Conventional Commits**: For structured commit messages and PR titles
 - **GitHub Actions**: For automating the release workflow
 - **PR-Based Changelog**: We generate changelogs exclusively based on merged Pull Requests
@@ -82,48 +82,29 @@ Where `<type>` is one of:
 
 The `<scope>` is optional and should be the name of the affected package or component.
 
-## Github Token Requirement
-
-The changelog generator requires a GitHub Personal Access Token to fetch PR data via the GitHub API. Set this up using:
-
-```
-./scripts/setup-github-token.sh
-```
-
-Follow the instructions to create and set up a token with the `repo` scope.
-
 ## Making a Release
 
-### Manual Release
+1. Run **Prepare release** from the Actions tab on `main`. Choose a stable bump (`patch`, `minor`, `major`) or a beta bump (`prepatch`, `preminor`, `premajor`, `prerelease`).
+2. Open the release PR using the link in the run summary. Preparation pushes `chore-vX.Y.Z` with updated package versions, internal dependencies, lockfile, and changelog. It creates no tag and publishes nothing. A maintainer opens the PR so normal PR checks run; no additional bot token is needed.
+3. Review the generated changelog and version changes, wait for required checks, obtain approval, and merge. If other work lands on `main` before the release PR merges, update the branch and include that work in the changelog review: the merge commit is what ships.
+4. The version-changing push starts **Release**. It builds and tests the merged commit, assembles tarballs in a fresh job, and verifies installation in another unprivileged job.
+5. Approve the `npm-publish` environment when requested. Its isolated job publishes the exact verified tarballs using npm trusted publishing and provenance.
+6. Once every package is verified on npm, a separate job tags the original commit and creates the GitHub release using that version's changelog section.
 
-1. Ensure all changes are properly tested and merged into the main branch through Pull Requests
-2. Run the following command to generate the PR-based changelog with the next version:
-   ```
-   BUMP_TYPE=patch yarn changelog  # For patch release (default)
-   BUMP_TYPE=minor yarn changelog  # For minor release
-   BUMP_TYPE=major yarn changelog  # For major release
-   ```
-3. Review and edit the CHANGELOG.md file if necessary (the next version will be at the top)
-4. Commit the changelog
-5. Run the following command to create a new version (should match the bump type used above):
-   ```
-   yarn lerna version [major|minor|patch]
-   ```
-6. Push the tags:
-   ```
-   git push --follow-tags
-   ```
-7. Publish to npm:
-   ```
-   yarn publish
-   ```
+`patch` promotes an existing beta to its stable version without incrementing the patch number again: `1.7.0-beta.2` becomes `1.7.0`. `prerelease` advances an existing beta counter; from a stable version it starts the next patch beta. `preminor` and `premajor` start beta versions of the next minor or major release. Stable versions use npm's `latest` channel; beta versions use `beta` and do not become the latest GitHub release.
 
-### Automated Release
+Preparation requires the current version to have both a Git tag and a completed GitHub release. Finish a partial release before preparing another. If a proposal branch already exists, review or resolve it explicitly; preparation never force-pushes over it.
+
+To exercise the production build/assembly/installation path without publishing, manually dispatch **Release** on `main`. Manual runs have no publishing job, OIDC permission, or repository-writing finalizer. They do not test live npm authentication. There is no canary phase; the first real version-changing merge is a normal release.
+
+The preparation workflow runs Lerna and changelog generation with read-only repository access. A fresh job with repository write permission imports only validated release metadata and pushes the proposal branch. It accepts no workflow/script changes from the preparation artifact and runs no project install, lifecycle hooks, or package code. Changelog generation uses the job's read-only GitHub token; local use of `yarn changelog` still requires a suitable `GITHUB_TOKEN`.
+
+### Package and publisher checks
 
 #### Package assembly checks (shadow pipeline)
 
 `Release package checks` runs on PRs, pushes to `main`, and manual dispatches.
-It does not publish, tag, or change the release process described below.
+It does not publish or tag. Production uses the same assembly and publisher scripts in separate jobs.
 All three jobs have read-only repository access and no OIDC permission.
 
 1. **Build** installs with the lockfile and builds. Unit tests run in the existing
@@ -137,7 +118,7 @@ All three jobs have read-only repository access and no OIDC permission.
    Tracked package files, manifests, and licenses come from the fresh checkout.
    Existing npm `files`/ignore rules are preserved. The only supported source
    `publishConfig` is `access: public`; it is removed from assembled manifests.
-   Future publication must explicitly set public access. `gitHead` is set to the
+   Publication explicitly sets public access. `gitHead` is set to the
    checkout commit. The pinned npm CLI packs with scripts disabled, and assembly
    fails if a declared entry point or compiled file is omitted.
 3. **Verify installation** installs those exact tarballs in a temporary consumer with scripts
@@ -171,11 +152,11 @@ The output directory must not already exist. For authoritative checks, use the
 workflow's fresh checkout; local assembly reads tracked files from the working
 tree, including local edits, while recording `HEAD`.
 
-#### Artifact publisher (not connected to production yet)
+#### Artifact publisher
 
-`scripts/release/publish.js` consumes the assembled tarballs without installing dependencies, building, repacking, or running package scripts. Its default mode is an offline dry run. The shadow workflow exercises that mode; it has no publishing permissions. The existing production workflow below remains unchanged.
+`scripts/release/publish.js` consumes the assembled tarballs without installing dependencies, building, repacking, or running package scripts. Its default mode is an offline dry run. Both the shadow workflow and production installation-verification job exercise that mode without publishing permissions. Only the protected production publisher adds `--publish`.
 
-Assembly now emits `source-commit` and `manifest-sha256` as job outputs, alongside the uploaded artifact ID. The publisher requires those independently supplied values, checks its checkout against the source commit, authenticates the manifest, and verifies the complete package set and every tarball before contacting npm. Package identities, versions, and dependency ordering come from metadata in the committed source. Verified tarballs are copied into a private temporary directory so subsequent changes to the downloaded files cannot change the upload.
+Assembly emits `source-commit` and `manifest-sha256` as job outputs, alongside the uploaded artifact ID. The publisher requires those independently supplied values, checks its checkout against the source commit, authenticates the manifest, and verifies the complete package set and every tarball before contacting npm. Package identities, versions, and dependency ordering come from metadata in the committed source. Verified tarballs are copied into a private temporary directory so subsequent changes to the downloaded files cannot change the upload.
 
 Before invoking npm, the publisher uses the runner's system `tar` to read `package/package.json` from each verified snapshot without extracting files to disk. It requires canonical, unique archive paths, checks the packaged name/version against committed source, and rejects any `publishConfig` field, including empty or null values. This is a separate check on assembly's removal of publishing configuration: the manifest digest alone authenticates bytes, not npm's interpretation of them. Both archive reads continue past zero blocks and reject any stderr output, even when tar exits successfully, so a warning or early end marker cannot hide another manifest. Reads have bounded output and execution time and receive no credentials. Assembly remains trusted for the package payload; these checks do not make compromised build output safe to execute.
 
@@ -188,7 +169,7 @@ node scripts/release/publish.js /absolute/path/to/release-packages \
 
 Use the commit and digest recorded by trusted assembly, not a digest supplied inside the downloaded artifact. Stable `X.Y.Z` versions require `latest`; `X.Y.Z-beta.N` versions require `beta`. Other version/channel formats fail explicitly. The dry run validates files and publication order without invoking npm, querying the registry, or requesting OIDC tokens. It does not verify registry availability or trusted publisher configuration.
 
-The future production job will add `--publish`. That mode:
+The production job invokes `--publish`. That mode:
 
 1. Requires a GitHub-hosted run of `.github/workflows/release.yaml` from the original `main` push, with the workflow SHA, event SHA, checkout SHA, and assembly SHA all matching. It also requires the same Node and npm versions used by assembly. These checks catch wiring errors; GitHub environment protection and npm's trusted publisher configuration enforce authorization.
 2. Checks every package/version on the fixed public npm registry before uploading any. Only HTTP 404 means absent. An existing version must have the exact expected SHA-512 integrity. Missing integrity, mismatched identity, malformed responses, redirects, and other HTTP/network failures stop the run.
@@ -202,29 +183,29 @@ The publisher intentionally keeps its environment isolation and small validation
 
 After a partial failure, rerun the original publisher job using the **same artifact ID, manifest digest, and source commit**. Completed versions are verified and skipped; the remaining versions are published from the retained bytes. Never rebuild to resume a partially published version. If the original artifact or trusted identity record is unavailable, stop and resolve recovery explicitly. The publisher does not delete or overwrite published packages, create tags, or create GitHub releases.
 
-Before enabling this in production, the workflow follow-up must connect protected release preparation on `main`, successful assembly and installation verification, an isolated `npm-publish` environment job with OIDC permission, and a separate repository-writing finalizer. It must preserve the original artifact and trusted identity outputs across retries, serialize releases so tag checks cannot race another release, and provide sufficient artifact retention for recovery. The shadow pipeline's seven-day compiled-output retention and fourteen-day assembled-package retention are still only for checks. Keep environment review protection during rollout. Tests here use simulated registry/npm failures and real local npm packing; they do not exercise a live publish or OIDC exchange.
+### Retry and retention rules
 
-#### Publishing
+Production builds and assemblies are retained for 90 days, subject to the repository/organization retention policy. The assembly job records the artifact ID, source commit, and manifest SHA-256 in its outputs and summary. Downloads always use the exact artifact ID, and the publisher receives the source commit and digest independently through `needs.assemble.outputs`.
 
-Releases run from a `chore-vX.Y.Z` branch, where `X.Y.Z` is the version being released. The workflow publishes to npm with [trusted publishing](https://docs.npmjs.com/trusted-publishers) (OIDC), so no npm token is involved. It runs in the `npm-publish` environment, which refuses runs from any other branch and needs a second person to approve each run.
+For a failed verification, publication, or finalization, select **Re-run failed jobs** on the **original Release run**. GitHub retains the successful upstream jobs and their outputs; a publisher retry downloads the original artifact and skips only versions with matching integrity. If only finalization failed, only finalization needs to run. Existing lightweight or annotated tags must resolve to the original commit; conflicting tags or GitHub releases are never overwritten.
 
-1. Create a `chore-vX.Y.Z` branch from an up-to-date `main` and push it
-2. Go to the GitHub Actions tab in the repository
-3. Select the "Release" workflow
-4. Click "Run workflow" and select the release branch
-5. Select the release type (major, minor, patch)
-6. Choose whether it should be a pre-release. Tick "Dry run" to check the npm setup without versioning or publishing anything
-7. Click "Run workflow"
-8. Ask one of the `npm-publish` environment's reviewers (Settings > Environments) to approve the run. Nothing runs until then, and you can't approve a run you started
-9. When the run finishes, open a PR from the release branch into `main` titled `chore: release vX.Y.Z`, so the changelog and version bump land on `main`
+Do not select **Re-run all jobs**, rerun a successful build/assembly, or dispatch a new workflow to finish a partial release. A guard checks previous attempts before building or assembling and refuses to replace artifacts after any successful assembly or publication attempt. Retrying a build or assembly that has never succeeded is allowed. If the wrong jobs were rerun, stop and use the original failed job/attempt; do not delete artifacts or change the guard to force a rebuild.
 
-The GitHub Action will:
+GitHub permits [rerunning jobs for up to 30 days](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/re-run-workflows-and-jobs). Complete automated recovery within that window and while the original artifacts and trusted outputs remain available. If a required artifact/output is missing or expired, or the original workflow code needs fixing to recover, stop for a separately reviewed maintainer recovery using the retained exact bytes and recorded identity. A new build or a newly computed digest is not a substitute for that identity.
 
-- Check that npm trusted publishing is set up for every package
-- Generate the PR-based changelog with the next version at the top
-- Bump the version according to the release type, and push the commit and tag to the release branch
-- Build and test the code, then publish the packages to npm with provenance
-- Create a GitHub release with the changelog
+Production releases share a [queued concurrency group](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/control-workflow-concurrency) and are never automatically cancelled by a newer run. The queue prevents concurrent channel updates; previous-release checks also prevent advancing past an unfinished release. Manual dry runs use that group too. The final GitHub release records the source SHA, manifest digest, and original artifact link for investigation.
+
+### Required rollout configuration
+
+Before the first production release:
+
+- Require reviewed PRs, current required checks, and code-owner review on `main`. Enforce these rules for administrators and remove applicable bypasses: reviewed source is a security boundary.
+- Restrict the `npm-publish` environment to `main` only. Remove the legacy `chore-v*` allowance; old branches retain the previous release workflow. Keep required reviewers and prevent self-review during rollout. Do not remove reviewers as part of this change.
+- Confirm every package's npm trusted publisher binds to `autonomys/auto-sdk`, workflow filename `release.yaml`, and environment `npm-publish`, with direct publishing permitted. No npm token or custom OIDC exchange is needed. The old `verify-npm-trusted-publishing.js` preflight has been removed; npm handles its own token exchange.
+- Ensure artifact/log retention supports the 90-day request, and preserve the assembly summary/outputs throughout recovery. Never use the shadow pipeline's seven-day compiled or fourteen-day assembled artifacts for production recovery.
+- Merge the assembly and publisher changes before this integration. Do not bump `lerna.json` in the workflow integration PR. A manual production dry run can verify wiring before the next normal release.
+
+At implementation review, `npm-publish` allowed both `main` and `chore-v*`, required reviewers, and prevented self-review. `main` required one code-owner approval and an up-to-date Build check, but administrator enforcement was disabled. These settings must be rechecked and tightened for rollout; this code change does not modify repository or npm settings.
 
 ## Changelog Format
 
@@ -247,13 +228,9 @@ After a release is made:
 
 ## Troubleshooting
 
-If you encounter issues during the release process:
-
-1. Check the GitHub Actions logs for any errors
-2. If the run is waiting, it needs approval from an `npm-publish` reviewer other than you. If it was refused, check that it was started from a `chore-v*` branch
-3. If the "Verify npm trusted publishing" step fails, its output lists each package npm rejected and the settings that package's trusted publisher needs on npmjs.com
-4. If publishing fails with an authorization error after that step passed, check that the package's trusted publisher allows publishing directly. The step can't check this, and npm defaults new trusted publishers to staged publishing only
-5. Verify your Git configuration is correct
-6. For changelog generation issues, ensure your GITHUB_TOKEN has adequate permissions
-
-For more assistance, contact the core development team.
+1. Inspect the failed job in the original Release run. A waiting publisher needs an `npm-publish` reviewer other than the person who initiated it.
+2. For partial publication, follow the retry rules above. A successful npm command is not sufficient: the publisher must verify the registry's exact integrity before continuing.
+3. For an authorization failure, check the package's trusted-publisher repository, workflow, environment, and direct-publish permission. For a new package, complete the manual first-publish setup described above.
+4. A mismatched registry integrity, unsupported existing dist-tag, conflicting Git tag, or conflicting GitHub release needs explicit maintainer investigation. Do not bypass checks or overwrite the conflicting state.
+5. If preparation says the previous release is incomplete, finish that release's publication and finalization. If the version branch already exists, open its PR from the compare view instead of rerunning preparation over it.
+6. Review changelog output before merging, especially after updating a release branch with newer `main` changes.
