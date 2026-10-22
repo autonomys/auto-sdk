@@ -36,6 +36,30 @@ const regularFile = (file) => {
     throw new Error(`Invalid proposal file: ${file}`)
   return fs.readFileSync(file, 'utf8')
 }
+// Derive the entire expected lockfile from reviewed source. Only internal npm
+// descriptors and dependency ranges may change; resolutions and all other bytes
+// must remain identical. No parser or code from the preparation job is used.
+const releaseLockfile = (original, internal, previous, version) =>
+  original
+    .split('\n')
+    .map((line) => {
+      if (line.startsWith('"') && line.endsWith('\":'))
+        return line.replace(
+          /(^"|, )([^", ]+)@npm:([~^]?)([^", ]+)(?=, |":$)/g,
+          (match, prefix, name, operator, range) =>
+            internal.has(name) && range === previous
+              ? `${prefix}${name}@npm:${operator}${version}`
+              : match,
+        )
+      return line.replace(
+        /^(    "([^"]+)": "npm:)([~^]?)([^"]+)(")$/,
+        (match, prefix, name, operator, range, suffix) =>
+          internal.has(name) && range === previous
+            ? `${prefix}${operator}${version}${suffix}`
+            : match,
+      )
+    })
+    .join('\n')
 const exportProposal = ({ repo, output, sourceCommit }) => {
   const files = proposalFiles(repo)
   if (git(repo, ['rev-parse', 'HEAD']) !== sourceCommit)
@@ -78,6 +102,16 @@ const importProposal = ({ repo, input, sourceCommit, type }) => {
     manifests.map((file) => [file, JSON.parse(regularFile(path.join(repo, file)))]),
   )
   const internal = new Set([...sources.values()].map((pkg) => pkg.name))
+  const expectedLockfile = releaseLockfile(
+    regularFile(path.join(repo, 'yarn.lock')),
+    internal,
+    before.version,
+    version,
+  )
+  if (proposal.files['yarn.lock'] !== expectedLockfile)
+    throw new Error(
+      'Unexpected yarn.lock changes: only internal release version rewrites are allowed',
+    )
   for (const [file, source] of sources) {
     const proposed = JSON.parse(proposal.files[file])
     if (proposed.version !== version) throw new Error(`Incorrect package version: ${file}`)

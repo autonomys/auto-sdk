@@ -1,0 +1,3 @@
+# Reviewed source is the release security boundary. Keep ownership of every file,
+# including this file, workflow code, release tooling, and dependency metadata.
+* @jim-counter @EmilFattakhov @0xjeremyfrank

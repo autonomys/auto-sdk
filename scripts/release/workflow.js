@@ -5,28 +5,13 @@
 const fs = require('node:fs')
 const path = require('node:path')
 const { execFileSync, spawnSync } = require('node:child_process')
+const { releaseVersion, newerThan: isNewer } = require('./publish')
 
 const REPOSITORY = 'autonomys/auto-sdk'
 const ASSEMBLY_JOB = 'Assemble release packages'
 const PUBLISH_JOB = 'Publish verified packages'
 const git = (repo, args) => execFileSync('git', args, { cwd: repo, encoding: 'utf8' }).trim()
-const versionInfo = (version) => {
-  const match = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-beta\.(0|[1-9]\d*))?$/.exec(version)
-  if (!match) throw new Error(`Unsupported release version: ${version}`)
-  return {
-    version,
-    parts: match.slice(1, 4).map(BigInt),
-    beta: match[4],
-    tag: match[4] === undefined ? 'latest' : 'beta',
-  }
-}
-const isNewer = (next, previous) => {
-  const a = versionInfo(next)
-  const b = versionInfo(previous)
-  for (let i = 0; i < 3; i++) if (a.parts[i] !== b.parts[i]) return a.parts[i] > b.parts[i]
-  if (a.beta === undefined) return b.beta !== undefined
-  return b.beta !== undefined && BigInt(a.beta) > BigInt(b.beta)
-}
+const versionInfo = (version) => ({ version, ...releaseVersion(version) })
 const currentVersion = (repo) => JSON.parse(fs.readFileSync(path.join(repo, 'lerna.json'))).version
 const nextVersion = (version, type) => {
   const { parts, beta } = versionInfo(version)
@@ -124,6 +109,15 @@ const requireCompletedRelease = async (repo, version, api) => {
       `v${version} has no completed GitHub release; finish its original Release run first`,
     )
 }
+const checkExistingRelease = (existing, version, tag) => {
+  if (
+    existing &&
+    (existing.draft ||
+      existing.tag_name !== `v${version}` ||
+      existing.prerelease !== (tag === 'beta'))
+  )
+    throw new Error(`v${version} has a conflicting GitHub release; resolve it before retrying`)
+}
 
 const planRelease = async ({ repo, env, api }) => {
   context(repo, env)
@@ -143,6 +137,9 @@ const planRelease = async ({ repo, env, api }) => {
   const tagged = tagCommit(repo, version)
   if (tagged && tagged !== env.GITHUB_SHA)
     throw new Error(`v${version} already tags a different commit`)
+  // Check deterministic finalization preconditions before any packages reach npm.
+  releaseNotes(repo, version)
+  checkExistingRelease(await api(`releases/tags/v${version}`, { optional: true }), version, tag)
   // An existing tag at this commit is allowed: finalization may have failed
   // after creating it. Only this original version-changing push can continue.
   return { version, tag, release: true }
@@ -228,9 +225,8 @@ const finalizeRelease = async ({ repo, env, api }) => {
   await checkTag(ref)
   const existing = await api(`releases/tags/${name}`, { optional: true })
   const prerelease = tag === 'beta'
+  checkExistingRelease(existing, version, tag)
   if (existing) {
-    if (existing.draft || existing.tag_name !== name || existing.prerelease !== prerelease)
-      throw new Error(`${name} has a conflicting GitHub release; resolve it before retrying`)
     return existing.html_url
   }
   const receipt = `\n\nSource: \`${env.SOURCE_COMMIT}\`\n\nAssembly manifest SHA-256: \`${env.MANIFEST_SHA256}\`\n\n[Original release artifacts](https://github.com/${REPOSITORY}/actions/runs/${env.GITHUB_RUN_ID}/artifacts/${env.ARTIFACT_ID})`
@@ -292,6 +288,8 @@ if (require.main === module) {
 }
 
 module.exports = {
+  ASSEMBLY_JOB,
+  PUBLISH_JOB,
   githubApi,
   versionInfo,
   isNewer,

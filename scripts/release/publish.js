@@ -430,6 +430,8 @@ if (require.main === module) {
 }
 
 module.exports = {
+  releaseVersion,
+  newerThan,
   publishRelease,
   prepareRelease,
   githubEnvironment,

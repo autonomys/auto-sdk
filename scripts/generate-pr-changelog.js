@@ -131,65 +131,34 @@ function removeLinkReferenceDefinitionsForLabels(content, labels) {
  * Get all tags sorted by semantic version (descending)
  */
 async function getTags() {
-  try {
-    // First get tags
-    const { data: tags } = await octokit.repos.listTags({
+  const tags = []
+  for (let page = 1; ; page++) {
+    const { data } = await octokit.repos.listTags({
       owner: config.owner,
       repo: config.repo,
       per_page: 100,
+      page,
     })
-
-    if (tags.length === 0) {
-      console.warn('No tags found. Creating placeholder tag based on current version.')
-      const currentVersion = process.env.PREVIOUS_VERSION || getCurrentVersion()
-      return [
-        {
-          name: `v${currentVersion}`,
-          date: new Date(),
-          sha: 'HEAD',
-        },
-      ]
-    }
-
-    // Sort tags by date (this requires fetching commit info for each tag)
-    console.log(`Processing ${tags.length} tags...`)
-
-    const tagsWithDates = []
-    for (const tag of tags.slice(0, 10)) {
-      // Limit to 10 most recent tags to avoid rate limits
-      try {
-        const { data: commit } = await octokit.repos.getCommit({
-          owner: config.owner,
-          repo: config.repo,
-          ref: tag.commit.sha,
-        })
-
-        tagsWithDates.push({
-          name: tag.name,
-          date: new Date(commit.commit.author.date),
-          sha: tag.commit.sha,
-        })
-      } catch (error) {
-        console.warn(`Failed to get commit info for tag ${tag.name}:`, error.message)
-      }
-    }
-
-    // Sort by semantic version (descending - newest first)
-    return tagsWithDates.sort((a, b) => compareVersions(b.name, a.name))
-  } catch (error) {
-    console.error('Error getting tags:', error.message)
-
-    // Return a dummy tag based on the current version as fallback
-    const currentVersion = process.env.PREVIOUS_VERSION || getCurrentVersion()
-    return [
-      {
-        name: `v${currentVersion}`,
-        date: new Date(),
-        sha: 'HEAD',
-      },
-    ]
+    tags.push(...data.map((tag) => ({ name: tag.name, sha: tag.commit.sha })))
+    if (data.length < 100) break
   }
+  // The last stable tag can be older than many beta tags. Fetch all names, then
+  // resolve commit dates only for the boundaries actually used below.
+  return tags.sort((a, b) => compareVersions(b.name, a.name))
 }
+
+async function tagWithDate(tag) {
+  if (!tag) return null
+  const { data: commit } = await octokit.repos.getCommit({
+    owner: config.owner,
+    repo: config.repo,
+    ref: tag.sha,
+  })
+  return { ...tag, date: new Date(commit.commit.author.date) }
+}
+
+const previousStableTag = (tags, version) =>
+  tags.find((tag) => /^v\d+\.\d+\.\d+$/.test(tag.name) && compareVersions(tag.name, version) < 0)
 
 /**
  * Get the current version from lerna.json
@@ -237,10 +206,20 @@ async function generateChangelogBetweenTags(startTag, endTag, version) {
 
     console.log(`Fetching PRs with query: ${query}`)
 
-    const { data: searchResults } = await octokit.search.issuesAndPullRequests({
-      q: query,
-      per_page: 100,
-    })
+    const searchResults = { items: [] }
+    for (let page = 1; ; page++) {
+      const { data } = await octokit.search.issuesAndPullRequests({
+        q: query,
+        per_page: 100,
+        page,
+      })
+      if (data.incomplete_results || data.total_count > 1000)
+        throw new Error(
+          'GitHub search cannot return the complete release history; review notes manually',
+        )
+      searchResults.items.push(...data.items)
+      if (data.items.length < 100 || searchResults.items.length === data.total_count) break
+    }
 
     // If no PRs found, return empty changelog
     if (searchResults.items.length === 0) {
@@ -431,8 +410,18 @@ async function updateChangelog() {
     console.log(`Found ${tags.length} tags`)
 
     // Find the tag for the current version
-    const currentTag = tags.find((tag) => tag.name === `v${currentVersion}`)
-    const previousTag = currentTag ? tags[tags.indexOf(currentTag) + 1] : null
+    const current = tags.find((tag) => tag.name === `v${currentVersion}`)
+    const nextBaseline = nextVersion.includes('-') ? current : previousStableTag(tags, nextVersion)
+    if (!nextBaseline)
+      throw new Error(
+        `Cannot find changelog baseline for ${nextVersion}; resolve release tags before preparing notes`,
+      )
+    const currentBaseline = currentVersion.includes('-')
+      ? current && tags[tags.indexOf(current) + 1]
+      : previousStableTag(tags, currentVersion)
+    const currentTag = await tagWithDate(current)
+    const previousTag = await tagWithDate(currentBaseline)
+    const nextBaseTag = nextBaseline === current ? currentTag : await tagWithDate(nextBaseline)
 
     // Get existing changelog content
     let changelogContent = ''
@@ -450,7 +439,7 @@ async function updateChangelog() {
 
     console.log('Generating changelog for next version...')
     // Generate changelog for changes that will go into the next version
-    const nextVersionChangelog = await generateChangelogBetweenTags(currentTag, null, nextVersion)
+    const nextVersionChangelog = await generateChangelogBetweenTags(nextBaseTag, null, nextVersion)
 
     console.log('Generating changelog for current version...')
     // Generate changelog for current version if it exists
@@ -515,7 +504,7 @@ async function updateChangelog() {
 
     // Add version links at the bottom
     let links = `\n\n[Unreleased]: https://github.com/${config.owner}/${config.repo}/compare/v${nextVersion}...HEAD\n`
-    links += `[${nextVersion}]: https://github.com/${config.owner}/${config.repo}/compare/v${currentVersion}...v${nextVersion}\n`
+    links += `[${nextVersion}]: https://github.com/${config.owner}/${config.repo}/compare/${nextBaseTag.name}...v${nextVersion}\n`
 
     if (currentTag) {
       links += `[${currentVersion}]: https://github.com/${config.owner}/${config.repo}/releases/tag/v${currentVersion}\n`

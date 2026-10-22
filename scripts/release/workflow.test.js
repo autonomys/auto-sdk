@@ -5,6 +5,8 @@ const path = require('node:path')
 const { execFileSync } = require('node:child_process')
 const { test } = require('node:test')
 const {
+  ASSEMBLY_JOB,
+  PUBLISH_JOB,
   githubApi,
   nextVersion,
   planRelease,
@@ -59,7 +61,19 @@ const fixture = (t, version = '1.2.3') => {
     })
     for (const name of ['examples', 'integration-tests'])
       write(path.join(repo, `${name}/package.json`), { name, version, private: true })
-    write(path.join(repo, 'yarn.lock'), `fixture lockfile ${version}\n`)
+    write(
+      path.join(repo, 'yarn.lock'),
+      '# Reviewed lockfile\n' +
+        ['^', '~', '']
+          .map(
+            (operator) =>
+              `"@autonomys/base@npm:${operator}${version}, @autonomys/base@workspace:packages/base":\n` +
+              '  version: 0.0.0-use.local\n  resolution: "@autonomys/base@workspace:packages/base"\n' +
+              `  dependencies:\n    "@autonomys/base": "npm:${operator}${version}"\n\n`,
+          )
+          .join('') +
+        '"external@npm:^4.0.0":\n  version: 4.0.0\n  resolution: "external@npm:4.0.0"\n  checksum: trusted\n',
+    )
     write(
       path.join(repo, 'CHANGELOG.md'),
       `# Changelog\n\n## [Unreleased]\n\nFuture\n\n## [${version}] - 2026-10-21\n\nRelease notes\n\n## [1.0.0]\n\nOlder release\n`,
@@ -117,6 +131,34 @@ test('beta merges select beta and a matching existing tag permits finalization r
   const f = fixture(t, '1.2.3-beta.0')
   f.git(['tag', 'v1.2.3-beta.0'])
   assert.deepEqual(await planRelease(f), { version: '1.2.3-beta.0', tag: 'beta', release: true })
+})
+
+test('planning rejects edited or duplicate changelog headings before publication', async (t) => {
+  for (const heading of ['## 1.2.3 - date', '## [1.2.3]\n\nNotes\n\n## [1.2.3]']) {
+    const f = fixture(t)
+    write(path.join(f.repo, 'CHANGELOG.md'), `# Changelog\n\n${heading}\n\nNotes\n`)
+    f.env.GITHUB_SHA = f.commit()
+    await assert.rejects(planRelease(f), /Expected one CHANGELOG.md section for 1.2.3/)
+    assert.ok(f.calls.every((call) => !call.method))
+  }
+})
+
+test('planning rejects conflicting GitHub releases and permits matching completed releases', async (t) => {
+  for (const version of ['1.2.3', '1.2.3-beta.0']) {
+    const f = fixture(t, version)
+    const matching = { tag_name: `v${version}`, draft: false, prerelease: version.includes('-') }
+    for (const override of [
+      { draft: true },
+      { tag_name: 'v9.9.9' },
+      { prerelease: !matching.prerelease },
+    ]) {
+      f.state.release = { ...matching, ...override }
+      await assert.rejects(planRelease(f), /conflicting GitHub release/)
+    }
+    f.state.release = matching
+    assert.equal((await planRelease(f)).release, true)
+    assert.ok(f.calls.every((call) => !call.method))
+  }
 })
 
 test('planning refuses wrong context, rollback, incomplete prior releases and conflicting tags', async (t) => {
@@ -214,6 +256,7 @@ exports.Octokit = class {
     /merged:2026-10-20T00:00:00\.000Z\.\.\*/,
   )
   // Promotion keeps the stable release above all of its beta sections.
+  write(path.join(f.repo, 'queries.txt'), '')
   execFileSync(process.execPath, [script], {
     cwd: f.repo,
     env: {
@@ -226,6 +269,105 @@ exports.Octokit = class {
   })
   const promoted = fs.readFileSync(path.join(f.repo, 'CHANGELOG.md'), 'utf8')
   assert.ok(promoted.indexOf('## [1.3.0]') < promoted.indexOf('## [1.3.0-beta.10]'))
+  assert.match(promoted, /\[1\.3\.0\]: .*compare\/v1\.2\.3\.\.\.v1\.3\.0/)
+  assert.match(
+    fs.readFileSync(path.join(f.repo, 'queries.txt'), 'utf8').split('\n')[0],
+    /merged:2026-10-01T00:00:00\.000Z\.\.\*/,
+  )
+})
+
+test('stable promotion finds the last stable tag beyond a full page of betas and includes beta-period changes', (t) => {
+  const f = fixture(t, '1.3.0-beta.99')
+  const script = path.join(f.repo, 'scripts/generate-pr-changelog.js')
+  fs.copyFileSync(path.join(__dirname, '../generate-pr-changelog.js'), script)
+  write(path.join(f.repo, 'node_modules/@octokit/rest/package.json'), {
+    name: '@octokit/rest',
+    type: 'commonjs',
+    main: 'index.js',
+  })
+  write(
+    path.join(f.repo, 'node_modules/@octokit/rest/index.js'),
+    `
+exports.Octokit = class {
+  repos = {
+    listTags: async ({ page }) => {
+      require('node:fs').appendFileSync('pages.txt', page + '\\n')
+      return { data: page === 1
+        ? Array.from({ length: 100 }, (_, i) => ({ name: 'v1.3.0-beta.' + (99 - i), commit: { sha: 'beta' } }))
+        : [{ name: 'v1.2.3', commit: { sha: 'stable' } }] }
+    },
+    getCommit: async ({ ref }) => ({ data: { commit: { author: { date: ref === 'stable' ? '2026-10-01T00:00:00Z' : '2026-10-20T00:00:00Z' } } } }),
+  }
+  search = { issuesAndPullRequests: async ({ q, page }) => {
+    if (!q.includes('merged:2026-10-01T00:00:00.000Z..*')) return { data: { items: [] } }
+    require('node:fs').appendFileSync('search-pages.txt', page + '\\n')
+    const pr = { title: 'feat: change shipped in an earlier beta', number: 123, html_url: 'https://github.com/autonomys/auto-sdk/pull/123', labels: [], user: { login: 'fixture', html_url: 'https://github.com/fixture' } }
+    return { data: { total_count: 101, items: page === 1
+      ? Array.from({ length: 100 }, (_, i) => ({ ...pr, number: i + 1, title: 'fix: first-page change ' + i }))
+      : [pr] } }
+  } }
+}
+`,
+  )
+  execFileSync(process.execPath, [script], {
+    cwd: f.repo,
+    env: {
+      PATH: process.env.PATH,
+      GITHUB_TOKEN: 'fixture-only',
+      PREVIOUS_VERSION: '1.3.0-beta.99',
+      RELEASE_VERSION: '1.3.0',
+    },
+    stdio: 'pipe',
+  })
+  const notes = fs.readFileSync(path.join(f.repo, 'CHANGELOG.md'), 'utf8')
+  const stable = notes.split('## [1.3.0]')[1].split('## [')[0]
+  assert.match(stable, /change shipped in an earlier beta/)
+  assert.match(notes, /\[1\.3\.0\]: .*compare\/v1\.2\.3\.\.\.v1\.3\.0/)
+  assert.equal(fs.readFileSync(path.join(f.repo, 'pages.txt'), 'utf8'), '1\n2\n')
+  assert.equal(fs.readFileSync(path.join(f.repo, 'search-pages.txt'), 'utf8'), '1\n2\n')
+
+  // Missing tags must not silently fall back to the preceding beta or today's date.
+  write(
+    path.join(f.repo, 'node_modules/@octokit/rest/index.js'),
+    `
+exports.Octokit = class {
+  repos = { listTags: async () => ({ data: [{ name: 'v1.3.0-beta.99', commit: { sha: 'beta' } }] }) }
+}
+`,
+  )
+  assert.throws(
+    () =>
+      execFileSync(process.execPath, [script], {
+        cwd: f.repo,
+        env: {
+          PATH: process.env.PATH,
+          GITHUB_TOKEN: 'fixture-only',
+          PREVIOUS_VERSION: '1.3.0-beta.99',
+          RELEASE_VERSION: '1.3.0',
+        },
+        stdio: 'pipe',
+      }),
+    /Cannot find changelog baseline/,
+  )
+  assert.equal(fs.readFileSync(path.join(f.repo, 'CHANGELOG.md'), 'utf8'), notes)
+})
+
+test('retry guard job names match the production workflow', () => {
+  const workflow = fs.readFileSync(
+    path.join(__dirname, '../../.github/workflows/release.yaml'),
+    'utf8',
+  )
+  for (const [id, expected] of [
+    ['assemble', ASSEMBLY_JOB],
+    ['publish', PUBLISH_JOB],
+  ]) {
+    const blocks = workflow.split(`\n  ${id}:\n`)
+    assert.equal(blocks.length, 2, `Expected one ${id} job`)
+    const block = blocks[1].split(/\n  \S/)[0]
+    const names = [...block.matchAll(/^    name: (.+)$/gm)]
+    assert.equal(names.length, 1, `Expected one name for ${id}`)
+    assert.equal(names[0][1], expected, `${id} must retain the name used by guardAssembly`)
+  }
 })
 
 test('rebuild guard permits initial attempts and retries before assembly succeeded', async () => {
@@ -434,13 +576,13 @@ test('GitHub API requests use a fixed origin, forbid redirects and distinguish a
   )
 })
 
-const proposalFixture = (t) => {
-  const f = fixture(t)
-  f.metadata('1.2.4')
+const proposalFixture = (t, previous = '1.2.3', type = 'patch') => {
+  const f = fixture(t, previous)
+  f.metadata(nextVersion(previous, type))
   const input = path.join(f.root, 'proposal')
   exportProposal({ ...f, output: input, sourceCommit: f.env.GITHUB_SHA })
   f.git(['reset', '--hard', 'HEAD']) // disposable fixture only
-  const options = { repo: f.repo, input, sourceCommit: f.env.GITHUB_SHA, type: 'patch' }
+  const options = { repo: f.repo, input, sourceCommit: f.env.GITHUB_SHA, type }
   return { ...f, options, input }
 }
 
@@ -460,6 +602,66 @@ test('preparation exports data without committing and a clean writer imports onl
       .every((file) => result.files.includes(file)),
   )
 })
+
+test('proposal lockfiles permit only exact, caret and tilde internal rewrites for stable and beta bumps', (t) => {
+  for (const [previous, type] of [
+    ['1.2.3', 'patch'],
+    ['1.2.3', 'preminor'],
+    ['1.3.0-beta.9', 'prerelease'],
+    ['1.3.0-beta.9', 'patch'],
+  ]) {
+    const f = proposalFixture(t, previous, type)
+    const { version } = importProposal(f.options)
+    const lockfile = fs.readFileSync(path.join(f.repo, 'yarn.lock'), 'utf8')
+    for (const operator of ['^', '~', '']) {
+      assert.ok(lockfile.includes(`@autonomys/base@npm:${operator}${version},`))
+      assert.ok(lockfile.includes(`"@autonomys/base": "npm:${operator}${version}"`))
+    }
+    assert.ok(lockfile.includes('resolution: "@autonomys/base@workspace:packages/base"'))
+    assert.ok(
+      lockfile.includes(
+        '"external@npm:^4.0.0":\n  version: 4.0.0\n  resolution: "external@npm:4.0.0"\n  checksum: trusted\n',
+      ),
+    )
+  }
+})
+
+for (const [kind, change] of [
+  [
+    'new package',
+    (text) =>
+      text +
+      '\n"left-pad@npm:^1.3.0":\n  resolution: "left-pad@https://attacker.invalid/left-pad-1.3.0.tgz"\n',
+  ],
+  [
+    'resolution',
+    (text) =>
+      text.replace(
+        'resolution: "external@npm:4.0.0"',
+        'resolution: "external@https://attacker.invalid/external.tgz"',
+      ),
+  ],
+  ['checksum', (text) => text.replace('checksum: trusted', 'checksum: attacker')],
+  ['external range', (text) => text.replace('external@npm:^4.0.0', 'external@npm:^5.0.0')],
+  [
+    'missing internal bump',
+    (text) => text.replace('@autonomys/base@npm:^1.2.4', '@autonomys/base@npm:^1.2.3'),
+  ],
+  [
+    'changed range operator',
+    (text) => text.replace('@autonomys/base@npm:^1.2.4', '@autonomys/base@npm:~1.2.4'),
+  ],
+]) {
+  test(`proposal writer rejects lockfile ${kind} without changing tracked files`, (t) => {
+    const f = proposalFixture(t)
+    const file = path.join(f.input, 'proposal.json')
+    const proposal = JSON.parse(fs.readFileSync(file))
+    proposal.files['yarn.lock'] = change(proposal.files['yarn.lock'])
+    write(file, proposal)
+    assert.throws(() => importProposal(f.options), /Unexpected yarn.lock changes/)
+    assert.equal(f.git(['status', '--porcelain']), '')
+  })
+}
 
 for (const kind of [
   'wrong source',

@@ -93,11 +93,15 @@ The `<scope>` is optional and should be the name of the affected package or comp
 
 `patch` promotes an existing beta to its stable version without incrementing the patch number again: `1.7.0-beta.2` becomes `1.7.0`. `prerelease` advances an existing beta counter; from a stable version it starts the next patch beta. `preminor` and `premajor` start beta versions of the next minor or major release. Stable versions use npm's `latest` channel; beta versions use `beta` and do not become the latest GitHub release.
 
+Stable changelog sections and their GitHub release notes include all changes since the last stable tag, including changes already described in beta releases. For example, promoting `1.7.0-beta.2` to `1.7.0` uses the preceding stable release as its baseline, not `beta.2`. The stable comparison link uses that same baseline. Beta notes remain incremental from the preceding release. Preparation stops if it cannot find the required baseline tag.
+
 Preparation requires the current version to have both a Git tag and a completed GitHub release. Finish a partial release before preparing another. If a proposal branch already exists, review or resolve it explicitly; preparation never force-pushes over it.
 
 To exercise the production build/assembly/installation path without publishing, manually dispatch **Release** on `main`. Manual runs have no publishing job, OIDC permission, or repository-writing finalizer. They do not test live npm authentication. There is no canary phase; the first real version-changing merge is a normal release.
 
-The preparation workflow runs Lerna and changelog generation with read-only repository access. A fresh job with repository write permission imports only validated release metadata and pushes the proposal branch. It accepts no workflow/script changes from the preparation artifact and runs no project install, lifecycle hooks, or package code. Changelog generation uses the job's read-only GitHub token; local use of `yarn changelog` still requires a suitable `GITHUB_TOKEN`.
+The preparation workflow runs Lerna and changelog generation with read-only repository access. A fresh job with repository write permission validates the version and package metadata before pushing the proposal branch. The proposed `yarn.lock` must exactly match the reviewed original with only internal package descriptor and dependency ranges rewritten from the old release version to the new one, preserving exact, caret, or tilde range forms. Changes to resolutions, external packages, checksums, or any other lockfile content are rejected. The job accepts no workflow/script changes from the preparation artifact and runs no project install, lifecycle hooks, or package code. Changelog generation uses the job's read-only GitHub token; local use of `yarn changelog` still requires a suitable `GITHUB_TOKEN`.
+
+`CHANGELOG.md` is unvalidated generated text that reviewers must read. The importer checks for the release heading, but does not validate the accuracy or safety of the text or links. Release planning checks the merged heading and any existing GitHub release for conflicts before publication starts, so these deterministic finalization failures are caught before packages reach npm.
 
 ### Package and publisher checks
 
@@ -199,13 +203,17 @@ Production releases share a [queued concurrency group](https://docs.github.com/e
 
 Before the first production release:
 
-- Require reviewed PRs, current required checks, and code-owner review on `main`. Enforce these rules for administrators and remove applicable bypasses: reviewed source is a security boundary.
+- Set the repository's default workflow token permissions to **Read repository contents and packages permissions** (read-only), and disable **Allow GitHub Actions to create and approve pull requests**. Each workflow must declare only the permissions its jobs need; build, integration tests, and PR-title checks explicitly use `contents: read`.
+- Require reviewed PRs, current required checks, and **Require review from Code Owners** on `main`. Enable **Require approval of the most recent reviewable push** so the last person to push cannot supply the only approval. Enforce these rules for administrators and remove applicable bypasses: reviewed source is a security boundary.
+- Merge `.github/CODEOWNERS` into `main` and confirm its owners have write access. All files are owned by `@jim-counter`, `@EmilFattakhov`, and `@0xjeremyfrank`; one of their approvals satisfies the code-owner requirement, not all three. CODEOWNERS only takes effect for PRs targeting `main` once the file is on `main`; the protection setting alone does not assign owners or enforce their review.
 - Restrict the `npm-publish` environment to `main` only. Remove the legacy `chore-v*` allowance; old branches retain the previous release workflow. Keep required reviewers and prevent self-review during rollout. Do not remove reviewers as part of this change.
 - Confirm every package's npm trusted publisher binds to `autonomys/auto-sdk`, workflow filename `release.yaml`, and environment `npm-publish`, with direct publishing permitted. No npm token or custom OIDC exchange is needed. The old `verify-npm-trusted-publishing.js` preflight has been removed; npm handles its own token exchange.
 - Ensure artifact/log retention supports the 90-day request, and preserve the assembly summary/outputs throughout recovery. Never use the shadow pipeline's seven-day compiled or fourteen-day assembled artifacts for production recovery.
 - Merge the assembly and publisher changes before this integration. Do not bump `lerna.json` in the workflow integration PR. A manual production dry run can verify wiring before the next normal release.
 
-At implementation review, `npm-publish` allowed both `main` and `chore-v*`, required reviewers, and prevented self-review. `main` required one code-owner approval and an up-to-date Build check, but administrator enforcement was disabled. These settings must be rechecked and tightened for rollout; this code change does not modify repository or npm settings.
+At implementation review, `npm-publish` allowed both `main` and `chore-v*`, required reviewers, and prevented self-review. `main` required one approval and an up-to-date Build check. Code-owner review was enabled but ineffective because the repository had no CODEOWNERS file; administrator enforcement and approval of the most recent push were disabled. The default workflow token permissions were write, and Actions was allowed to create and approve PRs.
+
+Previously, `build.yaml` had no permissions block and ran `yarn install` on same-repository PRs. PR or dependency code could therefore obtain a write-capable token and submit a PR approval that could count toward the single required review. Explicit read-only workflow permissions close that path for these workflows; the repository defaults, Actions approval restriction, code ownership, last-push approval, and administrator enforcement are also required to make reviewed source a reliable boundary. All are prerequisites before ever dropping the `npm-publish` environment reviewers. Keep those reviewers during rollout. Someone must apply and verify the repository settings; this PR documents them and does not change settings through the API.
 
 ## Changelog Format
 
