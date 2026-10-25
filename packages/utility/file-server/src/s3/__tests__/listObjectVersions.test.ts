@@ -138,6 +138,19 @@ describe('buildListVersionsResult', () => {
     expect(result.versions[1].isLatest).toBe(false)
   })
 
+  it('does not falsely mark as truncated when duplicate CIDs are collapsed', () => {
+    const v3 = row({ key: 'doc.txt', cid: 'cid-A', lastModified: new Date(3000) })
+    const v2 = row({ key: 'doc.txt', cid: 'cid-B', lastModified: new Date(2000) })
+    const v1 = row({ key: 'doc.txt', cid: 'cid-A', lastModified: new Date(1000) })
+
+    const result = buildListVersionsResult([v3, v2, v1], 2)
+
+    expect(result.versions).toHaveLength(2)
+    expect(result.isTruncated).toBe(false)
+    expect(result.nextKeyMarker).toBeNull()
+    expect(result.nextVersionIdMarker).toBeNull()
+  })
+
   it('synthesises a delete marker as latest for a soft-deleted key (pointerDeletedAt set)', () => {
     const deletedTime = new Date(5000)
     const v2 = row({
