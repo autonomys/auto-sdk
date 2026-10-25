@@ -195,7 +195,7 @@ export const buildListVersionsResult = (
     }
   }
 
-  const isTruncated = i < rows.length || (entriesEmitted >= maxKeys && rows.length > entriesEmitted)
+  const isTruncated = i < rows.length
 
   return {
     versions,
