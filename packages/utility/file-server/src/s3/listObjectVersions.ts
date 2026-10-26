@@ -52,7 +52,7 @@ export interface S3VersionRow {
    * Monotonic row identifier from storage (e.g. object_versions.id), used as the
    * cursor for entry-level pagination across page boundaries.
    */
-  id?: string
+  id: string
   key: string
   cid: string
   /**
@@ -86,19 +86,23 @@ export interface BuildListVersionsOptions {
 export const computeListObjectVersionsDbLimit = (maxKeys: number): number => maxKeys + 1
 
 /**
- * Apply version deduplication, soft-delete detection, and entry-bounded maxKeys
- * pagination to sorted storage rows.
+ * Apply soft-delete detection and entry-bounded maxKeys pagination to sorted storage rows.
  *
- * Rows must arrive ordered by key ascending, then newest version first per key.
+ * Storage contract (#790):
+ * - Storage must deduplicate repeated same-content writes sharing the same CID under a key
+ *   (e.g. via `DISTINCT ON (key, cid)` keeping the newest row per `(key, cid)`).
+ * - Rows must arrive sorted by `key ASC`, then newest first per key (`id DESC`).
+ * - Storage pagination resumes by `(key, id)` via `key > keyMarker OR (key = keyMarker AND id < versionIdMarker)`.
  *
  * In accordance with S3 specification (#790):
  * - maxKeys bounds the total number of Version + DeleteMarker entries per page.
- * - For a key that is soft-deleted OR owner-removed, a delete marker is
- *   synthesised as the latest entry (derived from deleteMarkerVersionId).
- * - A synthesised delete marker is emitted ONLY when starting a key fresh, NOT
- *   when resuming mid-key (where the marker was already emitted on an earlier page).
- * - Repeated same-content writes sharing the same CID under a single key are
- *   collapsed to one version, keeping the newest occurrence.
+ * - For a key that is soft-deleted OR owner-removed, a delete marker is synthesised as
+ *   the latest entry (derived from deleteMarkerVersionId).
+ * - A synthesised delete marker is emitted ONLY when starting a key fresh, NOT when
+ *   resuming mid-key (where the marker was already emitted on an earlier page).
+ * - When a page fills immediately upon emitting a delete marker, `nextVersionIdMarker`
+ *   is set to `(BigInt(firstRowId) + 1n).toString()` so storage resumes at the key's
+ *   newest content version row inclusive, preventing any lost versions.
  * - When truncated, `nextKeyMarker` and `nextVersionIdMarker` are returned so
  *   subsequent pages can resume seamlessly without skipping or duplicating versions.
  *
@@ -160,25 +164,22 @@ export const buildListVersionsResult = (
       })
       entriesEmitted++
       lastKey = key
-      lastVersionIdMarker = markerVersionId
+      // If maxKeys is reached right after emitting the delete marker, set the cursor to
+      // firstRowId + 1n so storage's `id < idm` filter resumes at firstRowId inclusive,
+      // while resumingMidKey suppresses duplicate delete marker emission.
+      lastVersionIdMarker = (BigInt(firstRowId) + 1n).toString()
       if (entriesEmitted >= maxKeys) {
         break
       }
     }
 
-    const seenCids = new Set<string>()
     let isNewestOfKey = !resumingMidKey
 
     while (i < rows.length && rows[i].key === key) {
-      const row = rows[i]
-      if (seenCids.has(row.cid)) {
-        i++
-        continue
-      }
       if (entriesEmitted >= maxKeys) {
         break
       }
-      seenCids.add(row.cid)
+      const row = rows[i]
       i++
       versions.push({
         key: row.key,
@@ -191,7 +192,7 @@ export const buildListVersionsResult = (
       isNewestOfKey = false
       entriesEmitted++
       lastKey = row.key
-      lastVersionIdMarker = row.id ?? row.cid
+      lastVersionIdMarker = row.id
     }
   }
 
@@ -231,7 +232,7 @@ export const finalizeListObjectVersions = (
     isTruncated = true
     const lastRow = fetchedRows[fetchedRows.length - 1]
     nextKeyMarker = lastRow.key
-    nextVersionIdMarker = lastRow.id ?? lastRow.cid
+    nextVersionIdMarker = lastRow.id
   }
 
   return {
