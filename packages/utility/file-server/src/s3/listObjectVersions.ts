@@ -51,6 +51,8 @@ export interface S3VersionRow {
   /**
    * Monotonic row identifier from storage (e.g. object_versions.id), used as the
    * cursor for entry-level pagination across page boundaries.
+   *
+   * Must be a valid integer string, since it is parsed via BigInt.
    */
   id: string
   key: string
@@ -101,7 +103,7 @@ export const computeListObjectVersionsDbLimit = (maxKeys: number): number => max
  * - A synthesised delete marker is emitted ONLY when starting a key fresh, NOT when
  *   resuming mid-key (where the marker was already emitted on an earlier page).
  * - When a page fills immediately upon emitting a delete marker, `nextVersionIdMarker`
- *   is set to `(BigInt(firstRowId) + 1n).toString()` so storage resumes at the key's
+ *   is set to `(BigInt(firstRowId) + BigInt(1)).toString()` so storage resumes at the key's
  *   newest content version row inclusive, preventing any lost versions.
  * - When truncated, `nextKeyMarker` and `nextVersionIdMarker` are returned so
  *   subsequent pages can resume seamlessly without skipping or duplicating versions.
@@ -165,9 +167,9 @@ export const buildListVersionsResult = (
       entriesEmitted++
       lastKey = key
       // If maxKeys is reached right after emitting the delete marker, set the cursor to
-      // firstRowId + 1n so storage's `id < idm` filter resumes at firstRowId inclusive,
+      // BigInt(firstRowId) + BigInt(1) so storage's `id < idm` filter resumes at firstRowId inclusive,
       // while resumingMidKey suppresses duplicate delete marker emission.
-      lastVersionIdMarker = (BigInt(firstRowId) + 1n).toString()
+      lastVersionIdMarker = (BigInt(firstRowId) + BigInt(1)).toString()
       if (entriesEmitted >= maxKeys) {
         break
       }
