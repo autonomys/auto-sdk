@@ -219,7 +219,7 @@ describe('buildListVersionsResult', () => {
     expect(page1.versions).toHaveLength(0)
     expect(page1.isTruncated).toBe(true)
     expect(page1.nextKeyMarker).toBe('a.txt')
-    // Cursor points to firstRowId + 1n so storage can resume at firstRowId inclusive
+    // Cursor points to BigInt(firstRowId) + BigInt(1) so storage can resume at firstRowId inclusive
     expect(page1.nextVersionIdMarker).toBe('3')
 
     // Page 2 resumes mid-key: does not emit delete marker again, emits content versions
@@ -249,7 +249,7 @@ describe('buildListVersionsResult', () => {
 
     expect(result.isTruncated).toBe(true)
     expect(result.nextKeyMarker).toBe('b.txt')
-    expect(result.nextVersionIdMarker).toBe('3') // firstRowId ('2') + 1n
+    expect(result.nextVersionIdMarker).toBe('3') // BigInt(firstRowId '2') + BigInt(1)
     expect(result.versions.map((v) => v.key)).toEqual(['a.txt'])
     expect(result.deleteMarkers).toEqual([
       {
