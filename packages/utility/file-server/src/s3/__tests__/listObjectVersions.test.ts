@@ -485,7 +485,8 @@ describe('simulated storage paging against acceptance criteria (#790)', () => {
   ]
 
   // Simulate storage contract:
-  // 1. One row per (key, cid) keeping the newest row per (key, cid) (highest id)
+  // 1. Deduplication happens over all of a key's rows before cursor filtering (e.g. key >= keyMarker,
+  //    as handled in autonomys/auto-drive#901), keeping the newest row per (key, cid) (highest id)
   // 2. Ordered by key ASC, then newest version first per key (id DESC)
   const deduplicatedStorageRows: S3VersionRow[] = (() => {
     const seen = new Set<string>()
