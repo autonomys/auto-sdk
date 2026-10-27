@@ -93,6 +93,11 @@ export const computeListObjectVersionsDbLimit = (maxKeys: number): number => max
  * Storage contract (#790):
  * - Storage must deduplicate repeated same-content writes sharing the same CID under a key
  *   (e.g. via `DISTINCT ON (key, cid)` keeping the newest row per `(key, cid)`).
+ * - Deduplication must happen over all of a key's rows before the cursor filter is applied
+ *   (e.g. by deduplicating with `key >= keyMarker` before filtering with `key > keyMarker OR (key = keyMarker AND id < versionIdMarker)`,
+ *   as handled in autonomys/auto-drive#901). If storage filters by `id < versionIdMarker` first,
+ *   an older row of a CID that was already listed survives the filter and is listed again
+ *   (e.g. a key written `x`, `y`, `x` lists as `x, y, x` with `maxKeys = 1`).
  * - Rows must arrive sorted by `key ASC`, then newest first per key (`id DESC`).
  * - Storage pagination resumes by `(key, id)` via `key > keyMarker OR (key = keyMarker AND id < versionIdMarker)`.
  *
