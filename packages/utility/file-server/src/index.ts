@@ -5,4 +5,5 @@ export const version = packageJson.version
 export * from './caching/index.js'
 export * from './http/index.js'
 export * from './models.js'
+export * from './partialRetrieval/index.js'
 export * from './s3/index.js'

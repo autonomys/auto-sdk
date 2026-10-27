@@ -93,42 +93,28 @@ describe('rpc/definition', () => {
   })
 
   it('should handle invalid params', async () => {
-    try {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-expect-error
-      await client.api.test({ name: 1 })
-    } catch (error) {
-      if (error instanceof RpcError) {
-        expect(error.code).toEqual(RpcError.Code.InvalidParams)
-      } else {
-        throw error
-      }
-    }
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
+    const error = await client.api.test({ name: 1 }).catch((err) => err)
+
+    expect(error).toBeInstanceOf(RpcError)
+    expect(error.code).toEqual(RpcError.Code.InvalidParams)
   })
 
   it('should handle internal errors', async () => {
-    try {
-      await client.api.internal_error({ name: 'test' })
-    } catch (error) {
-      if (error instanceof RpcError) {
-        expect(error.message).toEqual('test')
-        expect(error.code).toEqual(RpcError.Code.InternalError)
-      } else {
-        throw error
-      }
-    }
+    const error = await client.api.internal_error({ name: 'test' }).catch((err) => err)
+
+    expect(error).toBeInstanceOf(RpcError)
+    expect(error.message).toEqual('test')
+    expect(error.code).toEqual(RpcError.Code.InternalError)
   })
 
   it('should handle rpc errors', async () => {
-    try {
-      await client.api.rpc_error()
-    } catch (error) {
-      expect(error).toBeInstanceOf(RpcError)
-      if (error instanceof RpcError) {
-        expect(error.code).toEqual(RpcError.Code.Custom)
-        expect(error.message).toEqual('Custom error')
-      }
-    }
+    const error = await client.api.rpc_error().catch((err) => err)
+
+    expect(error).toBeInstanceOf(RpcError)
+    expect(error.code).toEqual(RpcError.Code.Custom)
+    expect(error.message).toEqual('Custom error')
   })
 
   it('should send error response if message id is not provided', async () => {

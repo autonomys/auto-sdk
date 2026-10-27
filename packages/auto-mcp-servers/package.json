@@ -1,7 +1,7 @@
 {
   "name": "@autonomys/auto-mcp-servers",
   "packageManager": "yarn@4.17.0",
-  "version": "1.6.15",
+  "version": "1.6.16",
   "description": "Autonomys Network MCP servers",
   "repository": {
     "type": "git",
@@ -31,13 +31,13 @@
     "server"
   ],
   "dependencies": {
-    "@autonomys/auto-agents": "^1.6.15",
-    "@autonomys/auto-drive": "^1.6.15",
+    "@autonomys/auto-agents": "^1.6.16",
+    "@autonomys/auto-drive": "^1.6.16",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "zod": "^3.25 || ^4.0"
   },
   "devDependencies": {
-    "@types/node": "22.20.0",
+    "@types/node": "22.20.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   },

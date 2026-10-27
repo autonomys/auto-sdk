@@ -7,6 +7,7 @@ import {
   FolderUpload,
 } from '../models/uploads'
 import { AutoDriveApiHandler } from '../types'
+import { toApiError } from './errors'
 
 /**
  * Initiates a file upload to the server.
@@ -43,7 +44,7 @@ export const createFileUpload = async (
   )
 
   if (!response.ok) {
-    throw new Error(`Failed to create file upload: ${response.statusText}`)
+    throw await toApiError(response, 'Failed to create file upload')
   }
 
   return response.json()
@@ -78,7 +79,7 @@ export const createFolderUpload = async (
   )
 
   if (!response.ok) {
-    throw new Error(`Failed to create folder upload: ${response.statusText}`)
+    throw await toApiError(response, 'Failed to create folder upload')
   }
 
   return response.json()
@@ -125,7 +126,7 @@ export const createFileUploadWithinFolderUpload = async (
   )
 
   if (!response.ok) {
-    throw new Error(`Failed to create file upload within folder upload: ${response.statusText}`)
+    throw await toApiError(response, 'Failed to create file upload within folder upload')
   }
 
   return response.json()
@@ -168,7 +169,7 @@ export const uploadFileChunk = async (
   )
 
   if (!response.ok) {
-    throw new Error(`Failed to upload file chunk: ${response.statusText}`)
+    throw await toApiError(response, 'Failed to upload file chunk')
   }
 }
 
@@ -195,7 +196,7 @@ export const completeUpload = async (
   })
 
   if (!response.ok) {
-    throw new Error(`Failed to complete upload: ${response.statusText}`)
+    throw await toApiError(response, 'Failed to complete upload')
   }
 
   return response.json() as Promise<CompleteUploadResponse>

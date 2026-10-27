@@ -24,12 +24,20 @@ export const httpBodyToStream = (body: ReadableStream): Readable => {
   const reader = body.getReader()
   return new Readable({
     async read() {
-      const { done, value } = await reader.read()
-      if (done) {
-        this.push(null)
-      } else {
-        this.push(value)
+      try {
+        const { done, value } = await reader.read()
+        if (done) {
+          this.push(null)
+        } else {
+          this.push(value)
+        }
+      } catch (error) {
+        this.destroy(error instanceof Error ? error : new Error(String(error)))
       }
+    },
+    destroy(err, callback) {
+      reader.cancel(err).catch(() => {})
+      callback(err)
     },
   })
 }

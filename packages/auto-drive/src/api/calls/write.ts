@@ -1,5 +1,6 @@
 import { ArgsWithoutPagination } from '../../utils/types'
 import { AutoDriveApiHandler } from '../types'
+import { toApiError } from './errors'
 
 /**
  * Shares an object with a specified public ID.
@@ -29,7 +30,7 @@ export const shareObject = async (
   )
 
   if (!response.ok) {
-    throw new Error(`Failed to share object: ${response.statusText}`)
+    throw await toApiError(response, 'Failed to share object')
   }
 
   return response.json()
@@ -56,7 +57,7 @@ export const markObjectAsDeleted = async (
   })
 
   if (!response.ok) {
-    throw new Error(`Failed to mark object as deleted: ${response.statusText}`)
+    throw await toApiError(response, 'Failed to mark object as deleted')
   }
 }
 
@@ -81,7 +82,7 @@ export const restoreObject = async (
   })
 
   if (!response.ok) {
-    throw new Error(`Failed to restore object: ${response.statusText}`)
+    throw await toApiError(response, 'Failed to restore object')
   }
 
   return response.json()
@@ -108,7 +109,7 @@ export const publishObject = async (
   })
 
   if (!response.ok) {
-    throw new Error(`Failed to publish object: ${response.statusText}`)
+    throw await toApiError(response, 'Failed to publish object')
   }
 
   return response.json()
@@ -134,7 +135,7 @@ export const reportObject = async (
   })
 
   if (!response.ok) {
-    throw new Error(`Failed to report object: ${response.statusText}`)
+    throw await toApiError(response, 'Failed to report object')
   }
 }
 
@@ -158,7 +159,7 @@ export const banObject = async (
   })
 
   if (!response.ok) {
-    throw new Error(`Failed to ban object: ${response.statusText}`)
+    throw await toApiError(response, 'Failed to ban object')
   }
 }
 
@@ -182,6 +183,6 @@ export const dismissReport = async (
   })
 
   if (!response.ok) {
-    throw new Error(`Failed to dismiss report: ${response.statusText}`)
+    throw await toApiError(response, 'Failed to dismiss report')
   }
 }

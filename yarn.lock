@@ -36,7 +36,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@autonomys/asynchronous@npm:^1.6.15, @autonomys/asynchronous@workspace:packages/utility/asynchronous":
+"@autonomys/asynchronous@npm:^1.6.16, @autonomys/asynchronous@workspace:packages/utility/asynchronous":
   version: 0.0.0-use.local
   resolution: "@autonomys/asynchronous@workspace:packages/utility/asynchronous"
   dependencies:
@@ -51,12 +51,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@autonomys/auto-agents@npm:^1.6.15, @autonomys/auto-agents@workspace:packages/auto-agents":
+"@autonomys/auto-agents@npm:^1.6.16, @autonomys/auto-agents@workspace:packages/auto-agents":
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-agents@workspace:packages/auto-agents"
   dependencies:
-    "@autonomys/auto-dag-data": "npm:^1.6.15"
-    "@autonomys/auto-drive": "npm:^1.6.15"
+    "@autonomys/auto-dag-data": "npm:^1.6.16"
+    "@autonomys/auto-drive": "npm:^1.6.16"
     "@types/jest": "npm:^29.5.14"
     eslint: "npm:^10.10.0"
     ethers: "npm:6.17.0"
@@ -66,11 +66,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@autonomys/auto-consensus@npm:^1.6.15, @autonomys/auto-consensus@workspace:*, @autonomys/auto-consensus@workspace:packages/auto-consensus":
+"@autonomys/auto-consensus@npm:^1.6.16, @autonomys/auto-consensus@workspace:*, @autonomys/auto-consensus@workspace:packages/auto-consensus":
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-consensus@workspace:packages/auto-consensus"
   dependencies:
-    "@autonomys/auto-utils": "npm:^1.6.15"
+    "@autonomys/auto-utils": "npm:^1.6.16"
     "@types/jest": "npm:^29.5.14"
     eslint: "npm:^10.10.0"
     jest: "npm:^29.7.0"
@@ -80,11 +80,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@autonomys/auto-dag-data@npm:^1.6.15, @autonomys/auto-dag-data@workspace:*, @autonomys/auto-dag-data@workspace:packages/auto-dag-data":
+"@autonomys/auto-dag-data@npm:^1.6.16, @autonomys/auto-dag-data@workspace:*, @autonomys/auto-dag-data@workspace:packages/auto-dag-data":
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-dag-data@workspace:packages/auto-dag-data"
   dependencies:
-    "@autonomys/asynchronous": "npm:^1.6.15"
+    "@autonomys/asynchronous": "npm:^1.6.16"
     "@ipld/dag-pb": "npm:^4.1.7"
     "@types/jest": "npm:^29.5.14"
     "@webbuf/blake3": "npm:^3.8.0"
@@ -107,7 +107,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-design-system@workspace:packages/auto-design-system"
   dependencies:
-    "@autonomys/design-tokens": "npm:^1.6.15"
+    "@autonomys/design-tokens": "npm:^1.6.16"
     "@babel/core": "npm:^7.29.7"
     "@babel/preset-env": "npm:^7.29.7"
     "@babel/preset-react": "npm:^7.29.7"
@@ -176,13 +176,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@autonomys/auto-drive@npm:^1.6.15, @autonomys/auto-drive@workspace:packages/auto-drive":
+"@autonomys/auto-drive@npm:^1.6.16, @autonomys/auto-drive@workspace:packages/auto-drive":
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-drive@workspace:packages/auto-drive"
   dependencies:
-    "@autonomys/asynchronous": "npm:^1.6.15"
-    "@autonomys/auto-dag-data": "npm:^1.6.15"
-    "@autonomys/auto-utils": "npm:^1.6.15"
+    "@autonomys/asynchronous": "npm:^1.6.16"
+    "@autonomys/auto-dag-data": "npm:^1.6.16"
+    "@autonomys/auto-utils": "npm:^1.6.16"
     "@prerenderer/rollup-plugin": "npm:^0.3.12"
     "@rollup/plugin-commonjs": "npm:^29.0.3"
     "@rollup/plugin-json": "npm:^6.1.0"
@@ -209,7 +209,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-files@workspace:packages/auto-files"
   dependencies:
-    "@autonomys/auto-drive": "npm:^1.6.15"
+    "@autonomys/auto-drive": "npm:^1.6.16"
+    "@types/jest": "npm:^29.5.14"
+    jest: "npm:^29.7.0"
+    ts-jest: "npm:^29.4.11"
     typescript: "npm:^5.9.3"
   languageName: unknown
   linkType: soft
@@ -218,10 +221,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-mcp-servers@workspace:packages/auto-mcp-servers"
   dependencies:
-    "@autonomys/auto-agents": "npm:^1.6.15"
-    "@autonomys/auto-drive": "npm:^1.6.15"
+    "@autonomys/auto-agents": "npm:^1.6.16"
+    "@autonomys/auto-drive": "npm:^1.6.16"
     "@modelcontextprotocol/sdk": "npm:^1.29.0"
-    "@types/node": "npm:22.20.0"
+    "@types/node": "npm:22.20.1"
     ts-node: "npm:^10.9.2"
     typescript: "npm:^5.9.3"
     zod: "npm:^3.25 || ^4.0"
@@ -257,7 +260,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@autonomys/auto-utils@npm:^1.6.15, @autonomys/auto-utils@workspace:*, @autonomys/auto-utils@workspace:packages/auto-utils":
+"@autonomys/auto-utils@npm:^1.6.16, @autonomys/auto-utils@workspace:*, @autonomys/auto-utils@workspace:packages/auto-utils":
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-utils@workspace:packages/auto-utils"
   dependencies:
@@ -305,7 +308,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-wallet@workspace:packages/auto-wallet"
   dependencies:
-    "@autonomys/auto-utils": "npm:^1.6.15"
+    "@autonomys/auto-utils": "npm:^1.6.16"
     "@polkadot/extension-inject": "npm:^0.63.1"
     "@talismn/connect-wallets": "npm:^1.2.8"
     "@types/jest": "npm:^29.5.14"
@@ -320,8 +323,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-xdm@workspace:packages/auto-xdm"
   dependencies:
-    "@autonomys/auto-consensus": "npm:^1.6.15"
-    "@autonomys/auto-utils": "npm:^1.6.15"
+    "@autonomys/auto-consensus": "npm:^1.6.16"
+    "@autonomys/auto-utils": "npm:^1.6.16"
     "@types/jest": "npm:^29.5.14"
     eslint: "npm:^10.10.0"
     ethers: "npm:^6.17.0"
@@ -347,7 +350,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@autonomys/design-tokens@npm:^1.6.15, @autonomys/design-tokens@workspace:packages/utility/design-tokens":
+"@autonomys/design-tokens@npm:^1.6.16, @autonomys/design-tokens@workspace:packages/utility/design-tokens":
   version: 0.0.0-use.local
   resolution: "@autonomys/design-tokens@workspace:packages/utility/design-tokens"
   dependencies:
@@ -370,9 +373,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@autonomys/file-server@workspace:packages/utility/file-server"
   dependencies:
-    "@autonomys/asynchronous": "npm:^1.6.15"
-    "@autonomys/auto-dag-data": "npm:^1.6.15"
-    "@autonomys/auto-utils": "npm:^1.6.15"
+    "@autonomys/asynchronous": "npm:^1.6.16"
+    "@autonomys/auto-dag-data": "npm:^1.6.16"
+    "@autonomys/auto-utils": "npm:^1.6.16"
     "@keyvhq/sqlite": "npm:^2.2.0"
     "@prerenderer/rollup-plugin": "npm:^0.3.12"
     "@rollup/plugin-commonjs": "npm:^29.0.3"
@@ -382,7 +385,7 @@ __metadata:
     "@rollup/plugin-typescript": "npm:^12.3.0"
     "@types/express": "npm:^5.0.0"
     "@types/mime-types": "npm:^3.0.1"
-    cache-manager: "npm:^7.2.8"
+    cache-manager: "npm:^7.2.9"
     express: "npm:^4.22.2"
     jszip: "npm:^3.10.1"
     keyv: "npm:^5.6.0"
@@ -426,6 +429,7 @@ __metadata:
     typescript: "npm:^5.9.3"
     websocket: "npm:^1.0.35"
     zod: "npm:^3.25.76"
+    zod-3.25.55: "npm:zod@3.25.55"
   languageName: unknown
   linkType: soft
 
@@ -433,9 +437,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@autonomys/user-session@workspace:packages/utility/user-session"
   dependencies:
-    "@autonomys/asynchronous": "npm:^1.6.15"
-    "@autonomys/auto-dag-data": "npm:^1.6.15"
-    "@autonomys/auto-drive": "npm:^1.6.15"
+    "@autonomys/asynchronous": "npm:^1.6.16"
+    "@autonomys/auto-dag-data": "npm:^1.6.16"
+    "@autonomys/auto-drive": "npm:^1.6.16"
     eslint: "npm:^10.10.0"
     ethers: "npm:6.17.0"
     ts-node: "npm:^10.9.2"
@@ -4239,12 +4243,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@hono/node-server@npm:^1.19.9":
-  version: 1.19.14
-  resolution: "@hono/node-server@npm:1.19.14"
+"@hono/node-server@npm:^1.19.9 || ^2.0.5":
+  version: 2.1.5
+  resolution: "@hono/node-server@npm:2.1.5"
   peerDependencies:
-    hono: ^4
-  checksum: 10c0/41a099bb3705d96aac44b7a8db8805f2a22ce8a0f767a27b6d10b74a9964925df01c5f35d3631e882f8bcdeee3518884c30f40588ac8c960d88bf71048ba0df3
+    hono: ^4 || ^5.0.0-0
+  checksum: 10c0/3c3d5ffcc4a229e532530729b64db623493171bcda7b40ffbac3a46489884f700c881439d8c0d0413cd18793458ca252acedf6a9c13c8c3a024037e47974cacb
   languageName: node
   linkType: hard
 
@@ -5337,10 +5341,10 @@ __metadata:
   linkType: hard
 
 "@modelcontextprotocol/sdk@npm:^1.29.0":
-  version: 1.29.0
-  resolution: "@modelcontextprotocol/sdk@npm:1.29.0"
+  version: 1.32.1
+  resolution: "@modelcontextprotocol/sdk@npm:1.32.1"
   dependencies:
-    "@hono/node-server": "npm:^1.19.9"
+    "@hono/node-server": "npm:^1.19.9 || ^2.0.5"
     ajv: "npm:^8.17.1"
     ajv-formats: "npm:^3.0.1"
     content-type: "npm:^1.0.5"
@@ -5365,7 +5369,7 @@ __metadata:
       optional: true
     zod:
       optional: false
-  checksum: 10c0/7c4bc339205b1652330cd4e6b121cc859079655f2b9c0506bbb15563ba0d07924bda3d949705530532db7f4d2cb86d633dc8f92bc32803d97c7bece2ac63e29f
+  checksum: 10c0/8b6c8ff6aa5358aeb316fedfa2094a4241ce12d98a0f818cee42510ec9149fed21fc75244c5f0e8cb453337f243c09fa8a90425cd2533fd481964d8583a1f0c9
   languageName: node
   linkType: hard
 
@@ -10265,12 +10269,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:22.20.0":
-  version: 22.20.0
-  resolution: "@types/node@npm:22.20.0"
+"@types/node@npm:22.20.1":
+  version: 22.20.1
+  resolution: "@types/node@npm:22.20.1"
   dependencies:
     undici-types: "npm:~6.21.0"
-  checksum: 10c0/55d78223205bd5f81f043d71b7a5c8d8854b9ef44ef81291680943adb27fa5ba1f092658c87183d5bc8cf6baf6a57b81dad966eb3afa452cc301a615b6d9b20e
+  checksum: 10c0/f2ba54d3d1fb92e1c57c78d32c3a17655b1e87363b707136f55c422b4838d4054901ce5d27f75bb0e5ecb7ebfee3804e0987822d22b473473008091857a09353
   languageName: node
   linkType: hard
 
@@ -12097,7 +12101,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cache-manager@npm:^7.2.8":
+"cache-manager@npm:^7.2.9":
   version: 7.2.9
   resolution: "cache-manager@npm:7.2.9"
   dependencies:
@@ -13907,14 +13911,14 @@ __metadata:
   linkType: hard
 
 "dompurify@npm:^3.4.11":
-  version: 3.4.11
-  resolution: "dompurify@npm:3.4.11"
+  version: 3.4.16
+  resolution: "dompurify@npm:3.4.16"
   dependencies:
     "@types/trusted-types": "npm:^2.0.7"
   dependenciesMeta:
     "@types/trusted-types":
       optional: true
-  checksum: 10c0/31439481c7e8fc3805d40c376936fd66936620fb1b1a31a2ec097f6165412c37f2d868e082c9ceba62bb37661c1ea132a5db4d5213434317e30df68d4aca9cc9
+  checksum: 10c0/65a901c6b6d489d3e898f67223d81dac66d613cda48f5785f0ed52a4ae320c4b2745490a58c14161e29f0273080fea0a0cb234a9ef892650e1a9b2a7befa07a5
   languageName: node
   linkType: hard
 
@@ -19603,12 +19607,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nanoid@npm:^3.3.12":
-  version: 3.3.12
-  resolution: "nanoid@npm:3.3.12"
+"nanoid@npm:^3.3.17":
+  version: 3.3.18
+  resolution: "nanoid@npm:3.3.18"
   bin:
     nanoid: bin/nanoid.cjs
-  checksum: 10c0/ba142b7b39e11e80c16dd74b0365d407880c87c1cf7e1480956981ae940ee36060fa5b6f092cd1e315184dd19244c657bd017d03327bd3c62247d691c5e8edfb
+  checksum: 10c0/b994b4e396730f8be2520923284e2040d61eaee55cc6d4935ef6d38d34bafdc46133eda4d3faea5073bda545aa6079d82b886caeac5c731cf9ac18bcc1301425
   languageName: node
   linkType: hard
 
@@ -21699,25 +21703,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss@npm:^8.4.33, postcss@npm:^8.4.47":
-  version: 8.5.15
-  resolution: "postcss@npm:8.5.15"
+"postcss@npm:^8.4.33, postcss@npm:^8.4.47, postcss@npm:^8.5.16":
+  version: 8.5.26
+  resolution: "postcss@npm:8.5.26"
   dependencies:
-    nanoid: "npm:^3.3.12"
+    nanoid: "npm:^3.3.17"
     picocolors: "npm:^1.1.1"
     source-map-js: "npm:^1.2.1"
-  checksum: 10c0/7f2e63ae22fbe43aace1bf652bd99da4e90737c64194d49e51ddc9cd0f9e51ff2861a7d734379b494deffa03a880a5c65eec70bc29ee9ebaa7136dde3eee8f31
-  languageName: node
-  linkType: hard
-
-"postcss@npm:^8.5.16":
-  version: 8.5.16
-  resolution: "postcss@npm:8.5.16"
-  dependencies:
-    nanoid: "npm:^3.3.12"
-    picocolors: "npm:^1.1.1"
-    source-map-js: "npm:^1.2.1"
-  checksum: 10c0/625de7a02f662f3a340964d14b487bd5097adf16f5f171e257d19005ba37aea8768ee446557500e88e91ca46b4d14d6cb4a0bf033c6ec0c8c0b660d85719f1ef
+  checksum: 10c0/2bdafc00d96bd57b6649a52e458864a4bf58ee56cfdbe4aea1472b5cccc127e6c1ad653bd0bec50d211e650eb0b9270c80e1e72aff2e2fa40d9e7363234d6e43
   languageName: node
   linkType: hard
 
@@ -21961,8 +21954,8 @@ __metadata:
   linkType: hard
 
 "protobufjs@npm:^7.6.4":
-  version: 7.6.4
-  resolution: "protobufjs@npm:7.6.4"
+  version: 7.6.5
+  resolution: "protobufjs@npm:7.6.5"
   dependencies:
     "@protobufjs/aspromise": "npm:^1.1.2"
     "@protobufjs/base64": "npm:^1.1.2"
@@ -21975,7 +21968,7 @@ __metadata:
     "@protobufjs/utf8": "npm:^1.1.1"
     "@types/node": "npm:>=13.7.0"
     long: "npm:^5.3.2"
-  checksum: 10c0/6403eaa9c5a72cc6450c11f38fefafdde243fd806e7ac606ac8d591bc3fdaec45ae764febf83181a2d9aac51aca624e0f46dec368ceea191f7e85e2d6ccaaf93
+  checksum: 10c0/863eaca9c6f45bfcfb8787c545f53e9c6696507e328e3981b4643c12d35df7f2826021c10e3fd30bef342c13a8e9d306547bac9c0849ee3bf50f770a12f01dc5
   languageName: node
   linkType: hard
 
@@ -26295,6 +26288,13 @@ __metadata:
   version: 2.1.3
   resolution: "yoctocolors-cjs@npm:2.1.3"
   checksum: 10c0/584168ef98eb5d913473a4858dce128803c4a6cd87c0f09e954fa01126a59a33ab9e513b633ad9ab953786ed16efdd8c8700097a51635aafaeed3fef7712fa79
+  languageName: node
+  linkType: hard
+
+"zod-3.25.55@npm:zod@3.25.55":
+  version: 3.25.55
+  resolution: "zod@npm:3.25.55"
+  checksum: 10c0/6c6bed4b233e1bd9074e90a1742e98195f9a1112d2ea5b0b7df7227258f024e35fb142c35c662598a3ab19a20163ad9668ac9dfbec8cfaaa31cddea76b27579e
   languageName: node
   linkType: hard
 
