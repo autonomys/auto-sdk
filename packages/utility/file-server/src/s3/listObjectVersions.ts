@@ -28,6 +28,7 @@ export interface ListObjectVersionsParams {
   bucket: string
   prefix: string
   keyMarker: string | null
+  versionIdMarker?: string | null
   maxKeys: number
 }
 
@@ -37,14 +38,23 @@ export interface ListObjectVersionsResult {
   prefix: string
   maxKeys: number
   keyMarker: string | null
+  versionIdMarker?: string | null
   isTruncated: boolean
   nextKeyMarker: string | null
+  nextVersionIdMarker: string | null
   versions: S3VersionEntry[]
   deleteMarkers: S3DeleteMarkerEntry[]
 }
 
 /** Raw database/storage row representation before version aggregation. */
 export interface S3VersionRow {
+  /**
+   * Monotonic row identifier from storage (e.g. object_versions.id), used as the
+   * cursor for entry-level pagination across page boundaries.
+   *
+   * Must be a valid integer string, since it is parsed via BigInt.
+   */
+  id: string
   key: string
   cid: string
   /**
@@ -62,81 +72,122 @@ export interface S3VersionRow {
   size: bigint
 }
 
+/** Options for buildListVersionsResult. */
+export interface BuildListVersionsOptions {
+  keyMarker?: string | null
+  versionIdMarker?: string | null
+}
+
 /**
- * How many distinct keys to fetch from storage for a given ListObjectVersions page.
+ * How many version rows to fetch from storage for a given ListObjectVersions page.
  *
- * We need maxKeys + 1 distinct keys so that buildListVersionsResult or
- * finalizeListObjectVersions can detect whether more keys exist beyond maxKeys.
+ * Each row produces at least one Version entry (or two if a fresh deleted key
+ * also synthesises a DeleteMarker), so maxKeys + 1 rows are sufficient to detect
+ * truncation.
  */
 export const computeListObjectVersionsDbLimit = (maxKeys: number): number => maxKeys + 1
 
 /**
- * Apply version deduplication, soft-delete detection, and maxKeys pagination to
- * sorted storage rows.
+ * Apply soft-delete detection and entry-bounded maxKeys pagination to sorted storage rows.
  *
- * Rows must arrive ordered by key ascending, then newest version first per key.
+ * Storage contract (#790):
+ * - Storage must deduplicate repeated same-content writes sharing the same CID under a key
+ *   (e.g. via `DISTINCT ON (key, cid)` keeping the newest row per `(key, cid)`).
+ * - Deduplication must happen over all of a key's rows before the cursor filter is applied
+ *   (e.g. by deduplicating with `key >= keyMarker` before filtering with `key > keyMarker OR (key = keyMarker AND id < versionIdMarker)`,
+ *   as handled in autonomys/auto-drive#901). If storage filters by `id < versionIdMarker` first,
+ *   an older row of a CID that was already listed survives the filter and is listed again
+ *   (e.g. a key written `x`, `y`, `x` lists as `x, y, x` with `maxKeys = 1`).
+ * - Rows must arrive sorted by `key ASC`, then newest first per key (`id DESC`).
+ * - Storage pagination resumes by `(key, id)` via `key > keyMarker OR (key = keyMarker AND id < versionIdMarker)`.
  *
- * Precondition: To accurately detect truncation without reading the entire table,
- * `rows` must contain up to `maxKeys + 1` distinct keys (see {@link computeListObjectVersionsDbLimit}).
+ * In accordance with S3 specification (#790):
+ * - maxKeys bounds the total number of Version + DeleteMarker entries per page.
+ * - For a key that is soft-deleted OR owner-removed, a delete marker is synthesised as
+ *   the latest entry (derived from deleteMarkerVersionId).
+ * - A synthesised delete marker is emitted ONLY when starting a key fresh, NOT when
+ *   resuming mid-key (where the marker was already emitted on an earlier page).
+ * - When a page fills immediately upon emitting a delete marker, `nextVersionIdMarker`
+ *   is set to `(BigInt(firstRowId) + BigInt(1)).toString()` so storage resumes at the key's
+ *   newest content version row inclusive, preventing any lost versions.
+ * - When truncated, `nextKeyMarker` and `nextVersionIdMarker` are returned so
+ *   subsequent pages can resume seamlessly without skipping or duplicating versions.
  *
- * KNOWN LIMITATION (#790): maxKeys bounds the number of distinct keys returned,
- * not the total number of Version + DeleteMarker entries. In S3, max-keys is an
- * entry-level bound, with NextVersionIdMarker resuming mid-key. Here, whole keys
- * are kept together so no version history is split across page boundaries without
- * an entry-level cursor, and there is no version-id-marker resume. A key with
- * many versions can thus yield a page with > maxKeys entries.
- *
- * - IsLatest marks the current content version of each live key.
- * - For a key that is soft-deleted OR owner-removed, a delete marker is
- *   synthesised as the latest entry instead (derived from deleteMarkerVersionId).
- * - Repeated same-content writes sharing the same CID under a single key are
- *   collapsed to one version, keeping the newest occurrence.
- * - Whole keys are kept together: pagination bounds distinct keys, emitting
- *   `nextKeyMarker` when more keys remain beyond `maxKeys`.
- *
- * @param rows - Sorted version rows from storage (up to maxKeys + 1 distinct keys).
- * @param maxKeys - Maximum number of distinct keys to return in this page.
- * @returns Filtered versions, deleteMarkers, isTruncated, and nextKeyMarker.
+ * @param rows - Sorted version rows from storage.
+ * @param maxKeys - Maximum number of Version + DeleteMarker entries to return in this page.
+ * @param options - Pagination markers (keyMarker, versionIdMarker).
+ * @returns Filtered versions, deleteMarkers, isTruncated, nextKeyMarker, and nextVersionIdMarker.
  */
 export const buildListVersionsResult = (
   rows: S3VersionRow[],
   maxKeys: number,
+  options?: BuildListVersionsOptions,
 ): Pick<
   ListObjectVersionsResult,
-  'versions' | 'deleteMarkers' | 'isTruncated' | 'nextKeyMarker'
+  'versions' | 'deleteMarkers' | 'isTruncated' | 'nextKeyMarker' | 'nextVersionIdMarker'
 > => {
+  const keyMarker = options?.keyMarker ?? null
+  const versionIdMarker = options?.versionIdMarker ?? null
+
+  if (maxKeys <= 0) {
+    return {
+      versions: [],
+      deleteMarkers: [],
+      isTruncated: rows.length > 0,
+      nextKeyMarker: null,
+      nextVersionIdMarker: null,
+    }
+  }
+
   const versions: S3VersionEntry[] = []
   const deleteMarkers: S3DeleteMarkerEntry[] = []
-  let keysEmitted = 0
+  let entriesEmitted = 0
   let lastKey: string | null = null
-  let isTruncated = false
+  let lastVersionIdMarker: string | null = null
 
   let i = 0
   while (i < rows.length) {
-    const key = rows[i].key
-
-    // New key: enforce the maxKeys page limit before emitting its group.
-    if (keysEmitted >= maxKeys) {
-      isTruncated = true
+    if (entriesEmitted >= maxKeys) {
       break
     }
 
-    // The key's current state is a delete marker (no content version is IsLatest)
-    // when the pointer is soft-deleted OR the content is owner-removed.
+    const key = rows[i].key
+    const resumingMidKey = keyMarker !== null && key === keyMarker && versionIdMarker !== null
+
     const pointerDeletedAt = rows[i].pointerDeletedAt
     const isDeleted = pointerDeletedAt != null || Boolean(rows[i].ownerRemoved)
     const newestVersionTime = rows[i].lastModified
+    const firstRowId = rows[i].id
 
-    // versionId = CID, so multiple rows sharing a CID (repeated same-content
-    // writes) are ONE version. Collapse them, keeping the newest occurrence.
-    const seenCids = new Set<string>()
-    let isNewestOfKey = true
+    // Emit the synthesised delete marker only when starting a key fresh (not when resuming mid-key).
+    if (isDeleted && !resumingMidKey) {
+      const markerTime = pointerDeletedAt ?? newestVersionTime
+      const markerVersionId = deleteMarkerVersionId(markerTime)
+      deleteMarkers.push({
+        key,
+        versionId: markerVersionId,
+        isLatest: true,
+        lastModified: markerTime,
+      })
+      entriesEmitted++
+      lastKey = key
+      // If maxKeys is reached right after emitting the delete marker, set the cursor to
+      // BigInt(firstRowId) + BigInt(1) so storage's `id < idm` filter resumes at firstRowId inclusive,
+      // while resumingMidKey suppresses duplicate delete marker emission.
+      lastVersionIdMarker = (BigInt(firstRowId) + BigInt(1)).toString()
+      if (entriesEmitted >= maxKeys) {
+        break
+      }
+    }
+
+    let isNewestOfKey = !resumingMidKey
 
     while (i < rows.length && rows[i].key === key) {
+      if (entriesEmitted >= maxKeys) {
+        break
+      }
       const row = rows[i]
       i++
-      if (seenCids.has(row.cid)) continue
-      seenCids.add(row.cid)
       versions.push({
         key: row.key,
         versionId: row.cid,
@@ -146,29 +197,20 @@ export const buildListVersionsResult = (
         size: row.size,
       })
       isNewestOfKey = false
+      entriesEmitted++
+      lastKey = row.key
+      lastVersionIdMarker = row.id
     }
-
-    if (isDeleted) {
-      const markerTime = pointerDeletedAt ?? newestVersionTime
-      deleteMarkers.push({
-        key,
-        versionId: deleteMarkerVersionId(markerTime),
-        isLatest: true,
-        lastModified: markerTime,
-      })
-    }
-
-    keysEmitted++
-    lastKey = key
   }
 
-  // keysEmitted === 0 means nothing was scanned (e.g. maxKeys <= 0, a valid S3
-  // existence probe). There is no prior key to resume from, so nextKeyMarker is null.
+  const isTruncated = i < rows.length
+
   return {
     versions,
     deleteMarkers,
     isTruncated,
-    nextKeyMarker: isTruncated && keysEmitted > 0 ? lastKey : null,
+    nextKeyMarker: isTruncated ? lastKey : null,
+    nextVersionIdMarker: isTruncated ? lastVersionIdMarker : null,
   }
 }
 
@@ -178,24 +220,26 @@ export const buildListVersionsResult = (
  * `fetchedRows` must be sorted by key ascending, then newest version first per key,
  * and fetched with the limit returned by {@link computeListObjectVersionsDbLimit}.
  * `dbLimit` is that same limit — needed to detect the case where storage returned
- * a full batch of distinct keys so truncation is guaranteed even if buildListVersionsResult
- * stopped before inspecting beyond.
+ * a full batch so truncation is guaranteed even if buildListVersionsResult stopped earlier.
  */
 export const finalizeListObjectVersions = (
   params: ListObjectVersionsParams,
   fetchedRows: S3VersionRow[],
   dbLimit: number,
 ): ListObjectVersionsResult => {
-  const { bucket, prefix, keyMarker, maxKeys } = params
-  const listResult = buildListVersionsResult(fetchedRows, maxKeys)
-  let { isTruncated, nextKeyMarker } = listResult
+  const { bucket, prefix, keyMarker, versionIdMarker, maxKeys } = params
+  const listResult = buildListVersionsResult(fetchedRows, maxKeys, {
+    keyMarker,
+    versionIdMarker,
+  })
+  let { isTruncated, nextKeyMarker, nextVersionIdMarker } = listResult
 
-  // Count distinct keys in fetchedRows to verify if storage returned a full batch.
-  // One extra empty page is harmless, but silently dropping data is not.
-  const distinctKeys = new Set(fetchedRows.map((r) => r.key))
-  if (!isTruncated && distinctKeys.size >= dbLimit && fetchedRows.length > 0) {
+  const totalEmitted = listResult.versions.length + listResult.deleteMarkers.length
+  if (!isTruncated && fetchedRows.length >= dbLimit && totalEmitted > 0) {
     isTruncated = true
-    nextKeyMarker = fetchedRows[fetchedRows.length - 1].key
+    const lastRow = fetchedRows[fetchedRows.length - 1]
+    nextKeyMarker = lastRow.key
+    nextVersionIdMarker = lastRow.id
   }
 
   return {
@@ -203,8 +247,10 @@ export const finalizeListObjectVersions = (
     prefix,
     maxKeys,
     keyMarker,
+    versionIdMarker: versionIdMarker ?? null,
     isTruncated,
     nextKeyMarker: isTruncated ? nextKeyMarker : null,
+    nextVersionIdMarker: isTruncated ? nextVersionIdMarker : null,
     versions: listResult.versions,
     deleteMarkers: listResult.deleteMarkers,
   }
