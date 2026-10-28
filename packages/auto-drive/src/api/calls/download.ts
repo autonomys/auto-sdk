@@ -1,6 +1,7 @@
 import { ArgsWithoutPagination } from '../../utils/types'
 import { AsyncDownload, DownloadStatus } from '../models/asyncDownloads'
 import { AutoDriveApiHandler } from '../types'
+import { toApiError } from './errors'
 
 export const downloadObject = async (
   api: AutoDriveApiHandler,
@@ -16,7 +17,7 @@ export const downloadObject = async (
   )
 
   if (!response.ok) {
-    throw new Error(`Failed to download file: ${response.statusText}`)
+    throw await toApiError(response, 'Failed to download file')
   }
 
   if (!response.body) {
@@ -35,7 +36,7 @@ export const createAsyncDownload = async (
   })
 
   if (!response.ok) {
-    throw new Error(`Failed to create async download: ${response.statusText}`)
+    throw await toApiError(response, 'Failed to create async download')
   }
 
   return response.json() as Promise<AsyncDownload>
@@ -50,7 +51,7 @@ export const getAsyncDownload = async (
   })
 
   if (!response.ok) {
-    throw new Error(`Failed to get async download: ${response.statusText}`)
+    throw await toApiError(response, 'Failed to get async download')
   }
 
   return response.json() as Promise<AsyncDownload>
@@ -62,7 +63,7 @@ export const getAsyncDownloads = async (api: AutoDriveApiHandler): Promise<Async
   })
 
   if (!response.ok) {
-    throw new Error(`Failed to get async downloads: ${response.statusText}`)
+    throw await toApiError(response, 'Failed to get async downloads')
   }
 
   return response.json() as Promise<AsyncDownload[]>
@@ -77,7 +78,7 @@ export const dismissAsyncDownload = async (
   })
 
   if (!response.ok) {
-    throw new Error(`Failed to dismiss async download: ${response.statusText}`)
+    throw await toApiError(response, 'Failed to dismiss async download')
   }
 }
 export const publicDownloadUrl = (api: AutoDriveApiHandler, cid: string): string => {
@@ -93,7 +94,7 @@ export const downloadStatus = async (
   })
 
   if (!response.ok) {
-    throw new Error(`Failed to get download status: ${response.statusText}`)
+    throw await toApiError(response, 'Failed to get download status')
   }
 
   return response.json() as Promise<{ status: DownloadStatus }>

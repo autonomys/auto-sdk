@@ -1,4 +1,5 @@
 export * from './createType'
+export * from './detectTxSuccess'
 export * from './events'
 export * from './format'
 export * from './ready'

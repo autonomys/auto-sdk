@@ -147,4 +147,37 @@ describe('createFileCache', () => {
     const pastEnd = await cache.get(key, { byteRange: byteRange(`bytes=${huge}-`) })
     expect(await collect(pastEnd!.data)).toHaveLength(0)
   })
+
+  it('cleans up temporary .tmp file when the input stream errors mid-write', async () => {
+    const key = CID
+    const expectedPath = path.join(cacheDir, 'zy', '52', '4s', CID.slice(0, -6), key)
+    const expectedDir = path.dirname(expectedPath)
+
+    let emitted = false
+    const failingStream = new Readable({
+      read() {
+        if (!emitted) {
+          emitted = true
+          this.push(Buffer.from('partial-chunk'))
+        } else {
+          this.destroy(new Error('upstream stream aborted'))
+        }
+      },
+    })
+
+    await expect(
+      cache.set(key, {
+        data: failingStream,
+        mimeType: 'text/plain',
+        size: 100n,
+      }),
+    ).rejects.toThrow('upstream stream aborted')
+
+    expect(fs.existsSync(expectedPath)).toBe(false)
+    expect(await cache.has(key)).toBe(false)
+    expect(await cache.get(key)).toBeNull()
+
+    const remainingEntries = fs.existsSync(expectedDir) ? fs.readdirSync(expectedDir) : []
+    expect(remainingEntries).toEqual([])
+  })
 })
