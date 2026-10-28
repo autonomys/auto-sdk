@@ -2,7 +2,7 @@
 import { ZodType } from 'zod'
 import { PromiseOr } from '../../utils/types'
 import { RpcServer, TypedRpcCallback, TypedRpcNotificationHandler } from '../types'
-import { StandardSchemaV1, StandardSchemaV1Output } from './standardSchema'
+import { StandardSchemaV1, StandardSchemaV1Input, StandardSchemaV1Output } from './standardSchema'
 
 export interface UnvalidatedType<T> {
   _type?: T
@@ -33,6 +33,13 @@ export type DefinitionTypeOutput<T extends DefinitionType> = T extends StandardS
     ? U
     : never
 
+// What clients send: the schema input, before the server applies transforms and defaults
+export type DefinitionTypeInput<T extends DefinitionType> = T extends StandardSchemaV1
+  ? StandardSchemaV1Input<T>
+  : T extends UnvalidatedType<infer U>
+    ? U
+    : never
+
 export type ApiDefinition = {
   methods: Record<string, MethodDefinition>
   notifications: Record<string, MessageDefinition>
@@ -44,13 +51,13 @@ export type HttpClientOptions = {
 
 export type WsClientType<S extends ApiDefinition> = {
   [K in keyof S['methods']]: (
-    params: DefinitionTypeOutput<S['methods'][K]['params']>,
+    params: DefinitionTypeInput<S['methods'][K]['params']>,
   ) => Promise<DefinitionTypeOutput<S['methods'][K]['returns']>>
 }
 
 export type HttpClientType<S extends ApiDefinition> = {
   [K in keyof S['methods']]: (
-    params: DefinitionTypeOutput<S['methods'][K]['params']>,
+    params: DefinitionTypeInput<S['methods'][K]['params']>,
     options?: HttpClientOptions,
   ) => Promise<DefinitionTypeOutput<S['methods'][K]['returns']>>
 }
