@@ -11,13 +11,13 @@ import { toApiError } from './errors'
  *
  * @param {AutoDriveApiHandler} api - The API instance used to send requests.
  * @param {ArgsWithoutPagination<{ cid: string; publicId: string }>} query - The query parameters containing the CID of the object to share and the public ID to share it with.
- * @returns {Promise<any>} - A promise that resolves to the response from the server.
+ * @returns {Promise<void>} - A promise that resolves when the object has been successfully shared.
  * @throws {Error} - Throws an error if the sharing process fails.
  */
 export const shareObject = async (
   api: AutoDriveApiHandler,
   query: ArgsWithoutPagination<{ cid: string; publicId: string }>,
-) => {
+): Promise<void> => {
   const response = await api.sendAPIRequest(
     `/objects/${query.cid}/share`,
     {
@@ -32,8 +32,6 @@ export const shareObject = async (
   if (!response.ok) {
     throw await toApiError(response, 'Failed to share object')
   }
-
-  return response.json()
 }
 
 /**
@@ -84,8 +82,6 @@ export const restoreObject = async (
   if (!response.ok) {
     throw await toApiError(response, 'Failed to restore object')
   }
-
-  return response.json()
 }
 
 /**
