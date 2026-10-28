@@ -42,11 +42,11 @@ describe('unpublishObject', () => {
     await expect(unpublishObject(api, { cid: CID })).resolves.toBeUndefined()
   })
 
-  it('throws with the status and the server message when the request fails', async () => {
+  it('throws with the server message when the request fails', async () => {
     const { api } = createMockApi(forbidden)
 
     await expect(unpublishObject(api, { cid: CID })).rejects.toThrow(
-      'Failed to unpublish object: 403 {"error":"User does not have access to this object"}',
+      'Failed to unpublish object: User does not have access to this object',
     )
   })
 

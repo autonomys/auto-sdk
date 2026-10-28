@@ -129,7 +129,7 @@ export const publishObject = async (
  * @param {AutoDriveApiHandler} api - The API instance used to send requests.
  * @param {ArgsWithoutPagination<{ cid: string }>} query - The query parameters containing the CID of the object to unpublish.
  * @returns {Promise<void>} - A promise that resolves when the object has been successfully unpublished.
- * @throws {Error} - Throws an error with the status and the server's message if the request fails.
+ * @throws {Error} - Throws an error with the server's message if the request fails.
  */
 export const unpublishObject = async (
   api: AutoDriveApiHandler,
@@ -140,8 +140,7 @@ export const unpublishObject = async (
   })
 
   if (!response.ok) {
-    const body = await response.text()
-    throw new Error(`Failed to unpublish object: ${response.status} ${body}`)
+    throw await toApiError(response, 'Failed to unpublish object')
   }
 }
 
