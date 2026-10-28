@@ -344,6 +344,8 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
     return publicDownloadUrl(api, result.result)
   }
 
+  const unpublishObject = (cid: string): Promise<void> => apiCalls.unpublishObject(api, { cid })
+
   const getMyFiles = async (
     page: number,
     limit: number = 100,
@@ -399,6 +401,7 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
     getPaymentIntentStatus,
     waitForPaymentCompletion,
     publishObject,
+    unpublishObject,
     getMyFiles,
     searchByNameOrCIDInMyFiles,
     searchByNameOrCID,
