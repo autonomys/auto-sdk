@@ -1,6 +1,8 @@
 import { stringify } from '@autonomys/auto-utils'
+import { jest } from '@jest/globals'
 import type { Request } from 'express'
 import fs from 'fs'
+import fsPromises from 'fs/promises'
 import Keyv from 'keyv'
 import os from 'os'
 import path from 'path'
@@ -179,5 +181,34 @@ describe('createFileCache', () => {
 
     const remainingEntries = fs.existsSync(expectedDir) ? fs.readdirSync(expectedDir) : []
     expect(remainingEntries).toEqual([])
+  })
+
+  describe('remove', () => {
+    const key = `file:${CID}`
+    const filePath = () => path.join(cacheDir, 'zy', '52', '4s', `file:${CID.slice(0, -6)}`, key)
+
+    afterEach(() => {
+      jest.restoreAllMocks()
+    })
+
+    it('deletes the file exactly once', async () => {
+      await cache.set(key, fileResponse('hello'))
+      const rm = jest.spyOn(fsPromises, 'rm')
+
+      await cache.remove(key)
+      await new Promise((resolve) => setImmediate(resolve))
+
+      expect(rm).toHaveBeenCalledTimes(1)
+      expect(fs.existsSync(filePath())).toBe(false)
+      expect(await cache.get(key)).toBeNull()
+    })
+
+    it('clears the entry when its file is already gone', async () => {
+      await cache.set(key, fileResponse('hello'))
+      fs.rmSync(filePath())
+
+      await expect(cache.remove(key)).resolves.toBeUndefined()
+      expect(await cache.get(key)).toBeNull()
+    })
   })
 })
