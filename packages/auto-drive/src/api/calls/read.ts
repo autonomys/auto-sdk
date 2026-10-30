@@ -247,7 +247,7 @@ export const getObjectMetadata = async (
  * @throws {Error} - Throws an error if the request fails.
  */
 export const getMe = async (api: AutoDriveApiHandler): Promise<UserInfo> => {
-  const response = await api.sendAPIRequest('@me', {
+  const response = await api.sendAPIRequest('/accounts/@me', {
     method: 'GET',
   })
   if (!response.ok) {
