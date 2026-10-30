@@ -112,8 +112,8 @@ describe('rpc/definition with Standard Schema', () => {
     alwaysInvalid: handler,
     transformedResult: handler,
     unvalidated: handler,
-    // Returns a Date, which is sent as a string and turned back into a Date by the schema
-    dateResult: () => ({ at: DATE }),
+    // Returns the schema input, the string that the client turns back into a Date
+    dateResult: () => ({ at: DATE.toISOString() }),
   }
 
   beforeAll(async () => {
@@ -350,7 +350,9 @@ describe('rpc/definition parsed params', () => {
   it('should pass the same Date to the server and mock handlers', async () => {
     const at = new Date('2026-10-14T00:00:00.000Z')
 
+    // @ts-expect-error - a Date is sent as a string, the schema input is the string
     await client.dateTransform({ at })
+    // @ts-expect-error - a Date is sent as a string, the schema input is the string
     await mockClient.api.dateTransform({ at })
     expect(received).toEqual([{ at }, { at }])
   })
