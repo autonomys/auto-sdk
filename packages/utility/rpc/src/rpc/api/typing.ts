@@ -65,7 +65,7 @@ export type HttpClientType<S extends ApiDefinition> = {
 export type ApiServerHandlers<S extends ApiDefinition> = {
   [K in keyof S['methods']]: TypedRpcCallback<
     DefinitionTypeOutput<S['methods'][K]['params']>,
-    PromiseOr<DefinitionTypeOutput<S['methods'][K]['returns']>>,
+    PromiseOr<DefinitionTypeInput<S['methods'][K]['returns']>>,
     S
   >
 }

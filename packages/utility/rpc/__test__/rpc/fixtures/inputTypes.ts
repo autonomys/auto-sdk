@@ -1,5 +1,6 @@
 // Type-checked by types.spec.ts, never run. Clients send the schema input (before transforms
-// and defaults are applied), while server handlers receive the parsed output.
+// and defaults are applied), while server handlers receive the parsed output. For results it's
+// the other way round: handlers return the input and clients get the parsed output.
 import { z } from 'zod'
 import { z as zod4 } from 'zod/v4'
 import { z as otherZod } from 'zod-3.25.55'
@@ -10,6 +11,14 @@ const customDateSchema: StandardSchemaV1<{ at: string }, { at: Date }> = {
     version: 1,
     vendor: 'test',
     validate: (value) => ({ value: { at: new Date((value as { at: string }).at) } }),
+  },
+}
+
+const customDateResultSchema: StandardSchemaV1<string, Date> = {
+  '~standard': {
+    version: 1,
+    vendor: 'test',
+    validate: (value) => ({ value: new Date(value as string) }),
   },
 }
 
@@ -52,6 +61,22 @@ const definition = createApiDefinition({
       params: otherZod.object({ page: otherZod.number().default(1) }),
       returns: otherZod.string(),
     },
+    zod3DateResult: {
+      params: z.object({ at: z.string() }),
+      returns: z.string().transform((at) => new Date(at)),
+    },
+    zod4DateResult: {
+      params: zod4.object({ at: zod4.string() }),
+      returns: zod4.string().transform((at) => new Date(at)),
+    },
+    otherZod3DateResult: {
+      params: otherZod.object({ at: otherZod.string() }),
+      returns: otherZod.string().transform((at) => new Date(at)),
+    },
+    customDateResult: {
+      params: z.object({ at: z.string() }),
+      returns: customDateResultSchema,
+    },
   },
   notifications: {},
 })
@@ -64,6 +89,22 @@ const handlers = {
   zod3Paged: (params: { page: number }) => `${params.page}`,
   zod4Paged: (params: { page: number }) => `${params.page}`,
   otherZod3Paged: (params: { page: number }) => `${params.page}`,
+  // The result is sent as JSON and parsed by the client, so handlers return the string
+  zod3DateResult: (params: { at: string }) => params.at,
+  zod4DateResult: (params: { at: string }) => params.at,
+  otherZod3DateResult: (params: { at: string }) => params.at,
+  customDateResult: (params: { at: string }) => params.at,
+}
+
+export const dateResultHandlers: Partial<Parameters<typeof definition.createServer>[0]> = {
+  // @ts-expect-error - a Date result is sent as a string, the schema input is the string
+  zod3DateResult: () => new Date(),
+  // @ts-expect-error - a Date result is sent as a string, the schema input is the string
+  zod4DateResult: () => new Date(),
+  // @ts-expect-error - a Date result is sent as a string, the schema input is the string
+  otherZod3DateResult: () => new Date(),
+  // @ts-expect-error - a Date result is sent as a string, the schema input is the string
+  customDateResult: () => new Date(),
 }
 
 export const createTypedServer = () => definition.createServer(handlers)
@@ -86,6 +127,13 @@ export const callTypedClients = async () => {
     await client.zod3Paged({})
     await client.zod4Paged({})
     await client.otherZod3Paged({})
+
+    // The client parses the string result into a Date
+    const zod3At: Date = await client.zod3DateResult({ at: '2026-10-20T00:00:00Z' })
+    const zod4At: Date = await client.zod4DateResult({ at: '2026-10-20T00:00:00Z' })
+    const otherZod3At: Date = await client.otherZod3DateResult({ at: '2026-10-20T00:00:00Z' })
+    const customAt: Date = await client.customDateResult({ at: '2026-10-20T00:00:00Z' })
+    void [zod3At, zod4At, otherZod3At, customAt]
 
     // @ts-expect-error - a Date is sent as a string, the schema input is the string
     await client.zod3({ at: new Date(), page: 1 })

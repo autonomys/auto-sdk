@@ -38,6 +38,8 @@ const apiDefinition = createApiDefinition({
 })
 ```
 
+Params and results are sent as JSON and parsed on the other side, so a schema with transforms or defaults has two types. Clients send the schema input of `params` and handlers get the parsed output, while handlers return the schema input of `returns` and clients get the parsed output. For example, with `returns: z.string().transform((s) => new Date(s))` the handler returns the string and the client gets a `Date`. Some schemas have `unknown` as input, like `z.coerce.number()` in zod 4 or `z.preprocess(...)`, so the client accepts any value there and only the server rejects it. In zod 4, `z.coerce.number<number>()` sets the input type again.
+
 ### Define Server RPC Handlers
 
 Once our API interface is defined the server RPC handlers ought to be defined:
