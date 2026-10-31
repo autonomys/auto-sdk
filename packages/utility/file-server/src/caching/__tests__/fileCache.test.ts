@@ -1,4 +1,4 @@
-import { stringify } from '@autonomys/auto-utils'
+import { stringify } from '@autonomys/auto-utils/string'
 import type { Request } from 'express'
 import fs from 'fs'
 import Keyv from 'keyv'

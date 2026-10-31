@@ -1,7 +1,7 @@
 // file: src/network.ts
 
-import { defaultNetwork, networks } from './constants/network'
-import type { DomainParams, NetworkParams } from './types/network'
+import { defaultNetwork, networks } from './constants/network.js'
+import type { DomainParams, NetworkParams } from './types/network.js'
 
 /**
  * Retrieves detailed information about a specific Autonomys network.

@@ -48,6 +48,31 @@ yarn add @autonomys/auto-utils
 - **TypeScript** (optional, but recommended for development)
 - Familiarity with async/await and promise handling in JavaScript/TypeScript.
 
+### Importing Only What You Need
+
+The root entry point re-exports everything, including helpers that depend on `@polkadot/api`. Bundlers such as webpack, Rollup, esbuild and Vite tree-shake it, but Node.js and Jest load the whole module graph. Each module is also published as a subpath, so you can load only the part you use:
+
+```typescript
+import { NetworkId } from '@autonomys/auto-utils/constants'
+import { shannonsToAi3 } from '@autonomys/auto-utils/number'
+```
+
+| Subpath                           | Contents                                                     | Loads Polkadot                             |
+| --------------------------------- | ------------------------------------------------------------ | ------------------------------------------ |
+| `@autonomys/auto-utils/constants` | `NetworkId`, `networks`, token and SS58 constants            | No                                         |
+| `@autonomys/auto-utils/network`   | `getNetworkDetails`, `getNetworkRpcUrls` and domain variants | No                                         |
+| `@autonomys/auto-utils/number`    | `shannonsToAi3`, `ai3ToShannons`, `formatUnits`, etc.        | No                                         |
+| `@autonomys/auto-utils/string`    | `stringify`, `shortString`, etc.                             | No                                         |
+| `@autonomys/auto-utils/types`     | Shared TypeScript types and `CHAIN_TYPES`                    | No                                         |
+| `@autonomys/auto-utils/address`   | `address`, `decode`                                          | `@polkadot/keyring`                        |
+| `@autonomys/auto-utils/crypto`    | `blake2b_256`, `stringToUint8Array`, etc.                    | `@polkadot/util-crypto`                    |
+| `@autonomys/auto-utils/keyring`   | `Keyring`                                                    | `@polkadot/keyring`                        |
+| `@autonomys/auto-utils/api`       | `activate`, `activateDomain`, `createConnection`, etc.       | `@polkadot/api`                            |
+| `@autonomys/auto-utils/utils`     | `signAndSendTx`, `signMessage`, `createType` helpers, etc.   | `@polkadot/types`, `@polkadot/util-crypto` |
+| `@autonomys/auto-utils/wallet`    | `setupWallet`, `activateWallet`, `mockWallets`, etc.         | `@polkadot/api`                            |
+
+Importing from `@autonomys/auto-utils/dist/...` is not supported; use the root or one of the subpaths above.
+
 ## Usage Examples
 
 Below are examples demonstrating how to use the functions provided by `@autonomys/auto-utils`.

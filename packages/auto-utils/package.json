@@ -3,6 +3,109 @@
   "version": "1.6.16",
   "license": "MIT",
   "main": "dist/index.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/index.d.ts",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "module": "./dist/esm/index.js",
+      "default": "./dist/index.js"
+    },
+    "./address": {
+      "types": "./dist/address.d.ts",
+      "module": "./dist/esm/address.js",
+      "default": "./dist/address.js"
+    },
+    "./api": {
+      "types": "./dist/api.d.ts",
+      "module": "./dist/esm/api.js",
+      "default": "./dist/api.js"
+    },
+    "./constants": {
+      "types": "./dist/constants/index.d.ts",
+      "module": "./dist/esm/constants/index.js",
+      "default": "./dist/constants/index.js"
+    },
+    "./crypto": {
+      "types": "./dist/crypto.d.ts",
+      "module": "./dist/esm/crypto.js",
+      "default": "./dist/crypto.js"
+    },
+    "./keyring": {
+      "types": "./dist/keyring.d.ts",
+      "module": "./dist/esm/keyring.js",
+      "default": "./dist/keyring.js"
+    },
+    "./network": {
+      "types": "./dist/network.d.ts",
+      "module": "./dist/esm/network.js",
+      "default": "./dist/network.js"
+    },
+    "./number": {
+      "types": "./dist/number.d.ts",
+      "module": "./dist/esm/number.js",
+      "default": "./dist/number.js"
+    },
+    "./string": {
+      "types": "./dist/string.d.ts",
+      "module": "./dist/esm/string.js",
+      "default": "./dist/string.js"
+    },
+    "./types": {
+      "types": "./dist/types/index.d.ts",
+      "module": "./dist/esm/types/index.js",
+      "default": "./dist/types/index.js"
+    },
+    "./utils": {
+      "types": "./dist/utils/index.d.ts",
+      "module": "./dist/esm/utils/index.js",
+      "default": "./dist/utils/index.js"
+    },
+    "./wallet": {
+      "types": "./dist/wallet.d.ts",
+      "module": "./dist/esm/wallet.js",
+      "default": "./dist/wallet.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "typesVersions": {
+    "*": {
+      "address": [
+        "./dist/address.d.ts"
+      ],
+      "api": [
+        "./dist/api.d.ts"
+      ],
+      "constants": [
+        "./dist/constants/index.d.ts"
+      ],
+      "crypto": [
+        "./dist/crypto.d.ts"
+      ],
+      "keyring": [
+        "./dist/keyring.d.ts"
+      ],
+      "network": [
+        "./dist/network.d.ts"
+      ],
+      "number": [
+        "./dist/number.d.ts"
+      ],
+      "string": [
+        "./dist/string.d.ts"
+      ],
+      "types": [
+        "./dist/types/index.d.ts"
+      ],
+      "utils": [
+        "./dist/utils/index.d.ts"
+      ],
+      "wallet": [
+        "./dist/wallet.d.ts"
+      ]
+    }
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/autonomys/auto-sdk"
@@ -15,7 +118,8 @@
     "url": "https://github.com/autonomys/auto-sdk/issues"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && yarn build:esm",
+    "build:esm": "tsc -p tsconfig.esm.json && echo '{ \"type\": \"module\", \"sideEffects\": false }' > dist/esm/package.json",
     "clean": "rm -rf dist",
     "test": "jest"
   },

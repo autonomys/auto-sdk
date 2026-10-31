@@ -1,4 +1,4 @@
-import { shortString } from '@autonomys/auto-utils'
+import { shortString } from '@autonomys/auto-utils/string'
 import Identicon from '@polkadot/react-identicon'
 import { IconTheme } from '@polkadot/react-identicon/types'
 import { isAddress } from 'ethers'
