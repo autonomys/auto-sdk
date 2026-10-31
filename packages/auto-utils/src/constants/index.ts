@@ -1,7 +1,7 @@
 // file: src/constants/index.ts
 
-export * from './domain'
-export * from './network'
-export * from './number'
-export * from './token'
-export * from './wallet'
+export * from './domain.js'
+export * from './network.js'
+export * from './number.js'
+export * from './token.js'
+export * from './wallet.js'

@@ -1,6 +1,6 @@
 import type { ApiPromise } from '@polkadot/api'
 import { createType } from '@polkadot/types'
-import { Codec } from '../types/query'
+import { Codec } from '../types/query.js'
 
 export const createAccountIdType = (api: ApiPromise, address: string) =>
   createType(api.registry, 'AccountId', address).toU8a()

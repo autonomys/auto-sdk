@@ -1,6 +1,6 @@
 // file: src/constants/domain.ts
 
-import { Domains } from '../types/domain'
+import { Domains } from '../types/domain.js'
 
 export enum DomainRuntime {
   AUTO_ID = 'auto-id',

@@ -1,9 +1,9 @@
-import { BIGINT_ZERO } from './constants/number'
+import { BIGINT_ZERO } from './constants/number.js'
 import {
   DEFAULT_CONSENSUS_EXISTENTIAL_DEPOSIT_SHANNONS,
   DEFAULT_DOMAIN_EXISTENTIAL_DEPOSIT_SHANNONS,
   DEFAULT_TOKEN_DECIMALS,
-} from './constants/token'
+} from './constants/token.js'
 
 /**
  * Parses a token amount from its smallest unit representation to a human-readable format.

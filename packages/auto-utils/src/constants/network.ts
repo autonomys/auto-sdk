@@ -1,8 +1,8 @@
 // file: src/constants/network.ts
 
-import type { Network } from '../types/network'
-import { DomainRuntime, domains } from './domain'
-import { DEFAULT_TOKEN, TESTNET_TOKEN } from './token'
+import type { Network } from '../types/network.js'
+import { DomainRuntime, domains } from './domain.js'
+import { DEFAULT_TOKEN, TESTNET_TOKEN } from './token.js'
 
 export enum NetworkId {
   MAINNET = 'mainnet',
