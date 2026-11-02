@@ -3,6 +3,7 @@ import { PaginatedResult } from '../models/common'
 import { ObjectInformation, ObjectSearchResult, ObjectSummary, Scope } from '../models/objects'
 import { UserInfo } from '../models/user'
 import { AutoDriveApiHandler } from '../types'
+import { toApiError } from './errors'
 
 /**
  * Retrieves the root objects based on the specified scope.
@@ -24,7 +25,7 @@ export const getRoots = async (
   )
 
   if (!response.ok) {
-    throw new Error(`Failed to get roots: ${response.statusText}`)
+    throw await toApiError(response, 'Failed to get roots')
   }
 
   return response.json()
@@ -53,7 +54,7 @@ export const getSharedWithMe = async (
   )
 
   if (!response.ok) {
-    throw new Error(`Failed to get shared with me: ${response.statusText}`)
+    throw await toApiError(response, 'Failed to get shared with me')
   }
 
   return response.json()
@@ -71,7 +72,7 @@ export const searchByNameOrCID = async (
   )
 
   if (!response.ok) {
-    throw new Error(`Failed to search by name or CID: ${response.statusText}`)
+    throw await toApiError(response, 'Failed to search by name or CID')
   }
 
   return response.json()
@@ -100,7 +101,7 @@ export const getDeleted = async (
   )
 
   if (!response.ok) {
-    throw new Error(`Failed to get deleted: ${response.statusText}`)
+    throw await toApiError(response, 'Failed to get deleted')
   }
 
   return response.json()
@@ -126,7 +127,7 @@ export const getObject = async (
   })
 
   if (!response.ok) {
-    throw new Error(`Failed to get object: ${response.statusText}`)
+    throw await toApiError(response, 'Failed to get object')
   }
 
   return response.json()
@@ -151,7 +152,7 @@ export const getObjectSummary = async (
   })
 
   if (!response.ok) {
-    throw new Error(`Failed to get object summary: ${response.statusText}`)
+    throw await toApiError(response, 'Failed to get object summary')
   }
 
   return response.json()
@@ -178,7 +179,7 @@ export const getObjectUploadStatus = async (
   })
 
   if (!response.ok) {
-    throw new Error(`Failed to get object: ${response.statusText}`)
+    throw await toApiError(response, 'Failed to get object')
   }
 
   return response.json()
@@ -205,7 +206,7 @@ export const getObjectOwners = async (
   })
 
   if (!response.ok) {
-    throw new Error(`Failed to get object: ${response.statusText}`)
+    throw await toApiError(response, 'Failed to get object')
   }
 
   return response.json()
@@ -232,7 +233,7 @@ export const getObjectMetadata = async (
   })
 
   if (!response.ok) {
-    throw new Error(`Failed to get object: ${response.statusText}`)
+    throw await toApiError(response, 'Failed to get object')
   }
 
   return response.json()
@@ -250,7 +251,7 @@ export const getMe = async (api: AutoDriveApiHandler): Promise<UserInfo> => {
     method: 'GET',
   })
   if (!response.ok) {
-    throw new Error(`Failed to get limits: ${response.statusText}`)
+    throw await toApiError(response, 'Failed to get limits')
   }
 
   return response.json()
@@ -279,7 +280,7 @@ export const getToBeReviewedList = async (
   )
 
   if (!response.ok) {
-    throw new Error(`Failed to get to be reviewed list: ${response.statusText}`)
+    throw await toApiError(response, 'Failed to get to be reviewed list')
   }
 
   return response.json()

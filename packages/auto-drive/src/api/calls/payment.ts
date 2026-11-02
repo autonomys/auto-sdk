@@ -12,6 +12,7 @@ import {
   UsdcPaymentTarget,
 } from '../models/payment'
 import { AutoDriveApiHandler } from '../types'
+import { parseErrorBody, toApiError } from './errors'
 
 const TERMINAL_STATUSES: PaymentIntentTerminalStatus[] = [
   'COMPLETED',
@@ -21,28 +22,12 @@ const TERMINAL_STATUSES: PaymentIntentTerminalStatus[] = [
 ]
 
 /**
- * Builds a {@link PaymentApiError} from a non-OK response. Auto Drive sends
- * `{ error: <CODE>, message }` for coded errors and `{ error: <message> }` for
- * uncoded ones; anything else (including non-JSON) is used as-is.
+ * Builds a {@link PaymentApiError} from a non-OK response. A body that
+ * {@link parseErrorBody} cannot read is used as-is.
  */
 const toPaymentApiError = async (response: Response, context: string) => {
   const body = await response.text()
-  let code: string | undefined
-  let message = body
-  try {
-    const parsed: unknown = JSON.parse(body)
-    if (parsed && typeof parsed === 'object') {
-      const { error, message: parsedMessage } = parsed as { error?: unknown; message?: unknown }
-      if (typeof parsedMessage === 'string') {
-        code = typeof error === 'string' ? error : undefined
-        message = parsedMessage
-      } else if (typeof error === 'string') {
-        message = error
-      }
-    }
-  } catch {
-    // Not JSON: keep the raw body
-  }
+  const { code, message = body } = parseErrorBody(body)
   const fullMessage = `${context}: ${response.status} ${message}`
   if (code === 'CREDIT_CAP_EXCEEDED') {
     return new CreditCapExceededError(fullMessage, response.status)
@@ -87,7 +72,7 @@ export const getStoragePrice = async (api: AutoDriveApiHandler): Promise<Storage
   const response = await api.sendAPIRequest('/intents/price', { method: 'GET' })
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch storage price: ${response.status} ${response.statusText}`)
+    throw await toApiError(response, 'Failed to fetch storage price')
   }
 
   const { price, pricePerGB } = await response.json()
@@ -106,9 +91,7 @@ export const getPaymentContractInfo = async (
   const response = await api.sendAPIRequest('/intents/contract', { method: 'GET' })
 
   if (!response.ok) {
-    throw new Error(
-      `Failed to fetch payment contract info: ${response.status} ${response.statusText}`,
-    )
+    throw await toApiError(response, 'Failed to fetch payment contract info')
   }
 
   return response.json()
