@@ -127,8 +127,9 @@ It does not publish, tag, or change the release process described below.
 All three jobs have read-only repository access and no OIDC permission.
 
 1. **Build** installs with the lockfile and builds. Unit tests run in the existing
-   `Build` workflow. Only compiled `dist/`
-   trees are uploaded, with paths relative to `packages/`.
+   `Build` workflow. Only the `dist/` trees of packages listed in
+   `scripts/release/package-layout.json` are uploaded, with paths relative to
+   `packages/`. The list is read before any dependency code runs.
 2. **Assemble** uses a fresh checkout of the same workflow commit, without
    installing project dependencies. `scripts/release/package-layout.json` lists
    every public package. Only regular files inside those packages' `dist/` trees
@@ -138,12 +139,16 @@ All three jobs have read-only repository access and no OIDC permission.
    Existing npm `files`/ignore rules are preserved. The only supported source
    `publishConfig` is `access: public`; it is removed from assembled manifests.
    Future publication must explicitly set public access. `gitHead` is set to the
-   checkout commit. The pinned npm CLI packs with scripts disabled, and assembly
-   fails if a declared entry point or compiled file is omitted.
-3. **Verify installation** installs those exact tarballs in a temporary consumer with scripts
-   disabled, verifies installed contents and recorded tarball bin permissions, and
-   exercises an SDK API. It uses `--legacy-peer-deps` because the repository has
-   existing conflicting React peer ranges; this checks packaging, not peer
+   checkout commit. npm packs with scripts disabled, and assembly fails if a
+   declared entry point or compiled file is omitted. Assembly requires npm 11 or
+   newer, which Node 24 bundles: npm 10 runs `prepare` during `npm pack` even with
+   `--ignore-scripts`.
+3. **Verify installation** installs those exact tarballs in a temporary consumer
+   with scripts disabled, verifies installed contents and recorded tarball bin
+   permissions, and exercises an SDK API. Third-party dependencies resolve as of
+   the source commit's date (`npm install --before`), so a later upstream release
+   cannot change the result. It uses `--legacy-peer-deps` because the repository
+   has existing conflicting React peer ranges; this checks packaging, not peer
    compatibility. Package execution remains in a separate unprivileged job.
 
 The assembled artifact includes `manifest.json`, the source commit, tool versions,

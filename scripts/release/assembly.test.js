@@ -237,6 +237,21 @@ test('rejects a packed CLI without executable permissions if staging chmod regre
   assert.equal(fs.existsSync(path.join(f.output, 'manifest.json')), false)
 })
 
+test('refuses npm versions that run prepare during npm pack', (t) => {
+  const f = fixture(t)
+  const bin = path.join(f.root, 'npm-10')
+  write(path.join(bin, 'npm'), '#!/bin/sh\necho 10.9.8\n')
+  fs.chmodSync(path.join(bin, 'npm'), 0o755)
+  const original = process.env.PATH
+  process.env.PATH = `${bin}${path.delimiter}${original}`
+  try {
+    assert.throws(() => assemble(f), /npm 10\.9\.8 runs prepare scripts during npm pack/)
+  } finally {
+    process.env.PATH = original
+  }
+  assert.deepEqual(fs.readdirSync(f.output), [])
+})
+
 test('installation verification checks packed bin permissions even when the installed bin is executable', (t) => {
   const f = fixture(t)
   const installed = path.join(f.root, 'installed')

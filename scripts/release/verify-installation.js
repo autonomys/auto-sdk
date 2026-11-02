@@ -51,6 +51,13 @@ const verifyInstalledPackage = (installed, pkg, sourceCommit) => {
 const verifyInstallation = (artifacts) => {
   const record = JSON.parse(fs.readFileSync(path.join(artifacts, 'manifest.json')))
   assert.equal(record.schemaVersion, 1)
+  assert.match(record.sourceCommit, /^[0-9a-f]{40}$/)
+  // Resolve third-party dependencies as they were when the source was committed,
+  // so a later upstream release cannot change or break this check.
+  const before = execFileSync('git', ['show', '-s', '--format=%cI', record.sourceCommit], {
+    cwd: path.resolve(__dirname, '../..'),
+    encoding: 'utf8',
+  }).trim()
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'auto-sdk-consumer-'))
   try {
     const tarballs = record.packages.map((pkg) => {
@@ -73,6 +80,7 @@ const verifyInstallation = (artifacts) => {
         '--no-fund',
         '--package-lock=false',
         '--registry=https://registry.npmjs.org',
+        `--before=${before}`,
         '--cache',
         path.join(temporary, 'cache'),
         ...tarballs,

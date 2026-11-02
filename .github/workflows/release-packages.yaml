@@ -28,6 +28,17 @@ jobs:
           node-version: '24.18.0'
           package-manager-cache: false
 
+      # Read the reviewed layout before any dependency code runs. Private packages'
+      # outputs are never uploaded, so assembly's strict path check doesn't see them.
+      - name: List declared package outputs
+        id: layout
+        run: |
+          {
+            echo 'dist-paths<<EOF'
+            node -p 'require("./scripts/release/package-layout.json").packageDirectories.map((dir) => `packages/${dir}/dist/`).join("\n")'
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+
       - run: corepack enable
       - run: yarn install --immutable
       - run: yarn build
@@ -41,9 +52,7 @@ jobs:
         id: upload
         with:
           name: compiled-outputs-${{ github.run_attempt }}
-          path: |
-            packages/*/dist/
-            packages/utility/*/dist/
+          path: ${{ steps.layout.outputs.dist-paths }}
           if-no-files-found: error
           include-hidden-files: true
           retention-days: 7

@@ -197,6 +197,11 @@ const assemble = ({ repo, input, output, directories }) => {
     packages: [],
   }
   try {
+    if (!(Number(record.npmVersion.split('.')[0]) >= 11)) {
+      throw new Error(
+        `npm ${record.npmVersion} runs prepare scripts during npm pack despite --ignore-scripts; assemble with npm 11 or newer (bundled with Node 24)`,
+      )
+    }
     for (const { directory, source, manifest } of packages) {
       const stage = path.join(temporary, 'packages', directory)
       fs.mkdirSync(stage, { recursive: true })
