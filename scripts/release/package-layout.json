@@ -1,0 +1,21 @@
+{
+  "packageDirectories": [
+    "auto-agents",
+    "auto-consensus",
+    "auto-dag-data",
+    "auto-design-system",
+    "auto-drive",
+    "auto-files",
+    "auto-mcp-servers",
+    "auto-utils",
+    "auto-wallet",
+    "auto-wallet-react",
+    "auto-xdm",
+    "utility/asynchronous",
+    "utility/contracts",
+    "utility/design-tokens",
+    "utility/file-server",
+    "utility/rpc",
+    "utility/user-session"
+  ]
+}

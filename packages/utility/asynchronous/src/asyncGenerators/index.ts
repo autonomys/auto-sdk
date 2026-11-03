@@ -49,11 +49,13 @@ export const bufferToAsyncIterable = (buffer: Buffer): AsyncIterable<Buffer> => 
 }
 
 export const asyncIterableToBuffer = async (iterable: AwaitIterable<Buffer>): Promise<Buffer> => {
-  let buffer = Buffer.alloc(0)
+  const chunks: Buffer[] = []
+  let totalLength = 0
   for await (const chunk of iterable) {
-    buffer = Buffer.concat([buffer, chunk])
+    chunks.push(chunk)
+    totalLength += chunk.length
   }
-  return buffer
+  return Buffer.concat(chunks, totalLength)
 }
 
 export const asyncByChunk = async function* (
