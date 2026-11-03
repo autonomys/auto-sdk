@@ -1,8 +1,8 @@
 // file: src/types/network.ts
 import type { ApiOptions } from '@polkadot/api/types'
-import { NetworkId, NetworkName } from '../constants/network'
-import type { NetworkDomains } from './domain'
-import { Token } from './token'
+import { NetworkId, NetworkName } from '../constants/network.js'
+import type { NetworkDomains } from './domain.js'
+import { Token } from './token.js'
 
 export type Explorer = {
   name: string

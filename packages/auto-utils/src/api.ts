@@ -1,12 +1,12 @@
 import { ApiPromise, WsProvider } from '@polkadot/api'
-import { getNetworkDomainRpcUrls, getNetworkRpcUrls } from './network'
+import { getNetworkDomainRpcUrls, getNetworkRpcUrls } from './network.js'
 import {
   ActivateParams,
   ApiOptions,
   CHAIN_TYPES,
   DomainParams,
   NetworkParams,
-} from './types/network'
+} from './types/network.js'
 
 /**
  * Creates a connection to a Polkadot.js API instance with WebSocket provider.

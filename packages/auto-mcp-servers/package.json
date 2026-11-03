@@ -16,7 +16,6 @@
   },
   "license": "MIT",
   "type": "module",
-  "main": "dist/index.js",
   "bin": {
     "auto-drive-server": "./dist/bin/auto-drive.js",
     "auto-experiences-server": "./dist/bin/auto-experiences.js",
