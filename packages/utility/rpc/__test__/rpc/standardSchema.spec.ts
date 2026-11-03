@@ -86,6 +86,10 @@ describe('rpc/definition with Standard Schema', () => {
         params: z.object({ name: z.string() }),
         returns: z.object({ at: z.string().transform((at) => new Date(at)) }),
       },
+      plainDateResult: {
+        params: z.object({ name: z.string() }),
+        returns: z.object({ at: z.date() }),
+      },
     },
     notifications: {},
   })
@@ -114,6 +118,7 @@ describe('rpc/definition with Standard Schema', () => {
     unvalidated: handler,
     // Returns the schema input, the string that the client turns back into a Date
     dateResult: () => ({ at: DATE.toISOString() }),
+    plainDateResult: () => ({ at: DATE }),
   }
 
   beforeAll(async () => {
@@ -206,12 +211,22 @@ describe('rpc/definition with Standard Schema', () => {
     })
   })
 
-  it('should validate the result after a JSON round-trip in the ws client', async () => {
+  it('should turn the result string into a Date in the ws client', async () => {
     await expect(wsClient.api.dateResult({ name: 'test' })).resolves.toEqual({ at: DATE })
   })
 
-  it('should validate the result after a JSON round-trip in the mock client', async () => {
+  it('should turn the result string into a Date in the mock client', async () => {
     await expect(mockClient.api.dateResult({ name: 'test' })).resolves.toEqual({ at: DATE })
+  })
+
+  // A Date is sent as a string, so the mock must validate the result after a JSON round-trip
+  it('should reject a Date result in the ws and mock clients when it arrives as a string', async () => {
+    await expect(wsClient.api.plainDateResult({ name: 'test' })).rejects.toMatchObject({
+      code: RpcError.Code.InvalidParams,
+    })
+    await expect(mockClient.api.plainDateResult({ name: 'test' })).rejects.toMatchObject({
+      code: RpcError.Code.InvalidParams,
+    })
   })
 
   it('should not validate unvalidated types', async () => {
