@@ -1,7 +1,7 @@
 // file: src/utils/validateEvents.ts
 
-import type { EventRecord, Events, EventsValidated } from '../types'
-import { expectSuccessfulTxEvent } from './events'
+import type { EventRecord, Events, EventsValidated } from '../types/index.js'
+import { expectSuccessfulTxEvent } from './events.js'
 
 /**
  * Validates that expected blockchain events were emitted during transaction execution.

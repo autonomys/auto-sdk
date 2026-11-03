@@ -1,5 +1,5 @@
 import { OffchainFolderMetadata } from '@autonomys/auto-dag-data'
-import { NetworkId } from '@autonomys/auto-utils'
+import { NetworkId } from '@autonomys/auto-utils/constants'
 import React, { useCallback } from 'react'
 
 export const ROUTES = {

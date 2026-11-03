@@ -1,7 +1,7 @@
 // file: src/types/transaction.ts
 
 import type { SignerOptions } from '@polkadot/api/types'
-import type { ActionEvents } from '../types/event'
+import type { ActionEvents } from '../types/event.js'
 
 export type EventsValidated = {
   expected: ActionEvents[]

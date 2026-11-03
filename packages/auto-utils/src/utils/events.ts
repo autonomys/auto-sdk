@@ -7,7 +7,7 @@
  * blockchain events, making event handling more organized and type-safe.
  */
 // Enum for Event Types
-export const enum Type {
+export enum Type {
   system = 'system',
 }
 

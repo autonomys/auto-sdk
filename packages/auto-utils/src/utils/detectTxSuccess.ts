@@ -1,7 +1,7 @@
 // file: src/utils/detectTxSuccess.ts
 
-import type { EventRecord } from '../types/event'
-import { expectSuccessfulTxEvent } from './events'
+import type { EventRecord } from '../types/event.js'
+import { expectSuccessfulTxEvent } from './events.js'
 
 /**
  * Detects if a transaction was successful by checking for success events.

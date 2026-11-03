@@ -1,4 +1,4 @@
-import { stringify } from '@autonomys/auto-utils'
+import { stringify } from '@autonomys/auto-utils/string'
 import { jest } from '@jest/globals'
 import type { Request } from 'express'
 import fs from 'fs'
