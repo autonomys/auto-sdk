@@ -24,7 +24,7 @@
   },
   "exports": {
     ".": "./dist/index.js",
-    "./protobuf": "./dist/metadata/onchain/protobuf/onchainMetadata.js"
+    "./protobuf": "./dist/metadata/onchain/protobuf/OnchainMetadata.js"
   },
   "engines": {
     "node": ">=22.0.0"
