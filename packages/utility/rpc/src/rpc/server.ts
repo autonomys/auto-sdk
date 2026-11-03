@@ -59,8 +59,20 @@ export const createRpcServer = (params: CreateRpcServerParams = {}): RpcServer =
       return
     }
 
-    const sendMessageWithId = (message: MessageResponseQuery) => {
-      send(JSON.stringify(wrapResponse(message, parsedMessage.data.id)))
+    const sendResponse = (message: MessageResponseQuery, id: number | undefined) => {
+      let serialized: string
+      try {
+        serialized = JSON.stringify(wrapResponse(message, id))
+      } catch (error) {
+        const reason = error instanceof Error ? error.message : String(error)
+        serialized = JSON.stringify(
+          wrapResponse(
+            errorResponse(RpcError.Code.InternalError, `Failed to serialize response: ${reason}`),
+            id,
+          ),
+        )
+      }
+      send(serialized)
     }
 
     // Find the handler for the message
@@ -101,9 +113,9 @@ export const createRpcServer = (params: CreateRpcServerParams = {}): RpcServer =
     ).catch(catchError)
 
     if (parsedMessage.data.id && response) {
-      sendMessageWithId(response)
+      sendResponse(response, parsedMessage.data.id)
     } else if (response) {
-      send(JSON.stringify(wrapResponse(response, undefined)))
+      sendResponse(response, undefined)
     }
   }
 
@@ -116,7 +128,7 @@ export const createRpcServer = (params: CreateRpcServerParams = {}): RpcServer =
         return
       }
 
-      handleMessage({ object, send: (msg) => connection.sendUTF(msg), connection })
+      await handleMessage({ object, send: (msg) => connection.sendUTF(msg), connection })
     } catch {
       connection.sendUTF(JSON.stringify({ error: 'Unknown error' }))
       return
@@ -139,7 +151,7 @@ export const createRpcServer = (params: CreateRpcServerParams = {}): RpcServer =
         return
       }
 
-      handleMessage({ object, send: (msg) => res.end(msg) })
+      await handleMessage({ object, send: (msg) => res.end(msg) })
     } catch {
       res.writeHead(500, { 'Content-Type': 'application/json' })
       res.end(JSON.stringify({ error: 'Unknown error' }))

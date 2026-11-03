@@ -1,6 +1,8 @@
-import { stringify } from '@autonomys/auto-utils'
+import { stringify } from '@autonomys/auto-utils/string'
+import { jest } from '@jest/globals'
 import type { Request } from 'express'
 import fs from 'fs'
+import fsPromises from 'fs/promises'
 import Keyv from 'keyv'
 import os from 'os'
 import path from 'path'
@@ -146,5 +148,67 @@ describe('createFileCache', () => {
 
     const pastEnd = await cache.get(key, { byteRange: byteRange(`bytes=${huge}-`) })
     expect(await collect(pastEnd!.data)).toHaveLength(0)
+  })
+
+  it('cleans up temporary .tmp file when the input stream errors mid-write', async () => {
+    const key = CID
+    const expectedPath = path.join(cacheDir, 'zy', '52', '4s', CID.slice(0, -6), key)
+    const expectedDir = path.dirname(expectedPath)
+
+    let emitted = false
+    const failingStream = new Readable({
+      read() {
+        if (!emitted) {
+          emitted = true
+          this.push(Buffer.from('partial-chunk'))
+        } else {
+          this.destroy(new Error('upstream stream aborted'))
+        }
+      },
+    })
+
+    await expect(
+      cache.set(key, {
+        data: failingStream,
+        mimeType: 'text/plain',
+        size: 100n,
+      }),
+    ).rejects.toThrow('upstream stream aborted')
+
+    expect(fs.existsSync(expectedPath)).toBe(false)
+    expect(await cache.has(key)).toBe(false)
+    expect(await cache.get(key)).toBeNull()
+
+    const remainingEntries = fs.existsSync(expectedDir) ? fs.readdirSync(expectedDir) : []
+    expect(remainingEntries).toEqual([])
+  })
+
+  describe('remove', () => {
+    const key = `file:${CID}`
+    const filePath = () => path.join(cacheDir, 'zy', '52', '4s', `file:${CID.slice(0, -6)}`, key)
+
+    afterEach(() => {
+      jest.restoreAllMocks()
+    })
+
+    it('deletes the file exactly once', async () => {
+      await cache.set(key, fileResponse('hello'))
+      const rm = jest.spyOn(fsPromises, 'rm')
+
+      await cache.remove(key)
+      await new Promise((resolve) => setImmediate(resolve))
+
+      expect(rm).toHaveBeenCalledTimes(1)
+      expect(fs.existsSync(filePath())).toBe(false)
+      expect(await cache.get(key)).toBeNull()
+    })
+
+    it('clears the entry when its file is already gone', async () => {
+      await cache.set(key, fileResponse('hello'))
+      fs.rmSync(filePath())
+
+      await expect(cache.remove(key)).resolves.toBeUndefined()
+      expect(await cache.get(key)).toBeNull()
+    })
   })
 })

@@ -120,19 +120,9 @@ export const createFileCache = (config: BaseCacheConfig) => {
       return
     }
 
-    await Promise.all([filepathCache.del(cid), fsPromises.rm(path)])
+    // force: the entry is still cleared if the file was already deleted from disk
+    await Promise.all([filepathCache.del(cid), fsPromises.rm(path, { force: true })])
   }
-
-  filepathCache.on('del', async ({ key, error }) => {
-    if (error) {
-      console.error(`Error deleting file cache entry for ${key}: ${error}`)
-    } else {
-      const path = cidToFilePath(key)
-      if (path) {
-        await fsPromises.rm(path)
-      }
-    }
-  })
 
   const cache = {
     get,

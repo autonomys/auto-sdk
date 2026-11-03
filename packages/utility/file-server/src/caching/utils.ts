@@ -15,8 +15,13 @@ export const writeFile = async (
     await asyncEnsureDirectoryExists(path.dirname(tempFilePath))
   }
 
-  await fsPromises.writeFile(tempFilePath, data)
-  await fsPromises.rename(tempFilePath, filepath)
+  try {
+    await fsPromises.writeFile(tempFilePath, data)
+    await fsPromises.rename(tempFilePath, filepath)
+  } catch (error) {
+    await fsPromises.rm(tempFilePath, { force: true }).catch(() => {})
+    throw error
+  }
 }
 
 export const ensureDirectoryExists = (dir: string) => {
