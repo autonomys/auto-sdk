@@ -1,5 +1,16 @@
 import { finished, PassThrough, Readable } from 'stream'
 
+/**
+ * Splits a readable stream into two branches that each receive every chunk, at the pace of
+ * the slower branch.
+ *
+ * If the source errors or is destroyed before it ends, both branches are destroyed with that
+ * error. Read each branch with `pipeline()`, `for await` or your own `'error'` listener: a
+ * branch that is only `.pipe()`d into a destination does not close that destination.
+ *
+ * A branch destroyed early is detached and the other keeps receiving data. If both branches are
+ * gone before the source ends, the source is destroyed.
+ */
 export async function forkStream(stream: Readable): Promise<[Readable, Readable]> {
   const branches: [PassThrough, PassThrough] = [new PassThrough(), new PassThrough()]
 
