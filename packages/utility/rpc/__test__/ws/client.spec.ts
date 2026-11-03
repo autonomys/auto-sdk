@@ -126,28 +126,76 @@ describe('Client', () => {
     expect(receivedMessages).toEqual([mockMessage])
   })
 
-  it('should handle errors gracefully', async () => {
-    // Replace the test server's auto-accept so the client's handshake fails
+  const rejectHandshakes = () => {
+    const onHandshake = jest.fn()
     server.wsServer.removeAllListeners('request')
     server.wsServer.on('request', (request) => {
+      onHandshake()
       request.reject()
     })
+    return onHandshake
+  }
 
-    const errors: unknown[] = []
+  it('should pass a failed connection to onError as an Error', async () => {
+    rejectHandshakes()
+    const onError = jest.fn()
     const ws = createWsClient({
       endpoint: server.url,
-      callbacks: {
-        onError: (error) => {
-          errors.push(error)
-        },
-      },
+      callbacks: { onError },
       reconnectInterval: null,
     })
 
     await new Promise((resolve) => setTimeout(resolve, 100))
     ws.close()
 
-    expect(errors).toHaveLength(1)
+    expect(onError).toHaveBeenCalledTimes(1)
+    const [error] = onError.mock.calls[0]
+    expect(error).toBeInstanceOf(Error)
+    expect(error.message).toEqual(expect.any(String))
+  })
+
+  it('should schedule one reconnection per failed connection attempt', async () => {
+    const reconnectInterval = 200
+    const onHandshake = rejectHandshakes()
+    const onError = jest.fn()
+    const onClose = jest.fn()
+    const onReconnection = jest.fn()
+    const ws = createWsClient({
+      endpoint: server.url,
+      callbacks: { onError, onClose, onReconnection },
+      reconnectInterval,
+    })
+
+    // Between the first and second reconnection
+    await new Promise((resolve) => setTimeout(resolve, reconnectInterval * 1.5))
+    ws.close()
+
+    expect(onHandshake).toHaveBeenCalledTimes(2)
+    expect(onError).toHaveBeenCalledTimes(2)
+    expect(onClose).toHaveBeenCalledTimes(2)
+    expect(onReconnection).toHaveBeenCalledTimes(1)
+  })
+
+  it('should not reconnect after close() while a reconnection is pending', async () => {
+    const reconnectInterval = 200
+    const onReconnection = jest.fn()
+    const ws = await new Promise<ReturnType<typeof createWsClient>>((resolve) => {
+      const ws = createWsClient({
+        endpoint: server.url,
+        callbacks: {
+          onFirstOpen: () => server.wsServer.connections.forEach((c) => c.close()),
+          onClose: () => resolve(ws),
+          onReconnection,
+        },
+        reconnectInterval,
+      })
+    })
+
+    ws.close()
+    await new Promise((resolve) => setTimeout(resolve, reconnectInterval + 100))
+
+    expect(onReconnection).not.toHaveBeenCalled()
+    expect(server.wsServer.connections).toHaveLength(0)
   })
 
   it('should be able to close connection', async () => {
