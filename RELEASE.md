@@ -145,9 +145,12 @@ All three jobs have read-only repository access and no OIDC permission.
    `--ignore-scripts`.
 3. **Verify installation** installs those exact tarballs in a temporary consumer
    with scripts disabled, verifies installed contents and recorded tarball bin
-   permissions, and exercises an SDK API. Third-party dependencies resolve as of
-   the source commit's date (`npm install --before`), so a later upstream release
-   cannot change the result. It uses `--legacy-peer-deps` because the repository
+   permissions, and exercises an SDK API. Third-party dependencies resolve to the
+   newest matching versions, like a fresh consumer install, so a broken upstream
+   release can fail this check until upstream fixes it; rerun the job then. A
+   fixed date cutoff (`npm install --before`) is not used: it fails on every rerun
+   when the cutoff falls between an upstream package and its exact dependency
+   being published. It uses `--legacy-peer-deps` because the repository
    has existing conflicting React peer ranges; this checks packaging, not peer
    compatibility. Package execution remains in a separate unprivileged job.
 
