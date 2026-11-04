@@ -24,3 +24,7 @@ export type StandardSchemaV1<Input = unknown, Output = Input> = {
 export type StandardSchemaV1Output<Schema extends StandardSchemaV1> = NonNullable<
   Schema['~standard']['types']
 >['output']
+
+export type StandardSchemaV1Input<Schema extends StandardSchemaV1> = NonNullable<
+  Schema['~standard']['types']
+>['input']

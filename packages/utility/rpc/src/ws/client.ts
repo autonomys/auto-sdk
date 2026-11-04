@@ -24,6 +24,7 @@ export const createWsClient = ({
   let connected: Promise<void> = unresolvablePromise
   let firstOpen = true
   let closed = false
+  let reconnectTimer: ReturnType<typeof schedule> | undefined
 
   const handleConnection = () => {
     ws = new Websocket.w3cwebsocket(endpoint)
@@ -38,24 +39,22 @@ export const createWsClient = ({
       }
     })
 
-    const handleErrorOrClose = () => {
+    const scheduleReconnection = () => {
       // If reconnectInterval is null, we don't want to reconnect
       if (reconnectInterval === null) return
 
       if (debug) {
         console.log('Scheduling reconnection in', reconnectInterval)
       }
-      schedule(() => {
+      reconnectTimer = schedule(() => {
         handleConnection()
         callbacks.onReconnection?.()
       }, reconnectInterval)
     }
 
+    // The close event that always follows an error event schedules the reconnection
     ws.onerror = (event) => {
-      callbacks.onError?.(event)
-      if (!closed) {
-        handleErrorOrClose()
-      }
+      callbacks.onError?.(new Error('WebSocket connection error', { cause: event }))
       if (debug) {
         console.log('onerror', event)
       }
@@ -71,7 +70,7 @@ export const createWsClient = ({
       }
       callbacks.onClose?.(event)
       if (!closed) {
-        handleErrorOrClose()
+        scheduleReconnection()
       }
     }
   }
@@ -95,6 +94,7 @@ export const createWsClient = ({
   const close = () => {
     if (closed) return
     closed = true
+    clearTimeout(reconnectTimer)
     ws.close()
   }
 

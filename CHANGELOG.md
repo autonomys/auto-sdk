@@ -2,6 +2,42 @@
 
 Future changes will appear here.
 
+## [1.6.16] - 2026-10-19
+
+### Features
+
+- add readByteRange for partial retrieval ([#760](https://github.com/autonomys/auto-sdk/pull/760)) [@jim-counter](https://github.com/jim-counter)
+- add Pay with USDC support ([#722](https://github.com/autonomys/auto-sdk/pull/722)) [@EmilFattakhov](https://github.com/EmilFattakhov)
+
+### Bug Fixes
+
+- decode channel fields using toPrimitive for decimal strings ([#764](https://github.com/autonomys/auto-sdk/pull/764)) [@yeziR4](https://github.com/yeziR4)
+- treat ZeroHash as no memory in getLastMemoryCid ([#763](https://github.com/autonomys/auto-sdk/pull/763)) [@yeziR4](https://github.com/yeziR4)
+- disconnect connection created in totalIssuance ([#762](https://github.com/autonomys/auto-sdk/pull/762)) [@yeziR4](https://github.com/yeziR4)
+- harden signAndSendTx events, error formatting, and usurped status ([#744](https://github.com/autonomys/auto-sdk/pull/744)) [@yeziR4](https://github.com/yeziR4)
+- pass the parsed params to the server and mock handlers ([#740](https://github.com/autonomys/auto-sdk/pull/740)) [@lfern](https://github.com/lfern)
+- handle usurped status as terminal failure in signAndSendTx ([#737](https://github.com/autonomys/auto-sdk/pull/737)) [@grzdev](https://github.com/grzdev)
+- keep every chunk on retry and stop retrying forever ([#736](https://github.com/autonomys/auto-sdk/pull/736)) [@jim-counter](https://github.com/jim-counter)
+- parse HTTP Range per RFC 9110 and clamp to file size ([#734](https://github.com/autonomys/auto-sdk/pull/734)) [@jim-counter](https://github.com/jim-counter)
+- validate method results in the websocket and mock clients ([#733](https://github.com/autonomys/auto-sdk/pull/733)) [@lfern](https://github.com/lfern)
+- add error handling and cancellation cleanup to httpBodyToStream ([#726](https://github.com/autonomys/auto-sdk/pull/726)) [@grzdev](https://github.com/grzdev)
+- detect and validate api schemas through standard schema ([#724](https://github.com/autonomys/auto-sdk/pull/724)) [@lfern](https://github.com/lfern)
+- send requestedBytes in createPaymentIntent and surface credit cap rejection ([#721](https://github.com/autonomys/auto-sdk/pull/721)) [@EmilFattakhov](https://github.com/EmilFattakhov)
+- validate file cache keys ([#720](https://github.com/autonomys/auto-sdk/pull/720)) [@jim-counter](https://github.com/jim-counter)
+- update dependency cache-manager to ^7.2.9 ([#675](https://github.com/autonomys/auto-sdk/pull/675)) [@renovate[bot]](https://github.com/apps/renovate)
+
+### Tests
+
+- stop callback and rejection tests passing without assertions ([#739](https://github.com/autonomys/auto-sdk/pull/739)) [@jim-counter](https://github.com/jim-counter)
+
+### Chores
+
+- release v1.6.15 ([#715](https://github.com/autonomys/auto-sdk/pull/715)) [@jim-counter](https://github.com/jim-counter)
+- update dependency postcss to v8.5.23 [security] ([#693](https://github.com/autonomys/auto-sdk/pull/693)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency dompurify to v3.4.13 [security] ([#689](https://github.com/autonomys/auto-sdk/pull/689)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency protobufjs to v7.6.5 [security] ([#688](https://github.com/autonomys/auto-sdk/pull/688)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency @types/node to v22.20.1 ([#687](https://github.com/autonomys/auto-sdk/pull/687)) [@renovate[bot]](https://github.com/apps/renovate)
+
 ## [1.6.15] - 2026-10-01
 
 ### Features
@@ -721,6 +757,8 @@ No changes in this version.
 
 [1.6.13]: https://github.com/autonomys/auto-sdk/releases/tag/v1.6.13
 
-[Unreleased]: https://github.com/autonomys/auto-sdk/compare/v1.6.15...HEAD
-[1.6.15]: https://github.com/autonomys/auto-sdk/compare/v1.6.14...v1.6.15
 [1.6.14]: https://github.com/autonomys/auto-sdk/releases/tag/v1.6.14
+
+[Unreleased]: https://github.com/autonomys/auto-sdk/compare/v1.6.16...HEAD
+[1.6.16]: https://github.com/autonomys/auto-sdk/compare/v1.6.15...v1.6.16
+[1.6.15]: https://github.com/autonomys/auto-sdk/releases/tag/v1.6.15

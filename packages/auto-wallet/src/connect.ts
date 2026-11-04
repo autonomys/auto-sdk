@@ -1,5 +1,5 @@
 import { getWalletBySource, type Wallet } from '@talismn/connect-wallets'
-import { address } from '@autonomys/auto-utils'
+import { address } from '@autonomys/auto-utils/address'
 import type { WalletConfig } from './types'
 
 /**

@@ -4,11 +4,11 @@ import { Keyring } from '@polkadot/api'
 import type { InjectedAccountWithMeta } from '@polkadot/extension-inject/types'
 import type { KeyringPair } from '@polkadot/keyring/types'
 import { mnemonicGenerate } from '@polkadot/util-crypto'
-import { address } from './address'
-import { activate, activateDomain } from './api'
-import { defaultNetwork } from './constants/network'
-import { mockURIs } from './constants/wallet'
-import type { DomainParams, Mnemonic, NetworkParams, URI } from './types'
+import { address } from './address.js'
+import { activate, activateDomain } from './api.js'
+import { defaultNetwork } from './constants/network.js'
+import { mockURIs } from './constants/wallet.js'
+import type { DomainParams, Mnemonic, NetworkParams, URI } from './types/index.js'
 import type {
   ActivateWalletParams,
   ApiPromise,
@@ -17,7 +17,7 @@ import type {
   SetupWalletParams,
   Wallet,
   WalletActivated,
-} from './types/wallet'
+} from './types/wallet.js'
 
 /**
  * Sets up a wallet from a mnemonic phrase or derivation URI.
