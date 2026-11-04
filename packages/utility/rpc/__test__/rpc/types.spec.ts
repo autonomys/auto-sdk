@@ -41,4 +41,10 @@ describe('rpc/definition types', () => {
       }),
     ).toEqual([])
   }, 60000)
+
+  it('should type client params with the schema input and handler params with the output', () => {
+    const file = path.join(__dirname, 'fixtures/inputTypes.ts')
+    expect(typeCheck(file)).toEqual([])
+    expect(typeCheck(file, { exactOptionalPropertyTypes: true })).toEqual([])
+  }, 60000)
 })

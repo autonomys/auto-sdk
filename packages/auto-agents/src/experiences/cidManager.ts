@@ -168,7 +168,7 @@ export const createCidManager = async (
       localHashStatus: { message },
       getLastMemoryCid: async () => {
         const localHash = getLocalHash(localHashLocation)
-        return localHash ? hashToCid(localHash) : undefined
+        return localHash && localHash !== ethers.ZeroHash ? hashToCid(localHash) : undefined
       },
       saveLastMemoryCid: async (cid: string) => {
         const blake3hash = blake3HashFromCid(stringToCid(cid))
@@ -209,16 +209,17 @@ export const createCidManager = async (
 
   const getLastMemoryCid = async (): Promise<string | undefined> => {
     const localHash = getLocalHash(localHashLocation)
-    if (localHash) {
+    if (localHash && localHash !== ethers.ZeroHash) {
       return hashToCid(localHash)
     }
 
     try {
       const blockchainHash = await contract.getLastMemoryHash(wallet.address)
-      if (blockchainHash) {
+      if (blockchainHash && blockchainHash !== ethers.ZeroHash) {
         saveHashLocally(blockchainHash, localHashLocation)
         return hashToCid(blockchainHash)
       }
+      return undefined
     } catch {
       return undefined
     }

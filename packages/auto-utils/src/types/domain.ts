@@ -1,6 +1,6 @@
 // file: src/types/network.ts
 
-import { DomainRuntime } from '../constants'
+import { DomainRuntime } from '../constants/index.js'
 
 export type Domain = {
   runtime: DomainRuntime
