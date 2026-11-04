@@ -2,6 +2,44 @@
 
 Future changes will appear here.
 
+## [1.7.0] - 2026-11-04
+
+### Features
+
+- tree-shakeable ES module build with subpath exports (⚠️ breaking changes) ([#788](https://github.com/autonomys/auto-sdk/pull/788)) [@jim-counter](https://github.com/jim-counter)
+- support bigint sizeBytes in createPaymentIntent ([#773](https://github.com/autonomys/auto-sdk/pull/773)) [@yeziR4](https://github.com/yeziR4)
+- export detectTxSuccess and add event validation unit test suite ([#746](https://github.com/autonomys/auto-sdk/pull/746)) [@grzdev](https://github.com/grzdev)
+
+### Bug Fixes
+
+- send an error response when a handler result can't be serialized ([#790](https://github.com/autonomys/auto-sdk/pull/790)) [@jim-counter](https://github.com/jim-counter)
+- schedule one ws reconnect per failure and cancel it on close ([#789](https://github.com/autonomys/auto-sdk/pull/789)) [@jim-counter](https://github.com/jim-counter)
+- forward source errors to forkStream branches ([#786](https://github.com/autonomys/auto-sdk/pull/786)) [@jim-counter](https://github.com/jim-counter)
+- stop a cache removal from crashing the process ([#785](https://github.com/autonomys/auto-sdk/pull/785)) [@jim-counter](https://github.com/jim-counter)
+- correct auto-dag-data protobuf export and auto-mcp-servers entry point ([#784](https://github.com/autonomys/auto-sdk/pull/784)) [@jim-counter](https://github.com/jim-counter)
+- type client params and handler results with the schema input (⚠️ breaking changes) ([#782](https://github.com/autonomys/auto-sdk/pull/782)) [@lfern](https://github.com/lfern)
+- surface the server's error message when an API call fails ([#781](https://github.com/autonomys/auto-sdk/pull/781)) [@jim-counter](https://github.com/jim-counter)
+- clean up orphaned temporary files on failed cache writes ([#766](https://github.com/autonomys/auto-sdk/pull/766)) [@grzdev](https://github.com/grzdev)
+- validate password before downloading encrypted file ([#765](https://github.com/autonomys/auto-sdk/pull/765)) [@yeziR4](https://github.com/yeziR4)
+- correct getNode error message to reference node instead of chunk ([#759](https://github.com/autonomys/auto-sdk/pull/759)) [@yeziR4](https://github.com/yeziR4)
+- limit filenames to 255 UTF-8 bytes (⚠️ breaking changes) ([#750](https://github.com/autonomys/auto-sdk/pull/750)) [@yeziR4](https://github.com/yeziR4)
+
+### Performance Improvements
+
+- copy each byte once in asyncIterableToBuffer ([#787](https://github.com/autonomys/auto-sdk/pull/787)) [@jim-counter](https://github.com/jim-counter)
+
+### CI
+
+- stop pinning verify-installation dependencies to the commit date ([#792](https://github.com/autonomys/auto-sdk/pull/792)) [@jim-counter](https://github.com/jim-counter)
+- add isolated release package assembly checks ([#774](https://github.com/autonomys/auto-sdk/pull/774)) [@jim-counter](https://github.com/jim-counter)
+
+### Chores
+
+- update dependency dompurify to v3.4.17 [security] ([#791](https://github.com/autonomys/auto-sdk/pull/791)) [@renovate[bot]](https://github.com/apps/renovate)
+- update dependency @modelcontextprotocol/sdk to v1.31.0 [security] ([#770](https://github.com/autonomys/auto-sdk/pull/770)) [@renovate[bot]](https://github.com/apps/renovate)
+- move next to devDependencies ([#769](https://github.com/autonomys/auto-sdk/pull/769)) [@jim-counter](https://github.com/jim-counter)
+- release v1.6.16 ([#768](https://github.com/autonomys/auto-sdk/pull/768)) [@jim-counter](https://github.com/jim-counter)
+
 ## [1.6.16] - 2026-10-19
 
 ### Features
@@ -759,6 +797,8 @@ No changes in this version.
 
 [1.6.14]: https://github.com/autonomys/auto-sdk/releases/tag/v1.6.14
 
-[Unreleased]: https://github.com/autonomys/auto-sdk/compare/v1.6.16...HEAD
-[1.6.16]: https://github.com/autonomys/auto-sdk/compare/v1.6.15...v1.6.16
 [1.6.15]: https://github.com/autonomys/auto-sdk/releases/tag/v1.6.15
+
+[Unreleased]: https://github.com/autonomys/auto-sdk/compare/v1.7.0...HEAD
+[1.7.0]: https://github.com/autonomys/auto-sdk/compare/v1.6.16...v1.7.0
+[1.6.16]: https://github.com/autonomys/auto-sdk/releases/tag/v1.6.16
