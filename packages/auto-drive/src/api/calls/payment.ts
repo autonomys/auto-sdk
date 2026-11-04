@@ -1,4 +1,4 @@
-import { formatUnits, shannonsToAi3 } from '@autonomys/auto-utils'
+import { formatUnits, shannonsToAi3 } from '@autonomys/auto-utils/number'
 import {
   CreditCapExceededError,
   PaymentApiError,

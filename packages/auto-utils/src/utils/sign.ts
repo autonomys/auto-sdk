@@ -1,6 +1,6 @@
 import { signatureVerify } from '@polkadot/util-crypto'
-import type { Signer } from '../types/wallet'
-import { u8aToHex } from './format'
+import type { Signer } from '../types/wallet.js'
+import { u8aToHex } from './format.js'
 
 /**
  * Signs arbitrary data using a Polkadot.js extension signer.

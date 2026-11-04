@@ -6,7 +6,7 @@ import {
   OffchainMetadata,
   processFileData,
 } from '@autonomys/auto-dag-data'
-import { NetworkId } from '@autonomys/auto-utils'
+import { NetworkId } from '@autonomys/auto-utils/constants'
 import type { Meta, StoryObj } from '@storybook/react'
 import React, { useCallback, useEffect, useState } from 'react'
 import { fileMock1, fileMock2 } from '../../../mocks/files.mock'

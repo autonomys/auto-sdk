@@ -1,5 +1,5 @@
 import { OffchainMetadata } from '@autonomys/auto-dag-data'
-import { NetworkId } from '@autonomys/auto-utils'
+import { NetworkId } from '@autonomys/auto-utils/constants'
 import React, { useMemo, useState } from 'react'
 import { sanitizeHTML } from '../../../utils/sanitizeHTML'
 import { Arguments } from './Arguments'
