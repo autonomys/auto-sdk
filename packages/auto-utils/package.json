@@ -1,6 +1,6 @@
 {
   "name": "@autonomys/auto-utils",
-  "version": "1.6.16",
+  "version": "1.7.0",
   "license": "MIT",
   "main": "dist/index.js",
   "module": "dist/esm/index.js",
