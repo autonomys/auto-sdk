@@ -1,4 +1,4 @@
-import { ObjectSummary } from './models'
+import { Banner, BannerInteractionType, ObjectSummary } from './models'
 import { AsyncDownload } from './models/asyncDownloads'
 import { PaginatedResult } from './models/common'
 import { GenericFile, GenericFileWithinFolder } from './models/file'
@@ -425,6 +425,22 @@ export interface AutoDriveApi extends AutoDriveApiHandler {
    * @returns {Promise<ObjectSummary[]>} - A promise that resolves to the list of objects to be reviewed.
    */
   getToBeReviewedList: (limit?: number, offset?: number) => Promise<ObjectSummary[]>
+
+  /**
+   * Retrieves active banners for the authenticated user.
+   *
+   * @returns {Promise<Banner[]>} A promise that resolves to the list of active banners.
+   */
+  getActiveBanners: () => Promise<Banner[]>
+
+  /**
+   * Records a user interaction with a banner (acknowledge or dismiss).
+   *
+   * @param {string} bannerId - The ID of the banner to interact with.
+   * @param {BannerInteractionType} type - The interaction type ('acknowledged' or 'dismissed').
+   * @returns {Promise<void>} A promise that resolves when the interaction is recorded.
+   */
+  interactWithBanner: (bannerId: string, type: BannerInteractionType) => Promise<void>
 }
 
 export interface AutoDriveApiHandler {

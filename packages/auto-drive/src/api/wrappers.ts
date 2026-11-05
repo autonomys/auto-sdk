@@ -11,7 +11,7 @@ import { progressToPercentage } from '../utils/misc'
 import { publicDownloadUrl } from './calls/download'
 import { apiCalls } from './calls/index'
 import { PollOptions } from './models/payment'
-import { ObjectSummary, Scope } from './models'
+import { BannerInteractionType, ObjectSummary, Scope } from './models'
 import { DownloadStatus } from './models/asyncDownloads'
 import { PaginatedResult } from './models/common'
 import { GenericFile, GenericFileWithinFolder } from './models/file'
@@ -418,6 +418,9 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
     dismissReport: (cid: string) => apiCalls.dismissReport(api, { cid }),
     getToBeReviewedList: (limit: number = 100, offset: number = 0) =>
       apiCalls.getToBeReviewedList(api, { limit, offset }),
+    getActiveBanners: () => apiCalls.getActiveBanners(api),
+    interactWithBanner: (bannerId: string, type: BannerInteractionType) =>
+      apiCalls.interactWithBanner(api, { bannerId, type }),
     baseUrl: api.baseUrl,
     downloadBaseUrl: api.downloadBaseUrl,
   }

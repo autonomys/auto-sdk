@@ -1,3 +1,4 @@
+import * as bannerCalls from './banners'
 import * as downloadCalls from './download'
 import * as paymentCalls from './payment'
 import * as readCalls from './read'
@@ -5,6 +6,7 @@ import * as uploadCalls from './upload'
 import * as writeCalls from './write'
 
 export const apiCalls = {
+  ...bannerCalls,
   ...downloadCalls,
   ...paymentCalls,
   ...readCalls,
@@ -24,3 +26,5 @@ export {
   getPaymentIntentStatus,
   waitForPaymentCompletion,
 } from './payment'
+
+export { getActiveBanners, interactWithBanner } from './banners'
