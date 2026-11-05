@@ -1,4 +1,5 @@
 import * as downloadCalls from './download'
+import * as featuresCalls from './features'
 import * as paymentCalls from './payment'
 import * as readCalls from './read'
 import * as uploadCalls from './upload'
@@ -6,6 +7,7 @@ import * as writeCalls from './write'
 
 export const apiCalls = {
   ...downloadCalls,
+  ...featuresCalls,
   ...paymentCalls,
   ...readCalls,
   ...uploadCalls,
@@ -24,3 +26,5 @@ export {
   getPaymentIntentStatus,
   waitForPaymentCompletion,
 } from './payment'
+
+export { getFeatureFlags } from './features'

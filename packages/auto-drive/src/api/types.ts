@@ -1,4 +1,4 @@
-import { ObjectSummary } from './models'
+import { FeatureFlags, ObjectSummary } from './models'
 import { AsyncDownload } from './models/asyncDownloads'
 import { PaginatedResult } from './models/common'
 import { GenericFile, GenericFileWithinFolder } from './models/file'
@@ -425,6 +425,13 @@ export interface AutoDriveApi extends AutoDriveApiHandler {
    * @returns {Promise<ObjectSummary[]>} - A promise that resolves to the list of objects to be reviewed.
    */
   getToBeReviewedList: (limit?: number, offset?: number) => Promise<ObjectSummary[]>
+
+  /**
+   * Retrieves the feature flags configuration from the Auto Drive service.
+   *
+   * @returns {Promise<FeatureFlags>} A promise that resolves to the feature flags.
+   */
+  getFeatureFlags: () => Promise<FeatureFlags>
 }
 
 export interface AutoDriveApiHandler {

@@ -418,6 +418,7 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
     dismissReport: (cid: string) => apiCalls.dismissReport(api, { cid }),
     getToBeReviewedList: (limit: number = 100, offset: number = 0) =>
       apiCalls.getToBeReviewedList(api, { limit, offset }),
+    getFeatureFlags: () => apiCalls.getFeatureFlags(api),
     baseUrl: api.baseUrl,
     downloadBaseUrl: api.downloadBaseUrl,
   }
