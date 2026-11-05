@@ -9,16 +9,37 @@ import {
 import { AutoDriveApiHandler } from '../types'
 import { toApiError } from './errors'
 
+export const CUSTOMER_REFERENCE_REGEX = /^[a-zA-Z0-9_.:-]{1,128}$/
+
+/**
+ * Validates an optional customer reference string.
+ *
+ * @param {string} [customerReference] - The customer reference to validate.
+ * @throws {Error} - Throws an error if the customer reference is invalid.
+ */
+export const validateCustomerReference = (customerReference?: string): void => {
+  if (customerReference === undefined) {
+    return
+  }
+
+  if (typeof customerReference !== 'string' || !CUSTOMER_REFERENCE_REGEX.test(customerReference)) {
+    throw new Error(
+      `Invalid customer reference: "${customerReference}". Must be a string up to 128 characters containing only alphanumeric characters, '-', '_', '.', or ':'.`,
+    )
+  }
+}
+
 /**
  * Initiates a file upload to the server.
  *
  * @param {AutoDriveApiHandler} api - The API instance used to send requests.
- * @param {ArgsWithoutPagination<{ mimeType?: string; filename: string; uploadOptions: FileUploadOptions | null }>} args - The arguments for the file upload.
+ * @param {ArgsWithoutPagination<{ mimeType?: string; filename: string; uploadOptions: FileUploadOptions | null; customerReference?: string }>} args - The arguments for the file upload.
  * @param {string} args.mimeType - The MIME type of the file (optional).
  * @param {string} args.filename - The name of the file to be uploaded.
  * @param {FileUploadOptions | null} args.uploadOptions - Additional options for the file upload (optional).
+ * @param {string} [args.customerReference] - An optional client-side reference to correlate the upload.
  * @returns {Promise<FileUpload>} - A promise that resolves to the file upload information.
- * @throws {Error} - Throws an error if the upload fails.
+ * @throws {Error} - Throws an error if the upload fails or customerReference is invalid.
  */
 export const createFileUpload = async (
   api: AutoDriveApiHandler,
@@ -26,19 +47,28 @@ export const createFileUpload = async (
     mimeType,
     filename,
     uploadOptions = {},
+    customerReference,
   }: ArgsWithoutPagination<{
     mimeType?: string
     filename: string
     uploadOptions: FileUploadOptions | null
+    customerReference?: string
   }>,
 ): Promise<FileUpload> => {
+  validateCustomerReference(customerReference)
+
+  const headers = new Headers({
+    'Content-Type': 'application/json',
+  })
+  if (customerReference) {
+    headers.set('X-Customer-Reference', customerReference)
+  }
+
   const response = await api.sendAPIRequest(
     '/uploads/file',
     {
       method: 'POST',
-      headers: new Headers({
-        'Content-Type': 'application/json',
-      }),
+      headers,
     },
     JSON.stringify({ mimeType, filename, uploadOptions }),
   )
@@ -54,26 +84,39 @@ export const createFileUpload = async (
  * Initiates a folder upload to the server.
  *
  * @param {AutoDriveApiHandler} api - The API instance used to send requests.
- * @param {ArgsWithoutPagination<{ fileTree: FolderTree; uploadOptions: FileUploadOptions }>} args - The arguments for the folder upload.
+ * @param {ArgsWithoutPagination<{ fileTree: FolderTree; uploadOptions?: FileUploadOptions; customerReference?: string }>} args - The arguments for the folder upload.
  * @param {FolderTree} args.fileTree - The structure of the folder and its contents to be uploaded.
- * @param {FileUploadOptions} args.uploadOptions - Additional options for the folder upload.
+ * @param {FileUploadOptions} [args.uploadOptions] - Additional options for the folder upload.
+ * @param {string} [args.customerReference] - An optional client-side reference to correlate the upload.
  * @returns {Promise<FolderUpload>} - A promise that resolves to the folder upload information.
- * @throws {Error} - Throws an error if the upload fails.
+ * @throws {Error} - Throws an error if the upload fails or customerReference is invalid.
  */
 export const createFolderUpload = async (
   api: AutoDriveApiHandler,
   {
     fileTree,
     uploadOptions = {},
-  }: ArgsWithoutPagination<{ fileTree: FolderTree; uploadOptions?: FileUploadOptions }>,
+    customerReference,
+  }: ArgsWithoutPagination<{
+    fileTree: FolderTree
+    uploadOptions?: FileUploadOptions
+    customerReference?: string
+  }>,
 ): Promise<FolderUpload> => {
+  validateCustomerReference(customerReference)
+
+  const headers = new Headers({
+    'Content-Type': 'application/json',
+  })
+  if (customerReference) {
+    headers.set('X-Customer-Reference', customerReference)
+  }
+
   const response = await api.sendAPIRequest(
     '/uploads/folder',
     {
       method: 'POST',
-      headers: new Headers({
-        'Content-Type': 'application/json',
-      }),
+      headers,
     },
     JSON.stringify({ fileTree, uploadOptions }),
   )

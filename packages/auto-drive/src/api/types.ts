@@ -132,9 +132,10 @@ export interface AutoDriveApi extends AutoDriveApiHandler {
    */
   uploadFolderFromInput: (
     fileList: FileList | File[],
-    options: {
+    options?: {
       uploadChunkSize?: number
       password?: string
+      customerReference?: string
       onProgress?: (progress: number) => void
     },
   ) => Promise<string>
@@ -445,6 +446,7 @@ export interface AutoDriveApiHandler {
 export type UploadFileOptions = {
   password?: string
   compression?: boolean
+  customerReference?: string
   onProgress?: (progress: number) => void
 }
 

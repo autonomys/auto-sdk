@@ -24,3 +24,5 @@ export {
   getPaymentIntentStatus,
   waitForPaymentCompletion,
 } from './payment'
+
+export { CUSTOMER_REFERENCE_REGEX, validateCustomerReference } from './upload'

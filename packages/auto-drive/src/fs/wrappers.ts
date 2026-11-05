@@ -32,7 +32,7 @@ export const uploadFileFromFilepath = (
   options: UploadFileOptions = {},
   uploadChunkSize?: number,
 ): Promise<string> => {
-  const { password = undefined, compression = true, onProgress } = options
+  const { password = undefined, compression = true, customerReference, onProgress } = options
   const name = filePath.split('/').pop()!
 
   return api.uploadFile(
@@ -45,6 +45,7 @@ export const uploadFileFromFilepath = (
     {
       password,
       compression,
+      customerReference,
       onProgress,
     },
     uploadChunkSize,
@@ -66,6 +67,7 @@ export const uploadFileFromFilepath = (
  * @param {Object} options - Optional parameters for the upload.
  * @param {number} [options.uploadChunkSize] - The size of each chunk to be uploaded.
  * @param {string} [options.password] - An optional password for encrypting the files.
+ * @param {string} [options.customerReference] - An optional customer reference for the upload.
  * @returns {Promise<PromisedObservable<UploadFileStatus | UploadFolderStatus>>} - A promise that resolves to an observable that tracks the upload progress.
  * @throws {Error} - Throws an error if the upload fails at any stage.
  */
@@ -75,10 +77,12 @@ export const uploadFolderFromFolderPath = async (
   {
     uploadChunkSize,
     password,
+    customerReference,
     onProgress,
   }: {
     uploadChunkSize?: number
     password?: string
+    customerReference?: string
     onProgress?: (progressInPercentage: number) => void
   } = {},
 ): Promise<Promise<string>> => {
@@ -99,6 +103,7 @@ export const uploadFolderFromFolderPath = async (
       {
         password,
         compression: true,
+        customerReference,
         onProgress: (progressInPercentage) => {
           onProgress?.(progressToPercentage(progressInPercentage, zipBlob.size))
         },
@@ -108,6 +113,7 @@ export const uploadFolderFromFolderPath = async (
 
   const folderUpload = await apiCalls.createFolderUpload(api, {
     fileTree,
+    customerReference,
     uploadOptions: {
       compression: {
         algorithm: CompressionAlgorithm.ZLIB,

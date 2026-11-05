@@ -52,7 +52,7 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
     options: UploadFileOptions = {},
     uploadChunkSize?: number,
   ): Promise<string> => {
-    const { password = undefined, compression = true } = options
+    const { password = undefined, compression = true, customerReference } = options
     return new Promise(async (resolve) => {
       const { compressFile, CompressionAlgorithm, encryptFile, EncryptionAlgorithm } =
         await import('@autonomys/auto-dag-data')
@@ -88,6 +88,7 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
         mimeType: mime.lookup(file.name) || undefined,
         filename: file.name,
         uploadOptions,
+        customerReference,
       })
 
       await uploadFileChunks(api, fileUpload.id, asyncIterable, uploadChunkSize, (bytes) => {
@@ -105,7 +106,7 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
     options: UploadFileOptions = {},
     uploadChunkSize?: number,
   ): Promise<string> => {
-    const { password = undefined, compression = true } = options
+    const { password = undefined, compression = true, customerReference } = options
 
     const { compressFile, CompressionAlgorithm, encryptFile, EncryptionAlgorithm } =
       await import('@autonomys/auto-dag-data')
@@ -141,6 +142,7 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
       mimeType: mime.lookup(file.name) || undefined,
       filename: file.name,
       uploadOptions,
+      customerReference,
     })
 
     await uploadFileChunks(api, fileUpload.id, asyncIterable, uploadChunkSize, (bytes) => {
@@ -193,14 +195,16 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
     {
       uploadChunkSize,
       password,
+      customerReference,
       onProgress,
     }: {
       uploadChunkSize?: number
       password?: string
+      customerReference?: string
       onProgress?: (progress: number) => void
     } = {},
   ): Promise<string> => {
-    const files = fileList instanceof FileList ? Array.from(fileList) : fileList
+    const files: File[] = Array.isArray(fileList) ? fileList : Array.from(fileList)
     const fileTree = constructFromInput(files)
 
     // If password is provided, we zip the files and upload the zip file
@@ -221,6 +225,7 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
         {
           password,
           compression: true,
+          customerReference,
           onProgress,
         },
       )
@@ -229,6 +234,7 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
     // Otherwise, we upload the files as a folder w/o compression or encryption
     const folderUpload = await apiCalls.createFolderUpload(api, {
       fileTree,
+      customerReference,
     })
 
     let currentBytesUploaded = 0
