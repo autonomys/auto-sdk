@@ -1,4 +1,5 @@
 import { asyncByChunk, AwaitIterable } from '@autonomys/asynchronous'
+import { Buffer } from 'buffer'
 import { Unzlib, Zlib } from 'fflate'
 import { CompressionAlgorithm } from '../metadata/index.js'
 import type { PickPartial } from '../utils/types.js'

@@ -1,3 +1,4 @@
+import { Buffer } from 'buffer'
 import { CID } from 'multiformats/cid'
 import { FileUploadOptions } from '../metadata/index.js'
 import { PBNode } from './index.js'

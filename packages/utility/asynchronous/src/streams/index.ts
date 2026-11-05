@@ -1,3 +1,4 @@
+import { Buffer } from 'buffer'
 import { finished, PassThrough, Readable } from 'stream'
 
 /**
