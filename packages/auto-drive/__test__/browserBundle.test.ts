@@ -1,10 +1,13 @@
 import { build } from 'esbuild'
+import { existsSync } from 'fs'
 import path from 'path'
 import { createContext, runInContext } from 'vm'
 
 // Bundles the package the way a browser app does, with no Node polyfills, and
 // runs it in a context that has browser globals only (no Buffer, no process).
-// Reads the built dist via the "browser" export, so it needs `yarn build` first.
+// Reads the built dist via the "browser" export, so rebuild after changing src.
+
+const browserEntry = path.resolve(__dirname, '../dist/browser.js')
 
 const browserGlobals = [
   'AbortController',
@@ -37,6 +40,10 @@ const browserGlobals = [
 ] as const
 
 const loadBrowserBundle = async () => {
+  if (!existsSync(browserEntry)) {
+    throw new Error(`${browserEntry} not found: run \`yarn build\` first`)
+  }
+
   const result = await build({
     stdin: {
       contents:
@@ -67,7 +74,25 @@ const loadBrowserBundle = async () => {
   createContext(context)
   runInContext(result.outputFiles[0].text, context)
 
-  return { autoDrive: context.autoDrive as typeof import('../src/browser'), fetchCalls }
+  // A separate bundle gets its own copy of the buffer package, like an app's polyfill.
+  const appBuffer = await build({
+    stdin: {
+      contents: "import { Buffer } from 'buffer'\nglobalThis.AppBuffer = Buffer",
+      resolveDir: path.resolve(__dirname, '..'),
+    },
+    bundle: true,
+    platform: 'browser',
+    format: 'iife',
+    write: false,
+    logLevel: 'silent',
+  })
+  runInContext(appBuffer.outputFiles[0].text, context)
+
+  return {
+    autoDrive: context.autoDrive as typeof import('../src/browser'),
+    AppBuffer: context.AppBuffer as typeof Buffer,
+    fetchCalls,
+  }
 }
 
 describe('browser bundle', () => {
@@ -81,6 +106,14 @@ describe('browser bundle', () => {
 
   it('computes the same CID as the Node build', async () => {
     await expect(bundle.autoDrive.precomputeCid(helloWorld())).resolves.toBe(
+      'bafkr6ihzdhpxxxgeprlwsvfbcdu7big232ikdodi5ycfwo6hawpce5gtci',
+    )
+  })
+
+  it("computes the CID of a Buffer from the app's own buffer package", async () => {
+    const buffer = bundle.AppBuffer.from('hello world')
+
+    await expect(bundle.autoDrive.precomputeCid(buffer)).resolves.toBe(
       'bafkr6ihzdhpxxxgeprlwsvfbcdu7big232ikdodi5ycfwo6hawpce5gtci',
     )
   })

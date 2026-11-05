@@ -36,7 +36,7 @@ const isGenericFile = (file: File | GenericFile | Buffer): file is GenericFile =
 }
 
 const isBuffer = (file: File | GenericFile | Buffer): file is Buffer => {
-  return file instanceof Buffer
+  return Buffer.isBuffer(file)
 }
 
 /**
