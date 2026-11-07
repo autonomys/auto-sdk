@@ -1,9 +1,10 @@
 import http from 'http'
 import { AddressInfo } from 'net'
+import Websocket from 'websocket'
 import { z } from 'zod'
 import { z as zod4 } from 'zod/v4'
 import { z as otherZod } from 'zod-3.25.55'
-import { createWsServer, defineUnvalidatedType } from '../../src'
+import { createWsServer, defineUnvalidatedType, RpcClientCallbacks } from '../../src'
 import { createApiDefinition } from '../../src/rpc/api/definition'
 import { StandardSchemaV1 } from '../../src/rpc/api/standardSchema'
 import { isStandardSchema } from '../../src/rpc/api/typing'
@@ -382,6 +383,133 @@ describe('rpc/definition parsed params', () => {
       code: RpcError.Code.InvalidParams,
     })
     expect(received).toEqual([])
+  })
+})
+
+describe('rpc/definition notifications', () => {
+  let httpServer: http.Server
+  let port: number
+
+  const definition = createApiDefinition({
+    methods: {
+      notify: {
+        params: defineUnvalidatedType<'dateNotification' | 'plainDateNotification'>(),
+        returns: defineUnvalidatedType<null>(),
+      },
+    },
+    notifications: {
+      dateNotification: {
+        content: z.object({ at: z.string().transform((at) => new Date(at)) }),
+      },
+      plainDateNotification: {
+        content: z.object({ at: z.date() }),
+      },
+    },
+  })
+  const { createServer, createClient, createMockServerClient } = definition
+  let server: ReturnType<typeof createServer>
+
+  // Sends the notification named in the params to the caller
+  const handlers: Parameters<typeof createServer>[0] = {
+    notify: (name, { connection, notificationClient }) => {
+      // The mock has no connection and ignores it
+      const to = connection as Websocket.connection
+      if (name === 'dateNotification') {
+        notificationClient.dateNotification(to, { at: DATE.toISOString() })
+      } else {
+        notificationClient.plainDateNotification(to, { at: DATE })
+      }
+      return null
+    },
+  }
+
+  const createTestClient = (
+    kind: 'ws' | 'mock',
+    callbacks: RpcClientCallbacks,
+  ): ReturnType<typeof createClient> =>
+    kind === 'ws'
+      ? createClient({ endpoint: `ws://localhost:${port}/ws`, callbacks })
+      : createMockServerClient({ handlers, callbacks })
+
+  // The ws client gets the notifications over the network, so give them time to arrive
+  const waitForNotifications = () => new Promise((resolve) => setTimeout(resolve, 100))
+
+  beforeAll(async () => {
+    // Free port, so connections left open by other suites on TEST_PORT can't interfere
+    httpServer = http.createServer()
+    httpServer.listen(0)
+    await new Promise((resolve) => httpServer.once('listening', resolve))
+    server = createServer(handlers, {
+      server: createWsServer({
+        httpServer,
+        callbacks: {},
+      }),
+    })
+    port = (httpServer.address() as AddressInfo).port
+  })
+
+  afterAll(() => {
+    server.close()
+    httpServer.close()
+  })
+
+  describe.each(['ws', 'mock'] as const)('%s client', (kind) => {
+    let client: ReturnType<typeof createClient>
+    const onError = jest.fn()
+    const handler = jest.fn()
+
+    afterEach(() => {
+      client.close()
+      onError.mockReset()
+      handler.mockReset()
+    })
+
+    it('should turn the notification string into a Date', async () => {
+      client = createTestClient(kind, { onError })
+      client.onNotification('dateNotification', handler)
+
+      await client.api.notify('dateNotification')
+      await waitForNotifications()
+      expect(handler.mock.calls).toEqual([[{ at: DATE }]])
+      expect(onError).not.toHaveBeenCalled()
+    })
+
+    // A Date is sent as a string, so the mock must validate the notification after a JSON round-trip
+    it('should send an invalid notification to onError instead of the handler', async () => {
+      client = createTestClient(kind, { onError })
+      client.onNotification('plainDateNotification', handler)
+
+      await client.api.notify('plainDateNotification')
+      await waitForNotifications()
+      expect(handler).not.toHaveBeenCalled()
+      expect(onError.mock.calls).toEqual([[expect.any(RpcError)]])
+      expect(onError.mock.calls[0][0]).toMatchObject({ code: RpcError.Code.InvalidParams })
+    })
+
+    it('should send an error thrown by the handler to onError', async () => {
+      const error = new Error('handler failed')
+      client = createTestClient(kind, { onError })
+      client.onNotification('dateNotification', () => {
+        throw error
+      })
+
+      await client.api.notify('dateNotification')
+      await waitForNotifications()
+      expect(onError.mock.calls).toEqual([[error]])
+    })
+
+    it('should drop an invalid notification without an onError callback', async () => {
+      const unhandledRejection = jest.fn()
+      process.on('unhandledRejection', unhandledRejection)
+      client = createTestClient(kind, {})
+      client.onNotification('plainDateNotification', handler)
+
+      await client.api.notify('plainDateNotification')
+      await waitForNotifications()
+      process.off('unhandledRejection', unhandledRejection)
+      expect(handler).not.toHaveBeenCalled()
+      expect(unhandledRejection).not.toHaveBeenCalled()
+    })
   })
 })
 
