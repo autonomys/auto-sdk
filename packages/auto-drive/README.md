@@ -289,6 +289,19 @@ try {
 
 **Note: For retrieving the link of an already published object just call again `publishObject` method**
 
+### Remove a shareable download link
+
+To stop sharing an object, call `unpublishObject`. Its public download links stop working, but the object itself is not deleted. Calling it on an object that is not published does nothing.
+
+```typescript
+try {
+  await api.unpublishObject('your-file-cid')
+  console.log('Object unpublished')
+} catch (error) {
+  console.error('Error unpublishing object:', error)
+}
+```
+
 ### Example Usage of getMyFiles
 
 Here is an example of how to use the `getMyFiles` method to retrieve the root directories:
