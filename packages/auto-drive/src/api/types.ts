@@ -3,6 +3,8 @@ import { AsyncDownload } from './models/asyncDownloads'
 import { PaginatedResult } from './models/common'
 import { GenericFile, GenericFileWithinFolder } from './models/file'
 import {
+  CreditBatch,
+  CreditSummary,
   PaymentContractInfo,
   PaymentIntent,
   PaymentIntentStatus,
@@ -309,6 +311,45 @@ export interface AutoDriveApi extends AutoDriveApiHandler {
     intentId: string,
     options?: PollOptions,
   ) => Promise<PaymentIntentTerminalStatus>
+
+  // ---------------------------------------------------------------------------
+  // Purchased credits — what the payment intents above have bought
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Returns the account's purchased storage credits: bytes left, the next expiry,
+   * and how much more it can buy before it reaches the per-user credit cap.
+   *
+   * Only credits bought with a payment intent are counted; `getPendingCredits`
+   * reports the free allocation. Use it to check whether a payment was credited
+   * (for example after `waitForPaymentCompletion` returns `'EXPIRED'`), and pass
+   * at most `maxPurchasableBytes` as `sizeBytes` to avoid a `CreditCapExceededError`.
+   *
+   * @returns {Promise<CreditSummary>} Totals across the account's active purchases.
+   * @throws {PaymentApiError} If Auto Drive answers with a non-OK status. A 404
+   *   with no `code` means that the account cannot buy credits.
+   */
+  getCreditSummary: () => Promise<CreditSummary>
+
+  /**
+   * Returns every credit purchase of the account, newest first, including
+   * purchases that have expired, been used up or been refunded.
+   *
+   * @returns {Promise<CreditBatch[]>} The account's purchase history.
+   * @throws {PaymentApiError} If Auto Drive answers with a non-OK status. A 404
+   *   with no `code` means that the account cannot buy credits.
+   */
+  getCreditBatches: () => Promise<CreditBatch[]>
+
+  /**
+   * Returns the account's credit purchases that still have credits left and
+   * expire within the next 30 days, soonest expiry first.
+   *
+   * @returns {Promise<CreditBatch[]>} The purchases to warn the user about.
+   * @throws {PaymentApiError} If Auto Drive answers with a non-OK status. A 404
+   *   with no `code` means that the account cannot buy credits.
+   */
+  getExpiringCreditBatches: () => Promise<CreditBatch[]>
 
   /**
    * Publishes an object by sending a request to the server.
