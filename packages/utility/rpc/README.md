@@ -40,6 +40,8 @@ const apiDefinition = createApiDefinition({
 
 Params and results are sent as JSON and parsed on the other side, so a schema with transforms or defaults has two types. Clients send the schema input of `params` and handlers get the parsed output, while handlers return the schema input of `returns` and clients get the parsed output. For example, with `returns: z.string().transform((s) => new Date(s))` the handler returns the string and the client gets a `Date`. Some schemas have `unknown` as input, like `z.coerce.number()` in zod 4 or `z.preprocess(...)`, so the client accepts any value there and only the server rejects it. In zod 4, `z.coerce.number<number>()` sets the input type again.
 
+Notifications work the same way: the server's `notificationClient` sends the schema input of `content` and `onNotification` handlers get the parsed output. A notification that doesn't match its schema never reaches the handler. As there is no request to reject, its validation error goes to the client's `onError` callback, together with any error thrown by the handler. Without an `onError` callback, the notification is dropped silently.
+
 ### Define Server RPC Handlers
 
 Once our API interface is defined the server RPC handlers ought to be defined:
