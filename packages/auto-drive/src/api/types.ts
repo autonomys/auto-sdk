@@ -1,3 +1,4 @@
+import { Buffer } from 'buffer'
 import { ObjectSummary } from './models'
 import { AsyncDownload } from './models/asyncDownloads'
 import { PaginatedResult } from './models/common'

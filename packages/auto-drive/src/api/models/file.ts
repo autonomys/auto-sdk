@@ -1,3 +1,5 @@
+import { Buffer } from 'buffer'
+
 export interface GenericFile {
   read(): AsyncIterable<Buffer>
   name: string

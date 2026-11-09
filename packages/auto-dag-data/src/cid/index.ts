@@ -1,5 +1,6 @@
 import { blake3Hash } from '@webbuf/blake3'
 import { WebBuf } from '@webbuf/webbuf'
+import { Buffer } from 'buffer'
 import * as base32 from 'multiformats/bases/base32'
 import { CID } from 'multiformats/cid'
 import * as raw from 'multiformats/codecs/raw'
