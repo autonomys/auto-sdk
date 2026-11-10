@@ -28,6 +28,12 @@ const sourceFailingAfterFirstChunk = (error: Error) => {
 const waitForClose = (stream: Readable) =>
   new Promise<void>((resolve) => stream.once('close', () => resolve()))
 
+const nextMacrotask = () => new Promise((resolve) => setImmediate(resolve))
+
+const { Readable: ReadableStreamV3 } = jest.requireActual<{ Readable: typeof Readable }>(
+  'readable-stream',
+)
+
 describe('streams', () => {
   describe('forkStream', () => {
     it('should duplicate readable stream into two independent streams', async () => {
@@ -73,6 +79,14 @@ describe('streams', () => {
       const prematureClose = { code: 'ERR_STREAM_PREMATURE_CLOSE' }
       await expect(readAll(branch1)).rejects.toMatchObject(prematureClose)
       await expect(readAll(branch2)).rejects.toMatchObject(prematureClose)
+    })
+
+    it('should error both branches when the source emits a chunk that is not bytes', async () => {
+      const [branch1, branch2] = await forkStream(Readable.from([{ not: 'bytes' }]))
+
+      const invalidChunk = { code: 'ERR_INVALID_ARG_TYPE' }
+      await expect(readAll(branch1)).rejects.toMatchObject(invalidChunk)
+      await expect(readAll(branch2)).rejects.toMatchObject(invalidChunk)
     })
 
     it('should end both branches when a duplex source closes after its readable side ends', async () => {
@@ -155,6 +169,36 @@ describe('streams', () => {
 
           await expect(otherBranchData).resolves.toHaveLength(chunkSize * chunkCount)
         })
+      },
+    )
+
+    it.each([
+      { kind: 'Node', createSource: () => new Readable({ read() {} }) },
+      { kind: 'readable-stream v3', createSource: () => new ReadableStreamV3({ read() {} }) },
+    ])(
+      "should keep feeding a branch whose 'data' handler destroys the other branch, with a $kind source",
+      async ({ createSource }) => {
+        const source = createSource()
+        const [readBranch, destroyedBranch] = await forkStream(source)
+        const received: Buffer[] = []
+        readBranch.on('data', (chunk) => {
+          received.push(chunk)
+          if (received.length === 2) {
+            destroyedBranch.destroy(new Error('cache write failed'))
+          }
+        })
+        const readBranchEnded = new Promise((resolve) => readBranch.once('end', resolve))
+
+        // Pushing into a flowing source passes each chunk straight through to the read branch's
+        // handler, so the destroy happens while the source is still emitting that chunk
+        for (const chunk of ['a', 'b', 'c', 'd']) {
+          await nextMacrotask()
+          source.push(Buffer.from(chunk))
+        }
+        source.push(null)
+
+        await readBranchEnded
+        expect(Buffer.concat(received).toString()).toBe('abcd')
       },
     )
   })
