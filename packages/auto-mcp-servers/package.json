@@ -1,7 +1,7 @@
 {
   "name": "@autonomys/auto-mcp-servers",
   "packageManager": "yarn@4.17.0",
-  "version": "1.6.16",
+  "version": "1.7.0",
   "description": "Autonomys Network MCP servers",
   "repository": {
     "type": "git",
@@ -16,7 +16,6 @@
   },
   "license": "MIT",
   "type": "module",
-  "main": "dist/index.js",
   "bin": {
     "auto-drive-server": "./dist/bin/auto-drive.js",
     "auto-experiences-server": "./dist/bin/auto-experiences.js",
@@ -31,8 +30,8 @@
     "server"
   ],
   "dependencies": {
-    "@autonomys/auto-agents": "^1.6.16",
-    "@autonomys/auto-drive": "^1.6.16",
+    "@autonomys/auto-agents": "^1.7.0",
+    "@autonomys/auto-drive": "^1.7.0",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "zod": "^3.25 || ^4.0"
   },

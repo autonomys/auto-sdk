@@ -10,11 +10,11 @@ import type {
   SignerOptions,
   SubmittableExtrinsic,
   TransactionSignedAndSend,
-} from '../types'
-import { detectTxSuccess } from './detectTxSuccess'
-import { expectSuccessfulTxEvent } from './events'
-import { formatDispatchError } from './formatDispatchError'
-import { validateEvents } from './validateEvents'
+} from '../types/index.js'
+import { detectTxSuccess } from './detectTxSuccess.js'
+import { expectSuccessfulTxEvent } from './events.js'
+import { formatDispatchError } from './formatDispatchError.js'
+import { validateEvents } from './validateEvents.js'
 
 /**
  * Signs and sends a transaction to the Autonomys Network, with comprehensive error handling and event validation.

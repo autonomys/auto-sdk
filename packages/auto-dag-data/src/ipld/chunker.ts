@@ -1,4 +1,5 @@
 import type { BaseBlockstore } from 'blockstore-core'
+import { Buffer } from 'buffer'
 import type { AwaitIterable } from 'interface-store'
 import { CID } from 'multiformats'
 import { cidOfNode } from '../cid/index.js'
@@ -24,7 +25,7 @@ const NODE_TYPE_SIZE = 1
 const NODE_LINK_DEPTH_SIZE = 4
 // u64 -> 8 bytes
 const NODE_SIZE_SIZE = 8
-// Limit at 255 string length (Mac Limit)
+// Limit at 255 bytes (derived from the 256 bytes reserved for the name in the node)
 export const MAX_NAME_SIZE = 255
 const END_OF_STRING_BYTE = 1
 const NODE_NAME_SIZE = MAX_NAME_SIZE + END_OF_STRING_BYTE
@@ -46,6 +47,22 @@ export const DEFAULT_MAX_CHUNK_SIZE = DEFAULT_NODE_MAX_SIZE - NODE_METADATA_SIZE
 export const LINK_SIZE_IN_BYTES = 40
 export const DEFAULT_MAX_LINK_PER_NODE = Math.floor(DEFAULT_MAX_CHUNK_SIZE / LINK_SIZE_IN_BYTES)
 
+/**
+ * Validates that a filename's UTF-8 byte length does not exceed MAX_NAME_SIZE (255 bytes).
+ * Ensures the name fits within the NODE_NAME_SIZE (256 bytes) reserved in IPLD node metadata.
+ *
+ * @param name - The filename or folder name to validate.
+ * @throws {Error} When the UTF-8 byte length exceeds MAX_NAME_SIZE.
+ */
+export const validateFilenameLength = (name?: string): void => {
+  if (name) {
+    const byteLength = Buffer.byteLength(name, 'utf8')
+    if (byteLength > MAX_NAME_SIZE) {
+      throw new Error(`Filename is too long: ${byteLength} > ${MAX_NAME_SIZE}`)
+    }
+  }
+}
+
 export const processFileToIPLDFormat = (
   blockstore: BaseBlockstore,
   file: AwaitIterable<Buffer>,
@@ -63,9 +80,7 @@ export const processFileToIPLDFormat = (
     compression: undefined,
   },
 ): Promise<CID> => {
-  if (filename && filename.length > MAX_NAME_SIZE) {
-    throw new Error(`Filename is too long: ${filename.length} > ${MAX_NAME_SIZE}`)
-  }
+  validateFilenameLength(filename)
 
   return processBufferToIPLDFormat(blockstore, file, filename, totalSize, fileBuilders, {
     maxNodeSize,
@@ -83,9 +98,7 @@ export const processMetadataToIPLDFormat = async (
     maxLinkPerNode: DEFAULT_MAX_LINK_PER_NODE,
   },
 ): Promise<CID> => {
-  if (metadata.name && metadata.name.length > MAX_NAME_SIZE) {
-    throw new Error(`Filename is too long: ${metadata.name.length} > ${MAX_NAME_SIZE}`)
-  }
+  validateFilenameLength(metadata.name)
 
   const buffer = Buffer.from(stringifyMetadata(metadata))
 
@@ -119,9 +132,7 @@ const processBufferToIPLDFormat = async (
     compression: undefined,
   },
 ): Promise<CID> => {
-  if (filename && filename.length > MAX_NAME_SIZE) {
-    throw new Error(`Filename is too long: ${filename.length} > ${MAX_NAME_SIZE}`)
-  }
+  validateFilenameLength(filename)
 
   const bufferChunks = chunkBuffer(buffer, { maxChunkSize: maxNodeSize - NODE_METADATA_SIZE })
 
@@ -159,9 +170,7 @@ export const processBufferToIPLDFormatFromChunks = async (
     compression: undefined,
   },
 ): Promise<CID> => {
-  if (filename && filename.length > MAX_NAME_SIZE) {
-    throw new Error(`Filename is too long: ${filename.length} > ${MAX_NAME_SIZE}`)
-  }
+  validateFilenameLength(filename)
 
   let CIDs: CID[] = []
   for await (const chunk of chunks) {
@@ -254,9 +263,7 @@ export const processFolderToIPLDFormat = async (
     encryption: undefined,
   },
 ): Promise<CID> => {
-  if (name.length > MAX_NAME_SIZE) {
-    throw new Error(`Filename is too long: ${name.length} > ${MAX_NAME_SIZE}`)
-  }
+  validateFilenameLength(name)
 
   let cids = children
   let depth = 0

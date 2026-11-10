@@ -1,7 +1,7 @@
 {
   "name": "@autonomys/auto-dag-data",
   "packageManager": "yarn@4.17.0",
-  "version": "1.6.16",
+  "version": "1.7.0",
   "license": "MIT",
   "main": "dist/index.js",
   "type": "module",
@@ -24,7 +24,7 @@
   },
   "exports": {
     ".": "./dist/index.js",
-    "./protobuf": "./dist/metadata/onchain/protobuf/onchainMetadata.js"
+    "./protobuf": "./dist/metadata/onchain/protobuf/OnchainMetadata.js"
   },
   "engines": {
     "node": ">=22.0.0"
@@ -39,11 +39,12 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@autonomys/asynchronous": "^1.6.16",
+    "@autonomys/asynchronous": "^1.7.0",
     "@ipld/dag-pb": "^4.1.7",
     "@webbuf/blake3": "^3.8.0",
     "@webbuf/fixedbuf": "^3.8.0",
     "@webbuf/webbuf": "^3.8.0",
+    "buffer": "^6.0.3",
     "fflate": "^0.8.3",
     "multiformats": "^13.4.2",
     "protobufjs": "^7.6.4",

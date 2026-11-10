@@ -6,7 +6,8 @@ import {
   bufferToIterable,
   fileToIterable,
 } from '@autonomys/asynchronous'
-import mime from 'mime-types'
+import { Buffer } from 'buffer'
+import { lookupMimeType } from '../utils/mimeType'
 import { progressToPercentage } from '../utils/misc'
 import { publicDownloadUrl } from './calls/download'
 import { apiCalls } from './calls/index'
@@ -85,7 +86,7 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
           : undefined,
       }
       const fileUpload = await apiCalls.createFileUpload(api, {
-        mimeType: mime.lookup(file.name) || undefined,
+        mimeType: lookupMimeType(file.name),
         filename: file.name,
         uploadOptions,
       })
@@ -138,7 +139,7 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
         : undefined,
     }
     const fileUpload = await apiCalls.createFileUpload(api, {
-      mimeType: mime.lookup(file.name) || undefined,
+      mimeType: lookupMimeType(file.name),
       filename: file.name,
       uploadOptions,
     })
@@ -239,7 +240,7 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
         {
           read: () => fileToIterable(file),
           name: file.name,
-          mimeType: mime.lookup(file.name) || undefined,
+          mimeType: lookupMimeType(file.name),
           size: file.size,
           path: file.webkitRelativePath,
         },
@@ -285,11 +286,12 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
 
     const metadata = await apiCalls.getObjectMetadata(api, { cid })
 
+    if (metadata.uploadOptions?.encryption && !password) {
+      throw new Error('Password is required to decrypt the file')
+    }
+
     let iterable = asyncFromStream(await apiCalls.downloadObject(api, { cid }))
-    if (metadata.uploadOptions?.encryption) {
-      if (!password) {
-        throw new Error('Password is required to decrypt the file')
-      }
+    if (metadata.uploadOptions?.encryption && password) {
       iterable = decryptFile(iterable, password, {
         algorithm: EncryptionAlgorithm.AES_256_GCM,
       })
@@ -322,7 +324,8 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
 
   const getPaymentContractInfo = () => apiCalls.getPaymentContractInfo(api)
 
-  const createPaymentIntent = (sizeBytes: number) => apiCalls.createPaymentIntent(api, sizeBytes)
+  const createPaymentIntent = (sizeBytes: number | bigint) =>
+    apiCalls.createPaymentIntent(api, sizeBytes)
 
   const getUsdcPaymentTarget = () => apiCalls.getUsdcPaymentTarget(api)
 

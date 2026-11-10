@@ -1,4 +1,4 @@
-import { stringify } from '@autonomys/auto-utils'
+import { stringify } from '@autonomys/auto-utils/string'
 import KeyvSqlite from '@keyvhq/sqlite'
 import Keyv from 'keyv'
 import { LRUCache } from 'lru-cache'

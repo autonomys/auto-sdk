@@ -1,4 +1,4 @@
-import { NetworkId } from '@autonomys/auto-utils'
+import { NetworkId } from '@autonomys/auto-utils/constants'
 
 export type AutoDriveNetwork = keyof typeof apiEndpoints
 

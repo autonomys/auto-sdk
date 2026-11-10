@@ -1,4 +1,5 @@
 import type { PBLink } from '@ipld/dag-pb'
+import { Buffer } from 'buffer'
 import { CID } from 'multiformats/cid'
 import { FileUploadOptions, OffchainMetadata } from '../metadata/index.js'
 import { encodeIPLDNodeData, MetadataType } from '../metadata/onchain/index.js'

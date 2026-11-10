@@ -1,3 +1,4 @@
+import { Buffer } from 'buffer'
 import { decompressFile } from '../compression/index.js'
 import { decryptFile } from '../encryption/index.js'
 import {

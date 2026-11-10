@@ -10,6 +10,7 @@ import {
   processFileToIPLDFormat,
   processFolderToIPLDFormat,
   processMetadataToIPLDFormat,
+  validateFilenameLength,
 } from '../src/ipld/chunker'
 import { createNode, decodeNode, encodeNode, PBNode } from '../src/ipld/utils'
 import { fileMetadata, IPLDNodeData, MetadataType, OffchainMetadata } from '../src/metadata'
@@ -107,6 +108,51 @@ describe('chunker', () => {
       await expect(
         processBufferToIPLDFormatFromChunks(blockstore, [], name, BigInt(5), fileBuilders),
       ).rejects.toThrow(`Filename is too long: ${name.length} > ${MAX_NAME_SIZE}`)
+    })
+
+    it('create a file with multi-byte name exceeding byte limit should throw an error', async () => {
+      // 100 '€' characters: length is 100 (<= 255), but UTF-8 byte length is 300 (> 255)
+      const name = '€'.repeat(100)
+      const byteLength = Buffer.byteLength(name, 'utf8')
+      const blockstore = new MemoryBlockstore()
+      expect(() =>
+        processFileToIPLDFormat(blockstore, [Buffer.from('hello')], BigInt(5), name),
+      ).toThrow(`Filename is too long: ${byteLength} > ${MAX_NAME_SIZE}`)
+    })
+
+    it('create a file from buffer chunks with multi-byte name exceeding byte limit should throw an error', async () => {
+      // 150 'ñ' characters: length is 150 (<= 255), but UTF-8 byte length is 300 (> 255)
+      const name = 'ñ'.repeat(150)
+      const byteLength = Buffer.byteLength(name, 'utf8')
+      const blockstore = new MemoryBlockstore()
+      await expect(
+        processBufferToIPLDFormatFromChunks(blockstore, [], name, BigInt(5), fileBuilders),
+      ).rejects.toThrow(`Filename is too long: ${byteLength} > ${MAX_NAME_SIZE}`)
+    })
+
+    it('create a single-chunk file with valid multi-byte name at max chunk size should succeed', async () => {
+      // 85 '€' characters = 255 bytes (exact maximum allowed name size)
+      const name = '€'.repeat(85)
+      expect(Buffer.byteLength(name, 'utf8')).toBe(MAX_NAME_SIZE)
+
+      const blockstore = new MemoryBlockstore()
+      const dataSize = DEFAULT_MAX_CHUNK_SIZE
+      const data = Buffer.alloc(dataSize, 1)
+
+      const cid = await processFileToIPLDFormat(
+        blockstore,
+        bufferToIterable(data),
+        BigInt(dataSize),
+        name,
+      )
+
+      expect(cid).toBeDefined()
+      const nodes = await nodesFromBlockstore(blockstore)
+      expect(nodes.length).toBe(1)
+
+      const decoded = IPLDNodeData.decode(nodes[0]?.Data ?? new Uint8Array())
+      expect(decoded.name).toBe(name)
+      expect(decoded.size?.toString()).toBe(dataSize.toString())
     })
 
     it('create a file dag with inlinks', async () => {
@@ -223,6 +269,16 @@ describe('chunker', () => {
         `Filename is too long: ${name.length} > ${MAX_NAME_SIZE}`,
       )
     })
+
+    it('create a folder with multi-byte name exceeding byte limit should throw an error', async () => {
+      // 70 '😀' emoji: length is 140 (<= 255), but UTF-8 byte length is 280 (> 255)
+      const name = '😀'.repeat(70)
+      const byteLength = Buffer.byteLength(name, 'utf8')
+      const blockstore = new MemoryBlockstore()
+      await expect(processFolderToIPLDFormat(blockstore, [], name, BigInt(1000))).rejects.toThrow(
+        `Filename is too long: ${byteLength} > ${MAX_NAME_SIZE}`,
+      )
+    })
   })
 
   describe('asyncronous file creation', () => {
@@ -333,6 +389,17 @@ describe('chunker', () => {
       const blockstore = new MemoryBlockstore()
       await expect(processMetadataToIPLDFormat(blockstore, metadata)).rejects.toThrow(
         `Filename is too long: ${name.length} > ${MAX_NAME_SIZE}`,
+      )
+    })
+
+    it('create metadata with multi-byte name exceeding byte limit should throw an error', async () => {
+      const name = '€'.repeat(100)
+      const byteLength = Buffer.byteLength(name, 'utf8')
+      const metadata = fileMetadata(cidOfNode(createNode(Buffer.from(''))), [], BigInt(0), name)
+
+      const blockstore = new MemoryBlockstore()
+      await expect(processMetadataToIPLDFormat(blockstore, metadata)).rejects.toThrow(
+        `Filename is too long: ${byteLength} > ${MAX_NAME_SIZE}`,
       )
     })
 
@@ -451,6 +518,35 @@ describe('chunker', () => {
           IPLDNodeData.decode(node.Data ?? new Uint8Array()).type === MetadataType.FolderInlink,
       )
       inlinks.map((e) => e.Links.length).forEach((e) => expect(e).toBe(maxLinkPerNode))
+    })
+
+    describe('validateFilenameLength', () => {
+      it('allows undefined or empty filename', () => {
+        expect(() => validateFilenameLength(undefined)).not.toThrow()
+        expect(() => validateFilenameLength('')).not.toThrow()
+      })
+
+      it('allows ASCII filename up to 255 bytes', () => {
+        expect(() => validateFilenameLength('a'.repeat(MAX_NAME_SIZE))).not.toThrow()
+      })
+
+      it('throws for ASCII filename exceeding 255 bytes', () => {
+        expect(() => validateFilenameLength('a'.repeat(MAX_NAME_SIZE + 1))).toThrow(
+          `Filename is too long: 256 > ${MAX_NAME_SIZE}`,
+        )
+      })
+
+      it('allows multi-byte filename up to 255 bytes', () => {
+        // 85 '€' = 255 bytes
+        expect(() => validateFilenameLength('€'.repeat(85))).not.toThrow()
+      })
+
+      it('throws for multi-byte filename exceeding 255 bytes even if character count <= 255', () => {
+        // 86 '€' = 258 bytes (86 chars <= 255, but 258 bytes > 255)
+        expect(() => validateFilenameLength('€'.repeat(86))).toThrow(
+          `Filename is too long: 258 > ${MAX_NAME_SIZE}`,
+        )
+      })
     })
   })
 })
