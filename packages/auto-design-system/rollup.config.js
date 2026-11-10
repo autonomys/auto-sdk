@@ -18,7 +18,7 @@ export default {
     },
   ],
   plugins: [
-    peerDepsExternal(),
+    peerDepsExternal({ includeDependencies: true }),
     resolve(),
     commonjs(),
     typescript({
@@ -27,5 +27,5 @@ export default {
     }),
   ],
   // CSS will be extracted and processed separately via PostCSS
-  external: ['@autonomys/design-tokens', /\.css$/],
+  external: [/\.css$/],
 }
