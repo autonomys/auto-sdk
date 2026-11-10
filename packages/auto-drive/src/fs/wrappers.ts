@@ -1,11 +1,11 @@
 import { fileToIterable } from '@autonomys/asynchronous'
 import fs from 'fs'
-import mime from 'mime-types'
 import { apiCalls } from '../api/index'
 import { GenericFileWithinFolder } from '../api/models/file'
 import { constructFromFileSystemEntries } from '../api/models/folderTree'
 import { CompressionAlgorithm } from '../api/models/uploads'
 import { AutoDriveApi, UploadFileOptions } from '../api/types'
+import { lookupMimeType } from '../utils/mimeType'
 import { progressToPercentage } from '../utils/misc'
 import { constructZipFromTreeAndFileSystemPaths, getFiles } from './utils'
 
@@ -39,7 +39,7 @@ export const uploadFileFromFilepath = (
     {
       read: () => fs.createReadStream(filePath),
       name,
-      mimeType: mime.lookup(name) || undefined,
+      mimeType: lookupMimeType(name),
       size: fs.statSync(filePath).size,
     },
     {
@@ -119,7 +119,7 @@ export const uploadFolderFromFolderPath = async (
   const genericFiles: GenericFileWithinFolder[] = files.map((file) => ({
     read: () => fs.createReadStream(file),
     name: file.split('/').pop()!,
-    mimeType: mime.lookup(file.split('/').pop()!) || undefined,
+    mimeType: lookupMimeType(file.split('/').pop()!),
     size: fs.statSync(file).size,
     path: file,
   }))

@@ -6,7 +6,8 @@ import {
   bufferToIterable,
   fileToIterable,
 } from '@autonomys/asynchronous'
-import mime from 'mime-types'
+import { Buffer } from 'buffer'
+import { lookupMimeType } from '../utils/mimeType'
 import { progressToPercentage } from '../utils/misc'
 import { publicDownloadUrl } from './calls/download'
 import { apiCalls } from './calls/index'
@@ -85,7 +86,7 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
           : undefined,
       }
       const fileUpload = await apiCalls.createFileUpload(api, {
-        mimeType: mime.lookup(file.name) || undefined,
+        mimeType: lookupMimeType(file.name),
         filename: file.name,
         uploadOptions,
       })
@@ -138,7 +139,7 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
         : undefined,
     }
     const fileUpload = await apiCalls.createFileUpload(api, {
-      mimeType: mime.lookup(file.name) || undefined,
+      mimeType: lookupMimeType(file.name),
       filename: file.name,
       uploadOptions,
     })
@@ -239,7 +240,7 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
         {
           read: () => fileToIterable(file),
           name: file.name,
-          mimeType: mime.lookup(file.name) || undefined,
+          mimeType: lookupMimeType(file.name),
           size: file.size,
           path: file.webkitRelativePath,
         },

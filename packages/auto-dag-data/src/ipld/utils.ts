@@ -1,4 +1,5 @@
 import { createNode, decode, encode, PBNode } from '@ipld/dag-pb'
+import { Buffer } from 'buffer'
 import { AwaitIterable } from 'interface-store'
 import { CID } from 'multiformats'
 

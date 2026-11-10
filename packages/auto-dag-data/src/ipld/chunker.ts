@@ -1,4 +1,5 @@
 import type { BaseBlockstore } from 'blockstore-core'
+import { Buffer } from 'buffer'
 import type { AwaitIterable } from 'interface-store'
 import { CID } from 'multiformats'
 import { cidOfNode } from '../cid/index.js'

@@ -28,5 +28,8 @@
     "ts-jest": "^29.4.11",
     "typescript": "^5.9.3"
   },
-  "gitHead": "ef4c21d683cad697f7015e52becd399a8ca2ed84"
+  "gitHead": "ef4c21d683cad697f7015e52becd399a8ca2ed84",
+  "dependencies": {
+    "buffer": "^6.0.3"
+  }
 }
