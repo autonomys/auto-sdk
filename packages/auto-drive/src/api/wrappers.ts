@@ -48,57 +48,56 @@ const uploadFileChunks = (
 }
 
 export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
-  const uploadFileFromInput = (
+  const uploadFileFromInput = async (
     file: File,
     options: UploadFileOptions = {},
     uploadChunkSize?: number,
   ): Promise<string> => {
     const { password = undefined, compression = true } = options
-    return new Promise(async (resolve) => {
-      const { compressFile, CompressionAlgorithm, encryptFile, EncryptionAlgorithm } =
-        await import('@autonomys/auto-dag-data')
-      let asyncIterable: AsyncIterable<Buffer> = fileToIterable(file)
 
-      if (compression) {
-        asyncIterable = compressFile(asyncIterable, {
-          level: 9,
-          algorithm: CompressionAlgorithm.ZLIB,
-        })
-      }
+    const { compressFile, CompressionAlgorithm, encryptFile, EncryptionAlgorithm } =
+      await import('@autonomys/auto-dag-data')
+    let asyncIterable: AsyncIterable<Buffer> = fileToIterable(file)
 
-      if (password) {
-        asyncIterable = encryptFile(asyncIterable, password, {
-          algorithm: EncryptionAlgorithm.AES_256_GCM,
-        })
-      }
-
-      const uploadOptions = {
-        compression: compression
-          ? {
-              level: 9,
-              algorithm: CompressionAlgorithm.ZLIB,
-            }
-          : undefined,
-        encryption: password
-          ? {
-              algorithm: EncryptionAlgorithm.AES_256_GCM,
-            }
-          : undefined,
-      }
-      const fileUpload = await apiCalls.createFileUpload(api, {
-        mimeType: lookupMimeType(file.name),
-        filename: file.name,
-        uploadOptions,
+    if (compression) {
+      asyncIterable = compressFile(asyncIterable, {
+        level: 9,
+        algorithm: CompressionAlgorithm.ZLIB,
       })
+    }
 
-      await uploadFileChunks(api, fileUpload.id, asyncIterable, uploadChunkSize, (bytes) => {
-        options.onProgress?.(progressToPercentage(bytes, file.size))
+    if (password) {
+      asyncIterable = encryptFile(asyncIterable, password, {
+        algorithm: EncryptionAlgorithm.AES_256_GCM,
       })
+    }
 
-      const result = await apiCalls.completeUpload(api, { uploadId: fileUpload.id })
-
-      resolve(result.cid)
+    const uploadOptions = {
+      compression: compression
+        ? {
+            level: 9,
+            algorithm: CompressionAlgorithm.ZLIB,
+          }
+        : undefined,
+      encryption: password
+        ? {
+            algorithm: EncryptionAlgorithm.AES_256_GCM,
+          }
+        : undefined,
+    }
+    const fileUpload = await apiCalls.createFileUpload(api, {
+      mimeType: lookupMimeType(file.name),
+      filename: file.name,
+      uploadOptions,
     })
+
+    await uploadFileChunks(api, fileUpload.id, asyncIterable, uploadChunkSize, (bytes) => {
+      options.onProgress?.(progressToPercentage(bytes, file.size))
+    })
+
+    const result = await apiCalls.completeUpload(api, { uploadId: fileUpload.id })
+
+    return result.cid
   }
 
   const uploadFile = async (
