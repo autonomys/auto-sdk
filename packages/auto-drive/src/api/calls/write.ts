@@ -118,13 +118,14 @@ export const publishObject = async (
 /**
  * Unpublishes an object by sending a request to the server.
  *
- * This function asks the server to remove the public download links of the
- * object identified by its CID, so they stop working. It is the reverse of
- * `publishObject`. The object itself is not deleted.
+ * This function asks the server to remove the caller's public download links
+ * of the object identified by its CID, so they stop working. It is the reverse
+ * of `publishObject`. The object itself is not deleted.
  *
- * The server removes every public link of the CID, and answers 204 with an
- * empty body, also when the object was not published, so calling it twice is
- * safe. It answers 403 when the links were created by another user.
+ * The server removes only the links created by the caller. Links that other
+ * users created for the same CID keep working. It answers 204 with an empty
+ * body, also when the caller has no link for the object, so calling it twice
+ * is safe.
  *
  * @param {AutoDriveApiHandler} api - The API instance used to send requests.
  * @param {ArgsWithoutPagination<{ cid: string }>} query - The query parameters containing the CID of the object to unpublish.

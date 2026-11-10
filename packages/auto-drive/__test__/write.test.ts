@@ -17,8 +17,8 @@ const createMockApi = (response: () => Response) => {
   return { api, sendAPIRequest }
 }
 
-// What auto-drive sends: 204 with no body on success (also when the object
-// was not published), and `{ error: <message> }` for a 403.
+// What auto-drive sends: 204 with no body on success (also when the caller has
+// no link for the object), and `{ error: <message> }` for an uncoded error.
 const noContent = () => new Response(null, { status: 204 })
 const forbidden = () =>
   new Response(JSON.stringify({ error: 'User does not have access to this object' }), {

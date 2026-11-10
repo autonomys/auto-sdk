@@ -320,16 +320,15 @@ export interface AutoDriveApi extends AutoDriveApiHandler {
    */
   publishObject: (cid: string) => Promise<string>
   /**
-   * Unpublishes an object, so its public download links stop working.
+   * Unpublishes an object, so the public download links you created for it stop working.
    *
-   * The object itself is not deleted. Every public link of the CID is removed.
-   * Unpublishing an object that is not published does nothing, so it is safe
-   * to call it twice.
+   * The object itself is not deleted. Only your own links are removed: links
+   * that other users created for the same CID keep working. Unpublishing an
+   * object you have not published does nothing, so it is safe to call it twice.
    *
    * @param cid {string} - The CID of the object to unpublish.
    * @returns {Promise<void>} - A promise that resolves when the object has been unpublished.
-   * @throws {Error} If the server answers with an error, e.g. 403 when the links
-   *   were created by another user.
+   * @throws {Error} If the server answers with an error.
    */
   unpublishObject: (cid: string) => Promise<void>
   /**

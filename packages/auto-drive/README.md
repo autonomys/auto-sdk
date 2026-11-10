@@ -291,7 +291,7 @@ try {
 
 ### Remove a shareable download link
 
-To stop sharing an object, call `unpublishObject`. Its public download links stop working, but the object itself is not deleted. Calling it on an object that is not published does nothing.
+To stop sharing an object, call `unpublishObject`. The public download links you created for it stop working, but the object itself is not deleted. Links that other users created for the same CID keep working. Calling it on an object you have not published does nothing.
 
 ```typescript
 try {
