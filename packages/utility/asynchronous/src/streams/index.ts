@@ -13,14 +13,23 @@ import { finished, PassThrough, Readable } from 'stream'
  * gone before the source ends, the source is destroyed.
  */
 export async function forkStream(stream: Readable): Promise<[Readable, Readable]> {
-  const branches: [PassThrough, PassThrough] = [new PassThrough(), new PassThrough()]
+  // `pipe` only unpipes a destroyed branch on its 'close' event. A chunk written to the branch
+  // before then fails, and `pipe` pauses the source for a 'drain' that never comes, stalling the
+  // other branch.
+  const createBranch = () =>
+    new PassThrough({
+      destroy(error, callback) {
+        stream.unpipe(this)
+        callback(error)
+      },
+    })
+  const branches: [PassThrough, PassThrough] = [createBranch(), createBranch()]
 
   let openBranches = branches.length
   for (const branch of branches) {
     // Source errors are forwarded to every branch, so a branch whose consumer has not
     // attached its own 'error' listener yet must not turn that into an unhandled error.
     branch.on('error', () => {})
-    // `pipe` unpipes a branch that closes early and keeps feeding the other one.
     // Once no branch is left, nothing will read the source, so release it.
     branch.once('close', () => {
       openBranches--

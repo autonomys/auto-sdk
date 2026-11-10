@@ -120,6 +120,43 @@ describe('streams', () => {
       await sourceClosed
       expect(source.destroyed).toBe(true)
     })
+
+    describe.each([
+      { position: 'first', destroyedIndex: 0 },
+      { position: 'second', destroyedIndex: 1 },
+    ])(
+      'when the $position branch is destroyed while the source has data ready',
+      ({ destroyedIndex }) => {
+        const chunkSize = 64 * 1024
+        const chunkCount = 16
+        const forkSourceWithDataReady = () =>
+          forkStream(
+            Readable.from(
+              Array.from({ length: chunkCount }, () => Buffer.alloc(chunkSize)),
+              { objectMode: false },
+            ),
+          )
+
+        it('should keep feeding the other branch when destroyed right after the fork', async () => {
+          const branches = await forkSourceWithDataReady()
+          const otherBranchData = readAll(branches[1 - destroyedIndex])
+
+          branches[destroyedIndex].destroy(new Error('cache write failed'))
+
+          await expect(otherBranchData).resolves.toHaveLength(chunkSize * chunkCount)
+        })
+
+        it('should keep feeding the other branch when destroyed on a later microtask', async () => {
+          const branches = await forkSourceWithDataReady()
+          const otherBranchData = readAll(branches[1 - destroyedIndex])
+
+          await Promise.resolve()
+          branches[destroyedIndex].destroy(new Error('cache write failed'))
+
+          await expect(otherBranchData).resolves.toHaveLength(chunkSize * chunkCount)
+        })
+      },
+    )
   })
 
   describe('httpBodyToStream', () => {
