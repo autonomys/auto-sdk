@@ -353,8 +353,13 @@ export const waitForPaymentCompletion = async (
 /**
  * Maps one row of `/credits/batches` or `/credits/batches/expiring` to a
  * {@link CreditBatch}, keeping only the documented fields.
+ *
+ * Auto Drive versions before `refundedUploadBytes` was added don't send it, so
+ * a missing value is mapped to `null`.
  */
-const toCreditBatch = (batch: CreditBatch): CreditBatch => ({
+const toCreditBatch = (
+  batch: Omit<CreditBatch, 'refundedUploadBytes'> & { refundedUploadBytes?: string | null },
+): CreditBatch => ({
   id: batch.id,
   accountId: batch.accountId,
   intentId: batch.intentId,
@@ -367,6 +372,7 @@ const toCreditBatch = (batch: CreditBatch): CreditBatch => ({
   expired: batch.expired,
   refundedAt: batch.refundedAt,
   refundTxHash: batch.refundTxHash,
+  refundedUploadBytes: batch.refundedUploadBytes ?? null,
   createdAt: batch.createdAt,
   updatedAt: batch.updatedAt,
 })

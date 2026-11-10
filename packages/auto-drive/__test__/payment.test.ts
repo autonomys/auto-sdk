@@ -489,6 +489,7 @@ const CREDIT_BATCH = {
   expired: false,
   refundedAt: null,
   refundTxHash: null,
+  refundedUploadBytes: null,
   createdAt: '2026-10-07T12:00:00.000Z',
   updatedAt: '2026-10-08T09:30:00.000Z',
 }
@@ -501,6 +502,7 @@ const REFUNDED_BATCH = {
   expired: true,
   refundedAt: '2026-10-10T08:00:00.000Z',
   refundTxHash: '0x' + 'ef'.repeat(32),
+  refundedUploadBytes: '536870912',
 }
 
 describe('getCreditSummary', () => {
@@ -550,6 +552,16 @@ describe('getCreditBatches / getExpiringCreditBatches', () => {
 
     await expect(getCreditBatches(api)).resolves.toEqual([REFUNDED_BATCH, CREDIT_BATCH])
     expect(sendAPIRequest).toHaveBeenCalledWith('/credits/batches', { method: 'GET' })
+  })
+
+  it('maps a missing refundedUploadBytes to null, as older Auto Drive versions omit it', async () => {
+    const olderBatch: Record<string, unknown> = { ...REFUNDED_BATCH }
+    delete olderBatch.refundedUploadBytes
+    const { api } = createMockApi({ 'GET /credits/batches': () => json(200, [olderBatch]) })
+
+    await expect(getCreditBatches(api)).resolves.toStrictEqual([
+      { ...REFUNDED_BATCH, refundedUploadBytes: null },
+    ])
   })
 
   it('returns an empty list when nothing was bought', async () => {

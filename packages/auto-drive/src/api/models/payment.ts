@@ -209,10 +209,12 @@ export type CreditBatch = {
   expiresAt: string
   /** Whether Auto Drive has marked the batch as expired with credits left unused */
   expired: boolean
-  /** ISO 8601 timestamp of the refund, or `null` if the batch was not refunded. A refund sets the remaining bytes to zero. */
+  /** ISO 8601 timestamp of the refund, or `null` if the batch was not refunded. A refund sets the remaining bytes to zero; `refundedUploadBytes` says how many it took back. */
   refundedAt: string | null
   /** Hash of the AI3 refund transaction, or `null` if not refunded (or refunded before Auto Drive recorded it) */
   refundTxHash: string | null
+  /** Upload bytes the refund took back (what the batch had left when it was refunded), or `null` if not refunded (or refunded before Auto Drive recorded it) */
+  refundedUploadBytes: string | null
   /** ISO 8601 timestamp when the batch was created */
   createdAt: string
   /** ISO 8601 timestamp of the last change to the batch */
