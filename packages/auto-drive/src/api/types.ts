@@ -48,7 +48,7 @@ export interface AutoDriveApi extends AutoDriveApiHandler {
    * @param {string} [options.password] - The password for encryption (optional).
    * @param {boolean} [options.compression=true] - Whether to compress the file (optional).
    * @param {number} [uploadChunkSize] - The size of each chunk to upload (optional).
-   * @returns {PromisedObservable<UploadFileStatus>} - An observable that emits the upload status.
+   * @returns {Promise<string>} - The CID of the uploaded file.
    * @throws {Error} - Throws an error if the upload fails at any stage.
    */
   uploadFileFromInput: (
