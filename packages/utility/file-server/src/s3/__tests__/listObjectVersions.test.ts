@@ -1,9 +1,30 @@
+import { deleteMarkerVersionId } from '../deleteMarker.js'
 import {
   buildListVersionsResult,
   computeListObjectVersionsDbLimit,
   finalizeListObjectVersions,
+  isValidVersionIdMarker,
+  S3DeleteMarkerEntry,
+  S3VersionEntry,
   S3VersionRow,
 } from '../listObjectVersions.js'
+
+describe('isValidVersionIdMarker', () => {
+  it('returns true for positive integer strings', () => {
+    expect(isValidVersionIdMarker('0')).toBe(true)
+    expect(isValidVersionIdMarker('1')).toBe(true)
+    expect(isValidVersionIdMarker('12345678901234567890')).toBe(true)
+  })
+
+  it('returns false for invalid inputs', () => {
+    expect(isValidVersionIdMarker('')).toBe(false)
+    expect(isValidVersionIdMarker('-1')).toBe(false)
+    expect(isValidVersionIdMarker('1.5')).toBe(false)
+    expect(isValidVersionIdMarker('12abc')).toBe(false)
+    expect(isValidVersionIdMarker(' 123 ')).toBe(false)
+    expect(isValidVersionIdMarker('foo')).toBe(false)
+  })
+})
 
 describe('computeListObjectVersionsDbLimit', () => {
   it('returns maxKeys + 1 to detect truncation from storage', () => {
@@ -15,6 +36,8 @@ describe('computeListObjectVersionsDbLimit', () => {
 })
 
 describe('buildListVersionsResult', () => {
+  const defaultOpts = { keyMarker: null, versionIdMarker: null }
+
   const row = (overrides: Partial<S3VersionRow> = {}): S3VersionRow => ({
     id: '1',
     key: 'file.txt',
@@ -28,7 +51,7 @@ describe('buildListVersionsResult', () => {
   })
 
   it('returns empty result when given no rows', () => {
-    const result = buildListVersionsResult([], 100)
+    const result = buildListVersionsResult([], 100, defaultOpts)
     expect(result).toEqual({
       versions: [],
       deleteMarkers: [],
@@ -40,7 +63,7 @@ describe('buildListVersionsResult', () => {
 
   it('handles a single active key with one version', () => {
     const r = row({ id: '1', key: 'photo.png', cid: 'bafk-photo', md5: 'deadbeef' })
-    const result = buildListVersionsResult([r], 10)
+    const result = buildListVersionsResult([r], 10, defaultOpts)
 
     expect(result.versions).toEqual([
       {
@@ -60,7 +83,7 @@ describe('buildListVersionsResult', () => {
 
   it('falls back to CID for ETag when md5 is null or undefined', () => {
     const r = row({ id: '1', key: 'legacy.txt', cid: 'bafk-legacy', md5: null })
-    const result = buildListVersionsResult([r], 10)
+    const result = buildListVersionsResult([r], 10, defaultOpts)
 
     expect(result.versions[0].etag).toBe('"bafk-legacy"')
   })
@@ -70,7 +93,7 @@ describe('buildListVersionsResult', () => {
     const v2 = row({ id: '2', key: 'doc.pdf', cid: 'cid-v2', lastModified: new Date(2000) })
     const v1 = row({ id: '1', key: 'doc.pdf', cid: 'cid-v1', lastModified: new Date(1000) })
 
-    const result = buildListVersionsResult([v3, v2, v1], 10)
+    const result = buildListVersionsResult([v3, v2, v1], 10, defaultOpts)
 
     expect(result.versions.map((v) => ({ cid: v.versionId, isLatest: v.isLatest }))).toEqual([
       { cid: 'cid-v3', isLatest: true },
@@ -97,7 +120,7 @@ describe('buildListVersionsResult', () => {
       pointerDeletedAt: deletedTime,
     })
 
-    const result = buildListVersionsResult([v2, v1], 10)
+    const result = buildListVersionsResult([v2, v1], 10, defaultOpts)
 
     expect(result.deleteMarkers).toEqual([
       {
@@ -121,7 +144,7 @@ describe('buildListVersionsResult', () => {
       ownerRemoved: true,
     })
 
-    const result = buildListVersionsResult([v1], 10)
+    const result = buildListVersionsResult([v1], 10, defaultOpts)
 
     expect(result.deleteMarkers).toEqual([
       {
@@ -149,10 +172,34 @@ describe('buildListVersionsResult', () => {
       pointerDeletedAt: deletedTime,
     })
 
-    const result = buildListVersionsResult([v2, v1], 10)
+    const result = buildListVersionsResult([v2, v1], 10, defaultOpts)
 
     expect(result.deleteMarkers).toHaveLength(1)
     expect(result.deleteMarkers[0].key).toBe('single-dm.txt')
+  })
+
+  it('handles both delete signals set at once, preferring pointerDeletedAt timestamp', () => {
+    const pointerDeletedAt = new Date(5000)
+    const v1 = row({
+      id: '1',
+      key: 'both-deleted.txt',
+      cid: 'cid-v1',
+      lastModified: new Date(1500),
+      pointerDeletedAt,
+      ownerRemoved: true,
+    })
+
+    const result = buildListVersionsResult([v1], 10, defaultOpts)
+
+    expect(result.deleteMarkers).toEqual([
+      {
+        key: 'both-deleted.txt',
+        versionId: 'dm-5000',
+        isLatest: true,
+        lastModified: pointerDeletedAt,
+      },
+    ])
+    expect(result.versions[0].isLatest).toBe(false)
   })
 
   it('synthesises only ONE delete marker for an owner-removed key with multiple versions and null deleted_at', () => {
@@ -181,7 +228,7 @@ describe('buildListVersionsResult', () => {
       pointerDeletedAt: null,
     })
 
-    const result = buildListVersionsResult([v3, v2, v1], 10)
+    const result = buildListVersionsResult([v3, v2, v1], 10, defaultOpts)
 
     expect(result.deleteMarkers).toEqual([
       {
@@ -201,7 +248,7 @@ describe('buildListVersionsResult', () => {
     const keyB1 = row({ id: '3', key: 'b.txt', cid: 'b-1' })
     const keyC1 = row({ id: '4', key: 'c.txt', cid: 'c-1' })
 
-    const result = buildListVersionsResult([keyA1, keyA2, keyB1, keyC1], 2)
+    const result = buildListVersionsResult([keyA1, keyA2, keyB1, keyC1], 2, defaultOpts)
 
     expect(result.isTruncated).toBe(true)
     expect(result.nextKeyMarker).toBe('a.txt')
@@ -214,7 +261,7 @@ describe('buildListVersionsResult', () => {
     const keyA2 = row({ id: '1', key: 'a.txt', cid: 'a-2', pointerDeletedAt: new Date(5000) })
 
     // Page 1 with maxKeys: 1 emits only the synthesized delete marker
-    const page1 = buildListVersionsResult([keyA1, keyA2], 1)
+    const page1 = buildListVersionsResult([keyA1, keyA2], 1, defaultOpts)
     expect(page1.deleteMarkers).toHaveLength(1)
     expect(page1.versions).toHaveLength(0)
     expect(page1.isTruncated).toBe(true)
@@ -245,7 +292,7 @@ describe('buildListVersionsResult', () => {
     })
     const keyC = row({ id: '1', key: 'c.txt', cid: 'c-1' })
 
-    const result = buildListVersionsResult([keyA, keyB, keyC], 2)
+    const result = buildListVersionsResult([keyA, keyB, keyC], 2, defaultOpts)
 
     expect(result.isTruncated).toBe(true)
     expect(result.nextKeyMarker).toBe('b.txt')
@@ -265,7 +312,7 @@ describe('buildListVersionsResult', () => {
     const keyA = row({ id: '2', key: 'a.txt', cid: 'a-1' })
     const keyB = row({ id: '1', key: 'b.txt', cid: 'b-1' })
 
-    const result = buildListVersionsResult([keyA, keyB], 2)
+    const result = buildListVersionsResult([keyA, keyB], 2, defaultOpts)
 
     expect(result.isTruncated).toBe(false)
     expect(result.nextKeyMarker).toBeNull()
@@ -275,7 +322,7 @@ describe('buildListVersionsResult', () => {
 
   it('handles maxKeys <= 0 gracefully without crashing', () => {
     const keyA = row({ id: '1', key: 'a.txt', cid: 'a-1' })
-    const result = buildListVersionsResult([keyA], 0)
+    const result = buildListVersionsResult([keyA], 0, defaultOpts)
 
     expect(result.isTruncated).toBe(true)
     expect(result.nextKeyMarker).toBeNull()
@@ -303,6 +350,7 @@ describe('finalizeListObjectVersions', () => {
       bucket: 'test-bucket',
       prefix: '',
       keyMarker: null,
+      versionIdMarker: null,
       maxKeys: 10,
     }
 
@@ -330,6 +378,7 @@ describe('finalizeListObjectVersions', () => {
       bucket: 'test-bucket',
       prefix: '',
       keyMarker: null,
+      versionIdMarker: null,
       maxKeys: 2,
     }
     const dbLimit = computeListObjectVersionsDbLimit(params.maxKeys) // 3
@@ -348,6 +397,7 @@ describe('finalizeListObjectVersions', () => {
       bucket: 'test-bucket',
       prefix: '',
       keyMarker: null,
+      versionIdMarker: null,
       maxKeys: 2,
     }
     const result = finalizeListObjectVersions(params, rows, 2)
@@ -362,6 +412,18 @@ describe('simulated storage paging against acceptance criteria (#790)', () => {
   // Raw storage rows before SQL-level DISTINCT ON (key, cid) deduplication.
   // In the database, IDs are monotonic auto-incrementing integers (newest write has highest ID).
   const rawDataset: S3VersionRow[] = [
+    // Mixed-case key to verify binary UTF-8 sorting (ASCII uppercase precedes lowercase)
+    {
+      id: '13',
+      key: 'Zeta',
+      cid: 'cid-zeta-1',
+      lastModified: new Date(4500),
+      size: 150n,
+      md5: 'md5-zeta',
+      pointerDeletedAt: null,
+      ownerRemoved: false,
+    },
+
     // Deleted key with multiple versions and a repeated CID
     {
       id: '12',
@@ -491,7 +553,7 @@ describe('simulated storage paging against acceptance criteria (#790)', () => {
   const deduplicatedStorageRows: S3VersionRow[] = (() => {
     const seen = new Set<string>()
     const sorted = [...rawDataset].sort((a, b) => {
-      const keyCmp = a.key.localeCompare(b.key)
+      const keyCmp = a.key < b.key ? -1 : a.key > b.key ? 1 : 0
       if (keyCmp !== 0) return keyCmp
       return Number(BigInt(b.id) - BigInt(a.id))
     })
@@ -524,21 +586,107 @@ describe('simulated storage paging against acceptance criteria (#790)', () => {
       .slice(0, limit)
   }
 
-  // Baseline: single unbounded listing across all deduplicated rows
-  const baselineResult = finalizeListObjectVersions(
+  // Explicit handwritten expected entries to avoid self-referential baseline testing
+  const expectedDeleteMarkers: S3DeleteMarkerEntry[] = [
     {
-      bucket: 'test-bucket',
-      prefix: '',
-      keyMarker: null,
-      versionIdMarker: null,
-      maxKeys: 1000,
+      key: 'archive.tar',
+      versionId: deleteMarkerVersionId(new Date(6000)),
+      isLatest: true,
+      lastModified: new Date(6000),
     },
-    deduplicatedStorageRows,
-    deduplicatedStorageRows.length + 1,
-  )
+    {
+      key: 'trashed.doc',
+      versionId: deleteMarkerVersionId(new Date(3500)),
+      isLatest: true,
+      lastModified: new Date(3500),
+    },
+  ]
 
-  it('matches baseline exactly across every page size from 1 to fixture size without dropping or duplicating versions', () => {
-    const totalEntries = baselineResult.versions.length + baselineResult.deleteMarkers.length
+  const expectedVersions: S3VersionEntry[] = [
+    {
+      key: 'Zeta',
+      versionId: 'cid-zeta-1',
+      isLatest: true,
+      lastModified: new Date(4500),
+      etag: '"md5-zeta"',
+      size: 150n,
+    },
+    {
+      key: 'archive.tar',
+      versionId: 'cid-tar-3',
+      isLatest: false,
+      lastModified: new Date(3000),
+      etag: '"md5-3"',
+      size: 300n,
+    },
+    {
+      key: 'archive.tar',
+      versionId: 'cid-tar-2',
+      isLatest: false,
+      lastModified: new Date(2000),
+      etag: '"md5-2"',
+      size: 200n,
+    },
+    {
+      key: 'archive.tar',
+      versionId: 'cid-tar-1',
+      isLatest: false,
+      lastModified: new Date(1000),
+      etag: '"md5-1"',
+      size: 100n,
+    },
+    {
+      key: 'data.csv',
+      versionId: 'cid-csv-2',
+      isLatest: true,
+      lastModified: new Date(2500),
+      etag: '"md5-csv2"',
+      size: 250n,
+    },
+    {
+      key: 'data.csv',
+      versionId: 'cid-csv-1',
+      isLatest: false,
+      lastModified: new Date(1200),
+      etag: '"md5-csv1"',
+      size: 120n,
+    },
+    {
+      key: 'logo.png',
+      versionId: 'cid-png-1',
+      isLatest: true,
+      lastModified: new Date(800),
+      etag: '"md5-png"',
+      size: 80n,
+    },
+    {
+      key: 'notes.txt',
+      versionId: 'cid-notes-2',
+      isLatest: true,
+      lastModified: new Date(4000),
+      etag: '"md5-notes2"',
+      size: 40n,
+    },
+    {
+      key: 'notes.txt',
+      versionId: 'cid-notes-1',
+      isLatest: false,
+      lastModified: new Date(2000),
+      etag: '"md5-notes1"',
+      size: 20n,
+    },
+    {
+      key: 'trashed.doc',
+      versionId: 'cid-trash-1',
+      isLatest: false,
+      lastModified: new Date(3500),
+      etag: '"md5-trash"',
+      size: 500n,
+    },
+  ]
+
+  it('matches explicit expected listing across every page size from 1 to fixture size without dropping or duplicating versions', () => {
+    const totalEntries = expectedVersions.length + expectedDeleteMarkers.length
 
     for (let maxKeys = 1; maxKeys <= totalEntries + 2; maxKeys++) {
       const pagedVersions = []
@@ -579,9 +727,9 @@ describe('simulated storage paging against acceptance criteria (#790)', () => {
         currentVersionIdMarker = page.nextVersionIdMarker
       }
 
-      // Assert complete equality with baseline unbounded listing
-      expect(pagedVersions).toEqual(baselineResult.versions)
-      expect(pagedDeleteMarkers).toEqual(baselineResult.deleteMarkers)
+      // Assert complete equality with explicit expected listing
+      expect(pagedVersions).toEqual(expectedVersions)
+      expect(pagedDeleteMarkers).toEqual(expectedDeleteMarkers)
     }
   })
 })

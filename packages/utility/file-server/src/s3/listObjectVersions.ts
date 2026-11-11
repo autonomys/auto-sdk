@@ -28,7 +28,7 @@ export interface ListObjectVersionsParams {
   bucket: string
   prefix: string
   keyMarker: string | null
-  versionIdMarker?: string | null
+  versionIdMarker: string | null
   maxKeys: number
 }
 
@@ -74,9 +74,16 @@ export interface S3VersionRow {
 
 /** Options for buildListVersionsResult. */
 export interface BuildListVersionsOptions {
-  keyMarker?: string | null
-  versionIdMarker?: string | null
+  keyMarker: string | null
+  versionIdMarker: string | null
 }
+
+/**
+ * Validates whether a versionIdMarker is a valid integer string.
+ *
+ * Used before passing the marker to storage queries to prevent unhandled BigInt parsing errors.
+ */
+export const isValidVersionIdMarker = (marker: string): boolean => /^\d+$/.test(marker)
 
 /**
  * How many version rows to fetch from storage for a given ListObjectVersions page.
@@ -100,6 +107,8 @@ export const computeListObjectVersionsDbLimit = (maxKeys: number): number => max
  *   (e.g. a key written `x`, `y`, `x` lists as `x, y, x` with `maxKeys = 1`).
  * - Rows must arrive sorted by `key ASC`, then newest first per key (`id DESC`).
  * - Storage pagination resumes by `(key, id)` via `key > keyMarker OR (key = keyMarker AND id < versionIdMarker)`.
+ * - Note on concurrent writes: If an older CID is rewritten under an already-paginated key while
+ *   listing is in progress, its newer row ID will not be observed once the cursor has moved past that key.
  *
  * In accordance with S3 specification (#790):
  * - maxKeys bounds the total number of Version + DeleteMarker entries per page.
@@ -121,13 +130,12 @@ export const computeListObjectVersionsDbLimit = (maxKeys: number): number => max
 export const buildListVersionsResult = (
   rows: S3VersionRow[],
   maxKeys: number,
-  options?: BuildListVersionsOptions,
+  options: BuildListVersionsOptions,
 ): Pick<
   ListObjectVersionsResult,
   'versions' | 'deleteMarkers' | 'isTruncated' | 'nextKeyMarker' | 'nextVersionIdMarker'
 > => {
-  const keyMarker = options?.keyMarker ?? null
-  const versionIdMarker = options?.versionIdMarker ?? null
+  const { keyMarker, versionIdMarker } = options
 
   if (maxKeys <= 0) {
     return {
@@ -171,11 +179,11 @@ export const buildListVersionsResult = (
       })
       entriesEmitted++
       lastKey = key
-      // If maxKeys is reached right after emitting the delete marker, set the cursor to
-      // BigInt(firstRowId) + BigInt(1) so storage's `id < idm` filter resumes at firstRowId inclusive,
-      // while resumingMidKey suppresses duplicate delete marker emission.
-      lastVersionIdMarker = (BigInt(firstRowId) + BigInt(1)).toString()
       if (entriesEmitted >= maxKeys) {
+        // If maxKeys is reached right after emitting the delete marker, set the cursor to
+        // BigInt(firstRowId) + BigInt(1) so storage's `id < idm` filter resumes at firstRowId inclusive,
+        // while resumingMidKey suppresses duplicate delete marker emission.
+        lastVersionIdMarker = (BigInt(firstRowId) + BigInt(1)).toString()
         break
       }
     }
@@ -247,7 +255,7 @@ export const finalizeListObjectVersions = (
     prefix,
     maxKeys,
     keyMarker,
-    versionIdMarker: versionIdMarker ?? null,
+    versionIdMarker,
     isTruncated,
     nextKeyMarker: isTruncated ? nextKeyMarker : null,
     nextVersionIdMarker: isTruncated ? nextVersionIdMarker : null,
