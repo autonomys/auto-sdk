@@ -1,7 +1,7 @@
 import { ArgsWithoutPagination, ArgsWithPagination } from '../../utils/types'
 import { PaginatedResult } from '../models/common'
 import { ObjectInformation, ObjectSearchResult, ObjectSummary, Scope } from '../models/objects'
-import { UserInfo } from '../models/user'
+import { AccountInfo } from '../models/user'
 import { AutoDriveApiHandler } from '../types'
 import { toApiError } from './errors'
 
@@ -243,11 +243,11 @@ export const getObjectMetadata = async (
  * Get upload and download limits of the user
  *
  * @param {AutoDriveApiHandler} api - The API instance used to send requests.
- * @returns {Promise<UserInfo>} - A promise that resolves to the user info.
+ * @returns {Promise<AccountInfo>} - A promise that resolves to the account info.
  * @throws {Error} - Throws an error if the request fails.
  */
-export const getMe = async (api: AutoDriveApiHandler): Promise<UserInfo> => {
-  const response = await api.sendAPIRequest('@me', {
+export const getMe = async (api: AutoDriveApiHandler): Promise<AccountInfo> => {
+  const response = await api.sendAPIRequest('/accounts/@me', {
     method: 'GET',
   })
   if (!response.ok) {

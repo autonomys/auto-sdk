@@ -1,4 +1,6 @@
-export type SubscriptionGranularity = 'monthly'
+export type AccountModel = 'monthly' | 'one_off'
+
+export type SubscriptionGranularity = AccountModel
 
 export type SubscriptionInfo = {
   id: string
@@ -10,22 +12,16 @@ export type SubscriptionInfo = {
   pendingDownloadCredits: number
 }
 
-export enum UserRole {
-  User = 'User',
-  Admin = 'Admin',
-}
-
-export type User = {
-  oauthProvider: string
-  oauthUserId: string
-  role: UserRole
-  downloadCredits: number
-  uploadCredits: number
-  publicId: string
-  onboarded: true
-}
-
-export type UserInfo = {
-  user: User
-  subscription: SubscriptionInfo
+/** The authenticated account, as `GET /accounts/@me` returns it. */
+export type AccountInfo = {
+  id: string
+  organizationId: string
+  uploadLimit: number
+  downloadLimit: number
+  model: AccountModel
+  isPartner: boolean
+  maxPurchasedBytes: number | null
+  creditExpiryDays: number | null
+  pendingUploadCredits: number
+  pendingDownloadCredits: number
 }
