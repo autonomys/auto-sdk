@@ -116,6 +116,36 @@ export const publishObject = async (
 }
 
 /**
+ * Unpublishes an object by sending a request to the server.
+ *
+ * This function asks the server to remove the caller's public download links
+ * of the object identified by its CID, so they stop working. It is the reverse
+ * of `publishObject`. The object itself is not deleted.
+ *
+ * The server removes only the links created by the caller. Links that other
+ * users created for the same CID keep working. It answers 204 with an empty
+ * body, also when the caller has no link for the object, so calling it twice
+ * is safe.
+ *
+ * @param {AutoDriveApiHandler} api - The API instance used to send requests.
+ * @param {ArgsWithoutPagination<{ cid: string }>} query - The query parameters containing the CID of the object to unpublish.
+ * @returns {Promise<void>} - A promise that resolves when the object has been successfully unpublished.
+ * @throws {Error} - Throws an error with the server's message if the request fails.
+ */
+export const unpublishObject = async (
+  api: AutoDriveApiHandler,
+  query: ArgsWithoutPagination<{ cid: string }>,
+): Promise<void> => {
+  const response = await api.sendAPIRequest(`/objects/${query.cid}/unpublish`, {
+    method: 'POST',
+  })
+
+  if (!response.ok) {
+    throw await toApiError(response, 'Failed to unpublish object')
+  }
+}
+
+/**
  * Reports an object by sending a request to the server.
  *
  * This function sends a request to the server to report an object identified

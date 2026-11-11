@@ -28,6 +28,12 @@ const sourceFailingAfterFirstChunk = (error: Error) => {
 const waitForClose = (stream: Readable) =>
   new Promise<void>((resolve) => stream.once('close', () => resolve()))
 
+const nextMacrotask = () => new Promise((resolve) => setImmediate(resolve))
+
+const { Readable: ReadableStreamV3 } = jest.requireActual<{ Readable: typeof Readable }>(
+  'readable-stream',
+)
+
 describe('streams', () => {
   describe('forkStream', () => {
     it('should duplicate readable stream into two independent streams', async () => {
@@ -75,6 +81,14 @@ describe('streams', () => {
       await expect(readAll(branch2)).rejects.toMatchObject(prematureClose)
     })
 
+    it('should error both branches when the source emits a chunk that is not bytes', async () => {
+      const [branch1, branch2] = await forkStream(Readable.from([{ not: 'bytes' }]))
+
+      const invalidChunk = { code: 'ERR_INVALID_ARG_TYPE' }
+      await expect(readAll(branch1)).rejects.toMatchObject(invalidChunk)
+      await expect(readAll(branch2)).rejects.toMatchObject(invalidChunk)
+    })
+
     it('should end both branches when a duplex source closes after its readable side ends', async () => {
       const source = new Duplex({ read() {}, write: (_chunk, _encoding, callback) => callback() })
 
@@ -120,6 +134,73 @@ describe('streams', () => {
       await sourceClosed
       expect(source.destroyed).toBe(true)
     })
+
+    describe.each([
+      { position: 'first', destroyedIndex: 0 },
+      { position: 'second', destroyedIndex: 1 },
+    ])(
+      'when the $position branch is destroyed while the source has data ready',
+      ({ destroyedIndex }) => {
+        const chunkSize = 64 * 1024
+        const chunkCount = 16
+        const forkSourceWithDataReady = () =>
+          forkStream(
+            Readable.from(
+              Array.from({ length: chunkCount }, () => Buffer.alloc(chunkSize)),
+              { objectMode: false },
+            ),
+          )
+
+        it('should keep feeding the other branch when destroyed right after the fork', async () => {
+          const branches = await forkSourceWithDataReady()
+          const otherBranchData = readAll(branches[1 - destroyedIndex])
+
+          branches[destroyedIndex].destroy(new Error('cache write failed'))
+
+          await expect(otherBranchData).resolves.toHaveLength(chunkSize * chunkCount)
+        })
+
+        it('should keep feeding the other branch when destroyed on a later microtask', async () => {
+          const branches = await forkSourceWithDataReady()
+          const otherBranchData = readAll(branches[1 - destroyedIndex])
+
+          await Promise.resolve()
+          branches[destroyedIndex].destroy(new Error('cache write failed'))
+
+          await expect(otherBranchData).resolves.toHaveLength(chunkSize * chunkCount)
+        })
+      },
+    )
+
+    it.each([
+      { kind: 'Node', createSource: () => new Readable({ read() {} }) },
+      { kind: 'readable-stream v3', createSource: () => new ReadableStreamV3({ read() {} }) },
+    ])(
+      "should keep feeding a branch whose 'data' handler destroys the other branch, with a $kind source",
+      async ({ createSource }) => {
+        const source = createSource()
+        const [readBranch, destroyedBranch] = await forkStream(source)
+        const received: Buffer[] = []
+        readBranch.on('data', (chunk) => {
+          received.push(chunk)
+          if (received.length === 2) {
+            destroyedBranch.destroy(new Error('cache write failed'))
+          }
+        })
+        const readBranchEnded = new Promise((resolve) => readBranch.once('end', resolve))
+
+        // Pushing into a flowing source passes each chunk straight through to the read branch's
+        // handler, so the destroy happens while the source is still emitting that chunk
+        for (const chunk of ['a', 'b', 'c', 'd']) {
+          await nextMacrotask()
+          source.push(Buffer.from(chunk))
+        }
+        source.push(null)
+
+        await readBranchEnded
+        expect(Buffer.concat(received).toString()).toBe('abcd')
+      },
+    )
   })
 
   describe('httpBodyToStream', () => {

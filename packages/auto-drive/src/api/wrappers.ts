@@ -307,17 +307,25 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
   }
 
   const getPendingCredits = async (): Promise<{ upload: number; download: number }> => {
-    const me = await apiCalls.getMe(api)
+    const account = await apiCalls.getMe(api)
     return {
-      upload: me.subscription.pendingUploadCredits,
-      download: me.subscription.pendingDownloadCredits,
+      upload: account.pendingUploadCredits,
+      download: account.pendingDownloadCredits,
     }
   }
 
   const getSubscriptionInfo = async (): Promise<SubscriptionInfo> => {
-    const me = await apiCalls.getMe(api)
+    const account = await apiCalls.getMe(api)
 
-    return me.subscription
+    return {
+      id: account.id,
+      organizationId: account.organizationId,
+      uploadLimit: account.uploadLimit,
+      downloadLimit: account.downloadLimit,
+      granularity: account.model,
+      pendingUploadCredits: account.pendingUploadCredits,
+      pendingDownloadCredits: account.pendingDownloadCredits,
+    }
   }
 
   const getStoragePrice = () => apiCalls.getStoragePrice(api)
@@ -341,11 +349,19 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
   const waitForPaymentCompletion = (intentId: string, options?: PollOptions) =>
     apiCalls.waitForPaymentCompletion(api, intentId, options)
 
+  const getCreditSummary = () => apiCalls.getCreditSummary(api)
+
+  const getCreditBatches = () => apiCalls.getCreditBatches(api)
+
+  const getExpiringCreditBatches = () => apiCalls.getExpiringCreditBatches(api)
+
   const publishObject = async (cid: string): Promise<string> => {
     const result = await apiCalls.publishObject(api, { cid })
 
     return publicDownloadUrl(api, result.result)
   }
+
+  const unpublishObject = (cid: string): Promise<void> => apiCalls.unpublishObject(api, { cid })
 
   const getMyFiles = async (
     page: number,
@@ -401,7 +417,11 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
     watchPaymentTransaction,
     getPaymentIntentStatus,
     waitForPaymentCompletion,
+    getCreditSummary,
+    getCreditBatches,
+    getExpiringCreditBatches,
     publishObject,
+    unpublishObject,
     getMyFiles,
     searchByNameOrCIDInMyFiles,
     searchByNameOrCID,
