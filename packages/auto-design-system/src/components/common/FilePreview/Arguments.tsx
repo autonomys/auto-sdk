@@ -1,5 +1,11 @@
 import React, { FC, useEffect, useState } from 'react'
-import ReactJson from 'react-json-view'
+import ReactJsonImport from 'react-json-view'
+
+// react-json-view is CommonJS with the component on `.default`. Consumers load this package's
+// ESM build as strict ESM ("type": "module") and Rollup's CJS build requires it as is, so in
+// both cases the default import is the module object rather than the component.
+const ReactJson =
+  (ReactJsonImport as unknown as { default?: typeof ReactJsonImport }).default ?? ReactJsonImport
 
 type Props = {
   file: Blob
