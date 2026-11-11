@@ -108,6 +108,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-design-system@workspace:packages/auto-design-system"
   dependencies:
+    "@autonomys/auto-dag-data": "npm:^1.7.0"
+    "@autonomys/auto-utils": "npm:^1.7.0"
     "@autonomys/design-tokens": "npm:^1.7.0"
     "@babel/core": "npm:^7.29.7"
     "@babel/preset-env": "npm:^7.29.7"
@@ -119,11 +121,8 @@ __metadata:
     "@polkadot/react-identicon": "npm:^3.16.7"
     "@radix-ui/react-accordion": "npm:^1.2.14"
     "@radix-ui/react-dialog": "npm:^1.1.17"
-    "@radix-ui/react-dismissable-layer": "npm:^1.1.13"
     "@radix-ui/react-icons": "npm:^1.3.2"
     "@radix-ui/react-select": "npm:^2.3.1"
-    "@radix-ui/react-slot": "npm:^1.3.0"
-    "@radix-ui/react-use-callback-ref": "npm:^1.1.2"
     "@rollup/plugin-commonjs": "npm:^29.0.3"
     "@rollup/plugin-node-resolve": "npm:^16.0.3"
     "@rollup/plugin-typescript": "npm:^12.3.0"
@@ -140,15 +139,13 @@ __metadata:
     "@types/events": "npm:^3.0.3"
     "@types/react": "npm:^18.3.31"
     "@types/react-dom": "npm:^18.3.7"
-    "@types/react-is": "npm:^19.2.0"
     assert: "npm:^2.1.0"
     autoprefixer: "npm:^10.5.2"
     babel-loader: "npm:^10.1.1"
     buffer: "npm:^6.0.3"
-    class-variance-authority: "npm:^0.7.1"
     clsx: "npm:^2.1.1"
     concurrently: "npm:^10.0.3"
-    dompurify: "npm:^3.4.11"
+    dompurify: "npm:^3.4.17"
     events: "npm:^3.3.0"
     lucide-react: "npm:^0.577.0"
     next: "npm:^15.5.19"
@@ -158,7 +155,6 @@ __metadata:
     process: "npm:^0.11.10"
     react: "npm:18.3.1"
     react-dom: "npm:18.3.1"
-    react-icons: "npm:^5.7.0"
     react-is: "npm:^19.2.7"
     react-json-view: "npm:^1.21.3"
     rollup: "npm:^4.62.2"
@@ -172,8 +168,15 @@ __metadata:
     util: "npm:^0.12.5"
     webpack: "npm:^5.108.3"
   peerDependencies:
+    "@autonomys/auto-dag-data": ^1.6.0
+    "@autonomys/auto-utils": ^1.7.0
     react: ^18.2.0
     react-dom: ^18.2.0
+  peerDependenciesMeta:
+    "@autonomys/auto-dag-data":
+      optional: true
+    "@autonomys/auto-utils":
+      optional: true
   languageName: unknown
   linkType: soft
 
@@ -7506,7 +7509,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@radix-ui/react-dismissable-layer@npm:1.1.13, @radix-ui/react-dismissable-layer@npm:^1.1.13":
+"@radix-ui/react-dismissable-layer@npm:1.1.13":
   version: 1.1.13
   resolution: "@radix-ui/react-dismissable-layer@npm:1.1.13"
   dependencies:
@@ -8100,7 +8103,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@radix-ui/react-use-callback-ref@npm:1.1.2, @radix-ui/react-use-callback-ref@npm:^1.1.2":
+"@radix-ui/react-use-callback-ref@npm:1.1.2":
   version: 1.1.2
   resolution: "@radix-ui/react-use-callback-ref@npm:1.1.2"
   peerDependencies:
@@ -10547,24 +10550,6 @@ __metadata:
   peerDependencies:
     "@types/react": ^18.0.0
   checksum: 10c0/8bd309e2c3d1604a28a736a24f96cbadf6c05d5288cfef8883b74f4054c961b6b3a5e997fd5686e492be903c8f3380dba5ec017eff3906b1256529cd2d39603e
-  languageName: node
-  linkType: hard
-
-"@types/react-is@npm:^19.2.0":
-  version: 19.2.0
-  resolution: "@types/react-is@npm:19.2.0"
-  dependencies:
-    "@types/react": "npm:*"
-  checksum: 10c0/ff49ac8b8d439c3377e11d2f9f491ed4f8c8ee800225a40093c7941715ca8ccbde1b3833c5435354a8e39305fd0a163019d97f033c9402bc4b46f515851d2290
-  languageName: node
-  linkType: hard
-
-"@types/react@npm:*":
-  version: 19.1.4
-  resolution: "@types/react@npm:19.1.4"
-  dependencies:
-    csstype: "npm:^3.0.2"
-  checksum: 10c0/501350d4f9cef13c5dd1b1496fa70ebaff52f6fa359b623b51c9d817e5bc4333fa3c8b7a6a4cbc88c643385052d66a243c3ceccfd6926062f917a2dd0535f6b3
   languageName: node
   linkType: hard
 
@@ -14095,7 +14080,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dompurify@npm:^3.4.11":
+"dompurify@npm:^3.4.17":
   version: 3.4.17
   resolution: "dompurify@npm:3.4.17"
   dependencies:
@@ -22590,15 +22575,6 @@ __metadata:
     react: ^0.14.8 || ^15.0.1 || ^16.0.0 || ^17.0.1 || ^18.0.0
     react-dom: ^0.14.8 || ^15.0.1 || ^16.0.0 || ^17.0.1 || ^18.0.0
   checksum: 10c0/0d60a0ea758529c32a706d0c69d70b69fb94de3c46442fffdee34f08f51ffceddbb5395b41dfd1565895653e9f60f98ca525835be9d5db1f16d6b22be12f4cd4
-  languageName: node
-  linkType: hard
-
-"react-icons@npm:^5.7.0":
-  version: 5.7.0
-  resolution: "react-icons@npm:5.7.0"
-  peerDependencies:
-    react: "*"
-  checksum: 10c0/cc5ae92e61ef9d8fc83cb3f3ac2710deab9174c5831bdaf2a94b099acfc91074a60d4b3adfd3165dcb9b21799ca6c760b3f4f6596d75198c1ed2ea44240818c8
   languageName: node
   linkType: hard
 
