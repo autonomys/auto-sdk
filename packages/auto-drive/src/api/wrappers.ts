@@ -256,17 +256,25 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
   }
 
   const getPendingCredits = async (): Promise<{ upload: number; download: number }> => {
-    const me = await apiCalls.getMe(api)
+    const account = await apiCalls.getMe(api)
     return {
-      upload: me.subscription.pendingUploadCredits,
-      download: me.subscription.pendingDownloadCredits,
+      upload: account.pendingUploadCredits,
+      download: account.pendingDownloadCredits,
     }
   }
 
   const getSubscriptionInfo = async (): Promise<SubscriptionInfo> => {
-    const me = await apiCalls.getMe(api)
+    const account = await apiCalls.getMe(api)
 
-    return me.subscription
+    return {
+      id: account.id,
+      organizationId: account.organizationId,
+      uploadLimit: account.uploadLimit,
+      downloadLimit: account.downloadLimit,
+      granularity: account.model,
+      pendingUploadCredits: account.pendingUploadCredits,
+      pendingDownloadCredits: account.pendingDownloadCredits,
+    }
   }
 
   const getStoragePrice = () => apiCalls.getStoragePrice(api)
