@@ -1,6 +1,8 @@
-import { formatUnits, shannonsToAi3 } from '@autonomys/auto-utils'
+import { formatUnits, shannonsToAi3 } from '@autonomys/auto-utils/number'
 import {
+  CreditBatch,
   CreditCapExceededError,
+  CreditSummary,
   PaymentApiError,
   PaymentContractInfo,
   PaymentIntent,
@@ -12,6 +14,7 @@ import {
   UsdcPaymentTarget,
 } from '../models/payment'
 import { AutoDriveApiHandler } from '../types'
+import { parseErrorBody, toApiError } from './errors'
 
 const TERMINAL_STATUSES: PaymentIntentTerminalStatus[] = [
   'COMPLETED',
@@ -21,28 +24,12 @@ const TERMINAL_STATUSES: PaymentIntentTerminalStatus[] = [
 ]
 
 /**
- * Builds a {@link PaymentApiError} from a non-OK response. Auto Drive sends
- * `{ error: <CODE>, message }` for coded errors and `{ error: <message> }` for
- * uncoded ones; anything else (including non-JSON) is used as-is.
+ * Builds a {@link PaymentApiError} from a non-OK response. A body that
+ * {@link parseErrorBody} cannot read is used as-is.
  */
 const toPaymentApiError = async (response: Response, context: string) => {
   const body = await response.text()
-  let code: string | undefined
-  let message = body
-  try {
-    const parsed: unknown = JSON.parse(body)
-    if (parsed && typeof parsed === 'object') {
-      const { error, message: parsedMessage } = parsed as { error?: unknown; message?: unknown }
-      if (typeof parsedMessage === 'string') {
-        code = typeof error === 'string' ? error : undefined
-        message = parsedMessage
-      } else if (typeof error === 'string') {
-        message = error
-      }
-    }
-  } catch {
-    // Not JSON: keep the raw body
-  }
+  const { code, message = body } = parseErrorBody(body)
   const fullMessage = `${context}: ${response.status} ${message}`
   if (code === 'CREDIT_CAP_EXCEEDED') {
     return new CreditCapExceededError(fullMessage, response.status)
@@ -87,7 +74,7 @@ export const getStoragePrice = async (api: AutoDriveApiHandler): Promise<Storage
   const response = await api.sendAPIRequest('/intents/price', { method: 'GET' })
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch storage price: ${response.status} ${response.statusText}`)
+    throw await toApiError(response, 'Failed to fetch storage price')
   }
 
   const { price, pricePerGB } = await response.json()
@@ -106,9 +93,7 @@ export const getPaymentContractInfo = async (
   const response = await api.sendAPIRequest('/intents/contract', { method: 'GET' })
 
   if (!response.ok) {
-    throw new Error(
-      `Failed to fetch payment contract info: ${response.status} ${response.statusText}`,
-    )
+    throw await toApiError(response, 'Failed to fetch payment contract info')
   }
 
   return response.json()
@@ -134,10 +119,12 @@ export const getPaymentContractInfo = async (
  * 2. Send `intent.ai3AmountWei` to `intent.contractAddress` via `payIntent(intent.intentId)`
  * 3. Call `watchPaymentTransaction(api, intent.intentId, txHash)` — submit the tx hash
  * 4. Call `waitForPaymentCompletion(api, intent.intentId)` — poll until COMPLETED
+ * @param api - AutoDriveApiHandler instance.
+ * @param sizeBytes - Purchase size in bytes: a positive safe integer or a bigint.
  */
 export const createPaymentIntent = async (
   api: AutoDriveApiHandler,
-  sizeBytes: number,
+  sizeBytes: number | bigint,
 ): Promise<PaymentIntent> => {
   const body = { requestedBytes: toRequestedBytes(sizeBytes) }
 
@@ -361,4 +348,109 @@ export const waitForPaymentCompletion = async (
   throw new Error(
     `Timed out waiting for payment intent "${intentId}" to complete after ${timeoutMs}ms`,
   )
+}
+
+/**
+ * Maps one row of `/credits/batches` or `/credits/batches/expiring` to a
+ * {@link CreditBatch}, keeping only the documented fields.
+ *
+ * Auto Drive versions before `refundedUploadBytes` was added don't send it, so
+ * a missing value is mapped to `null`.
+ */
+const toCreditBatch = (
+  batch: Omit<CreditBatch, 'refundedUploadBytes'> & { refundedUploadBytes?: string | null },
+): CreditBatch => ({
+  id: batch.id,
+  accountId: batch.accountId,
+  intentId: batch.intentId,
+  uploadBytesOriginal: batch.uploadBytesOriginal,
+  uploadBytesRemaining: batch.uploadBytesRemaining,
+  downloadBytesOriginal: batch.downloadBytesOriginal,
+  downloadBytesRemaining: batch.downloadBytesRemaining,
+  purchasedAt: batch.purchasedAt,
+  expiresAt: batch.expiresAt,
+  expired: batch.expired,
+  refundedAt: batch.refundedAt,
+  refundTxHash: batch.refundTxHash,
+  refundedUploadBytes: batch.refundedUploadBytes ?? null,
+  createdAt: batch.createdAt,
+  updatedAt: batch.updatedAt,
+})
+
+/**
+ * Returns the account's purchased storage credits: bytes left, the next expiry,
+ * and how much more it can buy before it reaches the per-user credit cap.
+ *
+ * Only credits bought with a payment intent are counted. `getPendingCredits`
+ * reports the free allocation, which this does not include. Use this call to
+ * check whether a payment was credited, for example after
+ * `waitForPaymentCompletion` returns `'EXPIRED'`, and use `maxPurchasableBytes`
+ * to size a purchase before you create an intent.
+ *
+ * Requires an API key. A 404 with no `code` means that the account cannot buy
+ * credits: Auto Drive hides the `/credits` routes from those accounts, as it
+ * does `/intents`.
+ *
+ * @throws {PaymentApiError} If Auto Drive answers with a non-OK status.
+ */
+export const getCreditSummary = async (api: AutoDriveApiHandler): Promise<CreditSummary> => {
+  const response = await api.sendAPIRequest('/credits/summary', { method: 'GET' })
+
+  if (!response.ok) {
+    throw await toPaymentApiError(response, 'Failed to get credit summary')
+  }
+
+  const summary = await response.json()
+  return {
+    uploadBytesRemaining: summary.uploadBytesRemaining,
+    totalPurchasedBytesOriginal: summary.totalPurchasedBytesOriginal,
+    downloadBytesRemaining: summary.downloadBytesRemaining,
+    nextExpiryDate: summary.nextExpiryDate,
+    batchCount: summary.batchCount,
+    canPurchase: summary.canPurchase,
+    maxPurchasableBytes: summary.maxPurchasableBytes,
+    googleVerified: summary.googleVerified,
+    expiryDays: summary.expiryDays,
+  }
+}
+
+/**
+ * Returns every credit purchase of the account, newest first, including
+ * purchases that have expired, been used up or been refunded.
+ *
+ * Requires an API key. A 404 with no `code` means that the account cannot buy credits.
+ *
+ * @throws {PaymentApiError} If Auto Drive answers with a non-OK status.
+ */
+export const getCreditBatches = async (api: AutoDriveApiHandler): Promise<CreditBatch[]> => {
+  const response = await api.sendAPIRequest('/credits/batches', { method: 'GET' })
+
+  if (!response.ok) {
+    throw await toPaymentApiError(response, 'Failed to get credit batches')
+  }
+
+  const batches: CreditBatch[] = await response.json()
+  return batches.map(toCreditBatch)
+}
+
+/**
+ * Returns the account's credit purchases that still have credits left and
+ * expire within the next 30 days, soonest expiry first. Use it to warn a user
+ * before unused credits are lost.
+ *
+ * Requires an API key. A 404 with no `code` means that the account cannot buy credits.
+ *
+ * @throws {PaymentApiError} If Auto Drive answers with a non-OK status.
+ */
+export const getExpiringCreditBatches = async (
+  api: AutoDriveApiHandler,
+): Promise<CreditBatch[]> => {
+  const response = await api.sendAPIRequest('/credits/batches/expiring', { method: 'GET' })
+
+  if (!response.ok) {
+    throw await toPaymentApiError(response, 'Failed to get expiring credit batches')
+  }
+
+  const batches: CreditBatch[] = await response.json()
+  return batches.map(toCreditBatch)
 }

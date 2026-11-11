@@ -1,4 +1,5 @@
 import { asyncByChunk } from '@autonomys/asynchronous'
+import { Buffer } from 'buffer'
 import { AwaitIterable } from 'interface-store'
 import { EncryptionAlgorithm, EncryptionOptions } from '../metadata/index.js'
 import type { PickPartial } from '../utils/types.js'

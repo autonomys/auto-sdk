@@ -5,7 +5,7 @@ import type { AddressOrPair, ApiDecoration, Signer, SignerResult } from '@polkad
 import type { InjectedAccountWithMeta } from '@polkadot/extension-inject/types'
 import type { KeyringPair } from '@polkadot/keyring/types'
 import type { KeypairType } from '@polkadot/util-crypto/types'
-import type { DomainParams, NetworkParams } from './network'
+import type { DomainParams, NetworkParams } from './network.js'
 
 export type Mnemonic = {
   mnemonic: string

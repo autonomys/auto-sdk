@@ -1,8 +1,11 @@
+import { Buffer } from 'buffer'
 import { ObjectSummary } from './models'
 import { AsyncDownload } from './models/asyncDownloads'
 import { PaginatedResult } from './models/common'
 import { GenericFile, GenericFileWithinFolder } from './models/file'
 import {
+  CreditBatch,
+  CreditSummary,
   PaymentContractInfo,
   PaymentIntent,
   PaymentIntentStatus,
@@ -205,7 +208,7 @@ export interface AutoDriveApi extends AutoDriveApiHandler {
    * `intent.ai3AmountWei` to the Credits Receiver contract via `payIntent(intent.intentId)`,
    * then call `watchPaymentTransaction` to notify Auto Drive.
    *
-   * @param sizeBytes - Upload size in bytes, as a positive safe integer. Sent to the
+   * @param sizeBytes - Upload size in bytes, as a positive safe integer or a bigint. Sent to the
    *   server as `requestedBytes` for the credit-cap check, and used by the SDK to
    *   compute `ai3AmountWei = shannonsPerByte × sizeBytes`.
    * @returns {Promise<PaymentIntent>} Intent details including amount, contract address, and expiry.
@@ -214,9 +217,9 @@ export interface AutoDriveApi extends AutoDriveApiHandler {
    * @throws {PaymentApiError} If Auto Drive refuses the intent for another reason.
    *   A 400 with no `code` means that a single purchase is larger than the whole
    *   cap. A 404 with no `code` means that the account cannot buy credits.
-   * @throws {TypeError} If `sizeBytes` is not a positive safe integer.
+   * @throws {TypeError} If `sizeBytes` is not a positive whole number.
    */
-  createPaymentIntent: (sizeBytes: number) => Promise<PaymentIntent>
+  createPaymentIntent: (sizeBytes: number | bigint) => Promise<PaymentIntent>
 
   // ---------------------------------------------------------------------------
   // Pay with USDC — credit purchase with USDC on Ethereum
@@ -310,6 +313,45 @@ export interface AutoDriveApi extends AutoDriveApiHandler {
     options?: PollOptions,
   ) => Promise<PaymentIntentTerminalStatus>
 
+  // ---------------------------------------------------------------------------
+  // Purchased credits — what the payment intents above have bought
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Returns the account's purchased storage credits: bytes left, the next expiry,
+   * and how much more it can buy before it reaches the per-user credit cap.
+   *
+   * Only credits bought with a payment intent are counted; `getPendingCredits`
+   * reports the free allocation. Use it to check whether a payment was credited
+   * (for example after `waitForPaymentCompletion` returns `'EXPIRED'`), and pass
+   * at most `maxPurchasableBytes` as `sizeBytes` to avoid a `CreditCapExceededError`.
+   *
+   * @returns {Promise<CreditSummary>} Totals across the account's active purchases.
+   * @throws {PaymentApiError} If Auto Drive answers with a non-OK status. A 404
+   *   with no `code` means that the account cannot buy credits.
+   */
+  getCreditSummary: () => Promise<CreditSummary>
+
+  /**
+   * Returns every credit purchase of the account, newest first, including
+   * purchases that have expired, been used up or been refunded.
+   *
+   * @returns {Promise<CreditBatch[]>} The account's purchase history.
+   * @throws {PaymentApiError} If Auto Drive answers with a non-OK status. A 404
+   *   with no `code` means that the account cannot buy credits.
+   */
+  getCreditBatches: () => Promise<CreditBatch[]>
+
+  /**
+   * Returns the account's credit purchases that still have credits left and
+   * expire within the next 30 days, soonest expiry first.
+   *
+   * @returns {Promise<CreditBatch[]>} The purchases to warn the user about.
+   * @throws {PaymentApiError} If Auto Drive answers with a non-OK status. A 404
+   *   with no `code` means that the account cannot buy credits.
+   */
+  getExpiringCreditBatches: () => Promise<CreditBatch[]>
+
   /**
    * Publishes an object by sending a request to the server.
    *
@@ -319,6 +361,18 @@ export interface AutoDriveApi extends AutoDriveApiHandler {
    * @returns {Promise<string>} - The public download URL of the published object.
    */
   publishObject: (cid: string) => Promise<string>
+  /**
+   * Unpublishes an object, so the public download links you created for it stop working.
+   *
+   * The object itself is not deleted. Only your own links are removed: links
+   * that other users created for the same CID keep working. Unpublishing an
+   * object you have not published does nothing, so it is safe to call it twice.
+   *
+   * @param cid {string} - The CID of the object to unpublish.
+   * @returns {Promise<void>} - A promise that resolves when the object has been unpublished.
+   * @throws {Error} If the server answers with an error.
+   */
+  unpublishObject: (cid: string) => Promise<void>
   /**
    * Gets the files of the current user.
    *

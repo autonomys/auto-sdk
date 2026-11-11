@@ -1,4 +1,5 @@
 import { bufferToAsyncIterable, fileToIterable } from '@autonomys/asynchronous'
+import { Buffer } from 'buffer'
 import { GenericFile } from '../api/models/file'
 
 const precomputeCidFromGenericFile = async (file: GenericFile) => {
@@ -35,7 +36,7 @@ const isGenericFile = (file: File | GenericFile | Buffer): file is GenericFile =
 }
 
 const isBuffer = (file: File | GenericFile | Buffer): file is Buffer => {
-  return file instanceof Buffer
+  return Buffer.isBuffer(file)
 }
 
 /**

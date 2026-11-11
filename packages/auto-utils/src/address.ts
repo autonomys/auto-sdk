@@ -1,7 +1,7 @@
 // file: src/address.ts
 
 import { decodeAddress, encodeAddress } from '@polkadot/keyring'
-import { DEFAULT_SS58_FORMAT } from './constants/wallet'
+import { DEFAULT_SS58_FORMAT } from './constants/wallet.js'
 
 /**
  * Converts an address to the standard Autonomys Network format with SS58 encoding.

@@ -1,23 +1,12 @@
-import { restoreObject, shareObject } from '../src/api/calls/write'
+import { restoreObject, shareObject, unpublishObject } from '../src/api/calls/write'
 import { AutoDriveApiHandler } from '../src/api/types'
+import { createApiInterface } from '../src/api/wrappers'
 
-type Route = (init: Partial<Request>, body?: BodyInit) => Response | Promise<Response>
+const CID = 'bafkr6ie6bmatqklzhvyjbvbeb5lg6lptibzpcxsmzv33ttplzdw2wsl2ta'
 
-const textResponse = (status: number, body: string = 'OK') =>
-  new Response(body, {
-    status,
-    headers: { 'Content-Type': 'text/plain' },
-  })
-
-const createMockApi = (routes: Record<string, Route>) => {
-  const sendAPIRequest = jest.fn(
-    async (url: string, init: Partial<Request>, body?: BodyInit): Promise<Response> => {
-      const route = routes[`${init.method} ${url}`]
-      if (!route) {
-        throw new Error(`Unexpected request: ${init.method} ${url}`)
-      }
-      return route(init, body)
-    },
+const createMockApi = (response: () => Response) => {
+  const sendAPIRequest = jest.fn<Promise<Response>, [string, Partial<Request>, BodyInit?]>(
+    async () => response(),
   )
   const api: AutoDriveApiHandler = {
     sendAPIRequest,
@@ -28,41 +17,73 @@ const createMockApi = (routes: Record<string, Route>) => {
   return { api, sendAPIRequest }
 }
 
-describe('Auto Drive write API calls', () => {
-  const testCid = 'bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi'
-
-  describe('restoreObject', () => {
-    it('sends POST /objects/:cid/restore and handles plain text 200 OK without JSON parse error', async () => {
-      const { api, sendAPIRequest } = createMockApi({
-        [`POST /objects/${testCid}/restore`]: () => textResponse(200, 'OK'),
-      })
-
-      await expect(restoreObject(api, { cid: testCid })).resolves.toBeUndefined()
-      expect(sendAPIRequest).toHaveBeenCalledWith(`/objects/${testCid}/restore`, {
-        method: 'POST',
-      })
-    })
+// What auto-drive sends: 204 with no body on success (also when the caller has
+// no link for the object), and `{ error: <message> }` for an uncoded error.
+const noContent = () => new Response(null, { status: 204 })
+const forbidden = () =>
+  new Response(JSON.stringify({ error: 'User does not have access to this object' }), {
+    status: 403,
+    headers: { 'Content-Type': 'application/json' },
+  })
+// What auto-drive's `res.sendStatus(200)` sends: a plain-text `OK`, not JSON.
+const plainTextOk = () =>
+  new Response('OK', {
+    status: 200,
+    headers: { 'Content-Type': 'text/plain; charset=utf-8' },
   })
 
-  describe('shareObject', () => {
-    it('sends POST /objects/:cid/share with publicId and handles plain text 200 OK', async () => {
-      let receivedBody: string | undefined
-      const { api, sendAPIRequest } = createMockApi({
-        [`POST /objects/${testCid}/share`]: (_init, body) => {
-          receivedBody = body as string
-          return textResponse(200, 'OK')
-        },
-      })
+describe('unpublishObject', () => {
+  it('sends a POST to the unpublish endpoint of the CID', async () => {
+    const { api, sendAPIRequest } = createMockApi(noContent)
 
-      await expect(
-        shareObject(api, { cid: testCid, publicId: 'user-public-id-123' }),
-      ).resolves.toBeUndefined()
-      expect(sendAPIRequest).toHaveBeenCalledWith(
-        `/objects/${testCid}/share`,
-        expect.objectContaining({ method: 'POST' }),
-        JSON.stringify({ publicId: 'user-public-id-123' }),
-      )
-      expect(receivedBody).toEqual(JSON.stringify({ publicId: 'user-public-id-123' }))
-    })
+    await unpublishObject(api, { cid: CID })
+
+    expect(sendAPIRequest).toHaveBeenCalledTimes(1)
+    expect(sendAPIRequest).toHaveBeenCalledWith(`/objects/${CID}/unpublish`, { method: 'POST' })
+  })
+
+  it('resolves on a 204 with an empty body', async () => {
+    const { api } = createMockApi(noContent)
+
+    await expect(unpublishObject(api, { cid: CID })).resolves.toBeUndefined()
+  })
+
+  it('throws with the server message when the request fails', async () => {
+    const { api } = createMockApi(forbidden)
+
+    await expect(unpublishObject(api, { cid: CID })).rejects.toThrow(
+      'Failed to unpublish object: User does not have access to this object',
+    )
+  })
+
+  it('is exposed by createApiInterface', async () => {
+    const { api, sendAPIRequest } = createMockApi(noContent)
+
+    await expect(createApiInterface(api).unpublishObject(CID)).resolves.toBeUndefined()
+    expect(sendAPIRequest).toHaveBeenCalledWith(`/objects/${CID}/unpublish`, { method: 'POST' })
+  })
+})
+
+describe('restoreObject', () => {
+  it('sends a POST to the restore endpoint and resolves on a plain-text 200 OK', async () => {
+    const { api, sendAPIRequest } = createMockApi(plainTextOk)
+
+    await expect(restoreObject(api, { cid: CID })).resolves.toBeUndefined()
+    expect(sendAPIRequest).toHaveBeenCalledWith(`/objects/${CID}/restore`, { method: 'POST' })
+  })
+})
+
+describe('shareObject', () => {
+  it('sends the public ID to the share endpoint and resolves on a plain-text 200 OK', async () => {
+    const { api, sendAPIRequest } = createMockApi(plainTextOk)
+
+    await expect(
+      shareObject(api, { cid: CID, publicId: 'user-public-id-123' }),
+    ).resolves.toBeUndefined()
+    expect(sendAPIRequest).toHaveBeenCalledWith(
+      `/objects/${CID}/share`,
+      expect.objectContaining({ method: 'POST' }),
+      JSON.stringify({ publicId: 'user-public-id-123' }),
+    )
   })
 })
