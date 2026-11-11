@@ -1,4 +1,4 @@
-import { unpublishObject } from '../src/api/calls/write'
+import { restoreObject, shareObject, unpublishObject } from '../src/api/calls/write'
 import { AutoDriveApiHandler } from '../src/api/types'
 import { createApiInterface } from '../src/api/wrappers'
 
@@ -24,6 +24,12 @@ const forbidden = () =>
   new Response(JSON.stringify({ error: 'User does not have access to this object' }), {
     status: 403,
     headers: { 'Content-Type': 'application/json' },
+  })
+// What auto-drive's `res.sendStatus(200)` sends: a plain-text `OK`, not JSON.
+const plainTextOk = () =>
+  new Response('OK', {
+    status: 200,
+    headers: { 'Content-Type': 'text/plain; charset=utf-8' },
   })
 
 describe('unpublishObject', () => {
@@ -55,5 +61,29 @@ describe('unpublishObject', () => {
 
     await expect(createApiInterface(api).unpublishObject(CID)).resolves.toBeUndefined()
     expect(sendAPIRequest).toHaveBeenCalledWith(`/objects/${CID}/unpublish`, { method: 'POST' })
+  })
+})
+
+describe('restoreObject', () => {
+  it('sends a POST to the restore endpoint and resolves on a plain-text 200 OK', async () => {
+    const { api, sendAPIRequest } = createMockApi(plainTextOk)
+
+    await expect(restoreObject(api, { cid: CID })).resolves.toBeUndefined()
+    expect(sendAPIRequest).toHaveBeenCalledWith(`/objects/${CID}/restore`, { method: 'POST' })
+  })
+})
+
+describe('shareObject', () => {
+  it('sends the public ID to the share endpoint and resolves on a plain-text 200 OK', async () => {
+    const { api, sendAPIRequest } = createMockApi(plainTextOk)
+
+    await expect(
+      shareObject(api, { cid: CID, publicId: 'user-public-id-123' }),
+    ).resolves.toBeUndefined()
+    expect(sendAPIRequest).toHaveBeenCalledWith(
+      `/objects/${CID}/share`,
+      expect.objectContaining({ method: 'POST' }),
+      JSON.stringify({ publicId: 'user-public-id-123' }),
+    )
   })
 })
