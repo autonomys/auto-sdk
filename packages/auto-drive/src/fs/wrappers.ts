@@ -82,6 +82,10 @@ export const uploadFolderFromFolderPath = async (
     onProgress?: (progressInPercentage: number) => void
   } = {},
 ): Promise<Promise<string>> => {
+  if (password === '') {
+    throw new Error('Password cannot be empty')
+  }
+
   const files = await getFiles(folderPath)
   const fileTree = constructFromFileSystemEntries(files)
 
