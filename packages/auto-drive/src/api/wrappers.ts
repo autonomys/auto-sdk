@@ -21,6 +21,22 @@ import { AutoDriveApi, AutoDriveApiHandler, UploadFileOptions } from './types'
 
 const UPLOAD_FILE_CHUNK_SIZE = 1024 * 1024
 
+// Sources such as uploadFileFromBuffer yield the whole file in one buffer, so it is split
+// here; otherwise the first read would already count every byte.
+const countBytesRead = async function* (
+  iterable: AsyncIterable<Buffer>,
+  chunkSize: number,
+  onRead: (bytes: number) => void,
+): AsyncIterable<Buffer> {
+  for await (const buffer of iterable) {
+    for (let offset = 0; offset < buffer.length; offset += chunkSize) {
+      const chunk = buffer.subarray(offset, offset + chunkSize)
+      onRead(chunk.length)
+      yield chunk
+    }
+  }
+}
+
 const uploadFileChunks = async (
   api: AutoDriveApiHandler,
   fileUploadId: string,
@@ -59,7 +75,14 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
 
     const { compressFile, CompressionAlgorithm, encryptFile, EncryptionAlgorithm } =
       await import('@autonomys/auto-dag-data')
-    let asyncIterable: AsyncIterable<Buffer> = file.read()
+    let bytesRead = 0
+    let asyncIterable: AsyncIterable<Buffer> = countBytesRead(
+      file.read(),
+      uploadChunkSize ?? UPLOAD_FILE_CHUNK_SIZE,
+      (bytes) => {
+        bytesRead += bytes
+      },
+    )
 
     if (compression) {
       asyncIterable = compressFile(asyncIterable, {
@@ -93,9 +116,15 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
       uploadOptions,
     })
 
-    await uploadFileChunks(api, fileUpload.id, asyncIterable, uploadChunkSize, (bytes) => {
-      options.onProgress?.(progressToPercentage(bytes, file.size))
+    // Compression and encryption change how many bytes are uploaded, so progress is the
+    // share of the source read when each chunk finishes. The source can be fully read
+    // while chunks are still pending, so 100 waits until the last one is uploaded.
+    await uploadFileChunks(api, fileUpload.id, asyncIterable, uploadChunkSize, () => {
+      if (bytesRead < file.size) {
+        options.onProgress?.(progressToPercentage(bytesRead, file.size))
+      }
     })
+    options.onProgress?.(100)
 
     const result = await apiCalls.completeUpload(api, { uploadId: fileUpload.id })
 
