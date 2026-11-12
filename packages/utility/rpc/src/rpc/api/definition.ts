@@ -18,6 +18,7 @@ import {
   ApiMockServerClient,
   ApiServerHandlers,
   ApiServerNotificationHandlers,
+  DefinitionType,
   DefinitionTypeOutput,
   HttpClientOptions,
   HttpClientType,
@@ -45,6 +46,24 @@ const validateSchema = async (schema: StandardSchemaV1, value: unknown) => {
   }
 
   return result.value
+}
+
+// There is no request to reject for a notification, so a validation error, or an error thrown by
+// the handler, goes to the onError callback. Without one, the notification is dropped.
+const handleNotification = <T>(
+  content: DefinitionType,
+  params: unknown,
+  handler: (params: T) => void,
+  onError?: (error: Error) => void,
+) => {
+  if (!isStandardSchema(content)) {
+    handler(params as T)
+    return
+  }
+
+  validateSchema(content, params)
+    .then((value) => handler(value as T))
+    .catch((error) => onError?.(error))
 }
 
 export const createApiDefinition = <S extends ApiDefinition>(serverDefinition: S) => {
@@ -86,7 +105,12 @@ export const createApiDefinition = <S extends ApiDefinition>(serverDefinition: S
     ) => {
       client.on((message: Message) => {
         if (message.method === notificationName) {
-          handler(message.params)
+          handleNotification(
+            serverDefinition.notifications[notificationName as string].content,
+            message.params,
+            handler,
+            clientParams.callbacks.onError,
+          )
         }
       })
     }
@@ -238,7 +262,13 @@ export const createApiDefinition = <S extends ApiDefinition>(serverDefinition: S
             connection: Websocket.connection,
             params: Parameters<DefinitionTypeOutput<typeof handler.content>>[0],
           ) => {
-            eventEmitter.emit(notificationName, params)
+            let sentParams = params
+            if (isStandardSchema(serverDefinition.notifications[notificationName].content)) {
+              // Emit the content as the real server would send it, after a JSON round-trip
+              sentParams = JSON.parse(JSON.stringify({ params })).params
+            }
+
+            eventEmitter.emit(notificationName, sentParams)
           }) as TypedRpcNotificationHandler<DefinitionTypeOutput<typeof handler.content>>,
         ]
       }),
@@ -285,7 +315,14 @@ export const createApiDefinition = <S extends ApiDefinition>(serverDefinition: S
         notificationName: T,
         handler: (params: DefinitionTypeOutput<S['notifications'][T]['content']>) => void,
       ) => {
-        eventEmitter.on(notificationName as string, handler)
+        eventEmitter.on(notificationName as string, (params: unknown) =>
+          handleNotification(
+            serverDefinition.notifications[notificationName as string].content,
+            params,
+            handler,
+            callbacks?.onError,
+          ),
+        )
       },
       notificationClient,
     }

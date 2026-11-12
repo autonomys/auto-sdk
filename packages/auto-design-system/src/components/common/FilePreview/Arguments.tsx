@@ -1,5 +1,7 @@
 import React, { FC, useEffect, useState } from 'react'
 import ReactJsonImport from 'react-json-view'
+import { NoPreviewAvailable } from './NoPreviewAvailable'
+import { TextViewer } from './TextViewer'
 
 // react-json-view is CommonJS with the component on `.default`. Consumers load this package's
 // ESM build as strict ESM ("type": "module") and Rollup's CJS build requires it as is, so in
@@ -31,28 +33,93 @@ const theme = {
   base0F: 'inherit',
 }
 
+const MAX_RAW_PREVIEW_CHARS = 200_000
+
+type Preview =
+  | { kind: 'json'; value: object }
+  | { kind: 'text'; text: string; isValidJson: boolean; isTruncated: boolean }
+  | { kind: 'empty' }
+  | { kind: 'unreadable' }
+
+const isJsonContainer = (value: unknown): value is object =>
+  typeof value === 'object' && value !== null
+
+const rawTextPreview = (text: string, isValidJson: boolean): Preview => ({
+  kind: 'text',
+  text: text.slice(0, MAX_RAW_PREVIEW_CHARS),
+  isValidJson,
+  isTruncated: text.length > MAX_RAW_PREVIEW_CHARS,
+})
+
+const parsePreview = (text: string): Preview => {
+  if (!text.trim()) return { kind: 'empty' }
+
+  try {
+    const value: unknown = JSON.parse(text)
+    return isJsonContainer(value) ? { kind: 'json', value } : rawTextPreview(text, true)
+  } catch {
+    return rawTextPreview(text, false)
+  }
+}
+
 export const Arguments: FC<Props> = ({ file, collapseAtEntry = 5 }) => {
-  const [args, setArgs] = useState<object>()
+  const [preview, setPreview] = useState<Preview>()
 
   useEffect(() => {
-    const loadArgs = async () => {
-      try {
-        const text = await file.text()
-        const parsedArgs = JSON.parse(text)
-        setArgs(parsedArgs)
-      } catch (error) {
-        console.error('Error loading or parsing arguments file:', error)
-        setArgs({})
-      }
-    }
+    let isCurrent = true
+    setPreview(undefined)
 
-    loadArgs()
+    file
+      .text()
+      .then(parsePreview)
+      .catch((error): Preview => {
+        console.error('Error reading JSON preview file:', error)
+        return { kind: 'unreadable' }
+      })
+      .then((loaded) => {
+        if (isCurrent) setPreview(loaded)
+      })
+
+    return () => {
+      isCurrent = false
+    }
   }, [file])
+
+  if (!preview) return null
+
+  if (preview.kind === 'unreadable') return <NoPreviewAvailable />
+
+  if (preview.kind === 'empty') {
+    return (
+      <div data-testid='testJsonEmptyDisplay' className='text-center text-gray-500'>
+        File is empty
+      </div>
+    )
+  }
+
+  if (preview.kind === 'text') {
+    return (
+      <div data-testid='testJsonRawDisplay' className='w-full'>
+        {!preview.isValidJson && (
+          <div className='mb-2 text-sm text-gray-500 dark:text-gray-400'>
+            This file is not valid JSON. Showing its raw contents.
+          </div>
+        )}
+        <TextViewer content={preview.text} extension={preview.isValidJson ? 'json' : 'txt'} />
+        {preview.isTruncated && (
+          <div className='mt-2 text-sm text-gray-500 dark:text-gray-400'>
+            Preview truncated to the first {MAX_RAW_PREVIEW_CHARS.toLocaleString('en-US')}{' '}
+            characters.
+          </div>
+        )}
+      </div>
+    )
+  }
 
   return (
     <div data-testid='testJsonDisplay' className='w-full'>
       <ReactJson
-        src={args || {}}
+        src={preview.value}
         iconStyle='circle'
         theme={theme}
         collapseStringsAfterLength={100}
