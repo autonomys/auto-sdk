@@ -71,7 +71,7 @@ export type ApiServerHandlers<S extends ApiDefinition> = {
 
 export type ApiServerNotificationHandlers<S extends ApiDefinition> = {
   [K in keyof S['notifications']]: TypedRpcNotificationHandler<
-    DefinitionTypeOutput<S['notifications'][K]['content']>
+    DefinitionTypeInput<S['notifications'][K]['content']>
   >
 }
 
