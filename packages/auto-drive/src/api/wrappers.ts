@@ -45,7 +45,12 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
     uploadChunkSize?: number,
   ): Promise<string> =>
     uploadFile(
-      { read: () => fileToIterable(file), name: file.name, size: file.size },
+      {
+        read: () => fileToIterable(file),
+        name: file.name,
+        size: file.size,
+        mimeType: file.type || undefined,
+      },
       options,
       uploadChunkSize,
     )
@@ -88,7 +93,7 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
         : undefined,
     }
     const fileUpload = await apiCalls.createFileUpload(api, {
-      mimeType: lookupMimeType(file.name),
+      mimeType: file.mimeType ?? lookupMimeType(file.name),
       filename: file.name,
       uploadOptions,
     })
