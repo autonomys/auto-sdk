@@ -1,3 +1,4 @@
+import { Buffer } from 'buffer'
 import { PassThrough, Readable } from 'stream'
 
 export type AwaitIterable<T> = AsyncIterable<T> | Iterable<T>
