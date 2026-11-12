@@ -21,19 +21,13 @@ import { AutoDriveApi, AutoDriveApiHandler, UploadFileOptions } from './types'
 
 const UPLOAD_FILE_CHUNK_SIZE = 1024 * 1024
 
-// Sources such as uploadFileFromBuffer yield the whole file in one buffer, so it is split
-// here; otherwise the first read would already count every byte.
-const countBytesRead = async function* (
+const countBytes = async function* (
   iterable: AsyncIterable<Buffer>,
-  chunkSize: number,
-  onRead: (bytes: number) => void,
+  onChunk: (bytes: number) => void,
 ): AsyncIterable<Buffer> {
-  for await (const buffer of iterable) {
-    for (let offset = 0; offset < buffer.length; offset += chunkSize) {
-      const chunk = buffer.subarray(offset, offset + chunkSize)
-      onRead(chunk.length)
-      yield chunk
-    }
+  for await (const chunk of iterable) {
+    onChunk(chunk.length)
+    yield chunk
   }
 }
 
@@ -75,10 +69,12 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
 
     const { compressFile, CompressionAlgorithm, encryptFile, EncryptionAlgorithm } =
       await import('@autonomys/auto-dag-data')
+    // The source is cut into upload-sized chunks before counting, so a source that yields
+    // the whole file at once is not counted in one go, and without compression or
+    // encryption each counted chunk is exactly one uploaded chunk.
     let bytesRead = 0
-    let asyncIterable: AsyncIterable<Buffer> = countBytesRead(
-      file.read(),
-      uploadChunkSize ?? UPLOAD_FILE_CHUNK_SIZE,
+    let asyncIterable: AsyncIterable<Buffer> = countBytes(
+      asyncByChunk(file.read(), uploadChunkSize ?? UPLOAD_FILE_CHUNK_SIZE),
       (bytes) => {
         bytesRead += bytes
       },

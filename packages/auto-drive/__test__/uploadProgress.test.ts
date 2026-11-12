@@ -151,6 +151,25 @@ describe('upload progress', () => {
     expectToReach100AfterLastChunk(onProgress)
   })
 
+  it('reports progress per uploaded chunk when source buffers do not line up with chunks', async () => {
+    const onProgress = jest.fn()
+
+    await api.uploadFile(
+      {
+        name: 'data.bin',
+        size: 250,
+        read: async function* () {
+          yield data.subarray(0, 150)
+          yield data.subarray(150, 250)
+        },
+      },
+      { compression: false, onProgress },
+      uploadChunkSize,
+    )
+
+    expect(progressValues(onProgress)).toEqual([40, 80, 100])
+  })
+
   it('reaches 100 for an empty file', async () => {
     const onProgress = jest.fn()
 
