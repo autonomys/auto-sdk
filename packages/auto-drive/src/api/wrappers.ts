@@ -150,7 +150,10 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
       onProgress?: (progress: number) => void
     } = {},
   ): Promise<string> => {
-    const files = fileList instanceof FileList ? Array.from(fileList) : fileList
+    const files = Array.isArray(fileList) ? fileList : Array.from(fileList)
+    if (files.length === 0) {
+      throw new Error('No files to upload')
+    }
     const fileTree = constructFromInput(files)
 
     // If password is provided, we zip the files and upload the zip file
