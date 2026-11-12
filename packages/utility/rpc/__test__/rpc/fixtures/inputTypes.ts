@@ -1,6 +1,7 @@
 // Type-checked by types.spec.ts, never run. Clients send the schema input (before transforms
 // and defaults are applied), while server handlers receive the parsed output. For results it's
 // the other way round: handlers return the input and clients get the parsed output.
+import Websocket from 'websocket'
 import { z } from 'zod'
 import { z as zod4 } from 'zod/v4'
 import { z as otherZod } from 'zod-3.25.55'
@@ -78,7 +79,20 @@ const definition = createApiDefinition({
       returns: customDateResultSchema,
     },
   },
-  notifications: {},
+  notifications: {
+    zod3Date: {
+      content: z.object({ at: z.string().transform((at) => new Date(at)) }),
+    },
+    zod4Date: {
+      content: zod4.object({ at: zod4.string().transform((at) => new Date(at)) }),
+    },
+    otherZod3Date: {
+      content: otherZod.object({ at: otherZod.string().transform((at) => new Date(at)) }),
+    },
+    customDate: {
+      content: customDateSchema,
+    },
+  },
 })
 
 const handlers = {
@@ -143,5 +157,56 @@ export const callTypedClients = async () => {
     await client.otherZod3({ at: new Date(), page: 1 })
     // @ts-expect-error - a Date is sent as a string, the schema input is the string
     await client.custom({ at: new Date() })
+  }
+}
+
+export const sendTypedNotifications = (connection: Websocket.connection) => {
+  const notificationClients = [
+    createTypedServer().notificationClient,
+    definition.createMockServerClient({ handlers, callbacks: {} }).notificationClient,
+  ]
+
+  for (const notificationClient of notificationClients) {
+    // The server sends the string and the client parses it into a Date
+    notificationClient.zod3Date(connection, { at: '2026-10-20T00:00:00Z' })
+    notificationClient.zod4Date(connection, { at: '2026-10-20T00:00:00Z' })
+    notificationClient.otherZod3Date(connection, { at: '2026-10-20T00:00:00Z' })
+    notificationClient.customDate(connection, { at: '2026-10-20T00:00:00Z' })
+
+    // @ts-expect-error - a Date is sent as a string, the schema input is the string
+    notificationClient.zod3Date(connection, { at: new Date() })
+    // @ts-expect-error - a Date is sent as a string, the schema input is the string
+    notificationClient.zod4Date(connection, { at: new Date() })
+    // @ts-expect-error - a Date is sent as a string, the schema input is the string
+    notificationClient.otherZod3Date(connection, { at: new Date() })
+    // @ts-expect-error - a Date is sent as a string, the schema input is the string
+    notificationClient.customDate(connection, { at: new Date() })
+  }
+}
+
+export const receiveTypedNotifications = () => {
+  const clients = [
+    definition.createClient({ endpoint: 'ws://localhost', callbacks: {} }),
+    definition.createMockServerClient({ handlers, callbacks: {} }),
+  ]
+
+  for (const client of clients) {
+    // The client handlers get the parsed Date
+    client.onNotification('zod3Date', (params) => {
+      const at: Date = params.at
+      void at
+    })
+    client.onNotification('zod4Date', (params) => {
+      const at: Date = params.at
+      void at
+    })
+    client.onNotification('otherZod3Date', (params) => {
+      const at: Date = params.at
+      void at
+    })
+    client.onNotification('customDate', (params) => {
+      const at: Date = params.at
+      void at
+    })
   }
 }
