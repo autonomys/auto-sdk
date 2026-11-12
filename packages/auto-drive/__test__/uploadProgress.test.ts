@@ -1,7 +1,11 @@
+import { mkdtempSync, rmSync, writeFileSync } from 'fs'
+import { tmpdir } from 'os'
+import path from 'path'
 import { apiCalls } from '../src/api/calls/index'
 import { FileUpload } from '../src/api/models/uploads'
 import { AutoDriveApiHandler } from '../src/api/types'
 import { createApiInterface } from '../src/api/wrappers'
+import { uploadFolderFromFolderPath } from '../src/fs/wrappers'
 
 jest.mock('@autonomys/auto-dag-data', () => ({
   compressFile: jest.fn(),
@@ -113,6 +117,22 @@ describe('upload progress', () => {
     const onProgress = jest.fn()
 
     await api.uploadFileFromInput(new File([data], 'data.bin'), { onProgress }, uploadChunkSize)
+
+    expectToReach100AfterLastChunk(onProgress)
+  })
+
+  it('ends at 100 when uploading a folder from disk with a password', async () => {
+    compressFile.mockImplementation(shrinkTenfold)
+    encryptFile.mockImplementation(double)
+    const folder = mkdtempSync(path.join(tmpdir(), 'auto-drive-progress-'))
+    writeFileSync(path.join(folder, 'data.bin'), data)
+    const onProgress = jest.fn()
+
+    try {
+      await uploadFolderFromFolderPath(api, folder, { password: 'password', onProgress })
+    } finally {
+      rmSync(folder, { recursive: true, force: true })
+    }
 
     expectToReach100AfterLastChunk(onProgress)
   })

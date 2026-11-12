@@ -99,9 +99,7 @@ export const uploadFolderFromFolderPath = async (
       {
         password,
         compression: true,
-        onProgress: (progressInPercentage) => {
-          onProgress?.(progressToPercentage(progressInPercentage, zipBlob.size))
-        },
+        onProgress,
       },
     )
   }
