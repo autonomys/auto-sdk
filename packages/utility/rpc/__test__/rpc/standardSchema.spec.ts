@@ -510,6 +510,23 @@ describe('rpc/definition notifications', () => {
       expect(handler).not.toHaveBeenCalled()
       expect(unhandledRejection).not.toHaveBeenCalled()
     })
+
+    // In the mock, the call that sends the notification no longer fails when the handler throws
+    it('should drop an error thrown by the handler without an onError callback', async () => {
+      const unhandledRejection = jest.fn()
+      process.on('unhandledRejection', unhandledRejection)
+      client = createTestClient(kind, {})
+      handler.mockImplementation(() => {
+        throw new Error('handler failed')
+      })
+      client.onNotification('dateNotification', handler)
+
+      await expect(client.api.notify('dateNotification')).resolves.toBeNull()
+      await waitForNotifications()
+      process.off('unhandledRejection', unhandledRejection)
+      expect(handler).toHaveBeenCalledTimes(1)
+      expect(unhandledRejection).not.toHaveBeenCalled()
+    })
   })
 })
 
