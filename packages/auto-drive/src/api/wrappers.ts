@@ -21,6 +21,19 @@ import { AutoDriveApi, AutoDriveApiHandler, UploadFileOptions } from './types'
 
 const UPLOAD_FILE_CHUNK_SIZE = 1024 * 1024
 
+// Splits without copying, so a source that yields the whole file in one buffer is counted
+// as it is consumed instead of all at once.
+const splitBuffers = async function* (
+  iterable: AsyncIterable<Buffer>,
+  maxSize: number,
+): AsyncIterable<Buffer> {
+  for await (const buffer of iterable) {
+    for (let offset = 0; offset < buffer.length; offset += maxSize) {
+      yield buffer.subarray(offset, offset + maxSize)
+    }
+  }
+}
+
 const countBytes = async function* (
   iterable: AsyncIterable<Buffer>,
   onChunk: (bytes: number) => void,
@@ -69,12 +82,13 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
 
     const { compressFile, CompressionAlgorithm, encryptFile, EncryptionAlgorithm } =
       await import('@autonomys/auto-dag-data')
-    // The source is cut into upload-sized chunks before counting, so a source that yields
-    // the whole file at once is not counted in one go, and without compression or
-    // encryption each counted chunk is exactly one uploaded chunk.
+    const chunkSize = uploadChunkSize ?? UPLOAD_FILE_CHUNK_SIZE
     let bytesRead = 0
     let asyncIterable: AsyncIterable<Buffer> = countBytes(
-      asyncByChunk(file.read(), uploadChunkSize ?? UPLOAD_FILE_CHUNK_SIZE),
+      splitBuffers(
+        file.read(),
+        chunkSize < UPLOAD_FILE_CHUNK_SIZE ? chunkSize : UPLOAD_FILE_CHUNK_SIZE,
+      ),
       (bytes) => {
         bytesRead += bytes
       },
@@ -92,6 +106,11 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
         algorithm: EncryptionAlgorithm.AES_256_GCM,
       })
     }
+
+    let bytesProduced = 0
+    asyncIterable = countBytes(asyncIterable, (bytes) => {
+      bytesProduced += bytes
+    })
 
     const uploadOptions = {
       compression: compression
@@ -112,12 +131,17 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
       uploadOptions,
     })
 
-    // Compression and encryption change how many bytes are uploaded, so progress is the
-    // share of the source read when each chunk finishes. The source can be fully read
-    // while chunks are still pending, so 100 waits until the last one is uploaded.
-    await uploadFileChunks(api, fileUpload.id, asyncIterable, uploadChunkSize, () => {
-      if (bytesRead < file.size) {
-        options.onProgress?.(progressToPercentage(bytesRead, file.size))
+    // Compression and encryption change how many bytes are uploaded, and both read the
+    // source ahead in blocks, so uploaded bytes are converted back to source bytes using
+    // the ratio seen so far. That ratio is an estimate that can move backwards, so only
+    // increases are reported, and 100 waits until the last chunk is uploaded.
+    let lastProgress = 0
+    await uploadFileChunks(api, fileUpload.id, asyncIterable, chunkSize, (uploadedBytes) => {
+      const sourceBytes = (uploadedBytes / bytesProduced) * bytesRead
+      const progress = progressToPercentage(sourceBytes, file.size)
+      if (progress > lastProgress && progress < 100) {
+        lastProgress = progress
+        options.onProgress?.(progress)
       }
     })
     options.onProgress?.(100)
@@ -198,6 +222,7 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
           compression: true,
           onProgress,
         },
+        uploadChunkSize,
       )
     }
 

@@ -101,6 +101,7 @@ export const uploadFolderFromFolderPath = async (
         compression: true,
         onProgress,
       },
+      uploadChunkSize,
     )
   }
 

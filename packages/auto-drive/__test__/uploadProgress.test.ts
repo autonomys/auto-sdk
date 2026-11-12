@@ -1,7 +1,9 @@
+import { asyncByChunk } from '@autonomys/asynchronous'
 import { mkdtempSync, rmSync, writeFileSync } from 'fs'
 import { tmpdir } from 'os'
 import path from 'path'
 import { apiCalls } from '../src/api/calls/index'
+import * as folderTree from '../src/api/models/folderTree'
 import { FileUpload } from '../src/api/models/uploads'
 import { AutoDriveApiHandler } from '../src/api/types'
 import { createApiInterface } from '../src/api/wrappers'
@@ -19,14 +21,18 @@ const { compressFile, encryptFile } = jest.requireMock('@autonomys/auto-dag-data
   encryptFile: jest.Mock
 }
 
+// The real compressFile and encryptFile read their input ahead in blocks larger than an
+// upload chunk before yielding anything, so the mocks do too.
+const readAheadBlockSize = 400
+
 const shrinkTenfold = async function* (iterable: AsyncIterable<Buffer>) {
-  for await (const chunk of iterable) {
+  for await (const chunk of asyncByChunk(iterable, readAheadBlockSize)) {
     yield chunk.subarray(0, Math.ceil(chunk.length / 10))
   }
 }
 
 const double = async function* (iterable: AsyncIterable<Buffer>) {
-  for await (const chunk of iterable) {
+  for await (const chunk of asyncByChunk(iterable, readAheadBlockSize)) {
     yield Buffer.concat([chunk, chunk])
   }
 }
@@ -83,6 +89,23 @@ describe('upload progress', () => {
     expectToReach100AfterLastChunk(onProgress)
   })
 
+  it.each([
+    ['compression', {}],
+    ['encryption', { compression: false, password: 'password' }],
+  ])('reports each uploaded chunk when %s reads the source ahead', async (_, options) => {
+    compressFile.mockImplementation(double)
+    encryptFile.mockImplementation(double)
+    const onProgress = jest.fn()
+
+    await api.uploadFileFromBuffer(data, 'data.bin', { ...options, onProgress }, uploadChunkSize)
+
+    const values = progressValues(onProgress)
+    expect(chunkSpy).toHaveBeenCalledTimes(20)
+    expect(values).toHaveLength(20)
+    values.forEach((progress, index) => expect(progress).toBeCloseTo((index + 1) * 5))
+    expectToReach100AfterLastChunk(onProgress)
+  })
+
   it('ends at 100 when encryption grows the data', async () => {
     encryptFile.mockImplementation(double)
     const onProgress = jest.fn()
@@ -135,6 +158,42 @@ describe('upload progress', () => {
     }
 
     expectToReach100AfterLastChunk(onProgress)
+  })
+
+  const uploadedChunkLengths = (): number[] =>
+    chunkSpy.mock.calls.map(([, { chunk }]) => chunk.length)
+
+  it('uses uploadChunkSize when uploading a folder from disk with a password', async () => {
+    const folder = mkdtempSync(path.join(tmpdir(), 'auto-drive-progress-'))
+    writeFileSync(path.join(folder, 'data.bin'), data)
+
+    try {
+      await uploadFolderFromFolderPath(api, folder, { password: 'password', uploadChunkSize })
+    } finally {
+      rmSync(folder, { recursive: true, force: true })
+    }
+
+    expect(chunkSpy.mock.calls.length).toBeGreaterThan(1)
+    expect(Math.max(...uploadedChunkLengths())).toBe(uploadChunkSize)
+  })
+
+  it('uses uploadChunkSize when uploading a folder from input with a password', async () => {
+    const file = new File([data], 'data.bin')
+    Object.defineProperty(file, 'webkitRelativePath', { value: 'folder/data.bin' })
+
+    // JSZip cannot read a Node File, and FileList only exists in browsers
+    jest.spyOn(folderTree, 'constructZipBlobFromTreeAndPaths').mockResolvedValue(new Blob([data]))
+    const globals = globalThis as { FileList?: unknown }
+    globals.FileList = class {}
+
+    try {
+      await api.uploadFolderFromInput([file], { password: 'password', uploadChunkSize })
+    } finally {
+      delete globals.FileList
+    }
+
+    expect(chunkSpy.mock.calls.length).toBeGreaterThan(1)
+    expect(Math.max(...uploadedChunkLengths())).toBe(uploadChunkSize)
   })
 
   it('reports progress per uploaded chunk without compression or encryption', async () => {
