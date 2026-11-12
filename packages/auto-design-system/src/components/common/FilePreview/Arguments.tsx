@@ -33,22 +33,32 @@ const theme = {
   base0F: 'inherit',
 }
 
+const MAX_RAW_PREVIEW_CHARS = 200_000
+
 type Preview =
   | { kind: 'json'; value: object }
-  | { kind: 'text'; text: string; isValidJson: boolean }
+  | { kind: 'text'; text: string; isValidJson: boolean; isTruncated: boolean }
+  | { kind: 'empty' }
   | { kind: 'unreadable' }
 
 const isJsonContainer = (value: unknown): value is object =>
   typeof value === 'object' && value !== null
 
+const rawTextPreview = (text: string, isValidJson: boolean): Preview => ({
+  kind: 'text',
+  text: text.slice(0, MAX_RAW_PREVIEW_CHARS),
+  isValidJson,
+  isTruncated: text.length > MAX_RAW_PREVIEW_CHARS,
+})
+
 const parsePreview = (text: string): Preview => {
+  if (!text.trim()) return { kind: 'empty' }
+
   try {
     const value: unknown = JSON.parse(text)
-    return isJsonContainer(value)
-      ? { kind: 'json', value }
-      : { kind: 'text', text, isValidJson: true }
+    return isJsonContainer(value) ? { kind: 'json', value } : rawTextPreview(text, true)
   } catch {
-    return { kind: 'text', text, isValidJson: false }
+    return rawTextPreview(text, false)
   }
 }
 
@@ -79,6 +89,14 @@ export const Arguments: FC<Props> = ({ file, collapseAtEntry = 5 }) => {
 
   if (preview.kind === 'unreadable') return <NoPreviewAvailable />
 
+  if (preview.kind === 'empty') {
+    return (
+      <div data-testid='testJsonEmptyDisplay' className='text-center text-gray-500'>
+        File is empty
+      </div>
+    )
+  }
+
   if (preview.kind === 'text') {
     return (
       <div data-testid='testJsonRawDisplay' className='w-full'>
@@ -87,7 +105,13 @@ export const Arguments: FC<Props> = ({ file, collapseAtEntry = 5 }) => {
             This file is not valid JSON. Showing its raw contents.
           </div>
         )}
-        <TextViewer content={preview.text} extension='txt' />
+        <TextViewer content={preview.text} extension={preview.isValidJson ? 'json' : 'txt'} />
+        {preview.isTruncated && (
+          <div className='mt-2 text-sm text-gray-500 dark:text-gray-400'>
+            Preview truncated to the first {MAX_RAW_PREVIEW_CHARS.toLocaleString('en-US')}{' '}
+            characters.
+          </div>
+        )}
       </div>
     )
   }
