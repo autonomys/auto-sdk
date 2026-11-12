@@ -1,4 +1,3 @@
-/* eslint-disable no-async-promise-executor */
 import {
   asyncByChunk,
   asyncFromStream,
@@ -22,84 +21,34 @@ import { AutoDriveApi, AutoDriveApiHandler, UploadFileOptions } from './types'
 
 const UPLOAD_FILE_CHUNK_SIZE = 1024 * 1024
 
-const uploadFileChunks = (
+const uploadFileChunks = async (
   api: AutoDriveApiHandler,
   fileUploadId: string,
   asyncIterable: AsyncIterable<Buffer>,
   uploadChunkSize: number = UPLOAD_FILE_CHUNK_SIZE,
   onProgress?: (uploadedBytes: number) => void,
 ): Promise<void> => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      let index = 0
-      let uploadBytes = 0
-      for await (const chunk of asyncByChunk(asyncIterable, uploadChunkSize)) {
-        await apiCalls.uploadFileChunk(api, { uploadId: fileUploadId, chunk, index })
-        uploadBytes += chunk.length
-        onProgress?.(uploadBytes)
-        index++
-      }
-
-      resolve()
-    } catch (e) {
-      reject(e)
-    }
-  })
+  let index = 0
+  let uploadBytes = 0
+  for await (const chunk of asyncByChunk(asyncIterable, uploadChunkSize)) {
+    await apiCalls.uploadFileChunk(api, { uploadId: fileUploadId, chunk, index })
+    uploadBytes += chunk.length
+    onProgress?.(uploadBytes)
+    index++
+  }
 }
 
 export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
-  const uploadFileFromInput = (
+  const uploadFileFromInput = async (
     file: File,
     options: UploadFileOptions = {},
     uploadChunkSize?: number,
-  ): Promise<string> => {
-    const { password = undefined, compression = true } = options
-    return new Promise(async (resolve) => {
-      const { compressFile, CompressionAlgorithm, encryptFile, EncryptionAlgorithm } =
-        await import('@autonomys/auto-dag-data')
-      let asyncIterable: AsyncIterable<Buffer> = fileToIterable(file)
-
-      if (compression) {
-        asyncIterable = compressFile(asyncIterable, {
-          level: 9,
-          algorithm: CompressionAlgorithm.ZLIB,
-        })
-      }
-
-      if (password) {
-        asyncIterable = encryptFile(asyncIterable, password, {
-          algorithm: EncryptionAlgorithm.AES_256_GCM,
-        })
-      }
-
-      const uploadOptions = {
-        compression: compression
-          ? {
-              level: 9,
-              algorithm: CompressionAlgorithm.ZLIB,
-            }
-          : undefined,
-        encryption: password
-          ? {
-              algorithm: EncryptionAlgorithm.AES_256_GCM,
-            }
-          : undefined,
-      }
-      const fileUpload = await apiCalls.createFileUpload(api, {
-        mimeType: lookupMimeType(file.name),
-        filename: file.name,
-        uploadOptions,
-      })
-
-      await uploadFileChunks(api, fileUpload.id, asyncIterable, uploadChunkSize, (bytes) => {
-        options.onProgress?.(progressToPercentage(bytes, file.size))
-      })
-
-      const result = await apiCalls.completeUpload(api, { uploadId: fileUpload.id })
-
-      resolve(result.cid)
-    })
-  }
+  ): Promise<string> =>
+    uploadFile(
+      { read: () => fileToIterable(file), name: file.name, size: file.size },
+      options,
+      uploadChunkSize,
+    )
 
   const uploadFile = async (
     file: GenericFile,
@@ -307,17 +256,25 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
   }
 
   const getPendingCredits = async (): Promise<{ upload: number; download: number }> => {
-    const me = await apiCalls.getMe(api)
+    const account = await apiCalls.getMe(api)
     return {
-      upload: me.subscription.pendingUploadCredits,
-      download: me.subscription.pendingDownloadCredits,
+      upload: account.pendingUploadCredits,
+      download: account.pendingDownloadCredits,
     }
   }
 
   const getSubscriptionInfo = async (): Promise<SubscriptionInfo> => {
-    const me = await apiCalls.getMe(api)
+    const account = await apiCalls.getMe(api)
 
-    return me.subscription
+    return {
+      id: account.id,
+      organizationId: account.organizationId,
+      uploadLimit: account.uploadLimit,
+      downloadLimit: account.downloadLimit,
+      granularity: account.model,
+      pendingUploadCredits: account.pendingUploadCredits,
+      pendingDownloadCredits: account.pendingDownloadCredits,
+    }
   }
 
   const getStoragePrice = () => apiCalls.getStoragePrice(api)
@@ -341,11 +298,19 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
   const waitForPaymentCompletion = (intentId: string, options?: PollOptions) =>
     apiCalls.waitForPaymentCompletion(api, intentId, options)
 
+  const getCreditSummary = () => apiCalls.getCreditSummary(api)
+
+  const getCreditBatches = () => apiCalls.getCreditBatches(api)
+
+  const getExpiringCreditBatches = () => apiCalls.getExpiringCreditBatches(api)
+
   const publishObject = async (cid: string): Promise<string> => {
     const result = await apiCalls.publishObject(api, { cid })
 
     return publicDownloadUrl(api, result.result)
   }
+
+  const unpublishObject = (cid: string): Promise<void> => apiCalls.unpublishObject(api, { cid })
 
   const getMyFiles = async (
     page: number,
@@ -401,7 +366,11 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
     watchPaymentTransaction,
     getPaymentIntentStatus,
     waitForPaymentCompletion,
+    getCreditSummary,
+    getCreditBatches,
+    getExpiringCreditBatches,
     publishObject,
+    unpublishObject,
     getMyFiles,
     searchByNameOrCIDInMyFiles,
     searchByNameOrCID,
