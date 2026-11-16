@@ -167,13 +167,13 @@ export const getObjectSummary = async (
  *
  * @param {AutoDriveApiHandler} api - The API instance used to send requests.
  * @param {ArgsWithoutPagination<{ cid: string }>} query - The query parameters containing the CID of the object whose upload status is to be retrieved.
- * @returns {Promise<ObjectInformation['uploadStatus']>} - A promise that resolves to the upload status of the requested object.
+ * @returns {Promise<ObjectInformation['uploadState']>} - A promise that resolves to the upload status of the requested object.
  * @throws {Error} - Throws an error if the request fails.
  */
 export const getObjectUploadStatus = async (
   api: AutoDriveApiHandler,
   query: ArgsWithoutPagination<{ cid: string }>,
-): Promise<ObjectInformation['uploadStatus']> => {
+): Promise<ObjectInformation['uploadState']> => {
   const response = await api.sendAPIRequest(`/objects/${query.cid}/status`, {
     method: 'GET',
   })
