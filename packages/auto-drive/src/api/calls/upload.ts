@@ -10,6 +10,16 @@ import {
 import { AutoDriveApiHandler } from '../types'
 import { toApiError } from './errors'
 
+// Sends the caller's reference for the customer an upload is for, which Auto Drive records
+// for the account's usage reports. Files in a folder upload take the folder's.
+const createUploadHeaders = (customerReference?: string): Headers => {
+  const headers = new Headers({ 'Content-Type': 'application/json' })
+  if (customerReference !== undefined) {
+    headers.set('X-Customer-Reference', customerReference)
+  }
+  return headers
+}
+
 /**
  * Initiates a file upload to the server.
  *
@@ -18,6 +28,7 @@ import { toApiError } from './errors'
  * @param {string} args.mimeType - The MIME type of the file (optional).
  * @param {string} args.filename - The name of the file to be uploaded.
  * @param {FileUploadOptions | null} args.uploadOptions - Additional options for the file upload (optional).
+ * @param {string} [args.customerReference] - Your reference for the customer the upload is for (optional).
  * @returns {Promise<FileUpload>} - A promise that resolves to the file upload information.
  * @throws {Error} - Throws an error if the upload fails.
  */
@@ -27,19 +38,19 @@ export const createFileUpload = async (
     mimeType,
     filename,
     uploadOptions = {},
+    customerReference,
   }: ArgsWithoutPagination<{
     mimeType?: string
     filename: string
     uploadOptions: FileUploadOptions | null
+    customerReference?: string
   }>,
 ): Promise<FileUpload> => {
   const response = await api.sendAPIRequest(
     '/uploads/file',
     {
       method: 'POST',
-      headers: new Headers({
-        'Content-Type': 'application/json',
-      }),
+      headers: createUploadHeaders(customerReference),
     },
     JSON.stringify({ mimeType, filename, uploadOptions }),
   )
@@ -58,6 +69,7 @@ export const createFileUpload = async (
  * @param {ArgsWithoutPagination<{ fileTree: FolderTree; uploadOptions: FileUploadOptions }>} args - The arguments for the folder upload.
  * @param {FolderTree} args.fileTree - The structure of the folder and its contents to be uploaded.
  * @param {FileUploadOptions} args.uploadOptions - Additional options for the folder upload.
+ * @param {string} [args.customerReference] - Your reference for the customer the upload is for (optional). Every file in the folder upload takes it.
  * @returns {Promise<FolderUpload>} - A promise that resolves to the folder upload information.
  * @throws {Error} - Throws an error if the upload fails.
  */
@@ -66,15 +78,18 @@ export const createFolderUpload = async (
   {
     fileTree,
     uploadOptions = {},
-  }: ArgsWithoutPagination<{ fileTree: FolderTree; uploadOptions?: FileUploadOptions }>,
+    customerReference,
+  }: ArgsWithoutPagination<{
+    fileTree: FolderTree
+    uploadOptions?: FileUploadOptions
+    customerReference?: string
+  }>,
 ): Promise<FolderUpload> => {
   const response = await api.sendAPIRequest(
     '/uploads/folder',
     {
       method: 'POST',
-      headers: new Headers({
-        'Content-Type': 'application/json',
-      }),
+      headers: createUploadHeaders(customerReference),
     },
     JSON.stringify({ fileTree, uploadOptions }),
   )

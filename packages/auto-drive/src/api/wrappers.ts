@@ -138,6 +138,7 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
       mimeType: file.mimeType ?? lookupMimeType(file.name),
       filename: file.name,
       uploadOptions,
+      customerReference: options.customerReference,
     })
 
     // Compression and encryption change how many bytes are uploaded, and both read the
@@ -202,10 +203,12 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
       uploadChunkSize,
       password,
       onProgress,
+      customerReference,
     }: {
       uploadChunkSize?: number
       password?: string
       onProgress?: (progress: number) => void
+      customerReference?: string
     } = {},
   ): Promise<string> => {
     if (password === '') {
@@ -234,6 +237,7 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
           password,
           compression: true,
           onProgress,
+          customerReference,
         },
         uploadChunkSize,
       )
@@ -242,6 +246,7 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
     // Otherwise, we upload the files as a folder w/o compression or encryption
     const folderUpload = await apiCalls.createFolderUpload(api, {
       fileTree,
+      customerReference,
     })
 
     let currentBytesUploaded = 0
