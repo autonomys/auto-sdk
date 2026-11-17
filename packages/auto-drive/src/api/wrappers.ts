@@ -80,6 +80,10 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
   ): Promise<string> => {
     const { password = undefined, compression = true } = options
 
+    if (password === '') {
+      throw new Error('Password cannot be empty')
+    }
+
     const { compressFile, CompressionAlgorithm, encryptFile, EncryptionAlgorithm } =
       await import('@autonomys/auto-dag-data')
     const chunkSize = uploadChunkSize ?? UPLOAD_FILE_CHUNK_SIZE
@@ -199,6 +203,10 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
       onProgress?: (progress: number) => void
     } = {},
   ): Promise<string> => {
+    if (password === '') {
+      throw new Error('Password cannot be empty')
+    }
+
     const files = fileList instanceof FileList ? Array.from(fileList) : fileList
     const fileTree = constructFromInput(files)
 
