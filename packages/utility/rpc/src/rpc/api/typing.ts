@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ZodType } from 'zod'
 import { PromiseOr } from '../../utils/types'
 import { RpcServer, TypedRpcCallback, TypedRpcNotificationHandler } from '../types'
 import { StandardSchemaV1, StandardSchemaV1Input, StandardSchemaV1Output } from './standardSchema'
@@ -72,7 +71,7 @@ export type ApiServerHandlers<S extends ApiDefinition> = {
 
 export type ApiServerNotificationHandlers<S extends ApiDefinition> = {
   [K in keyof S['notifications']]: TypedRpcNotificationHandler<
-    DefinitionTypeOutput<S['notifications'][K]['content']>
+    DefinitionTypeInput<S['notifications'][K]['content']>
   >
 }
 
@@ -85,13 +84,6 @@ export const isStandardSchema = (type: unknown): type is StandardSchemaV1 => {
   return (
     (typeof type === 'object' || typeof type === 'function') && type !== null && '~standard' in type
   )
-}
-
-/**
- * @deprecated Use isStandardSchema instead. This function will be removed in a future major release.
- */
-export const isZodType = <T extends DefinitionType>(type: T): type is T & ZodType => {
-  return type instanceof ZodType
 }
 
 export type ApiDefinitionClient<S extends ApiDefinition> = {
