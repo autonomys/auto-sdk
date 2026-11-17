@@ -95,6 +95,18 @@ describe('uploadFile MIME type', () => {
     )
   })
 
+  it('prefers the supplied MIME type over the one from the file name', async () => {
+    await api.uploadObjectAsJSON({ key: 'value' }, 'data.txt')
+
+    expect(createFileUploadSpy).toHaveBeenCalledWith(
+      dummyHandler,
+      expect.objectContaining({
+        filename: 'data.txt',
+        mimeType: 'application/json',
+      }),
+    )
+  })
+
   it('falls back to lookupMimeType(file.name) when File.type is empty', async () => {
     const file = new File(['hello'], 'notes.txt', { type: '' })
 
