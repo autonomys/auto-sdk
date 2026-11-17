@@ -6,13 +6,6 @@ import { AutoDriveApiHandler } from '../src/api/types'
 import { createApiInterface } from '../src/api/wrappers'
 import { uploadFolderFromFolderPath } from '../src/fs/wrappers'
 
-jest.mock('@autonomys/auto-dag-data', () => ({
-  compressFile: jest.fn((iterable) => iterable),
-  CompressionAlgorithm: { ZLIB: 'ZLIB' },
-  EncryptionAlgorithm: { AES_256_GCM: 'AES_256_GCM' },
-  encryptFile: jest.fn((iterable) => iterable),
-}))
-
 describe('Empty password validation', () => {
   const dummyHandler: AutoDriveApiHandler = {
     sendAPIRequest: jest.fn(),
@@ -90,9 +83,6 @@ describe('Empty password validation', () => {
   describe('uploadFolderFromInput', () => {
     it('rejects when password is an empty string and makes no API calls', async () => {
       const file = new File(['content'], 'file.txt')
-      Object.defineProperty(file, 'webkitRelativePath', {
-        value: 'folder/file.txt',
-      })
 
       await expect(api.uploadFolderFromInput([file], { password: '' })).rejects.toThrow(
         'Password cannot be empty',
