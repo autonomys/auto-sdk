@@ -4,7 +4,8 @@ import { apiCalls } from '../api/index'
 import { GenericFileWithinFolder } from '../api/models/file'
 import { constructFromFileSystemEntries } from '../api/models/folderTree'
 import { CompressionAlgorithm } from '../api/models/uploads'
-import { AutoDriveApi, UploadFileOptions } from '../api/types'
+import { AutoDriveApi, UploadFileOptions, UploadFolderOptions } from '../api/types'
+import { assertValidCustomerReference } from '../utils/customerReference'
 import { lookupMimeType } from '../utils/mimeType'
 import { progressToPercentage } from '../utils/misc'
 import { constructZipFromTreeAndFileSystemPaths, getFiles } from './utils'
@@ -22,6 +23,7 @@ import { constructZipFromTreeAndFileSystemPaths, getFiles } from './utils'
  * @param {UploadFileOptions} options - Options for the upload process.
  * @param {string} [options.password] - The password for encryption (optional).
  * @param {boolean} [options.compression=true] - Whether to compress the file (optional).
+ * @param {string} [options.customerReference] - Your reference for the customer the upload is for (optional).
  * @param {number} [uploadChunkSize] - The size of each chunk to upload (optional).
  * @returns {PromisedObservable<UploadFileStatus>} - An observable that emits the upload status.
  * @throws {Error} - Throws an error if the upload fails at any stage.
@@ -32,7 +34,7 @@ export const uploadFileFromFilepath = (
   options: UploadFileOptions = {},
   uploadChunkSize?: number,
 ): Promise<string> => {
-  const { password = undefined, compression = true, onProgress } = options
+  const { password = undefined, compression = true, onProgress, customerReference } = options
   const name = filePath.split('/').pop()!
 
   return api.uploadFile(
@@ -46,6 +48,7 @@ export const uploadFileFromFilepath = (
       password,
       compression,
       onProgress,
+      customerReference,
     },
     uploadChunkSize,
   )
@@ -66,25 +69,20 @@ export const uploadFileFromFilepath = (
  * @param {Object} options - Optional parameters for the upload.
  * @param {number} [options.uploadChunkSize] - The size of each chunk to be uploaded.
  * @param {string} [options.password] - An optional password for encrypting the files.
+ * @param {string} [options.customerReference] - Your reference for the customer the upload is for (optional).
  * @returns {Promise<PromisedObservable<UploadFileStatus | UploadFolderStatus>>} - A promise that resolves to an observable that tracks the upload progress.
  * @throws {Error} - Throws an error if the upload fails at any stage.
  */
 export const uploadFolderFromFolderPath = async (
   api: AutoDriveApi,
   folderPath: string,
-  {
-    uploadChunkSize,
-    password,
-    onProgress,
-  }: {
-    uploadChunkSize?: number
-    password?: string
-    onProgress?: (progressInPercentage: number) => void
-  } = {},
+  { uploadChunkSize, password, onProgress, customerReference }: UploadFolderOptions = {},
 ): Promise<Promise<string>> => {
   if (password === '') {
     throw new Error('Password cannot be empty')
   }
+  // Checked here as well because an encrypted folder is zipped before its upload is created.
+  assertValidCustomerReference(customerReference)
 
   const files = await getFiles(folderPath)
   const fileTree = constructFromFileSystemEntries(files)
@@ -104,6 +102,7 @@ export const uploadFolderFromFolderPath = async (
         password,
         compression: true,
         onProgress,
+        customerReference,
       },
       uploadChunkSize,
     )
@@ -111,6 +110,7 @@ export const uploadFolderFromFolderPath = async (
 
   const folderUpload = await apiCalls.createFolderUpload(api, {
     fileTree,
+    customerReference,
     uploadOptions: {
       compression: {
         algorithm: CompressionAlgorithm.ZLIB,

@@ -6,6 +6,7 @@ import {
   fileToIterable,
 } from '@autonomys/asynchronous'
 import { Buffer } from 'buffer'
+import { assertValidCustomerReference } from '../utils/customerReference'
 import { lookupMimeType } from '../utils/mimeType'
 import { progressToPercentage } from '../utils/misc'
 import { publicDownloadUrl } from './calls/download'
@@ -17,7 +18,7 @@ import { PaginatedResult } from './models/common'
 import { GenericFile, GenericFileWithinFolder } from './models/file'
 import { constructFromInput, constructZipBlobFromTreeAndPaths } from './models/folderTree'
 import { SubscriptionInfo } from './models/user'
-import { AutoDriveApi, AutoDriveApiHandler, UploadFileOptions } from './types'
+import { AutoDriveApi, AutoDriveApiHandler, UploadFileOptions, UploadFolderOptions } from './types'
 
 const UPLOAD_FILE_CHUNK_SIZE = 1024 * 1024
 
@@ -88,6 +89,8 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
     if (password === '') {
       throw new Error('Password cannot be empty')
     }
+    // createFileUpload checks it too, but checking here fails before the file is opened.
+    assertValidCustomerReference(options.customerReference)
 
     const { compressFile, CompressionAlgorithm, encryptFile, EncryptionAlgorithm } =
       await import('@autonomys/auto-dag-data')
@@ -138,6 +141,7 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
       mimeType: file.mimeType ?? lookupMimeType(file.name),
       filename: file.name,
       uploadOptions,
+      customerReference: options.customerReference,
     })
 
     // Compression and encryption change how many bytes are uploaded, and both read the
@@ -198,19 +202,13 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
 
   const uploadFolderFromInput = async (
     fileList: FileList | File[],
-    {
-      uploadChunkSize,
-      password,
-      onProgress,
-    }: {
-      uploadChunkSize?: number
-      password?: string
-      onProgress?: (progress: number) => void
-    } = {},
+    { uploadChunkSize, password, onProgress, customerReference }: UploadFolderOptions = {},
   ): Promise<string> => {
     if (password === '') {
       throw new Error('Password cannot be empty')
     }
+    // Checked here as well because an encrypted folder is zipped before its upload is created.
+    assertValidCustomerReference(customerReference)
 
     const files = fileList instanceof FileList ? Array.from(fileList) : fileList
     const fileTree = constructFromInput(files)
@@ -234,6 +232,7 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
           password,
           compression: true,
           onProgress,
+          customerReference,
         },
         uploadChunkSize,
       )
@@ -242,6 +241,7 @@ export const createApiInterface = (api: AutoDriveApiHandler): AutoDriveApi => {
     // Otherwise, we upload the files as a folder w/o compression or encryption
     const folderUpload = await apiCalls.createFolderUpload(api, {
       fileTree,
+      customerReference,
     })
 
     let currentBytesUploaded = 0
