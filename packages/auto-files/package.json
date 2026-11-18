@@ -1,6 +1,6 @@
 {
   "name": "@autonomys/auto-files",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "packageManager": "yarn@4.17.0",
   "repository": {
     "type": "git",
@@ -29,6 +29,6 @@
     }
   },
   "dependencies": {
-    "@autonomys/auto-drive": "^1.7.0"
+    "@autonomys/auto-drive": "^1.8.0"
   }
 }

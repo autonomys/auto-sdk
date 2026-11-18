@@ -1,7 +1,7 @@
 {
   "name": "@autonomys/auto-design-system",
   "packageManager": "yarn@4.17.0",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "license": "MIT",
   "description": "Autonomys Design System",
   "type": "module",
@@ -34,7 +34,7 @@
     "shadcn": "npx shadcn-ui@latest add"
   },
   "dependencies": {
-    "@autonomys/design-tokens": "^1.7.0",
+    "@autonomys/design-tokens": "^1.8.0",
     "@heroicons/react": "^2.2.0",
     "@radix-ui/react-dialog": "^1.1.17",
     "clsx": "^2.1.1",
@@ -44,8 +44,8 @@
     "tailwind-merge": "^2.6.1"
   },
   "devDependencies": {
-    "@autonomys/auto-dag-data": "^1.7.0",
-    "@autonomys/auto-utils": "^1.7.0",
+    "@autonomys/auto-dag-data": "^1.8.0",
+    "@autonomys/auto-utils": "^1.8.0",
     "@babel/core": "^7.29.7",
     "@babel/preset-env": "^7.29.7",
     "@babel/preset-react": "^7.29.7",
