@@ -2,6 +2,38 @@
 
 Future changes will appear here.
 
+## [1.8.0] - 2026-11-18
+
+### Features
+
+- customerReference upload option ([#820](https://github.com/autonomys/auto-sdk/pull/820)) [@EmilFattakhov](https://github.com/EmilFattakhov)
+- entry-bounded ListObjectVersions with version-id-marker (⚠️ breaking changes) ([#780](https://github.com/autonomys/auto-sdk/pull/780)) [@grzdev](https://github.com/grzdev)
+- add unpublishObject to remove public download links ([#761](https://github.com/autonomys/auto-sdk/pull/761)) [@lfern](https://github.com/lfern)
+- add calls to read purchased credits ([#757](https://github.com/autonomys/auto-sdk/pull/757)) [@lfern](https://github.com/lfern)
+
+### Bug Fixes
+
+- preserve file and input MIME types on upload ([#813](https://github.com/autonomys/auto-sdk/pull/813)) [@yeziR4](https://github.com/yeziR4)
+- reject empty-string password before uploading (⚠️ breaking changes) ([#812](https://github.com/autonomys/auto-sdk/pull/812)) [@yeziR4](https://github.com/yeziR4)
+- report upload progress against the original file size ([#809](https://github.com/autonomys/auto-sdk/pull/809)) [@jim-counter](https://github.com/jim-counter)
+- show raw text when a JSON preview fails to parse ([#807](https://github.com/autonomys/auto-sdk/pull/807)) [@jim-counter](https://github.com/jim-counter)
+- reject uploadFileFromInput when the upload fails ([#804](https://github.com/autonomys/auto-sdk/pull/804)) [@jim-counter](https://github.com/jim-counter)
+- detach a destroyed forkStream branch before the source writes to it ([#803](https://github.com/autonomys/auto-sdk/pull/803)) [@jim-counter](https://github.com/jim-counter)
+- validate notifications and type notificationClient with the input (⚠️  breaking changes) ([#800](https://github.com/autonomys/auto-sdk/pull/800)) [@lfern](https://github.com/lfern)
+- work in the browser without Node polyfills ([#794](https://github.com/autonomys/auto-sdk/pull/794)) [@jim-counter](https://github.com/jim-counter)
+- do not parse json in restoreObject and shareObject ([#779](https://github.com/autonomys/auto-sdk/pull/779)) [@grzdev](https://github.com/grzdev)
+- update getMe endpoint path to /accounts/@me (⚠️ breaking changes) ([#767](https://github.com/autonomys/auto-sdk/pull/767)) [@yeziR4](https://github.com/yeziR4)
+
+### Code Refactoring
+
+- remove the deprecated isZodType (⚠️ breaking changes) ([#802](https://github.com/autonomys/auto-sdk/pull/802)) [@jim-counter](https://github.com/jim-counter)
+
+### Chores
+
+- stop bundling runtime dependencies ([#805](https://github.com/autonomys/auto-sdk/pull/805)) [@jim-counter](https://github.com/jim-counter)
+- bump handlebars to 4.7.10 ([#798](https://github.com/autonomys/auto-sdk/pull/798)) [@jim-counter](https://github.com/jim-counter)
+- release v1.7.0 ([#793](https://github.com/autonomys/auto-sdk/pull/793)) [@jim-counter](https://github.com/jim-counter)
+
 ## [1.7.0] - 2026-11-04
 
 ### Features
@@ -799,6 +831,8 @@ No changes in this version.
 
 [1.6.15]: https://github.com/autonomys/auto-sdk/releases/tag/v1.6.15
 
-[Unreleased]: https://github.com/autonomys/auto-sdk/compare/v1.7.0...HEAD
-[1.7.0]: https://github.com/autonomys/auto-sdk/compare/v1.6.16...v1.7.0
 [1.6.16]: https://github.com/autonomys/auto-sdk/releases/tag/v1.6.16
+
+[Unreleased]: https://github.com/autonomys/auto-sdk/compare/v1.8.0...HEAD
+[1.8.0]: https://github.com/autonomys/auto-sdk/compare/v1.7.0...v1.8.0
+[1.7.0]: https://github.com/autonomys/auto-sdk/releases/tag/v1.7.0
