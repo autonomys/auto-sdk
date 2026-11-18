@@ -1,12 +1,7 @@
 import { Buffer } from 'buffer'
 import { decompressFile } from '../compression/index.js'
 import { decryptFile } from '../encryption/index.js'
-import {
-  CompressionAlgorithm,
-  EncryptionAlgorithm,
-  FileUploadOptions,
-  OffchainMetadata,
-} from '../metadata/index.js'
+import { EncryptionAlgorithm, FileUploadOptions, OffchainMetadata } from '../metadata/index.js'
 
 export type FileData = {
   name: string
@@ -114,11 +109,13 @@ export const decryptFileData = async (password: string, fileData: FileData): Pro
 
     let iterable = asyncFromStream(stream)
     iterable = decryptFile(iterable, password, {
-      algorithm: EncryptionAlgorithm.AES_256_GCM,
+      algorithm: fileData.uploadOptions?.encryption?.algorithm ?? EncryptionAlgorithm.AES_256_GCM,
     })
-    iterable = decompressFile(iterable, {
-      algorithm: CompressionAlgorithm.ZLIB,
-    })
+    if (fileData.uploadOptions?.compression) {
+      iterable = decompressFile(iterable, {
+        algorithm: fileData.uploadOptions.compression.algorithm,
+      })
+    }
 
     const processedChunks: Buffer[] = []
     for await (const chunk of iterable) {

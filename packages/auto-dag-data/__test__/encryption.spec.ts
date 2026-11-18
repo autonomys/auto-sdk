@@ -1,5 +1,21 @@
 import { AwaitIterable } from 'interface-store'
-import { decryptFile, encryptFile, EncryptionAlgorithm } from '../src'
+import {
+  compressFile,
+  CompressionAlgorithm,
+  decryptFile,
+  decryptFileData,
+  encryptFile,
+  EncryptionAlgorithm,
+  FileData,
+} from '../src'
+
+const collect = async (it: AwaitIterable<Buffer>): Promise<Buffer> => {
+  const chunks: Buffer[] = []
+  for await (const chunk of it) {
+    chunks.push(chunk)
+  }
+  return Buffer.concat(chunks)
+}
 
 const awaitIterable = async (it: AwaitIterable<Buffer>) => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars -- only drains the iterable
@@ -160,5 +176,58 @@ describe('encryption', () => {
     }
 
     expect(decryptedBuffer.toString('utf8')).toBe(FIXTURE_PLAINTEXT)
+  })
+
+  it('decrypts a 32-byte salt-only stream (empty file) to 0 bytes', async () => {
+    const encrypted = await collect(
+      encryptFile([], 'password', { algorithm: EncryptionAlgorithm.AES_256_GCM }),
+    )
+    expect(encrypted.length).toBe(32)
+
+    const decrypted = await collect(
+      decryptFile([encrypted], 'password', { algorithm: EncryptionAlgorithm.AES_256_GCM }),
+    )
+    expect(decrypted.length).toBe(0)
+  })
+
+  it.each([
+    ['empty input', []],
+    ['input shorter than 32 bytes', [Buffer.alloc(31, 0xaa)]],
+  ])('rejects %s in decryptFile', async (_, input) => {
+    await expect(
+      collect(decryptFile(input, 'password', { algorithm: EncryptionAlgorithm.AES_256_GCM })),
+    ).rejects.toThrow('Encrypted stream is shorter than the 32-byte salt header')
+  })
+
+  describe('decryptFileData', () => {
+    it.each([
+      ['without compression (compression: undefined)', undefined],
+      ['with ZLIB compression', { algorithm: CompressionAlgorithm.ZLIB, level: 9 as const }],
+    ])('round-trips encrypted payload %s', async (_, compression) => {
+      const plaintext = Buffer.from('hello world from decryptFileData')
+      let source: AsyncIterable<Buffer> = (async function* () {
+        yield plaintext
+      })()
+
+      if (compression) {
+        source = compressFile(source, compression)
+      }
+      source = encryptFile(source, 'secret', { algorithm: EncryptionAlgorithm.AES_256_GCM })
+
+      const encrypted = await collect(source)
+      const fileData: FileData = {
+        name: 'test.txt',
+        dataArrayBuffer: new Uint8Array(encrypted).buffer,
+        isEncrypted: true,
+        uploadOptions: {
+          encryption: { algorithm: EncryptionAlgorithm.AES_256_GCM },
+          compression,
+        },
+      }
+
+      const result = await decryptFileData('secret', fileData)
+      expect(result.isEncrypted).toBe(false)
+      expect(Buffer.from(result.dataArrayBuffer).toString('utf8')).toBe(plaintext.toString('utf8'))
+    })
   })
 })
