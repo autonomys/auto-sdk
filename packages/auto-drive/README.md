@@ -183,7 +183,7 @@ const cid = await api.uploadFileFromBuffer(buffer, fileName, {
 
 Every upload method that takes `options` accepts `customerReference`. It also works with `uploadFolderFromInput` and `fs.uploadFolderFromFolderPath`, where every file in the folder takes the reference.
 
-A reference has up to 128 letters, digits, `-`, `_`, `.` or `:`. The server rejects anything else. Use a pseudonymous ID, never personal data such as a name or email address.
+A reference has 1 to 128 letters, digits, `-`, `_`, `.` or `:`, with no spaces. Anything else makes the upload throw before anything is sent. Use a pseudonymous ID, never personal data such as a name or email address.
 
 ### Example Usage of Download
 

@@ -1,4 +1,5 @@
 import { Buffer } from 'buffer'
+import { assertValidCustomerReference } from '../../utils/customerReference'
 import { ArgsWithoutPagination } from '../../utils/types'
 import { FolderTree } from '../models/folderTree'
 import {
@@ -11,10 +12,12 @@ import { AutoDriveApiHandler } from '../types'
 import { toApiError } from './errors'
 
 // Sends the caller's reference for the customer an upload is for, which Auto Drive records
-// for the account's usage reports. Files in a folder upload take the folder's.
-const createUploadHeaders = (customerReference?: string): Headers => {
+// for the account's usage reports. Files in a folder upload take the folder's, so they are
+// created without one.
+const createUploadHeaders = (customerReference?: string | null): Headers => {
+  assertValidCustomerReference(customerReference)
   const headers = new Headers({ 'Content-Type': 'application/json' })
-  if (customerReference !== undefined) {
+  if (customerReference != null) {
     headers.set('X-Customer-Reference', customerReference)
   }
   return headers
@@ -134,9 +137,7 @@ export const createFileUploadWithinFolderUpload = async (
     `/uploads/folder/${uploadId}/file`,
     {
       method: 'POST',
-      headers: new Headers({
-        'Content-Type': 'application/json',
-      }),
+      headers: createUploadHeaders(),
     },
     JSON.stringify({ name, mimeType, relativeId, uploadOptions }),
   )

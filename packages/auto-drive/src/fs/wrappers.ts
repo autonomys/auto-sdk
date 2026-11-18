@@ -4,7 +4,8 @@ import { apiCalls } from '../api/index'
 import { GenericFileWithinFolder } from '../api/models/file'
 import { constructFromFileSystemEntries } from '../api/models/folderTree'
 import { CompressionAlgorithm } from '../api/models/uploads'
-import { AutoDriveApi, UploadFileOptions } from '../api/types'
+import { AutoDriveApi, UploadFileOptions, UploadFolderOptions } from '../api/types'
+import { assertValidCustomerReference } from '../utils/customerReference'
 import { lookupMimeType } from '../utils/mimeType'
 import { progressToPercentage } from '../utils/misc'
 import { constructZipFromTreeAndFileSystemPaths, getFiles } from './utils'
@@ -75,21 +76,13 @@ export const uploadFileFromFilepath = (
 export const uploadFolderFromFolderPath = async (
   api: AutoDriveApi,
   folderPath: string,
-  {
-    uploadChunkSize,
-    password,
-    onProgress,
-    customerReference,
-  }: {
-    uploadChunkSize?: number
-    password?: string
-    onProgress?: (progressInPercentage: number) => void
-    customerReference?: string
-  } = {},
+  { uploadChunkSize, password, onProgress, customerReference }: UploadFolderOptions = {},
 ): Promise<Promise<string>> => {
   if (password === '') {
     throw new Error('Password cannot be empty')
   }
+  // Checked here as well because an encrypted folder is zipped before its upload is created.
+  assertValidCustomerReference(customerReference)
 
   const files = await getFiles(folderPath)
   const fileTree = constructFromFileSystemEntries(files)
