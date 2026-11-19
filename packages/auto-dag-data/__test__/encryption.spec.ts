@@ -1,3 +1,4 @@
+import { asyncIterableToBuffer, bufferToAsyncIterable } from '@autonomys/asynchronous'
 import { AwaitIterable } from 'interface-store'
 import {
   compressFile,
@@ -8,14 +9,6 @@ import {
   EncryptionAlgorithm,
   FileData,
 } from '../src'
-
-const collect = async (it: AwaitIterable<Buffer>): Promise<Buffer> => {
-  const chunks: Buffer[] = []
-  for await (const chunk of it) {
-    chunks.push(chunk)
-  }
-  return Buffer.concat(chunks)
-}
 
 const awaitIterable = async (it: AwaitIterable<Buffer>) => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars -- only drains the iterable
@@ -179,12 +172,12 @@ describe('encryption', () => {
   })
 
   it('decrypts a 32-byte salt-only stream (empty file) to 0 bytes', async () => {
-    const encrypted = await collect(
+    const encrypted = await asyncIterableToBuffer(
       encryptFile([], 'password', { algorithm: EncryptionAlgorithm.AES_256_GCM }),
     )
     expect(encrypted.length).toBe(32)
 
-    const decrypted = await collect(
+    const decrypted = await asyncIterableToBuffer(
       decryptFile([encrypted], 'password', { algorithm: EncryptionAlgorithm.AES_256_GCM }),
     )
     expect(decrypted.length).toBe(0)
@@ -195,7 +188,9 @@ describe('encryption', () => {
     ['input shorter than 32 bytes', [Buffer.alloc(31, 0xaa)]],
   ])('rejects %s in decryptFile', async (_, input) => {
     await expect(
-      collect(decryptFile(input, 'password', { algorithm: EncryptionAlgorithm.AES_256_GCM })),
+      asyncIterableToBuffer(
+        decryptFile(input, 'password', { algorithm: EncryptionAlgorithm.AES_256_GCM }),
+      ),
     ).rejects.toThrow('Encrypted stream is shorter than the 32-byte salt header')
   })
 
@@ -205,16 +200,14 @@ describe('encryption', () => {
       ['with ZLIB compression', { algorithm: CompressionAlgorithm.ZLIB, level: 9 as const }],
     ])('round-trips encrypted payload %s', async (_, compression) => {
       const plaintext = Buffer.from('hello world from decryptFileData')
-      let source: AsyncIterable<Buffer> = (async function* () {
-        yield plaintext
-      })()
+      let source: AsyncIterable<Buffer> = bufferToAsyncIterable(plaintext)
 
       if (compression) {
         source = compressFile(source, compression)
       }
       source = encryptFile(source, 'secret', { algorithm: EncryptionAlgorithm.AES_256_GCM })
 
-      const encrypted = await collect(source)
+      const encrypted = await asyncIterableToBuffer(source)
       const fileData: FileData = {
         name: 'test.txt',
         dataArrayBuffer: new Uint8Array(encrypted).buffer,
