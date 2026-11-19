@@ -113,4 +113,17 @@ describe('createErrorResilientStream', () => {
 
     expect(consumed).toEqual({ bytes: CHUNK.length, errors: [STALLED] })
   })
+
+  it('destroys a paused source when the consumer destroys the stream', async () => {
+    const source = new Readable({ read() {} })
+    const stream = wrap(source)
+    for (let i = 0; i < CHUNKS; i++) source.push(CHUNK)
+
+    await eventLoopTurn()
+    expect(source.isPaused()).toBe(true)
+    stream.destroy()
+    await eventLoopTurn()
+
+    expect(source.destroyed).toBe(true)
+  })
 })

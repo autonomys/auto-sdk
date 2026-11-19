@@ -147,6 +147,8 @@ export const createErrorResilientStream = (
     metrics.isDestroyed = true
     metrics.lastActivity = Date.now()
     stopHealthChecks()
+    // A source left paused for backpressure would never close, leaking its file descriptor
+    sourceStream.destroy()
   })
 
   // Start health monitoring
