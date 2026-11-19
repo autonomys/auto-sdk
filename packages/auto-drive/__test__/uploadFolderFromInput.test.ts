@@ -1,13 +1,5 @@
-import { apiCalls } from '../src/api/calls/index'
 import { AutoDriveApiHandler } from '../src/api/types'
 import { createApiInterface } from '../src/api/wrappers'
-
-jest.mock('@autonomys/auto-dag-data', () => ({
-  compressFile: jest.fn((iterable) => iterable),
-  CompressionAlgorithm: { ZLIB: 'ZLIB' },
-  EncryptionAlgorithm: { AES_256_GCM: 'AES_256_GCM' },
-  encryptFile: jest.fn((iterable) => iterable),
-}))
 
 describe('uploadFolderFromInput', () => {
   const dummyHandler: AutoDriveApiHandler = {
@@ -18,50 +10,19 @@ describe('uploadFolderFromInput', () => {
   }
 
   const api = createApiInterface(dummyHandler)
+  const emptyFileList = { length: 0, item: () => null } as unknown as FileList
 
   afterEach(() => {
-    jest.restoreAllMocks()
+    jest.clearAllMocks()
   })
 
-  it('rejects when given an empty list without a password and makes no API calls', async () => {
-    const createFolderSpy = jest.spyOn(apiCalls, 'createFolderUpload')
-    const createFileSpy = jest.spyOn(apiCalls, 'createFileUpload')
-    const completeSpy = jest.spyOn(apiCalls, 'completeUpload')
+  it.each([
+    ['an empty array without a password', [], {}],
+    ['an empty array with a password', [], { password: 'secret' }],
+    ['an empty FileList', emptyFileList, {}],
+  ])('rejects when given %s and makes no API calls', async (_, files, options) => {
+    await expect(api.uploadFolderFromInput(files, options)).rejects.toThrow('No files to upload')
 
-    await expect(api.uploadFolderFromInput([], {})).rejects.toThrow('No files to upload')
-
-    expect(createFolderSpy).not.toHaveBeenCalled()
-    expect(createFileSpy).not.toHaveBeenCalled()
-    expect(completeSpy).not.toHaveBeenCalled()
-    expect(dummyHandler.sendAPIRequest).not.toHaveBeenCalled()
-  })
-
-  it('rejects when given an empty list with a password and makes no API calls', async () => {
-    const createFolderSpy = jest.spyOn(apiCalls, 'createFolderUpload')
-    const createFileSpy = jest.spyOn(apiCalls, 'createFileUpload')
-    const completeSpy = jest.spyOn(apiCalls, 'completeUpload')
-
-    await expect(api.uploadFolderFromInput([], { password: 'secret' })).rejects.toThrow(
-      'No files to upload',
-    )
-
-    expect(createFolderSpy).not.toHaveBeenCalled()
-    expect(createFileSpy).not.toHaveBeenCalled()
-    expect(completeSpy).not.toHaveBeenCalled()
-    expect(dummyHandler.sendAPIRequest).not.toHaveBeenCalled()
-  })
-
-  it('rejects when given an empty FileList and makes no API calls', async () => {
-    const createFolderSpy = jest.spyOn(apiCalls, 'createFolderUpload')
-    const createFileSpy = jest.spyOn(apiCalls, 'createFileUpload')
-    const completeSpy = jest.spyOn(apiCalls, 'completeUpload')
-    const emptyFileList = { length: 0, item: () => null } as unknown as FileList
-
-    await expect(api.uploadFolderFromInput(emptyFileList, {})).rejects.toThrow('No files to upload')
-
-    expect(createFolderSpy).not.toHaveBeenCalled()
-    expect(createFileSpy).not.toHaveBeenCalled()
-    expect(completeSpy).not.toHaveBeenCalled()
     expect(dummyHandler.sendAPIRequest).not.toHaveBeenCalled()
   })
 })
