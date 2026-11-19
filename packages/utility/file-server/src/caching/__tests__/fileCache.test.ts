@@ -1,5 +1,6 @@
 import { stringify } from '@autonomys/auto-utils/string'
 import { jest } from '@jest/globals'
+import { once } from 'events'
 import type { Request } from 'express'
 import fs from 'fs'
 import fsPromises from 'fs/promises'
@@ -181,6 +182,42 @@ describe('createFileCache', () => {
 
     const remainingEntries = fs.existsSync(expectedDir) ? fs.readdirSync(expectedDir) : []
     expect(remainingEntries).toEqual([])
+  })
+
+  describe('get', () => {
+    afterEach(() => {
+      jest.useRealTimers()
+    })
+
+    it('keeps the stream readable for a consumer that pauses for longer than the stall timeout', async () => {
+      const key = `file:${CID}`
+      // Larger than the stream's buffers, so most of the file is still on disk during the pause
+      const content = Buffer.alloc(1024 * 1024, 'a')
+      await cache.set(key, {
+        data: Readable.from([content]),
+        mimeType: 'application/octet-stream',
+        size: BigInt(content.length),
+      })
+
+      // Streams schedule their own work with nextTick and setImmediate
+      jest.useFakeTimers({ doNotFake: ['nextTick', 'setImmediate'] })
+      const { data } = (await cache.get(key))!
+      const chunks: Buffer[] = []
+      data.on('data', (chunk: Buffer) => chunks.push(chunk))
+      await once(data, 'data')
+      data.pause()
+      // Wait for the next chunk to arrive from disk and sit unread
+      while (data.readableLength === 0) {
+        await new Promise((resolve) => setImmediate(resolve))
+      }
+
+      jest.advanceTimersByTime(60_000)
+      expect(data.destroyed).toBe(false)
+
+      data.resume()
+      await once(data, 'end')
+      expect(Buffer.concat(chunks).equals(content)).toBe(true)
+    })
   })
 
   describe('remove', () => {
