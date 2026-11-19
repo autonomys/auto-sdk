@@ -89,7 +89,7 @@ export const downloadStatus = async (
   api: AutoDriveApiHandler,
   cid: string,
 ): Promise<{ status: DownloadStatus }> => {
-  const response = await api.sendDownloadRequest(`/downloads/async/${cid}/status`, {
+  const response = await api.sendDownloadRequest(`/downloads/${cid}/status`, {
     method: 'GET',
   })
 
