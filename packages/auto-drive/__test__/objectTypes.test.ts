@@ -1,6 +1,12 @@
-import { getObject, getObjectSummary, getObjectUploadStatus } from '../src/api/calls/read'
+import {
+  getObject,
+  getObjectSummary,
+  getObjectUploadStatus,
+  getToBeReviewedList,
+} from '../src/api/calls/read'
 import { ObjectStatus } from '../src/api/models/objects'
 import { AutoDriveApiHandler } from '../src/api/types'
+import { createApiInterface } from '../src/api/wrappers'
 
 // Responses copied from the mainnet Auto Drive API (GET /objects/:cid, /summary and /status)
 const cid = 'bafkr6iahtm4qol5egxcjpm6pmrj7zcelho2fxk6hlwthde2fr7dhm2qyby'
@@ -44,6 +50,9 @@ const responses: Record<string, unknown> = {
     tags: [],
   },
   [`/objects/${cid}/status`]: uploadState,
+  // The review list is admin only, so this one follows the server code instead: it sends the
+  // head CID of each reported object (getToBeReviewedList in auto-drive core/objects/object.ts)
+  '/objects/to-be-reviewed/list?limit=50&offset=0': [cid],
 }
 
 const handler: AutoDriveApiHandler = {
@@ -90,5 +99,15 @@ describe('object types', () => {
 
     expect(status.archivedNodes).toBe(5)
     expect(status).toEqual(uploadState)
+  })
+
+  it('should type the review list as the CIDs that the server sends', async () => {
+    const cids: string[] = await getToBeReviewedList(handler, { limit: 50, offset: 0 })
+    const apiCids: string[] = await createApiInterface(handler).getToBeReviewedList(50, 0)
+
+    expect(cids).toEqual([cid])
+    expect(apiCids).toEqual([cid])
+    // @ts-expect-error the server sends CIDs, not object summaries
+    expect(cids[0].headCid).toBeUndefined()
   })
 })

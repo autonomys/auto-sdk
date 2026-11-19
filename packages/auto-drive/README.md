@@ -260,8 +260,8 @@ const api = createAutoDriveApi({ apiKey: 'your-api-key', network: NetworkId.MAIN
 try {
   const toBeReviewed = await api.getToBeReviewedList(50, 0)
   console.log(`Found ${toBeReviewed.length} objects to be reviewed`)
-  for (const object of toBeReviewed) {
-    console.log(`${object.name} - ${object.headCid}: ${object.size}`)
+  for (const cid of toBeReviewed) {
+    console.log(cid)
   }
 } catch (error) {
   console.error('Error getting objects to be reviewed:', error)
