@@ -181,16 +181,10 @@ describe('upload progress', () => {
     const file = new File([data], 'data.bin')
     Object.defineProperty(file, 'webkitRelativePath', { value: 'folder/data.bin' })
 
-    // JSZip cannot read a Node File, and FileList only exists in browsers
+    // JSZip cannot read a Node File
     jest.spyOn(folderTree, 'constructZipBlobFromTreeAndPaths').mockResolvedValue(new Blob([data]))
-    const globals = globalThis as { FileList?: unknown }
-    globals.FileList = class {}
 
-    try {
-      await api.uploadFolderFromInput([file], { password: 'password', uploadChunkSize })
-    } finally {
-      delete globals.FileList
-    }
+    await api.uploadFolderFromInput([file], { password: 'password', uploadChunkSize })
 
     expect(chunkSpy.mock.calls.length).toBeGreaterThan(1)
     expect(Math.max(...uploadedChunkLengths())).toBe(uploadChunkSize)
