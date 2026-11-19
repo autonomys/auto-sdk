@@ -1,5 +1,6 @@
 import { fileToIterable } from '@autonomys/asynchronous'
 import fs from 'fs'
+import path from 'path'
 import { apiCalls } from '../api/index'
 import { GenericFileWithinFolder } from '../api/models/file'
 import { constructFromFileSystemEntries } from '../api/models/folderTree'
@@ -9,6 +10,9 @@ import { assertValidCustomerReference } from '../utils/customerReference'
 import { lookupMimeType } from '../utils/mimeType'
 import { progressToPercentage } from '../utils/misc'
 import { constructZipFromTreeAndFileSystemPaths, getFiles } from './utils'
+
+const toPosixPath = (filePath: string): string =>
+  path.sep === '\\' ? filePath.replace(/^[A-Za-z]:/, '').replace(/\\/g, '/') : filePath
 
 /**
  * Uploads a file to the server with optional encryption and compression.
@@ -35,7 +39,7 @@ export const uploadFileFromFilepath = (
   uploadChunkSize?: number,
 ): Promise<string> => {
   const { password = undefined, compression = true, onProgress, customerReference } = options
-  const name = filePath.split('/').pop()!
+  const name = path.posix.basename(toPosixPath(filePath))
 
   return api.uploadFile(
     {
@@ -85,12 +89,12 @@ export const uploadFolderFromFolderPath = async (
   assertValidCustomerReference(customerReference)
 
   const files = await getFiles(folderPath)
-  const fileTree = constructFromFileSystemEntries(files)
+  const fileTree = constructFromFileSystemEntries(files.map(toPosixPath))
 
   if (password) {
-    const filesMap = Object.fromEntries(files.map((file) => [file, file]))
+    const filesMap = Object.fromEntries(files.map((file) => [toPosixPath(file), file]))
     const zipBlob = await constructZipFromTreeAndFileSystemPaths(fileTree, filesMap)
-    const name = folderPath.split('/').pop()!
+    const name = path.posix.basename(toPosixPath(folderPath))
     return api.uploadFile(
       {
         read: () => fileToIterable(zipBlob),
@@ -119,13 +123,17 @@ export const uploadFolderFromFolderPath = async (
     },
   })
 
-  const genericFiles: GenericFileWithinFolder[] = files.map((file) => ({
-    read: () => fs.createReadStream(file),
-    name: file.split('/').pop()!,
-    mimeType: lookupMimeType(file.split('/').pop()!),
-    size: fs.statSync(file).size,
-    path: file,
-  }))
+  const genericFiles: GenericFileWithinFolder[] = files.map((file) => {
+    const normalized = toPosixPath(file)
+    const name = path.posix.basename(normalized)
+    return {
+      read: () => fs.createReadStream(file),
+      name,
+      mimeType: lookupMimeType(name),
+      size: fs.statSync(file).size,
+      path: normalized,
+    }
+  })
 
   const totalSize = genericFiles.reduce((acc, file) => acc + file.size, 0)
   let progress = 0
