@@ -1,4 +1,5 @@
 import fs from 'fs'
+import path from 'path'
 import { Readable } from 'stream'
 import { apiCalls } from '../src/api/calls/index'
 import { AutoDriveApi } from '../src/api/types'
@@ -29,9 +30,10 @@ describe('Node fs wrappers cross-platform path handling', () => {
 
   describe('uploadFileFromFilepath', () => {
     it.each([
-      ['Windows path', 'C:\\Users\\alice\\docs\\report.pdf'],
-      ['POSIX path', '/home/alice/docs/report.pdf'],
-    ])('extracts base name and MIME type from %s', async (_, filePath) => {
+      ['Windows path', '\\' as const, 'C:\\Users\\alice\\docs\\report.pdf'],
+      ['POSIX path', '/' as const, '/home/alice/docs/report.pdf'],
+    ])('extracts base name and MIME type from %s', async (_, sep, filePath) => {
+      jest.replaceProperty(path, 'sep', sep)
       await uploadFileFromFilepath(mockApi, filePath)
 
       expect(mockApi.uploadFile).toHaveBeenCalledWith(
@@ -40,6 +42,17 @@ describe('Node fs wrappers cross-platform path handling', () => {
           mimeType: 'application/pdf',
           size: 12,
         }),
+        expect.any(Object),
+        undefined,
+      )
+    })
+
+    it('keeps backslashes in POSIX file names', async () => {
+      jest.replaceProperty(path, 'sep', '/')
+      await uploadFileFromFilepath(mockApi, '/home/alice/a\\b.txt')
+
+      expect(mockApi.uploadFile).toHaveBeenCalledWith(
+        expect.objectContaining({ name: 'a\\b.txt' }),
         expect.any(Object),
         undefined,
       )
@@ -56,12 +69,15 @@ describe('Node fs wrappers cross-platform path handling', () => {
       jest
         .spyOn(fsUtils, 'getFiles')
         .mockResolvedValueOnce([
-          '\\workspace\\bundle\\top.json',
-          '\\workspace\\bundle\\sub\\nested.txt',
+          'C:\\workspace\\bundle\\top.json',
+          'C:\\workspace\\bundle\\sub\\nested.txt',
         ])
         .mockResolvedValueOnce(['/workspace/bundle/top.json', '/workspace/bundle/sub/nested.txt'])
 
-      await uploadFolderFromFolderPath(mockApi, '\\workspace\\bundle')
+      jest.replaceProperty(path, 'sep', '\\')
+      await uploadFolderFromFolderPath(mockApi, 'C:\\workspace\\bundle')
+
+      jest.replaceProperty(path, 'sep', '/')
       await uploadFolderFromFolderPath(mockApi, '/workspace/bundle')
 
       const windowsTree = createFolderUploadSpy.mock.calls[0][1].fileTree
@@ -93,6 +109,7 @@ describe('Node fs wrappers cross-platform path handling', () => {
     })
 
     it('uses the folder base name for encrypted zip uploads on Windows paths', async () => {
+      jest.replaceProperty(path, 'sep', '\\')
       jest.spyOn(fsUtils, 'getFiles').mockResolvedValue(['C:\\workspace\\bundle\\nested\\file.txt'])
       const zipSpy = jest
         .spyOn(fsUtils, 'constructZipFromTreeAndFileSystemPaths')
@@ -103,7 +120,7 @@ describe('Node fs wrappers cross-platform path handling', () => {
       })
 
       expect(zipSpy).toHaveBeenCalledWith(expect.objectContaining({ type: 'folder' }), {
-        'C:/workspace/bundle/nested/file.txt': 'C:\\workspace\\bundle\\nested\\file.txt',
+        '/workspace/bundle/nested/file.txt': 'C:\\workspace\\bundle\\nested\\file.txt',
       })
       expect(mockApi.uploadFile).toHaveBeenCalledWith(
         expect.objectContaining({
