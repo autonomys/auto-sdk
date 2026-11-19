@@ -46,16 +46,24 @@ export const createErrorResilientStream = (
   const healthCheck = (): StreamHealthMetrics => {
     const now = Date.now()
     const timeSinceLastActivity = now - metrics.lastActivity
-    metrics.isStalled = timeSinceLastActivity > stallTimeout && !metrics.isDestroyed
+    // Health checks run only while the source owes data, so a slow or paused consumer is never a stall
+    metrics.isStalled =
+      healthCheckTimer !== null && timeSinceLastActivity > stallTimeout && !metrics.isDestroyed
 
     return { ...metrics }
   }
 
-  // Start periodic health checks for stalled streams
-  const startHealthChecks = () => {
+  const stopHealthChecks = () => {
     if (healthCheckTimer) {
       clearInterval(healthCheckTimer)
+      healthCheckTimer = null
     }
+  }
+
+  // Start periodic health checks for stalled streams
+  const startHealthChecks = () => {
+    stopHealthChecks()
+    metrics.lastActivity = Date.now()
 
     healthCheckTimer = setInterval(() => {
       const health = healthCheck()
@@ -83,6 +91,7 @@ export const createErrorResilientStream = (
         if (!canContinue) {
           // Backpressure: pause source stream until drain event
           sourceStream.pause()
+          stopHealthChecks()
         }
       }
     } catch (error) {
@@ -93,13 +102,20 @@ export const createErrorResilientStream = (
 
   // Resume source stream when pass-through is ready for more data
   passThrough.on('drain', () => {
-    if (!sourceStream.destroyed && !passThrough.destroyed) {
+    if (passThrough.destroyed) {
+      return
+    }
+
+    // Checks start even if the source was destroyed while paused, or its consumer would wait forever
+    startHealthChecks()
+    if (!sourceStream.destroyed) {
       sourceStream.resume()
     }
   })
 
   // Handle source stream end
   sourceStream.on('end', () => {
+    stopHealthChecks()
     if (!passThrough.destroyed) {
       passThrough.end()
     }
@@ -123,17 +139,14 @@ export const createErrorResilientStream = (
   // Handle pass-through stream on end
   passThrough.on('end', () => {
     metrics.lastActivity = Date.now()
-    if (healthCheckTimer) clearInterval(healthCheckTimer)
+    stopHealthChecks()
   })
 
   // Handle pass-through stream close
   passThrough.on('close', () => {
     metrics.isDestroyed = true
     metrics.lastActivity = Date.now()
-
-    if (healthCheckTimer) {
-      clearInterval(healthCheckTimer)
-    }
+    stopHealthChecks()
   })
 
   // Start health monitoring
