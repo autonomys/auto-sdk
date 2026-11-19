@@ -126,4 +126,18 @@ describe('createErrorResilientStream', () => {
 
     expect(source.destroyed).toBe(true)
   })
+
+  it('leaves a source that has ended to its owner', async () => {
+    // Stays usable after its readable side ends, as a half-open socket does
+    const source = new Readable({ read() {}, autoDestroy: false })
+    const stream = wrap(source)
+    const consumed = consume(stream)
+
+    source.push(CHUNK)
+    source.push(null)
+    await once(stream, 'close')
+
+    expect(consumed).toEqual({ bytes: CHUNK.length, errors: [] })
+    expect(source.destroyed).toBe(false)
+  })
 })

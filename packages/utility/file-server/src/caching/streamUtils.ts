@@ -147,7 +147,8 @@ export const createErrorResilientStream = (
     metrics.isDestroyed = true
     metrics.lastActivity = Date.now()
     stopHealthChecks()
-    // A source left paused for backpressure would never close, leaking its file descriptor
+    // A source left paused for backpressure would never close, leaking its file descriptor.
+    // One that has ended is left to its owner: a half-open socket can still be written to
     if (!sourceStream.readableEnded) {
       sourceStream.destroy()
     }
