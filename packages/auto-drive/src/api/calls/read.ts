@@ -192,7 +192,8 @@ export const getObjectUploadStatus = async (
  * field of the object information, so this reads them from `getObject`.
  * The server only lists the owners the caller may see: none without
  * credentials, the caller's own ownership rows for a signed-in user, and
- * every active owner for an admin.
+ * every active owner for an Auto Drive admin account. An admin owner of the
+ * object (`OwnerRole.ADMIN`) only gets their own row back.
  *
  * @param {AutoDriveApiHandler} api - The API instance used to send requests.
  * @param {ArgsWithoutPagination<{ cid: string }>} query - The query parameters containing the CID of the object whose owners are to be retrieved.
