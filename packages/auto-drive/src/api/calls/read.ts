@@ -188,28 +188,25 @@ export const getObjectUploadStatus = async (
 /**
  * Retrieves the owners of a specific object identified by its CID.
  *
- * This method sends a request to the server to fetch the list of owners
- * associated with the object. The owners can provide insights into who
- * has access to or control over the object.
+ * The server has no route only for the owners: they come in the `owners`
+ * field of the object information, so this reads them from `getObject`.
+ * The server only lists the owners the caller may see: none without
+ * credentials, the caller's own ownership rows for a signed-in user, and
+ * every active owner for an Auto Drive admin account. An admin owner of the
+ * object (`OwnerRole.ADMIN`) only gets their own row back.
  *
  * @param {AutoDriveApiHandler} api - The API instance used to send requests.
  * @param {ArgsWithoutPagination<{ cid: string }>} query - The query parameters containing the CID of the object whose owners are to be retrieved.
- * @returns {Promise<ObjectInformation['owners']>} - A promise that resolves to the list of owners of the requested object.
+ * @returns {Promise<ObjectInformation['owners']>} - A promise that resolves to the owners of the requested object that the caller may see.
  * @throws {Error} - Throws an error if the request fails.
  */
 export const getObjectOwners = async (
   api: AutoDriveApiHandler,
   query: ArgsWithoutPagination<{ cid: string }>,
 ): Promise<ObjectInformation['owners']> => {
-  const response = await api.sendAPIRequest(`/objects/${query.cid}/owners`, {
-    method: 'GET',
-  })
+  const object = await getObject(api, query)
 
-  if (!response.ok) {
-    throw await toApiError(response, 'Failed to get object')
-  }
-
-  return response.json()
+  return object.owners
 }
 
 /**
