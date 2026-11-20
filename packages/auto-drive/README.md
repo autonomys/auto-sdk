@@ -171,6 +171,20 @@ console.log(`The folder is uploaded and its cid is ${folderCID}`)
 
 **Note: If a folder is tried to be encrypted a zip file would be generated and that file would be encrypted and uploaded.**
 
+### How to tag an upload with a customer reference?
+
+If you upload on behalf of your own customers, you can tag each upload with your reference for the customer it is for. Auto Drive records it with the upload and shows it only in your account's usage reports, where usage is broken down by reference.
+
+```typescript
+const cid = await api.uploadFileFromBuffer(buffer, fileName, {
+  customerReference: 'customer-1234',
+})
+```
+
+Every upload method that takes `options` accepts `customerReference`. It also works with `uploadFolderFromInput` and `fs.uploadFolderFromFolderPath`, where every file in the folder takes the reference.
+
+A reference has 1 to 128 letters, digits, `-`, `_`, `.` or `:`, with no spaces. Anything else makes the upload throw before anything is sent. Use a pseudonymous ID, never personal data such as a name or email address.
+
 ### Example Usage of Download
 
 Here is an example of how to use the `downloadFile` method to download a file from the server:

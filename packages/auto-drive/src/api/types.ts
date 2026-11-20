@@ -130,16 +130,13 @@ export interface AutoDriveApi extends AutoDriveApiHandler {
    * @param {Object} options - Options for the upload process.
    * @param {number} [options.uploadChunkSize] - The size of each chunk to upload (optional).
    * @param {string} [options.password] - The password for encryption (optional).
+   * @param {string} [options.customerReference] - Your reference for the customer the upload is for (optional).
    * @returns {PromisedObservable<UploadFileStatus | UploadFolderStatus>} - An observable that emits the upload status.
    * @throws {Error} - Throws an error if the upload fails at any stage.
    */
   uploadFolderFromInput: (
     fileList: FileList | File[],
-    options: {
-      uploadChunkSize?: number
-      password?: string
-      onProgress?: (progress: number) => void
-    },
+    options: UploadFolderOptions,
   ) => Promise<string>
   /**
    * Uploads a file within an existing folder upload session.
@@ -501,6 +498,24 @@ export type UploadFileOptions = {
   password?: string
   compression?: boolean
   onProgress?: (progress: number) => void
+  /**
+   * Your own reference for the customer the upload is for, such as a pseudonymous customer
+   * ID. Auto Drive records it with the upload and shows it only in your account's usage
+   * reports. 1 to 128 letters, digits, `-`, `_`, `.` or `:`; the upload throws before
+   * sending anything if it is anything else. Never put personal data in it.
+   */
+  customerReference?: string
+}
+
+export type UploadFolderOptions = {
+  uploadChunkSize?: number
+  password?: string
+  onProgress?: (progress: number) => void
+  /**
+   * Your own reference for the customer the upload is for, as in
+   * {@link UploadFileOptions.customerReference}. Every file in the folder takes it.
+   */
+  customerReference?: string
 }
 
 export enum OAuthProvider {

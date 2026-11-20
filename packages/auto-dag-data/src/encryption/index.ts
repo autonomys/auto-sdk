@@ -98,7 +98,11 @@ export const decryptFile = async function* (
     }
   }
 
-  if (key && chunks.length > 0) {
+  if (!key) {
+    throw new Error('Encrypted stream is shorter than the 32-byte salt header')
+  }
+
+  if (chunks.length > 0) {
     const iv = chunks.subarray(0, IV_SIZE)
     const chunk = chunks.subarray(IV_SIZE, chunkSize)
     const decrypted = await crypto.subtle.decrypt(

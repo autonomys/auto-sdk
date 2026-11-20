@@ -40,7 +40,10 @@ export enum Scope {
 }
 
 export interface Owner {
-  publicId: string
+  /** Auth provider of the owner's account (e.g. `google`, `github`) */
+  oauthProvider: string
+  /** ID of the owner's account within that provider */
+  oauthUserId: string
   role: OwnerRole
 }
 
