@@ -469,13 +469,14 @@ export interface AutoDriveApi extends AutoDriveApiHandler {
    * Gets the list of objects that need to be reviewed.
    *
    * This function sends a request to the server to fetch a list of objects
-   * that have been reported and need moderation review.
+   * that have been reported and need moderation review. The server only sends
+   * the CID of each object, so use `apiCalls.getObjectSummary` to get its details.
    *
    * @param limit {number} - The maximum number of objects to return (default: 100).
    * @param offset {number} - The number of objects to skip for pagination (default: 0).
-   * @returns {Promise<ObjectSummary[]>} - A promise that resolves to the list of objects to be reviewed.
+   * @returns {Promise<string[]>} - A promise that resolves to the CIDs of the objects to be reviewed.
    */
-  getToBeReviewedList: (limit?: number, offset?: number) => Promise<ObjectSummary[]>
+  getToBeReviewedList: (limit?: number, offset?: number) => Promise<string[]>
 }
 
 export interface AutoDriveApiHandler {

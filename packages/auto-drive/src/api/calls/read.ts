@@ -167,13 +167,13 @@ export const getObjectSummary = async (
  *
  * @param {AutoDriveApiHandler} api - The API instance used to send requests.
  * @param {ArgsWithoutPagination<{ cid: string }>} query - The query parameters containing the CID of the object whose upload status is to be retrieved.
- * @returns {Promise<ObjectInformation['uploadStatus']>} - A promise that resolves to the upload status of the requested object.
+ * @returns {Promise<ObjectInformation['uploadState']>} - A promise that resolves to the upload status of the requested object.
  * @throws {Error} - Throws an error if the request fails.
  */
 export const getObjectUploadStatus = async (
   api: AutoDriveApiHandler,
   query: ArgsWithoutPagination<{ cid: string }>,
-): Promise<ObjectInformation['uploadStatus']> => {
+): Promise<ObjectInformation['uploadState']> => {
   const response = await api.sendAPIRequest(`/objects/${query.cid}/status`, {
     method: 'GET',
   })
@@ -258,17 +258,18 @@ export const getMe = async (api: AutoDriveApiHandler): Promise<AccountInfo> => {
  * Retrieves the list of objects that need to be reviewed.
  *
  * This method sends a request to the server to fetch a list of objects
- * that have been reported and need moderation review.
+ * that have been reported and need moderation review. The server only sends
+ * the CID of each object, so use `getObjectSummary` to get its details.
  *
  * @param {AutoDriveApiHandler} api - The API instance used to send requests.
  * @param {ArgsWithPagination} query - The query parameters including limit and offset for pagination.
- * @returns {Promise<ObjectSummary[]>} - A promise that resolves to the list of objects to be reviewed.
+ * @returns {Promise<string[]>} - A promise that resolves to the CIDs of the objects to be reviewed.
  * @throws {Error} - Throws an error if the request fails.
  */
 export const getToBeReviewedList = async (
   api: AutoDriveApiHandler,
   query: ArgsWithPagination,
-): Promise<ObjectSummary[]> => {
+): Promise<string[]> => {
   const response = await api.sendAPIRequest(
     `/objects/to-be-reviewed/list?limit=${query.limit}&offset=${query.offset}`,
     {

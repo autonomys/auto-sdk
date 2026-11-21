@@ -52,9 +52,17 @@ export enum OwnerRole {
   VIEWER = 'viewer',
 }
 
+export enum ObjectStatus {
+  Processing = 'Processing',
+  Publishing = 'Publishing',
+  Archiving = 'Archiving',
+  Archived = 'Archived',
+}
+
 export interface ObjectUploadStatus {
   uploadedNodes: number | null
   totalNodes: number | null
+  archivedNodes: number | null
   minimumBlockDepth: number | null
   maximumBlockDepth: number | null
 }
@@ -66,10 +74,15 @@ export interface ObjectSearchResult {
 
 export type ObjectSummary = {
   headCid: string
+  tags: string[]
   name?: string
-  size: number
+  /** Size in bytes, as a decimal string */
+  size: string
+  status: ObjectStatus
   owners: Owner[]
-  uploadStatus: ObjectUploadStatus
+  uploadState: ObjectUploadStatus
+  /** When the server stored the object, as an ISO 8601 string */
+  createdAt: string
 } & (
   | {
       type: 'file'
@@ -83,7 +96,13 @@ export type ObjectSummary = {
 
 export interface ObjectInformation {
   cid: string
+  /** When the server stored the object, as an ISO 8601 string */
+  createdAt: string
   metadata: OffchainMetadata
-  uploadStatus: ObjectUploadStatus
+  status: ObjectStatus
+  uploadState: ObjectUploadStatus
   owners: Owner[]
+  /** ID of the caller's public link to the object, or null if the caller has not published it */
+  publishedObjectId: string | null
+  tags: string[]
 }
