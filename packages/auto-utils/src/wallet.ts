@@ -183,12 +183,6 @@ export const generateWallet = (type: KeypairType = 'sr25519'): GeneratedWallet =
  * @throws {Error} When no wallet credentials are provided or connection fails.
  */
 export const activateWallet = async (params: ActivateWalletParams): Promise<WalletActivated> => {
-  const api =
-    params.api ??
-    ((params as DomainParams).domainId === undefined
-      ? await activate(params)
-      : await activateDomain(params as DomainParams))
-
   const accounts: InjectedAccountWithMeta[] & KeyringPair[] = []
 
   if ((params as Mnemonic).mnemonic || (params as URI).uri) {
@@ -207,14 +201,17 @@ export const activateWallet = async (params: ActivateWalletParams): Promise<Wall
     if (allAccounts.length === 0) console.warn('No accounts found in the Polkadot.js extension')
   } else throw new Error('No wallet provided')
 
-  return {
-    api,
-    accounts,
-    address:
-      params.type && params.type === 'ethereum'
-        ? accounts[0].address
-        : address(accounts[0].address),
-  }
+  const walletAddress =
+    params.type && params.type === 'ethereum' ? accounts[0].address : address(accounts[0].address)
+
+  // Connect only once the wallet is set up, so a wallet error never leaves a connection open
+  const api =
+    params.api ??
+    ((params as DomainParams).domainId === undefined
+      ? await activate(params)
+      : await activateDomain(params as DomainParams))
+
+  return { api, accounts, address: walletAddress }
 }
 
 /**

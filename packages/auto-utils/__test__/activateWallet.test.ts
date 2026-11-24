@@ -8,6 +8,11 @@ jest.mock('@polkadot/api', () => ({
   WsProvider: jest.fn(),
 }))
 
+jest.mock('@polkadot/extension-dapp', () => ({
+  web3Enable: jest.fn(),
+  web3Accounts: jest.fn(async () => []),
+}))
+
 const mockedCreate = ApiPromise.create as jest.Mock
 
 describe('activateWallet', () => {
@@ -44,5 +49,32 @@ describe('activateWallet', () => {
 
     expect(mockedCreate).not.toHaveBeenCalled()
     expect(wallet.api).toBe(api)
+  })
+
+  test('does not connect when no wallet is provided', async () => {
+    await expect(activateWallet({ networkId: NetworkId.CHRONOS, mnemonic: '' })).rejects.toThrow(
+      'No wallet provided',
+    )
+    expect(mockedCreate).not.toHaveBeenCalled()
+  })
+
+  test('does not connect when the mnemonic is invalid', async () => {
+    const mnemonic = Array(12).fill('abandon').join(' ')
+
+    await expect(activateWallet({ networkId: NetworkId.CHRONOS, mnemonic })).rejects.toThrow(
+      'Invalid bip39 mnemonic specified',
+    )
+    expect(mockedCreate).not.toHaveBeenCalled()
+  })
+
+  test('does not connect when the browser extension has no accounts', async () => {
+    const global = globalThis as { window?: unknown }
+    global.window = {}
+    try {
+      await expect(activateWallet({ networkId: NetworkId.CHRONOS, mnemonic: '' })).rejects.toThrow()
+    } finally {
+      delete global.window
+    }
+    expect(mockedCreate).not.toHaveBeenCalled()
   })
 })
