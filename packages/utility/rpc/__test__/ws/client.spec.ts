@@ -1,5 +1,8 @@
+import http from 'http'
+import { AddressInfo } from 'net'
+import Websocket from 'websocket'
 import { createWsClient } from '../../src'
-import { createTestServer } from '../utils'
+import { createTestServer, installStubWebSocket, StubSocket } from '../utils'
 
 describe('Client', () => {
   let server: Awaited<ReturnType<typeof createTestServer>>
@@ -212,5 +215,216 @@ describe('Client', () => {
     await new Promise((resolve) => setTimeout(resolve, 100))
 
     expect(server.wsServer.connections).toHaveLength(0)
+  })
+})
+
+describe('Client disconnect and close handling', () => {
+  describe('with stubbed socket and fake timers', () => {
+    let sockets: StubSocket[]
+
+    beforeEach(() => {
+      jest.useFakeTimers()
+      sockets = installStubWebSocket().sockets
+    })
+
+    afterEach(() => {
+      jest.useRealTimers()
+      jest.restoreAllMocks()
+    })
+
+    it('waits during reconnect backoff instead of sending on the closed socket', async () => {
+      const reconnectInterval = 10_000
+      const onReconnection = jest.fn()
+      const client = createWsClient({
+        endpoint: 'ws://localhost:9999',
+        callbacks: { onReconnection },
+        reconnectInterval,
+      })
+
+      expect(sockets).toHaveLength(1)
+      sockets[0].open()
+      sockets[0].closeFromServer()
+
+      let settled = false
+      const sendPromise = client.send('during-backoff').then(() => {
+        settled = true
+      })
+
+      await Promise.resolve()
+      expect(sockets[0].send).not.toHaveBeenCalled()
+      expect(settled).toBe(false)
+
+      jest.advanceTimersByTime(reconnectInterval)
+      expect(onReconnection).toHaveBeenCalledTimes(1)
+      expect(sockets).toHaveLength(2)
+      expect(settled).toBe(false)
+
+      sockets[1].open()
+      await sendPromise
+
+      expect(settled).toBe(true)
+      expect(sockets[0].send).not.toHaveBeenCalled()
+      expect(sockets[1].send).toHaveBeenCalledWith('during-backoff')
+
+      client.close()
+    })
+
+    it('keeps pending sends from initial handshake alive across failed attempt until reconnect', async () => {
+      const reconnectInterval = 5_000
+      const client = createWsClient({
+        endpoint: 'ws://localhost:9999',
+        callbacks: {},
+        reconnectInterval,
+      })
+
+      const sendPromise = client.send('queued-before-open')
+      sockets[0].failConnection()
+
+      jest.advanceTimersByTime(reconnectInterval)
+      expect(sockets).toHaveLength(2)
+
+      sockets[1].open()
+      await sendPromise
+
+      expect(sockets[0].send).not.toHaveBeenCalled()
+      expect(sockets[1].send).toHaveBeenCalledWith('queued-before-open')
+
+      client.close()
+    })
+
+    it('rejects pending and new sends when reconnectInterval is null and connection fails', async () => {
+      const client = createWsClient({
+        endpoint: 'ws://localhost:9999',
+        callbacks: {},
+        reconnectInterval: null,
+      })
+
+      const pendingSend = client.send('pending')
+      sockets[0].failConnection()
+
+      await expect(pendingSend).rejects.toThrow('WebSocket connection closed')
+      await expect(client.send('after-failure')).rejects.toThrow('WebSocket connection closed')
+
+      client.close()
+    })
+
+    it('rejects sends inside onClose and afterwards when reconnectInterval is null', async () => {
+      let sendInsideOnClose: Promise<void> | undefined
+      const client = createWsClient({
+        endpoint: 'ws://localhost:9999',
+        callbacks: {
+          onClose: () => {
+            sendInsideOnClose = client.send('inside-onclose')
+          },
+        },
+        reconnectInterval: null,
+      })
+
+      sockets[0].open()
+      sockets[0].closeFromServer()
+
+      await expect(sendInsideOnClose).rejects.toThrow('WebSocket connection closed')
+      await expect(client.send('after-drop')).rejects.toThrow('WebSocket connection closed')
+
+      client.close()
+    })
+
+    it('rejects pending and new sends on close() before open and cancels pending reconnects', async () => {
+      const client = createWsClient({
+        endpoint: 'ws://localhost:9999',
+        callbacks: {},
+        reconnectInterval: 10_000,
+      })
+
+      const pendingSend = client.send('before-close')
+      client.close()
+
+      await expect(pendingSend).rejects.toThrow('WebSocket client is closed')
+      await expect(client.send('after-close')).rejects.toThrow('WebSocket client is closed')
+
+      jest.advanceTimersByTime(10_000)
+      expect(sockets).toHaveLength(1)
+    })
+
+    it('rejects pending backoff sends when close() is called before reconnect fires', async () => {
+      const onReconnection = jest.fn()
+      const client = createWsClient({
+        endpoint: 'ws://localhost:9999',
+        callbacks: { onReconnection },
+        reconnectInterval: 10_000,
+      })
+
+      sockets[0].open()
+      sockets[0].closeFromServer()
+
+      const backoffSend = client.send('backoff-send')
+      client.close()
+
+      await expect(backoffSend).rejects.toThrow('WebSocket client is closed')
+      await expect(client.send('after-close')).rejects.toThrow('WebSocket client is closed')
+
+      jest.advanceTimersByTime(10_000)
+      expect(onReconnection).not.toHaveBeenCalled()
+      expect(sockets).toHaveLength(1)
+    })
+  })
+
+  describe('with local server', () => {
+    let httpServer: http.Server
+    let wsServer: Websocket.server
+    let endpoint: string
+
+    beforeEach(async () => {
+      httpServer = http.createServer()
+      await new Promise<void>((resolve) => httpServer.listen(0, '127.0.0.1', () => resolve()))
+      const port = (httpServer.address() as AddressInfo).port
+      endpoint = `ws://127.0.0.1:${port}`
+      wsServer = new Websocket.server({ httpServer, autoAcceptConnections: false })
+    })
+
+    afterEach(async () => {
+      wsServer.shutDown()
+      httpServer.closeAllConnections()
+      await new Promise<void>((resolve) => httpServer.close(() => resolve()))
+    })
+
+    it('rejects pending and new sends when handshake is rejected and reconnectInterval is null', async () => {
+      wsServer.on('request', (request) => request.reject())
+
+      let resolveClosed!: () => void
+      const closedPromise = new Promise<void>((resolve) => {
+        resolveClosed = resolve
+      })
+
+      const client = createWsClient({
+        endpoint,
+        callbacks: { onClose: () => resolveClosed() },
+        reconnectInterval: null,
+      })
+
+      const pendingSend = client.send('pending-message')
+      await closedPromise
+
+      await expect(pendingSend).rejects.toThrow('WebSocket connection closed')
+      await expect(client.send('new-message')).rejects.toThrow('WebSocket connection closed')
+
+      client.close()
+    })
+
+    it('rejects pending and new sends when close() is called before connection opens', async () => {
+      wsServer.on('request', (request) => request.accept())
+
+      const client = createWsClient({
+        endpoint,
+        callbacks: {},
+        reconnectInterval: 10_000,
+      })
+
+      const pendingSend = client.send('before-open')
+      client.close()
+
+      await expect(pendingSend).rejects.toThrow('WebSocket client is closed')
+      await expect(client.send('after-close')).rejects.toThrow('WebSocket client is closed')
+    })
   })
 })
