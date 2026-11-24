@@ -183,13 +183,11 @@ export const generateWallet = (type: KeypairType = 'sr25519'): GeneratedWallet =
  * @throws {Error} When no wallet credentials are provided or connection fails.
  */
 export const activateWallet = async (params: ActivateWalletParams): Promise<WalletActivated> => {
-  if (!params.api) {
-    // Create the API instance if not provided
-    params.api =
-      (params as DomainParams).domainId === undefined
-        ? await activate(params)
-        : await activateDomain(params as DomainParams)
-  }
+  const api =
+    params.api ??
+    ((params as DomainParams).domainId === undefined
+      ? await activate(params)
+      : await activateDomain(params as DomainParams))
 
   const accounts: InjectedAccountWithMeta[] & KeyringPair[] = []
 
@@ -210,7 +208,7 @@ export const activateWallet = async (params: ActivateWalletParams): Promise<Wall
   } else throw new Error('No wallet provided')
 
   return {
-    api: params.api,
+    api,
     accounts,
     address:
       params.type && params.type === 'ethereum'
