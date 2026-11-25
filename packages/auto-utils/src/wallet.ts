@@ -131,14 +131,15 @@ export const generateWallet = (type: KeypairType = 'sr25519'): GeneratedWallet =
 
 const activateNetwork = (params: ActivateWalletParams): Promise<ApiPromise> => {
   // ApiPromise keeps its options on the instance, so the wallet fields (including the seed)
-  // must not reach it.
+  // must not reach it. networkId and domainId are read by name because the rest copy would
+  // drop values that come from getters or the prototype.
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { mnemonic, uri, derivationPath, type, appName, api, ...networkParams } =
-    params as ActivateWalletParams & Partial<Mnemonic & URI>
+  const { mnemonic, uri, derivationPath, type, appName, api, networkId, domainId, ...apiOptions } =
+    params as ActivateWalletParams & Partial<Mnemonic & URI & DomainParams>
 
-  return (networkParams as DomainParams).domainId === undefined
-    ? activate(networkParams)
-    : activateDomain(networkParams as DomainParams)
+  return domainId === undefined
+    ? activate({ ...apiOptions, networkId })
+    : activateDomain({ ...apiOptions, networkId, domainId })
 }
 
 /**

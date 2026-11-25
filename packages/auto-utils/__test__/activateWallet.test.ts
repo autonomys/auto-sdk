@@ -26,6 +26,16 @@ const ALICE_ADDRESS = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY'
 const CONSENSUS = { networkId: NetworkId.CHRONOS }
 const DOMAIN = { networkId: NetworkId.CHRONOS, domainId: '0' }
 
+class GetterConfig {
+  uri = '//Alice'
+  get networkId() {
+    return DOMAIN.networkId
+  }
+  get domainId() {
+    return DOMAIN.domainId
+  }
+}
+
 const walletFieldsSentToApi = () =>
   Object.keys(mockedCreate.mock.calls[0][0]).filter((key) => WALLET_FIELDS.includes(key))
 
@@ -134,5 +144,14 @@ describe('activateWallet', () => {
     const createOptions = mockedCreate.mock.calls[0][0]
     expect(createOptions.noInitWarn).toBe(false)
     expect(createOptions.types).toEqual(expect.objectContaining({ Custom: 'u32' }))
+  })
+
+  test.each([
+    ['a class with getters', new GetterConfig()],
+    ['an object with a prototype', Object.assign(Object.create(DOMAIN), { uri: '//Alice' })],
+  ])('connects to the configured domain for %s', async (_, params) => {
+    await activateWallet(params as ActivateWalletParams)
+
+    expect(mockedWsProvider).toHaveBeenCalledWith(getNetworkDomainRpcUrls(DOMAIN))
   })
 })
