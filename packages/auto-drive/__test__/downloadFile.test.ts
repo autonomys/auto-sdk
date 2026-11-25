@@ -22,7 +22,7 @@ describe('downloadFile password validation', () => {
   const encryptedMetadata: OffchainFileMetadata = {
     type: 'file',
     dataCid: 'data-cid',
-    totalSize: BigInt(100),
+    totalSize: '100',
     totalChunks: 1,
     chunks: [],
     uploadOptions: {
