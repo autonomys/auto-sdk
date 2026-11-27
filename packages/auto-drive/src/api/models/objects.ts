@@ -5,14 +5,16 @@ interface ChildrenMetadata {
   type: 'folder' | 'file'
   name?: string
   cid: string
-  totalSize: bigint
+  /** Size in bytes, as a decimal string */
+  totalSize: string
 }
 
 export type OffchainFolderMetadata = {
   type: 'folder'
   dataCid: string
   name?: string
-  totalSize: bigint
+  /** Size in bytes, as a decimal string */
+  totalSize: string
   totalFiles: number
   children: ChildrenMetadata[]
   uploadOptions: FileUploadOptions
@@ -23,14 +25,16 @@ export type OffchainFileMetadata = {
   dataCid: string
   name?: string
   mimeType?: string
-  totalSize: bigint
+  /** Size in bytes, as a decimal string */
+  totalSize: string
   totalChunks: number
   chunks: ChunkInfo[]
   uploadOptions?: FileUploadOptions
 }
 
 export interface ChunkInfo {
-  size: bigint
+  /** Size in bytes, as a decimal string */
+  size: string
   cid: string
 }
 
