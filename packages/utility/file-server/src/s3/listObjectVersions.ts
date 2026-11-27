@@ -137,11 +137,12 @@ export const buildListVersionsResult = (
 > => {
   const { keyMarker, versionIdMarker } = options
 
+  // S3 answers MaxKeys=0 with an empty page that is not truncated, even when keys exist.
   if (maxKeys <= 0) {
     return {
       versions: [],
       deleteMarkers: [],
-      isTruncated: rows.length > 0,
+      isTruncated: false,
       nextKeyMarker: null,
       nextVersionIdMarker: null,
     }
