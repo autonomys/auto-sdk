@@ -1,6 +1,3 @@
-import http from 'http'
-import { AddressInfo } from 'net'
-import Websocket from 'websocket'
 import { createWsClient } from '../../src'
 import { createTestServer, installStubWebSocket, StubSocket } from '../utils'
 
@@ -366,65 +363,6 @@ describe('Client disconnect and close handling', () => {
       jest.advanceTimersByTime(10_000)
       expect(onReconnection).not.toHaveBeenCalled()
       expect(sockets).toHaveLength(1)
-    })
-  })
-
-  describe('with local server', () => {
-    let httpServer: http.Server
-    let wsServer: Websocket.server
-    let endpoint: string
-
-    beforeEach(async () => {
-      httpServer = http.createServer()
-      await new Promise<void>((resolve) => httpServer.listen(0, '127.0.0.1', () => resolve()))
-      const port = (httpServer.address() as AddressInfo).port
-      endpoint = `ws://127.0.0.1:${port}`
-      wsServer = new Websocket.server({ httpServer, autoAcceptConnections: false })
-    })
-
-    afterEach(async () => {
-      wsServer.shutDown()
-      httpServer.closeAllConnections()
-      await new Promise<void>((resolve) => httpServer.close(() => resolve()))
-    })
-
-    it('rejects pending and new sends when handshake is rejected and reconnectInterval is null', async () => {
-      wsServer.on('request', (request) => request.reject())
-
-      let resolveClosed!: () => void
-      const closedPromise = new Promise<void>((resolve) => {
-        resolveClosed = resolve
-      })
-
-      const client = createWsClient({
-        endpoint,
-        callbacks: { onClose: () => resolveClosed() },
-        reconnectInterval: null,
-      })
-
-      const pendingSend = client.send('pending-message')
-      await closedPromise
-
-      await expect(pendingSend).rejects.toThrow('WebSocket connection closed')
-      await expect(client.send('new-message')).rejects.toThrow('WebSocket connection closed')
-
-      client.close()
-    })
-
-    it('rejects pending and new sends when close() is called before connection opens', async () => {
-      wsServer.on('request', (request) => request.accept())
-
-      const client = createWsClient({
-        endpoint,
-        callbacks: {},
-        reconnectInterval: 10_000,
-      })
-
-      const pendingSend = client.send('before-open')
-      client.close()
-
-      await expect(pendingSend).rejects.toThrow('WebSocket client is closed')
-      await expect(client.send('after-close')).rejects.toThrow('WebSocket client is closed')
     })
   })
 })

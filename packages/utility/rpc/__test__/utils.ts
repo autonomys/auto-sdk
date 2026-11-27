@@ -64,7 +64,7 @@ export const installStubWebSocket = () => {
       onerror: null,
       onmessage: null,
       onclose: null,
-      send: jest.fn(() => {
+      send: jest.fn<void, [unknown]>(() => {
         if (socket.readyState !== 1) {
           throw new Error('cannot call send() while not connected')
         }

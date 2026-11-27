@@ -1,24 +1,6 @@
 import Websocket from 'websocket'
 import { WsClient, WsMessageResponseCallback } from './types'
 
-type ConnectionDeferred = {
-  promise: Promise<void>
-  resolve: () => void
-  reject: (error: Error) => void
-}
-
-const createConnectionDeferred = (): ConnectionDeferred => {
-  let resolve!: () => void
-  let reject!: (error: Error) => void
-  const promise = new Promise<void>((res, rej) => {
-    resolve = res
-    reject = rej
-  })
-  // Prevent unhandled rejections if close()/disconnect happens while no send() is awaiting
-  promise.catch(() => {})
-  return { promise, resolve, reject }
-}
-
 export const createWsClient = ({
   endpoint,
   callbacks,
@@ -38,47 +20,25 @@ export const createWsClient = ({
 }): WsClient => {
   let ws: Websocket.w3cwebsocket
   let onMessageCallbacks: WsMessageResponseCallback[] = []
-  let connectionDeferred = createConnectionDeferred()
   let isOpen = false
-  let terminalError: Error | undefined
+  let connected!: Promise<void>
+  let markOpen!: () => void
+  let failConnection!: (error: Error) => void
   let firstOpen = true
   let closed = false
   let reconnectTimer: ReturnType<typeof setTimeout> | undefined
 
-  const getTerminalError = () => terminalError
-
-  const resetPendingConnection = () => {
-    if (isOpen && !terminalError) {
-      connectionDeferred = createConnectionDeferred()
-      isOpen = false
-    }
+  const awaitNextOpen = () => {
+    connected = new Promise<void>((resolve, reject) => {
+      markOpen = resolve
+      failConnection = reject
+    })
+    connected.catch(() => {})
   }
-
-  const resolvePendingConnection = () => {
-    if (!isOpen && !terminalError) {
-      isOpen = true
-      connectionDeferred.resolve()
-    }
-  }
-
-  const rejectConnection = (error: Error) => {
-    if (terminalError) return
-    terminalError = error
-    if (!isOpen) {
-      connectionDeferred.reject(error)
-    } else {
-      isOpen = false
-      const rejected = createConnectionDeferred()
-      rejected.reject(error)
-      connectionDeferred = rejected
-    }
-  }
+  awaitNextOpen()
 
   const handleConnection = () => {
-    if (closed) return
-
-    const currentWs = new Websocket.w3cwebsocket(endpoint)
-    ws = currentWs
+    ws = new Websocket.w3cwebsocket(endpoint)
 
     const scheduleReconnection = () => {
       // If reconnectInterval is null, we don't want to reconnect
@@ -88,47 +48,45 @@ export const createWsClient = ({
         console.log('Scheduling reconnection in', reconnectInterval)
       }
       reconnectTimer = setTimeout(() => {
-        reconnectTimer = undefined
         handleConnection()
         callbacks.onReconnection?.()
       }, reconnectInterval)
     }
 
-    currentWs.onopen = () => {
-      if (closed || ws !== currentWs) return
+    ws.onopen = () => {
       callbacks.onEveryOpen?.()
       if (firstOpen) {
         callbacks.onFirstOpen?.()
         firstOpen = false
       }
-      if (!closed && ws === currentWs) {
-        resolvePendingConnection()
-      }
+      isOpen = true
+      markOpen()
     }
 
     // The close event that always follows an error event schedules the reconnection
-    currentWs.onerror = (event) => {
+    ws.onerror = (event) => {
       callbacks.onError?.(new Error('WebSocket connection error', { cause: event }))
       if (debug) {
         console.log('onerror', event)
       }
     }
 
-    currentWs.onmessage = (event) => {
-      onMessageCallbacks.forEach((callback) =>
-        callback(event.data, (message) => currentWs.send(message)),
-      )
+    ws.onmessage = (event) => {
+      onMessageCallbacks.forEach((callback) => callback(event.data, (message) => ws.send(message)))
     }
 
-    currentWs.onclose = (event) => {
+    ws.onclose = (event) => {
       if (debug) {
         console.log('handling onclose', event)
       }
-      if (!closed && ws === currentWs) {
+      if (!closed) {
+        if (isOpen) {
+          isOpen = false
+          awaitNextOpen()
+        }
         if (reconnectInterval === null) {
-          rejectConnection(new Error('WebSocket connection closed'))
+          failConnection(new Error('WebSocket connection closed'))
         } else {
-          resetPendingConnection()
           scheduleReconnection()
         }
       }
@@ -140,23 +98,8 @@ export const createWsClient = ({
   handleConnection()
 
   const send = async (message: Websocket.IMessageEvent['data']) => {
-    while (true) {
-      const error = getTerminalError()
-      if (error) {
-        throw error
-      }
-      const deferred = connectionDeferred
-      await deferred.promise
-      const postAwaitError = getTerminalError()
-      if (postAwaitError) {
-        throw postAwaitError
-      }
-      if (connectionDeferred !== deferred) {
-        continue
-      }
-      ws.send(message)
-      return
-    }
+    await connected
+    ws.send(message)
   }
 
   const on = (callback: WsMessageResponseCallback) => {
@@ -171,8 +114,11 @@ export const createWsClient = ({
     if (closed) return
     closed = true
     clearTimeout(reconnectTimer)
-    reconnectTimer = undefined
-    rejectConnection(new Error('WebSocket client is closed'))
+    if (isOpen) {
+      isOpen = false
+      awaitNextOpen()
+    }
+    failConnection(new Error('WebSocket client is closed'))
     ws.close()
   }
 
