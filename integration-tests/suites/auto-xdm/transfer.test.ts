@@ -110,25 +110,9 @@ describe('XDM Transfers - E2E', () => {
       )
       await signAndSendTx(domainWallet.keyringPair!, tx, {}, [], false)
 
-      // Wait for unconfirmed transfers to increase
-      await waitUntil(async () => {
-        const unconfirmedAfterInit = await unconfirmedTransfers(
-          apis.consensus,
-          { domainId: 0 },
-          'consensus',
-        )
-        return BigInt(unconfirmedAfterInit.toString()) > BigInt(unconfirmedBefore.toString())
-      })
-      const unconfirmedAfterInit = await unconfirmedTransfers(
-        apis.consensus,
-        { domainId: 0 },
-        'consensus',
-      )
-      expect(BigInt(unconfirmedAfterInit.toString())).toBeGreaterThan(
-        BigInt(unconfirmedBefore.toString()),
-      )
-
-      // Wait for transfer to be finalized (balance should increase on consensus)
+      // Consensus only counts this transfer as unconfirmed between the domain receipt being
+      // confirmed and the relayed message crediting the receiver. At 100 ms blocks that is under a
+      // second, so a 2 s poll can miss it entirely. Wait for the credit instead.
       await waitUntil(() =>
         balanceIncreased(apis.consensus, consensusWallet.address, receiverBalanceBefore.free),
       )
@@ -142,6 +126,14 @@ describe('XDM Transfers - E2E', () => {
 
       // Receiver should have more
       expect(BigInt(receiverBalanceAfter.free)).toBeGreaterThan(BigInt(receiverBalanceBefore.free))
+
+      // The credit also confirms the transfer, so the unconfirmed total is back where it started
+      const unconfirmedAfter = await unconfirmedTransfers(
+        apis.consensus,
+        { domainId: 0 },
+        'consensus',
+      )
+      expect(BigInt(unconfirmedAfter.toString())).toBe(BigInt(unconfirmedBefore.toString()))
     }, 300000)
   })
 })
