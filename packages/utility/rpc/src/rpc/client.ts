@@ -60,7 +60,10 @@ export const createRpcClient = ({
       }
       on(cb)
 
-      ws.send(JSON.stringify(messageWithID))
+      ws.send(JSON.stringify(messageWithID)).catch((error) => {
+        off(cb)
+        reject(error)
+      })
     })
   }
 

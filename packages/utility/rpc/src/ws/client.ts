@@ -1,5 +1,4 @@
 import Websocket from 'websocket'
-import { schedule, unresolvablePromise } from '../utils/misc'
 import { WsClient, WsMessageResponseCallback } from './types'
 
 export const createWsClient = ({
@@ -21,23 +20,25 @@ export const createWsClient = ({
 }): WsClient => {
   let ws: Websocket.w3cwebsocket
   let onMessageCallbacks: WsMessageResponseCallback[] = []
-  let connected: Promise<void> = unresolvablePromise
+  let isOpen = false
+  let connected!: Promise<void>
+  let markOpen!: () => void
+  let failConnection!: (error: Error) => void
   let firstOpen = true
   let closed = false
-  let reconnectTimer: ReturnType<typeof schedule> | undefined
+  let reconnectTimer: ReturnType<typeof setTimeout> | undefined
+
+  const awaitNextOpen = () => {
+    connected = new Promise<void>((resolve, reject) => {
+      markOpen = resolve
+      failConnection = reject
+    })
+    connected.catch(() => {})
+  }
+  awaitNextOpen()
 
   const handleConnection = () => {
     ws = new Websocket.w3cwebsocket(endpoint)
-    connected = new Promise<void>((resolve) => {
-      ws.onopen = () => {
-        callbacks.onEveryOpen?.()
-        if (firstOpen) {
-          callbacks.onFirstOpen?.()
-          firstOpen = false
-        }
-        resolve()
-      }
-    })
 
     const scheduleReconnection = () => {
       // If reconnectInterval is null, we don't want to reconnect
@@ -46,10 +47,20 @@ export const createWsClient = ({
       if (debug) {
         console.log('Scheduling reconnection in', reconnectInterval)
       }
-      reconnectTimer = schedule(() => {
+      reconnectTimer = setTimeout(() => {
         handleConnection()
         callbacks.onReconnection?.()
       }, reconnectInterval)
+    }
+
+    ws.onopen = () => {
+      callbacks.onEveryOpen?.()
+      if (firstOpen) {
+        callbacks.onFirstOpen?.()
+        firstOpen = false
+      }
+      isOpen = true
+      markOpen()
     }
 
     // The close event that always follows an error event schedules the reconnection
@@ -68,10 +79,18 @@ export const createWsClient = ({
       if (debug) {
         console.log('handling onclose', event)
       }
-      callbacks.onClose?.(event)
       if (!closed) {
-        scheduleReconnection()
+        if (isOpen) {
+          isOpen = false
+          awaitNextOpen()
+        }
+        if (reconnectInterval === null) {
+          failConnection(new Error('WebSocket connection closed'))
+        } else {
+          scheduleReconnection()
+        }
       }
+      callbacks.onClose?.(event)
     }
   }
 
@@ -95,6 +114,11 @@ export const createWsClient = ({
     if (closed) return
     closed = true
     clearTimeout(reconnectTimer)
+    if (isOpen) {
+      isOpen = false
+      awaitNextOpen()
+    }
+    failConnection(new Error('WebSocket client is closed'))
     ws.close()
   }
 
