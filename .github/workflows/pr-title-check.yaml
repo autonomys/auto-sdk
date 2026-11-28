@@ -9,21 +9,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version: '24.18.0'
 
-      - name: Enable Corepack
-        run: corepack enable
-
-      - name: Install Dependencies
-        run: yarn add @commitlint/config-conventional -D
+      # commitlint resolves `extends` from the config file's directory, so the
+      # preset goes next to a copy of the config instead of a full workspace install.
+      - name: Install the commitlint preset
+        run: |
+          preset_range=$(node -p 'require("./package.json").devDependencies["@commitlint/config-conventional"]')
+          npm install --prefix "$RUNNER_TEMP/commitlint" --ignore-scripts "@commitlint/config-conventional@$preset_range"
+          cp commitlint.config.js "$RUNNER_TEMP/commitlint/"
 
       - name: Check PR Title
         uses: JulienKode/pull-request-name-linter-action@v20.5.0
         with:
-          configuration-path: ./commitlint.config.js # Uses the same config as commit messages
+          configuration-path: ${{ runner.temp }}/commitlint/commitlint.config.js # Uses the same config as commit messages
