@@ -1,3 +1,12 @@
+import {
+  cidOfNode,
+  cidToString,
+  createChunkedFileIpldNode,
+  createFileChunkIpldNode,
+  decodeNode,
+  PBNode,
+} from '@autonomys/auto-dag-data'
+import { jest } from '@jest/globals'
 import { Readable } from 'stream'
 import { createAutoFilesApi } from '../src/api'
 
@@ -119,6 +128,40 @@ describe('getNode', () => {
 
   afterEach(() => {
     jest.restoreAllMocks()
+  })
+
+  // What the gateway sends: `res.json(node)` with `Data` as a Buffer, whose toJSON gives
+  // `{ type: 'Buffer', data: [...] }`, and each link's `Hash` as a CID, whose toJSON gives
+  // `{ '/': cid }`
+  const gatewayResponse = (node: PBNode) =>
+    new Response(JSON.stringify({ ...node, Data: node.Data && Buffer.from(node.Data) }))
+
+  const chunk = createFileChunkIpldNode(Buffer.from('chunk data'))
+  const root = createChunkedFileIpldNode(
+    [cidOfNode(chunk), cidOfNode(createFileChunkIpldNode(Buffer.from('more data')))],
+    BigInt(19),
+    1,
+    'file.txt',
+  )
+
+  it.each([
+    ['a chunk node', chunk],
+    ['a node with links', root],
+    [
+      'a node with named and sized links',
+      {
+        ...root,
+        Links: root.Links.map((link, i) => ({ ...link, Name: `link-${i}`, Tsize: 10 + i })),
+      },
+    ],
+  ])('returns the encoded bytes of %s, which hash to its CID', async (_, node) => {
+    const cid = cidToString(cidOfNode(node))
+    const fetchMock = jest.spyOn(global, 'fetch').mockResolvedValueOnce(gatewayResponse(node))
+
+    const bytes = await api.getNode(cid)
+
+    expect(String(fetchMock.mock.calls[0][0])).toBe(`${BASE_URL}/nodes/${cid}`)
+    expect(cidToString(cidOfNode(decodeNode(new Uint8Array(bytes))))).toBe(cid)
   })
 
   it('throws an error with node endpoint context on failure', async () => {

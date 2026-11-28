@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals'
 import { withRetries } from '../src/utils'
 
 const alwaysFailing = () => {
@@ -24,7 +25,10 @@ describe('withRetries', () => {
   })
 
   it('resolves with the first successful result', async () => {
-    const fn = jest.fn().mockRejectedValueOnce(new Error('transient')).mockResolvedValue('ok')
+    const fn = jest
+      .fn<() => Promise<string>>()
+      .mockRejectedValueOnce(new Error('transient'))
+      .mockResolvedValue('ok')
 
     await expect(withRetries(fn, { retries: 3, delay: 1 })).resolves.toBe('ok')
     expect(fn).toHaveBeenCalledTimes(2)

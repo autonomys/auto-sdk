@@ -1,4 +1,5 @@
 import { httpBodyToStream } from '@autonomys/asynchronous'
+import type { PBNode } from '@autonomys/auto-dag-data' with { 'resolution-mode': 'import' }
 import { CompressionOptions, EncryptionOptions } from '@autonomys/auto-drive'
 import { Readable } from 'stream'
 import { withRetries } from './utils'
@@ -8,6 +9,17 @@ interface FetchedFile {
   compression: CompressionOptions | undefined
   encryption: EncryptionOptions | undefined
   data: Readable
+}
+
+/**
+ * A node as the gateway's `/nodes/:cid` endpoint sends it: the `PBNode` serialized with
+ * `res.json`, so `Data` is a Buffer's JSON form and each link's `Hash` a CID's JSON form
+ */
+type GatewayNode = {
+  /** The node's data, as `Buffer.prototype.toJSON` writes it; absent when the node has none */
+  Data?: { type: 'Buffer'; data: number[] }
+  /** The node's links, in order */
+  Links: { Hash: { '/': string }; Name?: string; Tsize?: number }[]
 }
 
 /**
@@ -54,8 +66,13 @@ export const createAutoFilesApi = (baseUrl: string, apiSecret: string) => {
 
   /**
    * Fetches a specific node from the API
+   *
+   * The gateway answers `/nodes/:cid` with the node as JSON (`Data` as a serialized
+   * Buffer, each link's `Hash` as `{ "/": cid }`), not with the node's bytes. The JSON
+   * is turned back into the node and encoded as dag-pb, so the result hashes to `cid`.
+   * auto-dag-data is ESM only, so it is loaded with a dynamic import.
    * @param cid - The CID of the node
-   * @returns A Promise that resolves to the node data as ArrayBuffer
+   * @returns A Promise that resolves to the dag-pb encoded node as ArrayBuffer
    * @throws Error if the node fetch fails
    */
   const getNode = async (cid: string): Promise<ArrayBuffer> => {
@@ -64,7 +81,23 @@ export const createAutoFilesApi = (baseUrl: string, apiSecret: string) => {
       throw new Error(`Error fetching node: ${response.status} ${response.statusText}`)
     }
 
-    const buffer = await response.arrayBuffer()
+    const node: GatewayNode = await response.json()
+    const { encodeNode, stringToCid } = await import('@autonomys/auto-dag-data')
+    const encoded = encodeNode({
+      Data: node.Data ? Uint8Array.from(node.Data.data) : undefined,
+      // Cast like auto-dag-data does: dag-pb types its CIDs with its own multiformats copy
+      Links: node.Links.map(
+        (link) =>
+          ({
+            Hash: stringToCid(link.Hash['/']),
+            Name: link.Name,
+            Tsize: link.Tsize,
+          }) as PBNode['Links'][number],
+      ),
+    })
+
+    const buffer = new ArrayBuffer(encoded.byteLength)
+    new Uint8Array(buffer).set(encoded)
     return buffer
   }
 
