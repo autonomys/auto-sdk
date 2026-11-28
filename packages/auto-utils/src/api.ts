@@ -106,9 +106,10 @@ export const activate = async (params?: ActivateParams<NetworkParams>): Promise<
   // Get the first rpc urls for the network
   const endpoint = getNetworkRpcUrls(params)
   // Remove the networkId from the input
-  if (params) delete params.networkId
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { networkId, ...rest }: ActivateParams<NetworkParams> = params ?? {}
 
-  return await createConnection(endpoint, params)
+  return await createConnection(endpoint, rest)
 }
 
 /**
