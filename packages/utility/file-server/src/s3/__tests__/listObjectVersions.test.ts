@@ -320,11 +320,11 @@ describe('buildListVersionsResult', () => {
     expect(result.versions).toHaveLength(2)
   })
 
-  it('handles maxKeys <= 0 gracefully without crashing', () => {
+  it('returns an empty, untruncated page when maxKeys is 0', () => {
     const keyA = row({ id: '1', key: 'a.txt', cid: 'a-1' })
     const result = buildListVersionsResult([keyA], 0, defaultOpts)
 
-    expect(result.isTruncated).toBe(true)
+    expect(result.isTruncated).toBe(false)
     expect(result.nextKeyMarker).toBeNull()
     expect(result.nextVersionIdMarker).toBeNull()
     expect(result.versions).toEqual([])
@@ -405,6 +405,25 @@ describe('finalizeListObjectVersions', () => {
     expect(result.isTruncated).toBe(true)
     expect(result.nextKeyMarker).toBe('b.txt')
     expect(result.nextVersionIdMarker).toBe('1')
+  })
+
+  it('returns an empty, untruncated page when maxKeys is 0 and the batch is full', () => {
+    const params = {
+      bucket: 'test-bucket',
+      prefix: '',
+      keyMarker: null,
+      versionIdMarker: null,
+      maxKeys: 0,
+    }
+    const dbLimit = computeListObjectVersionsDbLimit(params.maxKeys) // 1
+    const result = finalizeListObjectVersions(params, [row('a.txt', 'cid-a')], dbLimit)
+
+    expect(result.maxKeys).toBe(0)
+    expect(result.isTruncated).toBe(false)
+    expect(result.nextKeyMarker).toBeNull()
+    expect(result.nextVersionIdMarker).toBeNull()
+    expect(result.versions).toEqual([])
+    expect(result.deleteMarkers).toEqual([])
   })
 })
 

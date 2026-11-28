@@ -74,6 +74,11 @@ export const buildListResult = (
   ListObjectsResult,
   'objects' | 'commonPrefixes' | 'isTruncated' | 'nextContinuationToken'
 > => {
+  // S3 answers MaxKeys=0 with an empty page that is not truncated, even when keys exist.
+  if (maxKeys <= 0) {
+    return { objects: [], commonPrefixes: [], isTruncated: false, nextContinuationToken: null }
+  }
+
   const objects: S3ObjectListing[] = []
   const commonPrefixSet = new Set<string>()
   let scanIdx = 0
@@ -114,10 +119,7 @@ export const buildListResult = (
   }
 
   const isTruncated = scanIdx < sortedObjects.length
-  // scanIdx === 0 means nothing was scanned (e.g. maxKeys <= 0, a valid S3
-  // existence probe). There is no prior key to resume from, so omit the token
-  // rather than indexing sortedObjects[-1].
-  const nextContinuationToken = isTruncated && scanIdx > 0 ? sortedObjects[scanIdx - 1].key : null
+  const nextContinuationToken = isTruncated ? sortedObjects[scanIdx - 1].key : null
 
   return {
     objects,
@@ -151,8 +153,10 @@ export const finalizeListObjects = (
   // every fetched row folds into CommonPrefixes and none break the maxKeys cap —
   // buildListResult then sees scanIdx === sortedObjects.length and concludes
   // isTruncated = false. Override to be conservative: one extra empty page is
-  // harmless, but silently dropping data is not.
-  if (!isTruncated && fetchedRows.length === dbLimit) {
+  // harmless, but silently dropping data is not. An empty maxKeys=0 page is
+  // never overridden.
+  const totalEmitted = objects.length + commonPrefixes.length
+  if (!isTruncated && fetchedRows.length === dbLimit && totalEmitted > 0) {
     isTruncated = true
     const lastKey = fetchedRows[fetchedRows.length - 1].key
 

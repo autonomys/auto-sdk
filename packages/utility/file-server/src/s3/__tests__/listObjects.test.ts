@@ -80,13 +80,11 @@ describe('buildListResult', () => {
     expect(result.isTruncated).toBe(false)
   })
 
-  it('does not crash and returns no entries when maxKeys is 0', () => {
-    // MaxKeys=0 is a valid S3 existence probe. The loop breaks before scanning
-    // anything, so there is no prior key to build a continuation token from.
+  it('returns an empty, untruncated page when maxKeys is 0', () => {
     const result = buildListResult(rows('a', 'b', 'c'), '', null, 0)
     expect(result.objects).toEqual([])
     expect(result.commonPrefixes).toEqual([])
-    expect(result.isTruncated).toBe(true)
+    expect(result.isTruncated).toBe(false)
     expect(result.nextContinuationToken).toBeNull()
   })
 
@@ -179,4 +177,18 @@ describe('finalizeListObjects', () => {
     expect(result.isTruncated).toBe(false)
     expect(result.nextContinuationToken).toBeNull()
   })
+
+  it.each([null, '/'])(
+    'returns an empty, untruncated page when maxKeys is 0 and the batch is full (delimiter %p)',
+    (delimiter) => {
+      const p = params({ delimiter, maxKeys: 0 })
+      const fetched = rows('a/1', 'b')
+      const result = finalizeListObjects(p, fetched, fetched.length)
+      expect(result.maxKeys).toBe(0)
+      expect(result.objects).toEqual([])
+      expect(result.commonPrefixes).toEqual([])
+      expect(result.isTruncated).toBe(false)
+      expect(result.nextContinuationToken).toBeNull()
+    },
+  )
 })
