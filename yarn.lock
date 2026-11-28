@@ -217,6 +217,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@autonomys/auto-files@workspace:packages/auto-files"
   dependencies:
+    "@autonomys/auto-dag-data": "npm:^1.7.0"
     "@autonomys/auto-drive": "npm:^1.7.0"
     "@types/jest": "npm:^29.5.14"
     jest: "npm:^29.7.0"

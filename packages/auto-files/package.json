@@ -8,7 +8,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "test": "jest"
+    "test": "node --experimental-vm-modules ../../node_modules/jest/bin/jest.js"
   },
   "devDependencies": {
     "@types/jest": "^29.5.14",
@@ -29,6 +29,7 @@
     }
   },
   "dependencies": {
+    "@autonomys/auto-dag-data": "^1.7.0",
     "@autonomys/auto-drive": "^1.7.0"
   }
 }
