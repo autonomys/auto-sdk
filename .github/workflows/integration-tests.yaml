@@ -53,7 +53,7 @@ jobs:
       - name: Show logs on failure
         if: failure()
         working-directory: integration-tests
-        run: yarn docker:logs
+        run: yarn docker:logs --timestamps
 
       - name: Cleanup containers
         if: always()

@@ -122,7 +122,7 @@ jobs:
 
 ## Troubleshooting
 
-**View logs:**
+**View logs** (add `-f` to keep following them):
 
 ```bash
 yarn docker:logs

@@ -11,8 +11,8 @@
     "docker:up:full": "cd docker && docker compose -f docker-compose.yml up -d",
     "docker:down": "cd docker && docker compose -f docker-compose.farmerless.yml down -v",
     "docker:down:full": "cd docker && docker compose -f docker-compose.yml down -v",
-    "docker:logs": "cd docker && docker compose -f docker-compose.farmerless.yml logs -f",
-    "docker:logs:full": "cd docker && docker compose -f docker-compose.yml logs -f"
+    "docker:logs": "cd docker && docker compose -f docker-compose.farmerless.yml logs",
+    "docker:logs:full": "cd docker && docker compose -f docker-compose.yml logs"
   },
   "dependencies": {
     "@autonomys/auto-consensus": "workspace:*",
